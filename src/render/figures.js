@@ -127,7 +127,7 @@ function drawNear(p, s) {
         capsule([an, toe], 0.125 * sk, p.shoe, p.shoeD, p.shoeL);
         const lift = (st === 'platforms' ? 0.07 : 0.04) * sk;
         line([an[0], an[1] + lift], [toe[0], toe[1] + lift], '#f4f6f8', st === 'platforms' ? 0.09 : 0.05);
-      } else if (st === 'oxfords') {
+      } else if (st === 'oxfords' || st === 'loafers') {
         capsule([an, toe], 0.085 * sk, p.shoe, p.shoeD, p.shoeL);
       } else if (st === 'heels') {
         capsule([an, toe], 0.065 * sk, p.shoe, p.shoeD, p.shoeL);
@@ -303,6 +303,7 @@ function drawNear(p, s) {
       ctx.closePath(); ctx.fill(); ctx.stroke();
       ctx.fillStyle = '#e2574c'; ctx.beginPath(); ctx.arc(hx, hy - r * 0.86, r * 0.1, 0, TAU); ctx.fill();
     }
+    if (p.hat === 'beret') { ctx.fillStyle = p.gear; ctx.beginPath(); ctx.ellipse(hx + r * 0.12, hy - r * 0.62, r * 1.08, r * 0.5, -0.12, 0, TAU); ctx.fill(); }
     if (p.hat === 'sweatband') { ctx.fillStyle = p.gear; ctx.fillRect(hx - r * 1.03, hy - r * 0.62, r * 2.06, r * 0.34); }
     if (p.hat === 'tiara') {
       ctx.fillStyle = '#e8e8f0'; ctx.strokeStyle = '#9aa0b5'; ctx.lineWidth = Math.max(1, r * 0.05);

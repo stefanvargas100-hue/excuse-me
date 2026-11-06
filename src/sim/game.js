@@ -7,7 +7,7 @@ import { COST_DASH, DASH_V, action, keys, pendingDash, setPendingDash, touches }
 import { radarTop, setRadarTop } from '../render/hud.js';
 import { track, trackMax } from '../save/challenges.js';
 import { buzz, store } from '../save/store.js';
-import { banner } from './actions.js';
+import { PERFECT_SPEED, banner } from './actions.js';
 import { collide, updMe, updPeople } from './crowd.js';
 import { genChunk, runEvent, scramble, seeded, spawnFast, spawnRival, updXings, walker } from './people.js';
 import { addPop, onPass } from './scoring.js';
@@ -38,7 +38,8 @@ function movePlayer(dt) {
   S.boostV += ((bursting || S.draftT > 0 ? 1 : 0) - S.boostV) * Math.min(1, dt * 8);
   if (S.boostV < 0.2) S.boostPasses = 0;
   const weave = 1 - 0.14 * Math.min(1.4, Math.abs(S.vx) / LAT_MAX);   // weaving costs a little forward speed
-  const pace = S.race ? racePace(S.chain, S.energy) * draftMul(S) : 1;   // race mode: combo speeds you up, low stamina slows you down
+  S.perfectT = Math.max(0, S.perfectT - dt);
+  const pace = (S.race ? racePace(S.chain, S.energy) * draftMul(S) : 1) * (S.perfectT > 0 ? PERFECT_SPEED : 1);   // race mode: combo speeds you up, low stamina slows you down
   const target = (bursting ? BOOST : BASE) * weave * pace * (st ? st.speed : 1) * (S.bumpT > 0 ? BUMP_SPEED : 1);
   S.speed += (target - S.speed) * Math.min(1, dt * (st && target > S.speed ? st.accel : 5));
   if (S.dashT > 0) S.vx = S.dashDir * DASH_V;

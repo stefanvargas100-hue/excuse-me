@@ -11,7 +11,7 @@ import { banner } from './actions.js';
 import { track } from '../save/challenges.js';
 import { LOOK } from '../save/progress.js';
 import { applyBuild, dress } from './people.js';
-import { addPop } from './scoring.js';
+import { CLOSE_STAMINA, RAZOR_STAMINA, addPop } from './scoring.js';
 import { S } from './state.js';
 
 /* ---------- race mode: A to B against bots; a bump slows you down instead of ending the run ---------- */
@@ -285,7 +285,11 @@ function stepBot(b, dt) {
   for (const p of S.people) {
     if (p.dead || p.prop || Math.abs(p.z - b.z) > 3) continue;
     const was = b.ahead.get(p), now = p.z > b.z;
-    if (was && !now) { b.chain++; b.lastPassT = S.time; }
+    if (was && !now) {
+      b.chain++; b.lastPassT = S.time;
+      const gap = Math.abs(p.x - b.x) - R_PLAYER - 0.25;   // bots earn near-miss stamina too
+      if (gap < 0.15) b.energy = Math.min(100, b.energy + RAZOR_STAMINA); else if (gap < 0.4) b.energy = Math.min(100, b.energy + CLOSE_STAMINA);
+    }
     b.ahead.set(p, now);
   }
   // animation, same rules as the player's

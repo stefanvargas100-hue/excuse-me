@@ -94,3 +94,30 @@ test('quitting a daily run saves its score and the try stays used', () => {
   assert.strictEqual(E.hasPlayed('daily'), true);
   assert.strictEqual(E.tallyOf('dailyRuns'), 1);
 });
+
+function aheadOf(E, dz, dx) { E.S.people.length = 0; E.S.nextChunk = 1e9; return E.mkPerson(E.S.px + (dx || 0), E.S.pz + dz); }
+const going = () => { const E = load(); E.setLevel(0); E.start('classic'); for (let i = 0; i < 30; i++) { E.S.people.length = 0; E.tick(DT); } return E; };
+
+test('a near miss refills stamina, a razor more than a close call', () => {
+  const pass = gap => { const E = going(); E.S.energy = 50; const p = aheadOf(E, 0.3, 0.5 + gap); p.vz = 0; p.v0 = 0; for (let i = 0; i < 6; i++) { p.x = E.S.px + 0.5 + gap; p.vx = 0; E.tick(DT); } return E.S.energy; };
+  const razor = pass(0.05), close = pass(0.3), wide = pass(1.0);
+  assert.ok(razor > close && close > wide, [razor, close, wide].map(v => v.toFixed(1)).join(' '));
+});
+
+test('a last-moment dash is free and fast; an early one costs stamina as usual', () => {
+  const E = going(); E.S.energy = 5; aheadOf(E, 1.0, 0); const before = E.S.energy;
+  E.action('R');
+  assert.ok(E.S.perfectT > 0, 'perfect'); assert.strictEqual(E.S.energy, before, 'free, even when too tired for a normal dash');
+  assert.strictEqual(E.tallyOf('perfectDashes'), 1);
+  const F = going(); F.S.energy = 60; aheadOf(F, 8, 0);
+  F.action('R');
+  assert.strictEqual(F.S.perfectT, 0); assert.strictEqual(F.S.energy, 40);
+});
+
+test('a well-timed Excuse me moves more people and recharges sooner', () => {
+  const row = first => { const E = going(); E.S.people.length = 0; E.S.nextChunk = 1e9; const ps = []; for (let i = 0; i < 7; i++) ps.push(E.mkPerson(E.S.px, E.S.pz + first + i * 0.9)); E.shout(); return { moved: ps.filter(p => p.aside > 0).length, cd: E.S.shoutCD, n: E.tallyOf('perfectShouts') }; };
+  const timed = row(1.5), early = row(3.5);
+  assert.strictEqual(timed.n, 1); assert.strictEqual(early.n, 0);
+  assert.ok(timed.moved > early.moved, timed.moved + ' vs ' + early.moved);
+  assert.ok(timed.cd < early.cd);
+});

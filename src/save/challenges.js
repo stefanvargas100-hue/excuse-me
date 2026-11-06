@@ -43,6 +43,9 @@ export const CHALLENGES = [
   row('pack', 'messenger', 'Messenger bag', 'races', 25, 'Finish 25 races'),
   row('pack', 'boombox', '80s boombox', 'dailyRuns', 14, 'Play 14 daily runs'),
   row('pack', 'jet', 'Jetpack', 'slips', 150, 'Earn 150 slipstreams in races'),
+  // skill
+  row('hat', 'beret', 'Beret', 'perfectDashes', 50, 'Land 50 Perfect Dashes'),
+  row('shoeType', 'loafers', 'Loafers', 'perfectShouts', 40, 'Land 40 Perfect Excuse Mes'),
   // hair and colours: looks only
   row('hairStyle', 'mohawk', 'Mohawk', 'far_shibuya', 450, 'Reach 450 m on Shibuya Crossing in one classic run'),
   row('shirt', '#d4af37', 'Gold shirt', 'bestScore', 12000, 'Score 12,000 in one classic run'),

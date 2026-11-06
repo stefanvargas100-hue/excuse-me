@@ -24,11 +24,11 @@ export const ITEM_STATS = {
   },
   shoeType: {
     sneakers: NONE, runners: pts(2, 0, -2), boots: pts(0, -2, 2), slides: pts(-2, 2, 0),
-    hightops: pts(-1, -1, 2), dad: pts(-1, 2, -1), platforms: pts(2, -3, 1), heels: pts(3, -1, -2), oxfords: pts(2, 1, -3)
+    hightops: pts(-1, -1, 2), dad: pts(-1, 2, -1), platforms: pts(2, -3, 1), heels: pts(3, -1, -2), oxfords: pts(2, 1, -3), loafers: pts(-1, 2, -1)
   },
   hat: {
     cap: NONE, beanie: pts(-1, 0, 1), headphones: pts(1, 0, -1), shades: pts(1, -1, 0), crown: pts(1, 1, -2),
-    visor: pts(0, 1, -1), sweatband: pts(-1, 1, 0), bucket: pts(0, -1, 1), fedora: pts(2, -1, -1), tiara: pts(-1, 2, -1)
+    beret: pts(1, 0, -1), visor: pts(0, 1, -1), sweatband: pts(-1, 1, 0), bucket: pts(0, -1, 1), fedora: pts(2, -1, -1), tiara: pts(-1, 2, -1)
   },
   pack: { pack: NONE, sling: pts(0, 1, -1), jet: pts(0, 2, -2), fanny: pts(-1, 2, -1), messenger: pts(1, -1, 0), boombox: pts(-2, -1, 3) }
 };
@@ -41,8 +41,8 @@ export const STYLE_NAMES = { y2k: 'Y2K', '80s': '80s', modern: 'Modern', formal:
 export const ITEM_STYLES = {
   shirtType: { tank: 'sport', jacket: 'sport', hoodie: 'modern', baby: 'y2k', velour: 'y2k', wind: '80s', varsity: '80s', power: '80s formal', puffer: 'modern', dress: 'formal y2k', suit: 'formal' },
   pantsType: { shorts: 'sport', joggers: 'sport', cargo: 'modern', track: '80s sport', flares: 'y2k', acid: '80s', parachute: '80s', slacks: 'formal', pleats: 'y2k formal', pencil: 'formal' },
-  shoeType: { runners: 'sport', boots: 'modern', slides: 'sport', hightops: '80s', dad: 'modern', platforms: 'y2k', heels: 'formal', oxfords: 'formal' },
-  hat: { beanie: 'modern', headphones: 'modern', shades: 'y2k', visor: 'sport', sweatband: '80s sport', bucket: 'y2k', fedora: 'formal', tiara: 'formal', crown: 'formal' },
+  shoeType: { runners: 'sport', boots: 'modern', slides: 'sport', hightops: '80s', dad: 'modern', platforms: 'y2k', heels: 'formal', oxfords: 'formal', loafers: 'formal' },
+  hat: { beanie: 'modern', headphones: 'modern', shades: 'y2k', visor: 'sport', sweatband: '80s sport', bucket: 'y2k', beret: 'formal', fedora: 'formal', tiara: 'formal', crown: 'formal' },
   pack: { sling: 'sport', fanny: 'y2k', messenger: 'modern formal', boombox: '80s', jet: 'modern' }
 };
 export const styleLabel = (key, val) => { const s = ITEM_STYLES[key] && ITEM_STYLES[key][val]; return s ? s.split(' ').map(x => STYLE_NAMES[x]).join('/') : ''; };

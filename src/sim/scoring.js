@@ -15,6 +15,9 @@ export function addPop(text, color, size) {
   if (S.pops.length > 6) S.pops.shift();
 }
 
+// Brave passes pay for your abilities: a near miss refills some stamina.
+export const RAZOR_STAMINA = 10, CLOSE_STAMINA = 4;
+
 const TAG_TALLY = { RAZOR: 'razor', CLOSE: 'close', 'THREAD THE NEEDLE': 'thread', SNAKE: 'snake', 'SWEEP LEFT': 'sweep', 'SWEEP RIGHT': 'sweep', 'MEGA SWEEP': 'mega', 'BULLET TRAIN': 'bullet', JUKE: 'juke', 'SALMON RUN': 'salmon', 'RIVAL BURNED': 'burned' };
 
 export function onPass(p) {
@@ -30,8 +33,8 @@ export function onPass(p) {
   const mult = Math.min(8, 1 + Math.floor(S.chain / 3));
   let pts = 10, sound = null;
   const tags = [];
-  if (gap < 0.15) { pts += 50; S.close++; track('close'); tags.push(['RAZOR', '#ff4d4f']); S.heat = Math.min(0.9, S.heat + 0.45); sound = 'razor'; }
-  else if (gap < 0.4) { pts += 25; S.close++; tags.push(['CLOSE', '#ffcf1f']); S.heat = Math.min(0.9, S.heat + 0.3); sound = 'whoosh'; }
+  if (gap < 0.15) { pts += 50; S.close++; S.energy = Math.min(100, S.energy + RAZOR_STAMINA); track('close'); tags.push(['RAZOR', '#ff4d4f']); S.heat = Math.min(0.9, S.heat + 0.45); sound = 'razor'; }
+  else if (gap < 0.4) { pts += 25; S.close++; S.energy = Math.min(100, S.energy + CLOSE_STAMINA); tags.push(['CLOSE', '#ffcf1f']); S.heat = Math.min(0.9, S.heat + 0.3); sound = 'whoosh'; }
   if (prev && now - prev.t < 0.35 && prev.side !== side && Math.abs(dx) < 1.2 && prev.adx < 1.2) { pts += 150; tags.push(['THREAD THE NEEDLE', '#5ee6a8']); }
   S.snake = prev && prev.side !== side ? S.snake + 1 : 1;
   if (S.snake >= 3) { pts += 40 * (S.snake - 1); tags.push([S.snake === 3 ? 'SNAKE' : 'SNAKE ×' + S.snake, '#7cc4ff']); }
