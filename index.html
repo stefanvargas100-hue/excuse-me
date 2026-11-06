@@ -73,6 +73,28 @@
   </div>
 </div>
 
+<div id="friend" class="panel" hidden>
+  <div class="card full">
+    <div class="topbar"><button class="backbtn" id="friendBack" data-back type="button" aria-label="Back">‹</button><h2>Race a friend</h2></div>
+    <div id="friendHome" class="btns">
+      <p class="lead">Race one friend live, on the same crowd. You each need the game open on your own phone.</p>
+      <button id="friendMake" class="big" type="button">Make a room</button>
+      <button id="friendJoinBtn" class="ghost" type="button">Join with a code</button>
+    </div>
+    <div id="friendHost" class="btns" hidden>
+      <div id="friendStages" class="modes" role="group" aria-label="Stage"></div>
+      <div id="friendCode" class="roomcode" aria-live="polite">----</div>
+      <button id="friendShare" class="ghost" type="button" disabled>Send invite</button>
+      <button id="friendStart" class="big" type="button" disabled>Start race</button>
+    </div>
+    <div id="friendJoin" class="btns" hidden>
+      <input id="friendInput" class="roomin" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" maxlength="6" placeholder="CODE" aria-label="Room code">
+      <button id="friendGo" class="big" type="button">Join</button>
+    </div>
+    <p id="friendStatus" class="lead friendstatus" aria-live="polite"></p>
+  </div>
+</div>
+
 <div id="howto" class="panel" hidden>
   <div class="card full">
     <div class="topbar"><button class="backbtn" data-back type="button" aria-label="Back">‹</button><h2>How to play</h2></div>

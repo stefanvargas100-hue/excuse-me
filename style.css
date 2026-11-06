@@ -355,3 +355,13 @@ button.big.huge { min-height: 84px; font-size: 38px; margin-bottom: 18px; }
 .sethelp { margin: 0; font-size: 15px; line-height: 1.15; opacity: .85; }
 @media (max-height: 640px) { .setgrid .setrow { min-height: 36px; font-size: 15px; } .setgrid { gap: 5px; } .sethelp { font-size: 13px; } }
 
+
+/* race a friend */
+.roomcode { font-family: var(--display); font-size: clamp(44px, 9vh, 64px); letter-spacing: .18em; text-align: center; padding: 8px 0 8px .18em; background: var(--paper2); border: 3px solid var(--ink); border-radius: var(--wob-s); box-shadow: 3px 4px 0 var(--ink); }
+.roomin { font: 400 clamp(36px, 7vh, 52px) var(--display); letter-spacing: .18em; text-align: center; text-transform: uppercase; padding: 8px; background: var(--paper); color: var(--ink); border: 3px solid var(--ink); border-radius: var(--wob-s); box-shadow: 3px 4px 0 var(--ink); width: 100%; box-sizing: border-box; }
+.friendstatus { margin: 12px 0 0; font-size: 17px; min-height: 2.6em; }
+#friend .modes { margin: 0; }
+button:disabled.big, button:disabled.ghost { opacity: .5; cursor: default; }
+#friend [hidden] { display: none !important; }
+#friend .btns { margin-top: 0; }
+#friendStages { flex-wrap: nowrap; } #friendStages .chip { flex: 1 1 0; padding: 0 4px; min-width: 0; }

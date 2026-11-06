@@ -13,6 +13,8 @@ import { S, bestOf, calm, camBob, cues, reset, setCalm, setCamBob, setCues, setS
 import { endTut } from '../sim/tutorial.js';
 import { back, go, pageInto, relayoutWith } from './screens.js';
 import { shareRun } from '../sim/replay.js';
+import { openFriend } from './friend.js';
+import { leaveRoom } from '../online/duel.js';
 
 
 
@@ -31,6 +33,7 @@ function buildPlay() {
   };
   mode('lvl', 'Single player', 'Classic', 'Endless', 'Pick a stage and go until you bump into someone.', () => openStages('classic'));
   mode('lvl', 'Competitive', 'Race vs bots', '4 racers', 'First to the finish. Your build and gear matter here.', () => openStages('race'));
+  mode('lvl', 'Competitive', 'Race a friend', 'Live 1v1', 'Send a link and race a friend on the same crowd, live.', openFriend);
   // Daily and weekly runs: endless, one try each, the same crowd for everyone.
   const periodic = (kind, title, lvl, key, startFn, blurb) => {
     const done = hasPlayed(kind), best = parseInt(store.get('excuseme_' + kind + '_' + key, '0'), 10) || 0;
@@ -207,7 +210,7 @@ export function init() {
   $('tutSkip').addEventListener('click', e => { e.stopPropagation(); if (S.tut) endTut(); });
   $('tutSkip').addEventListener('pointerdown', e => e.stopPropagation());
   $('next').addEventListener('click', () => { setLevel(Math.min(LEVELS.length - 1, LVI + 1)); start(false); });
-  $('menu').addEventListener('click', () => { Music.ambStop(); toMenu(); });
+  $('menu').addEventListener('click', () => { Music.ambStop(); leaveRoom(); toMenu(); });
   $('pauseBtn').addEventListener('click', e => { e.stopPropagation(); pauseGame(); });
   $('pauseBtn').addEventListener('pointerdown', e => e.stopPropagation());
   $('resume').addEventListener('click', resumeGame);

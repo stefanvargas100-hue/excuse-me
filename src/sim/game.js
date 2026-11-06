@@ -13,7 +13,7 @@ import { collide, updMe, updPeople } from './crowd.js';
 import { genChunk, runEvent, scramble, seeded, spawnFast, spawnRival, updXings, walker } from './people.js';
 import { addPop, onPass } from './scoring.js';
 import { S, bestOf, endShown, goalOf, reset, setEndShown, setState, state } from './state.js';
-import { BUMP_SPEED, draftMul, finishRace, fmtTime, initRace, leadZ, ordinal, raceBest, raceCollide, raceCountdown, racePace, rearZ, updRace } from './race.js';
+import { BUMP_SPEED, addRemoteRacer, draftMul, finishRace, fmtTime, initRace, leadZ, ordinal, raceBest, raceCollide, raceCountdown, racePace, rearZ, updRace } from './race.js';
 import { updCars } from './traffic.js';
 import { beginTut, tutTick } from './tutorial.js';
 import { buildLevels, last } from '../ui/menus.js';
@@ -89,9 +89,9 @@ export function tick(dt) {
     while (S.nextChunk < leadZ() + SPAWN_FAR && S.nextChunk < goalOf() - 15) { genChunk(S.nextChunk); S.nextChunk += 4; }
     const prog = clamp(S.pz / LV.goal, 0, 1);
     S.fastT -= dt;
-    if (S.fastT <= 0) { spawnFast(true); if (R() < 0.3) spawnFast(true); S.fastT = rnd(LV.fastEvery[0], LV.fastEvery[1]) * (1.3 - 0.6 * prog); }
+    if (S.fastT <= 0 && !S.duel) { spawnFast(true); if (R() < 0.3) spawnFast(true); S.fastT = rnd(LV.fastEvery[0], LV.fastEvery[1]) * (1.3 - 0.6 * prog); }
     S.rivalT -= dt;
-    if (S.rivalT <= 0 && S.pz > 25 && S.pz < goalOf() - 40) { spawnRival(); S.rivalT = rnd(LV.rivalEvery[0], LV.rivalEvery[1]) * (1.2 - 0.5 * prog); }
+    if (S.rivalT <= 0 && !S.duel && S.pz > 25 && S.pz < goalOf() - 40) { spawnRival(); S.rivalT = rnd(LV.rivalEvery[0], LV.rivalEvery[1]) * (1.2 - 0.5 * prog); }
     if (LV.id === 'nyc') updXings();
     // clock
     S.timeLeft -= dt;
@@ -100,9 +100,9 @@ export function tick(dt) {
     if (S.timeLeft <= 0 && !S.race) { loseTime(); return; }
     // scripted crowd moments
     S.eventT -= dt;
-    if (S.eventT <= 0 && S.pz < goalOf() - 60) { seeded(':e' + (S.evN++), () => runEvent(pick(LV.events))); S.eventT = S.endless && S.pz > LV.goal ? rnd(11, 17) : rnd(16, 24); }   // past the old finish line, surprises come more often
+    if (S.eventT <= 0 && !S.duel && S.pz < goalOf() - 60) { seeded(':e' + (S.evN++), () => runEvent(pick(LV.events))); S.eventT = S.endless && S.pz > LV.goal ? rnd(11, 17) : rnd(16, 24); }   // past the old finish line, surprises come more often
     // rush hour surges
-    if (S.pz < goalOf() - 50) {
+    if (!S.duel && S.pz < goalOf() - 50) {
       S.rushT -= dt;
       if (S.rushT <= 0) {
         if (!S.rush) { S.rush = true; S.rushT = 10; banner('RUSH HOUR', '#ff9f43'); Music.sfx('combo'); }
@@ -114,7 +114,7 @@ export function tick(dt) {
       }
     }
     for (const p of S.people) if (p.prop === 'spill' && !p.slipped && Math.hypot(S.px - p.x, (S.pz - p.z) * 0.8) < 1.0) { p.slipped = true; S.slipT = 0.7; addPop('SLIPPERY!', '#c8a165', 26); buzz([10, 20, 10]); }
-    if (LV.id === 'shibuya') { S.waveT -= dt; if (S.waveT <= 0 && S.pz < goalOf() - 60) { scramble(); S.waveT = rnd(8, 11); } }
+    if (LV.id === 'shibuya') { S.waveT -= dt; if (S.waveT <= 0 && !S.duel && S.pz < goalOf() - 60) { scramble(); S.waveT = rnd(8, 11); } }
     updPeople(dt);
     if (S.race) updRace(dt);
     S.people = S.people.filter(p => !p.dead && p.z > rearZ() - 16);
@@ -233,7 +233,7 @@ function showUnlocks() {
 
 function showRaceEnd() {
   const R = S.race, n = R.board.length, place = R.place;
-  $('endEyebrow').textContent = 'Race · ' + LV.city + ' · ' + LV.name + ' · ' + R.diff.name + ' bots';
+  $('endEyebrow').textContent = 'Race · ' + LV.city + ' · ' + LV.name + ' · ' + (S.duel ? 'live vs ' + S.duel.name : R.diff.name + ' bots');
   const t = $('endTitle'); t.textContent = place === 1 ? 'You win!' : ordinal(place) + ' of ' + n; t.className = place === 1 ? 'good' : 'bad';
   $('endLead').hidden = true;   // the standings say it all
   $('endLead').textContent = place === 1 ? 'First to ' + LV.goalText + '. Bumps cost you time, so a clean run wins.' : 'Not first this time. Every bump costs about a second and a half, so stay clean and look for gaps.';
@@ -252,8 +252,8 @@ function showRaceEnd() {
     li.textContent = (i + 1) + '. ' + r.name + ' · ' + gap;
     bd.appendChild(li);
   });
-  showUnlocks(); $('next').hidden = true; $('again').hidden = false;
-  $('again').textContent = 'Race again'; $('again').className = 'big';
+  showUnlocks(); $('next').hidden = true;
+  $('again').hidden = !!S.duel; $('again').textContent = 'Race again'; $('again').className = 'big';
   $('end').hidden = false;
 }
 
@@ -269,18 +269,19 @@ export function startDaily() { if (hasPlayed('daily')) return; setLevel(dailyLev
 export function startWeekly() { if (hasPlayed('weekly')) return; setLevel(weeklyLevel()); start('weekly'); }
 
 // start('classic' | 'race' | 'daily' | 'weekly'); the older start(true) and start(false, 'race') forms still work.
-export function start(a, b) {
+export function start(a, b, opts) {
+  const duel = opts && opts.duel || null;   // a live race against a friend: { seed, friend, send, remote }
   const mode = a === true ? 'daily' : typeof a === 'string' ? a : (b || lastMode);
   const daily = mode === 'daily', weekly = mode === 'weekly', key = daily || weekly ? periodKey(mode) : null;
   flushScores();   // send any score that could not go out earlier
   if (key) { if (hasPlayed(mode)) return; store.set('excuseme_played_' + mode, key); }
   lastDaily = daily; lastMode = mode;
-  setR(key ? mulberry32(hashStr(key)) : Math.random);
+  setR(key ? mulberry32(hashStr(key)) : duel ? mulberry32(hashStr(duel.seed)) : Math.random);
   reset();
-  S.mode = mode; S.kind = mode; S.endless = mode !== 'race'; S.seed = key;
+  S.mode = mode; S.kind = mode; S.endless = mode !== 'race'; S.seed = key || (duel ? duel.seed : null); S.duel = duel;
   if (S.endless) S.timeLeft = Infinity;
   ghostStart();
-  if (mode === 'race') initRace(3);
+  if (mode === 'race') { initRace(duel ? 0 : 3); if (duel) addRemoteRacer(duel.look, duel.name); }
   S.daily = daily; S.weekly = weekly; S.dailyKey = key; for (const k in last) last[k] = k === 'low' ? null : -1; S.live = true; setState('play'); setEndShown(false);
   hideMenus(); $('hud').hidden = false;
   const hb = $('hud').getBoundingClientRect ? $('hud').getBoundingClientRect() : null;
@@ -291,7 +292,7 @@ export function start(a, b) {
 }
 
 export function pauseGame() {
-  if (state !== 'play') return;
+  if (state !== 'play' || (S && S.duel)) return;   // a live race cannot be paused: your friend keeps running
   setState('paused'); touches.clear(); Music.suspend();
   $('pauseEyebrow').textContent = (S.race ? 'Race · ' : '') + LV.city + ' · ' + LV.name + ' · ' + Math.floor(S.pz) + ' m';
   $('restart').hidden = !!(S.daily || S.weekly);   // daily and weekly runs are one try

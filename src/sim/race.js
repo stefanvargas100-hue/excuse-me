@@ -112,7 +112,7 @@ function makeBot(i, diff, name) {
 
 // Called by start() when a race begins.
 export function initRace(botCount) {
-  const diff = DIFFICULTIES[raceDifficulty()], n = clamp(botCount || 3, 1, BOTS.length);
+  const diff = DIFFICULTIES[raceDifficulty()], n = botCount === 0 ? 0 : clamp(botCount || 3, 1, BOTS.length);   // 0 bots: a live race against a friend
   S.race = { diff, bots: [], countT: COUNTDOWN, countLast: 99, rng: mulberry32(0x5eed + n), finished: false, place: 0, board: [], elapsed: 0 };
   const pool = BOT_NAMES.slice();   // each race draws its racers' names at random, no repeats within a race
   for (let i = 0; i < n; i++) S.race.bots.push(makeBot(i, diff, pool.splice((Math.random() * pool.length) | 0, 1)[0]));
@@ -133,6 +133,41 @@ export function raceCountdown(dt) {
       const fit = fitOf(LOOK).boost;
       if (fit) addPop('FIT CHECK +' + fit, '#ff6b9d', 30);
     }
+  }
+}
+
+/* ---------- a friend racing live: looks like a bot to the rest of the game, but their phone does the steering ---------- */
+const FRIEND_COLOR = '#ff4fa3', FRIEND_SILENT = 5;   // seconds without news before we assume they left
+export function addRemoteRacer(look, name) {
+  const R = S.race, b = makeBot(R.bots.length, R.diff, name);
+  Object.assign(b, look); applyBuild(b); dress(b);
+  Object.assign(b, { remote: true, color: FRIEND_COLOR, name });
+  R.bots.push(b); return b;
+}
+function stepRemote(b, dt) {
+  const D = S.duel, p = D.remote.sample(S.clock);
+  if (D.fin != null && !b.done) { b.done = true; b.finishT = D.fin; }
+  if (b.done) { b.z = Math.min(b.z + b.speed * dt, LV.goal + 3); b.speed *= Math.max(0, 1 - dt * 4); b.vx = 0; b.vz = b.speed; b.walkA += ((b.speed > 0.15 ? 1 : 0) - b.walkA) * Math.min(1, dt * 8); b.phase += dt * b.speed * 2; return; }
+  if (!p) return;
+  b.x = clamp(p.x, -(LV.half - 0.5), LV.half - 0.5); b.z = Math.min(p.z, LV.goal); b.vx = p.vx; b.speed = p.speed; b.vz = p.speed;
+  const sp = Math.max(0.01, Math.hypot(b.vx, b.vz)), kk = Math.min(1, dt * 8);
+  b.fx += (b.vx / sp - b.fx) * kk; b.fz += (b.vz / sp - b.fz) * kk;
+  const nn = Math.hypot(b.fx, b.fz) || 1; b.fx /= nn; b.fz /= nn;
+  b.phase += dt * (2.2 + sp * 2.0);
+  b.walkA += (1 - b.walkA) * Math.min(1, dt * 8);
+}
+// Sends our position ten times a second; drops the friend if they go quiet or say goodbye.
+function duelTick(dt) {
+  const D = S.duel; D.sendT -= dt;
+  if (D.sendT <= 0) {
+    D.sendT = 0.1;
+    const r = v => Math.round(v * 100) / 100;
+    D.send('pos', { n: ++D.n, x: r(S.px), z: r(S.pz), vx: r(S.vx), s: r(S.speed) });
+  }
+  const f = S.race.bots.find(b => b.remote);
+  if (f && !f.done && (D.bye || (D.remote.lastSeen() > 0 && S.clock - D.remote.lastSeen() > FRIEND_SILENT))) {
+    S.race.bots.splice(S.race.bots.indexOf(f), 1);
+    addPop(f.name.toUpperCase() + ' LEFT', '#9ca3af', 24);
   }
 }
 
@@ -324,9 +359,11 @@ export function updRace(dt) {
     if (S.time - S.lastSlip < 20) { track('doubleSlip'); S.lastSlip = -99; } else S.lastSlip = S.time;
   }
   for (const b of R.bots) {
+    if (b.remote) { stepRemote(b, dt); continue; }
     if (b.done) { b.speed *= Math.max(0, 1 - dt * 4); b.vx *= Math.max(0, 1 - dt * 6); b.vz = b.speed; b.phase += dt * b.speed * 2; b.walkA += ((b.speed > 0.15 ? 1 : 0) - b.walkA) * Math.min(1, dt * 8); b.z += b.speed * dt; continue; }
     stepBot(b, dt);
   }
+  if (S.duel) duelTick(dt);
   for (const p of S.people) if (p.hitT !== undefined) { p.hitT -= dt; if (p.hitT <= 0) { p.hit = false; delete p.hitT; } }
 }
 
@@ -335,9 +372,10 @@ export function finishRace() {
   const R = S.race;
   R.finished = true; R.board = standings(); R.place = R.board.findIndex(r => r.me) + 1;
   const key = 'excuseme_race_best_' + LV.id, prev = parseFloat(store.get(key, '0')) || 0;
-  R.newBest = R.place === 1 && (!prev || S.time < prev);
+  R.newBest = !S.duel && R.place === 1 && (!prev || S.time < prev);
   if (R.newBest) store.set(key, S.time.toFixed(2));
   if (R.place === 1) banner('YOU WIN', '#27c27a');
+  if (S.duel) { S.duel.send('fin', { ft: S.time }); S.duel.send('fin', { ft: S.time }); return; }   // races against friends do not count toward unlocks
   track('races');
   if (R.place === 1) {
     track('wins');
