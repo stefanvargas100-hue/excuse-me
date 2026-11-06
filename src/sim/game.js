@@ -251,7 +251,7 @@ function showUnlocks() {
 
 function showRaceEnd() {
   const R = S.race, n = R.board.length, place = R.place;
-  $('endEyebrow').textContent = 'Race · ' + LV.city + ' · ' + LV.name + ' · ' + (S.duel ? 'live vs ' + S.duel.name : R.diff.name + ' bots');
+  $('endEyebrow').textContent = 'Race · ' + LV.city + ' · ' + LV.name + ' · ' + (S.duel ? 'live vs ' + S.duel.title : R.diff.name + ' bots');
   const t = $('endTitle'); t.textContent = place === 1 ? 'You win!' : ordinal(place) + ' of ' + n; t.className = place === 1 ? 'good' : 'bad';
   $('endLead').hidden = true;   // the standings say it all
   $('endLead').textContent = place === 1 ? 'First to ' + LV.goalText + '. Bumps cost you time, so a clean run wins.' : 'Not first this time. Every bump costs about a second and a half, so stay clean and look for gaps.';
@@ -301,7 +301,7 @@ export function start(a, b, opts) {
   S.mode = mode; S.kind = mode; S.endless = mode !== 'race'; S.seed = key || (duel ? duel.seed : null); S.duel = duel;
   if (S.endless) S.timeLeft = Infinity;
   ghostStart();
-  if (mode === 'race') { initRace(duel ? 0 : 3); if (duel) addRemoteRacer(duel.look, duel.name); }
+  if (mode === 'race') { initRace(duel ? 0 : 3); if (duel) duel.order.forEach((id, i) => addRemoteRacer(duel.peers[id].look, duel.peers[id].name, id, i)); }
   S.daily = daily; S.weekly = weekly; S.dailyKey = key; for (const k in last) last[k] = k === 'low' ? null : -1; S.live = true; setState('play'); setEndShown(false);
   hideMenus(); $('hud').hidden = false;
   const hb = $('hud').getBoundingClientRect ? $('hud').getBoundingClientRect() : null;

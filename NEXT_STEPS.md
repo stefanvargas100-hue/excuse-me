@@ -9,9 +9,14 @@ Nobody has played most of this on a real phone yet. All balance numbers are firs
 
 ## Status 2026-11-06 (end of the multiplayer session)
 Live on main: live 1v1 racing with rematch (tested by Stefan with a friend: no lag), interface that scales with the screen, Leaderboards screen (daily, weekly, classic per stage), slipstream 25% with 3 s cooldown, airport moving walkway with glass railings (forward belt +1.2 m/s, reverse belt -0.8 m/s, people stand right and pass left), speed in mph under the combo box, small stamina bar above your head, radar removed. 166 automatic tests pass. Stefan's feedback: all of it works well.
-Not done yet: 4-8 player lobbies, bumping/cut-offs between live racers, handling a phone that sleeps mid-race, race results on the leaderboards, tuning the belt speeds from real play. Details of every choice are in DECISIONS.md.
+Lobby for 2-4 players is now built (see below). Not done yet: bigger lobbies, bumping/cut-offs between live racers, handling a phone that sleeps mid-race, race results on the leaderboards, tuning the belt speeds from real play. Details of every choice are in DECISIONS.md.
 
-## Live 1v1 (built 2026-11-06, tested with a friend, works well)
+## Live lobby, 2-4 players (built 2026-11-06, branch multiplayer-lobby, needs a real multi-phone test)
+- [ ] Stefan + up to 3 friends: Play > Race friends. Host makes a room, others join by code or link, host presses Start when 2-4 are in. Report: does everyone see everyone smoothly, is it OK with 4, do rematch and someone leaving mid-race behave?
+- [ ] Watch the message limit with 4 real phones (5 position reports a second each). If it stutters, lower the rate or move to a bigger Supabase plan.
+- [ ] Later: ready button, bots to fill slots (host switch), quick public matches.
+
+## Live 1v1 (built earlier, now part of the lobby)
 - [ ] Stefan + a friend: Play > Race a friend. One makes a room, the other joins with the code or the link, host presses Start. Report: do you see each other smoothly, do the countdowns line up, does the finish work?
 - [ ] Rematch button is in (both press it). Then: handle a phone that sleeps mid-race, 4-8 players, cut-offs between racers.
 

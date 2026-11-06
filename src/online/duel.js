@@ -1,13 +1,13 @@
-/* ---------- live 1v1 race with a friend ----------
-   Host makes a room code, the friend joins with the code or a link, the host presses Start. Both phones then build the same
-   seeded crowd and send each other their position ten times a second. Nothing is stored; the room disappears when both leave. */
+/* ---------- live race with 1 to 3 friends (a room of up to 4 phones) ----------
+   The host makes a room code, friends join with the code or a link, the host presses Start. All phones then build the same
+   seeded crowd and send each other their position several times a second. Nothing is stored; the room disappears when everyone leaves.
+   Every message carries the sender's id. Only the host's roster and start messages count, and anything from an unknown id is ignored. */
 import { LEVELS, LV, setLevel } from '../config/levels.js';
 import { $ } from '../dom.js';
 import { LOOK, LOOK_OPTS } from '../save/progress.js';
 import { store } from '../save/store.js';
-import { start, toMenu } from '../sim/game.js';
+import { start } from '../sim/game.js';
 import { S } from '../sim/state.js';
-import { go, back } from '../ui/screens.js';
 import { createRoom, cleanCode, makeCode } from './room.js';
 import { createRemote } from './remote.js';
 import { createBoard } from './board.js';
@@ -15,7 +15,7 @@ import { createBoard } from './board.js';
 const URL = 'https://hrsbzntphratlnkrevet.supabase.co';
 const KEY = 'sb_publishable_FoFHiii4XagCq3-oi3ygQg_UcyZNoJn';
 
-/* ---- what we accept from the other phone: never trust it ---- */
+/* ---- what we accept from the other phones: never trust it ---- */
 const HEX = /^#[0-9a-f]{6}$/i;
 export function cleanLook(raw) {
   const out = {}, src = raw && typeof raw === 'object' ? raw : {};
@@ -30,112 +30,203 @@ export function cleanName(raw) {
   const s = typeof raw === 'string' ? raw.replace(/[^\p{L}\p{N} ._'-]/gu, '').trim().slice(0, 24) : '';
   return s || 'Friend';
 }
+const cleanId = v => (typeof v === 'string' && /^[a-z0-9]{4,12}$/.test(v) ? v : null);
+const newId = () => { let s = ''; while (s.length < 8) s += Math.random().toString(36).slice(2); return s.slice(0, 8); };
 // a number within a sane range, or null: out-of-range reports are thrown away, not trimmed
 const num = (v, lim) => (typeof v === 'number' && Number.isFinite(v) && Math.abs(v) <= lim ? v : null);
 
-/* ---- one race at a time ---- */
-let room = null, role = null, code = '', friend = null, levelIdx = 0, helloTimer = null, raceNo = 0;
-let wantMe = false, wantThem = false, friendGone = false;   // rematch: both have to ask
-let net = null;   // the running race's link, same object as S.duel
-const ui = { status: () => {}, ready: () => {} };
+/* ---- room state ---- */
+export const MAX_PLAYERS = 4;
+const KEEPALIVE_MS = 2000, STALE_MS = 10000, JOIN_WAIT_MS = 6000;
+
+let room = null, role = null, code = '', levelIdx = 0, tick = null, raceNo = 0;
+let myId = '', hostId = '', roster = [];        // roster: [{ id, name, look }], the host first, me included
+let inRoster = false, raced = false, hostGone = false, lastStatus = '', joinWaiter = null;
+let wantMe = false; const wants = new Set();    // rematch: everyone still in the room has to ask
+const seenAt = {};                              // id -> last time we heard from them (ms)
+const ui = { status: () => {}, roster: () => {} };
+const say = t => { lastStatus = t; ui.status(t); };
 let roomFactory = opts => createRoom({ WebSocket: window.WebSocket, url: URL, key: KEY, ...opts });
 export const useRoomFactory = f => { roomFactory = f; };
 
 const myName = () => { try { return createBoard({ fetch: () => Promise.reject(), url: URL, key: KEY, store }).playerName(); } catch (e) { return 'Racer'; } };
+const others = () => roster.filter(p => p.id !== myId);
 
-export function startDuel({ seed, level, friend: f, send }) {
+/* ---- one race at a time ---- */
+export function startDuel({ seed, level, friends, friend, send }) {
   setLevel(level);
-  const d = { refresh: showRematch, seed, name: cleanName(f.name), look: cleanLook(f.look), send, remote: createRemote(), n: 0, sendT: 0, fin: null, bye: false };
-  net = d;
+  const list = friends || (friend ? [{ id: 'friend', ...friend }] : []);
+  const peers = {}, order = [];
+  for (const f of list) { peers[f.id] = { name: cleanName(f.name), look: cleanLook(f.look), remote: createRemote(), fin: null, bye: false }; order.push(f.id); }
+  const names = order.map(i => peers[i].name);
+  // ten reports a second for one friend; five with more, so a full room stays inside the connection's message limits
+  const d = { refresh: showRematch, seed, peers, order, title: names.length === 1 ? names[0] : names.length + ' friends', send, n: 0, sendT: 0, sendEvery: order.length > 1 ? 0.2 : 0.1 };
   start('race', null, { duel: d });
   return d;
 }
 
-// Messages from the friend's phone while racing.
+// Messages from the other phones while racing. The sender's id picks whose runner it is.
 export function duelReceive(ev, data) {
-  const d = S && S.duel; if (!d) return;
+  const d = S && S.duel; if (!d || !data || typeof data !== 'object') return;
+  const id = cleanId(data.id) || (d.order.length === 1 ? d.order[0] : null), P = id && d.peers[id];
+  if (!P) return;
   if (ev === 'pos') {
-    if (!data || typeof data !== 'object') return;
     const n = num(data.n, 1e9), x = num(data.x, 20), z = num(data.z, LV.goal + 20), vx = num(data.vx, 20), s = num(data.s, 20);
     if ([n, x, z, vx, s].some(v => v === null)) return;
-    d.remote.push({ n, x, z, vx, s: Math.max(0, s) }, S.clock);
+    P.remote.push({ n, x, z, vx, s: Math.max(0, s) }, S.clock);
   } else if (ev === 'fin') {
-    const ft = data && num(data.ft, 3600);
-    if (ft !== null && ft > 0) d.fin = ft;
-  } else if (ev === 'bye') d.bye = true;
+    const ft = num(data.ft, 3600);
+    if (ft !== null && ft > 0) P.fin = ft;
+  } else if (ev === 'bye') P.bye = true;
 }
 
 /* ---- the room before the race ---- */
 function closeRoom() {
-  wantMe = wantThem = friendGone = false;
-  if (helloTimer) { clearInterval(helloTimer); helloTimer = null; } if (room) { try { room.send('bye', {}); } catch (e) {} room.leave(); } room = null; friend = null; role = null; code = ''; }
+  if (tick) { clearInterval(tick); tick = null; }
+  if (room) { try { room.send('bye', { id: myId }); } catch (e) {} room.leave(); }
+  room = null; role = null; code = ''; hostId = ''; myId = ''; roster = []; inRoster = false; raced = false; hostGone = false; wantMe = false; wants.clear();
+  for (const k in seenAt) delete seenAt[k];
+  if (joinWaiter) { const w = joinWaiter; joinWaiter = null; w(false); }
+  ui.roster([]);
+}
+const sendRoster = () => room && room.send('roster', { id: myId, players: roster });
+const changed = () => { ui.roster(lobbyPlayers()); showRematch(); };
 
 function onMessage(ev, data) {
+  if (!data || typeof data !== 'object') data = {};
+  const from = cleanId(data.id);
+  if (from && from === myId) return;
+  if (from) seenAt[from] = Date.now();
   if (ev === 'hello') {
-    const first = !friend;
-    friend = { name: cleanName(data && data.name), look: cleanLook(data && data.look) };
-    if (first) { sayHello(); if (role === 'host') ui.ready(friend.name); else ui.status('Connected to ' + friend.name + '. Waiting for them to start.'); }
-  } else if (ev === 'rematch') { wantThem = true; maybeRematch(); showRematch();
-  } else if (ev === 'bye') { friendGone = true; wantThem = false; showRematch(); duelReceive(ev, data);
-  } else if (ev === 'start' && role === 'guest' && friend && (wantMe || !racing())) {
-    if (!data || typeof data.seed !== 'string' || !Number.isInteger(data.level) || !LEVELS[data.level]) return;
+    if (role !== 'host' || !from) return;
+    if (roster.some(p => p.id === from)) return;   // already in: this was only a keepalive
+    if (roster.length >= MAX_PLAYERS || raced) { room.send('full', { id: myId, to: from, why: raced ? 'started' : 'full' }); return; }
+    roster.push({ id: from, name: cleanName(data.name), look: cleanLook(data.look) });
+    sendRoster(); changed();
+  } else if (ev === 'roster') {
+    if (role !== 'guest' || !from || (hostId && from !== hostId)) return;
+    const players = (Array.isArray(data.players) ? data.players : []).slice(0, MAX_PLAYERS)
+      .map(p => ({ id: cleanId(p && p.id), name: cleanName(p && p.name), look: cleanLook(p && p.look) })).filter(p => p.id);
+    if (!players.length || players[0].id !== from) return;
+    if (!players.some(p => p.id === myId)) { if (inRoster) { closeRoom(); say('You were removed from the room.'); } return; }
+    hostId = from; roster = players; inRoster = true; hostGone = false;
+    for (const id of [...wants]) if (!roster.some(p => p.id === id)) wants.delete(id);
+    if (joinWaiter) { const w = joinWaiter; joinWaiter = null; w(true); }
+    changed();
+  } else if (ev === 'full') {
+    if (role === 'guest' && !inRoster && data.to === myId && joinWaiter) {
+      const w = joinWaiter; joinWaiter = null;
+      say(data.why === 'started' ? 'That room already started a race. Ask the host for a new room.' : 'That room is full (4 players).'); w(false);
+    }
+  } else if (ev === 'rematch') {
+    if (!from || !roster.some(p => p.id === from)) return;
+    wants.add(from); maybeRematch(); changed();
+  } else if (ev === 'bye') {
+    if (!from) return;
+    if (from === hostId && role === 'guest') {
+      if (!raced) { closeRoom(); say('The host left the room.'); return; }
+      hostGone = true;
+    }
+    roster = roster.filter(p => p.id !== from); wants.delete(from);
+    duelReceive(ev, data);
+    if (role === 'host') { sendRoster(); maybeRematch(); }
+    changed();
+  } else if (ev === 'start') {
+    if (role !== 'guest' || from !== hostId || !inRoster || (raced && !wantMe)) return;
+    if (typeof data.seed !== 'string' || !Number.isInteger(data.level) || !LEVELS[data.level]) return;
     beginRace(data.level, data.seed.slice(0, 40));
-  } else if (ev === 'start' && role === 'host') { /* ignore */ }
-  else duelReceive(ev, data);
+  } else duelReceive(ev, data);
 }
-// a race is running right now (not finished, not in the lobby)
-const racing = () => !!(S && S.duel && S.race && !S.race.finished);
-const sayHello = () => room && room.send('hello', { name: myName(), look: LOOK });
+export const injectRoomMessage = onMessage;
 
 function beginRace(level, seed) {
-  wantMe = wantThem = false;
-  startDuel({ seed, level, friend, send: (ev, d) => { if (room) room.send(ev, d); } });
+  wantMe = false; wants.clear(); raced = true;
+  const id = myId;
+  startDuel({ seed, level, friends: others(), send: (ev, d) => { if (room) room.send(ev, { id, ...d }); } });
+  changed();
+}
+
+// Every 2 seconds: guests say hello (join retry and keepalive); the host sends the roster and drops phones that went quiet.
+function heartbeat() {
+  if (!room) return;
+  const now = Date.now();
+  if (role === 'guest') {
+    room.send('hello', { id: myId, name: myName(), look: LOOK });
+    if (inRoster && !hostGone && seenAt[hostId] && now - seenAt[hostId] > STALE_MS) {
+      if (!raced) { closeRoom(); say('Lost contact with the host.'); } else { hostGone = true; changed(); }
+    }
+  } else if (role === 'host') {
+    const gone = others().filter(p => seenAt[p.id] && now - seenAt[p.id] > STALE_MS);
+    if (gone.length) { roster = roster.filter(p => !gone.includes(p)); for (const p of gone) wants.delete(p.id); maybeRematch(); changed(); }
+    if (roster.length > 1) sendRoster();
+  }
 }
 
 async function connect(c, r) {
   closeRoom();
-  room = roomFactory(); role = r; code = c;
+  room = roomFactory(); role = r; code = c; myId = newId();
   room.onMessage(onMessage);
-  room.onClose(() => { if (room) { ui.status('Connection lost.'); if (S && S.duel) S.duel.bye = true; } });
+  room.onClose(() => { if (!room) return; say('Connection lost.'); if (S && S.duel) for (const k of S.duel.order) S.duel.peers[k].bye = true; });
   await room.join(c);
-  // keep saying hello until the other phone answers (they may join a moment later)
-  sayHello();
-  helloTimer = setInterval(() => { if (friend) { clearInterval(helloTimer); helloTimer = null; } else sayHello(); }, 2000);
+  tick = setInterval(heartbeat, KEEPALIVE_MS); if (tick && tick.unref) tick.unref();
+  if (r === 'guest') room.send('hello', { id: myId, name: myName(), look: LOOK });
 }
 
 export async function hostRoom(level) {
   levelIdx = level;
-  ui.status('Making a room...');
-  try { await connect(makeCode(), 'host'); } catch (e) { ui.status('Could not connect. Check your internet and try again.'); return null; }
-  ui.status('Waiting for your friend...');
+  say('Making a room...');
+  try { await connect(makeCode(), 'host'); } catch (e) { say('Could not connect. Check your internet and try again.'); return null; }
+  roster = [{ id: myId, name: myName(), look: LOOK }]; hostId = myId; inRoster = true;
+  say('Waiting for friends to join...'); changed();
   return code;
 }
 export async function joinRoom(c) {
-  c = cleanCode(c); if (c.length !== 4) { ui.status('Type the 4 letter code.'); return false; }
-  ui.status('Joining ' + c + '...');
-  try { await connect(c, 'guest'); } catch (e) { ui.status('Could not connect. Check the code and your internet.'); return false; }
-  ui.status('Joined. Waiting for your friend...');
+  c = cleanCode(c); if (c.length !== 4) { say('Type the 4 letter code.'); return false; }
+  say('Joining ' + c + '...');
+  try { await connect(c, 'guest'); } catch (e) { say('Could not connect. Check the code and your internet.'); return false; }
+  const ok = await new Promise(resolve => {
+    joinWaiter = resolve;
+    const t = setTimeout(() => { if (joinWaiter === resolve) { joinWaiter = null; say('Nobody answered. Check the code and try again.'); resolve(false); } }, JOIN_WAIT_MS);
+    if (t && t.unref) t.unref();
+  });
+  if (!ok) { const keep = lastStatus; closeRoom(); say(keep); return false; }
+  say('Joined. Waiting for the host to start...');
   return true;
 }
-// After a race both players press Rematch; the host then starts a new race on the same stage.
-export const rematchState = () => (!room || !friend || friendGone ? 'gone' : wantMe && wantThem ? 'starting' : wantMe ? 'waiting' : wantThem ? 'asked' : 'idle');
+
+export const lobbyPlayers = () => (room && inRoster ? roster.map(p => ({ id: p.id, name: p.name, look: p.look, me: p.id === myId, host: p.id === hostId })) : []);
+export const lobbyStatus = () => lastStatus;
+export const isHost = () => role === 'host';
+
+// After a race everyone presses Rematch; the host then starts a new race on the same stage.
+export function rematchCounts() { const o = others(); return { asked: o.filter(p => wants.has(p.id)).length, total: o.length }; }
+export function rematchState() {
+  const { asked, total } = rematchCounts();
+  if (!room || !total || hostGone) return 'gone';
+  if (wantMe && asked === total) return 'starting';
+  return wantMe ? 'waiting' : asked > 0 ? 'asked' : 'idle';
+}
 function showRematch() {
   const b = $('again'); if (!b || !S || !S.duel) return;
-  const st = rematchState();
-  b.textContent = st === 'gone' ? 'Friend left' : st === 'waiting' ? 'Waiting for friend...' : st === 'asked' ? 'Accept rematch' : 'Rematch';
+  const st = rematchState(), c = rematchCounts();
+  b.textContent = st === 'gone' ? (hostGone ? 'Host left' : 'Everyone left') : st === 'waiting' ? 'Waiting for others (' + (c.asked + 1) + '/' + (c.total + 1) + ')' : st === 'asked' ? 'Accept rematch' : 'Rematch';
   b.disabled = st === 'gone' || st === 'waiting' || st === 'starting';
 }
 function maybeRematch() {
-  if (role === 'host' && wantMe && wantThem && friend && !friendGone) { const seed = code + ':' + (++raceNo); room.send('start', { level: levelIdx, seed }); beginRace(levelIdx, seed); }
+  const o = others();
+  if (role === 'host' && room && wantMe && o.length && o.every(p => wants.has(p.id))) {
+    const seed = code + ':' + (++raceNo);
+    room.send('start', { id: myId, level: levelIdx, seed }); beginRace(levelIdx, seed);
+  }
 }
 export function requestRematch() {
-  if (!room || !friend || friendGone || wantMe) return;
-  wantMe = true; room.send('rematch', {}); maybeRematch(); showRematch();
+  if (!room || !others().length || hostGone || wantMe) return;
+  wantMe = true; room.send('rematch', { id: myId }); maybeRematch(); showRematch();
 }
 export function hostStart() {
-  if (role !== 'host' || !friend || !room) return;
+  if (role !== 'host' || !room || others().length < 1 || raced) return;
   const seed = code + ':' + (++raceNo);
-  room.send('start', { level: levelIdx, seed });
+  room.send('start', { id: myId, level: levelIdx, seed });
   beginRace(levelIdx, seed);
 }
 export function leaveRoom() { closeRoom(); }
