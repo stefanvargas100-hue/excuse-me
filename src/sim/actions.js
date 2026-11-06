@@ -20,7 +20,7 @@ export function shout() {
   // Timing: shout right before you would hit someone and it works better. More people move, they move further,
   // even people on their phones hear you, and the recharge is shorter.
   const perfect = S.people.some(p => !p.prop && !p.dead && !p.rival && p.z - S.pz > 0.2 && p.z - S.pz < PERFECT_SHOUT_M && Math.abs(p.x - S.px) < 0.7);
-  if (perfect) { S.shoutCD -= 2; S.score += 100; track('perfectShouts'); addPop('PERFECT EXCUSE ME', '#ff6b9d', 28); buzz([10, 20, 10]); Music.sfx('perfect'); }
+  if (perfect) { S.shoutCD -= 2; S.score += 100; track('perfectShouts'); S.tutPerfectShout = true; addPop('PERFECT EXCUSE ME', '#ff6b9d', 28); buzz([10, 20, 10]); Music.sfx('perfect'); }
   S.me.react = { t: 0, text: 'Excuse me!', up: false };
   Music.sfx('shout'); buzz(8);
   const near = S.people.filter(p => !p.prop && !p.dead && p.z - S.pz > 0.2 && p.z - S.pz < (perfect ? 9 : 7.5) && Math.abs(p.x - S.px) < (perfect ? 2.6 : 2.0))

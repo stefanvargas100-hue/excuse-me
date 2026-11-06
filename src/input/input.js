@@ -75,8 +75,8 @@ export function init() {
     const isL = k === 'arrowleft' || k === 'a', isR = k === 'arrowright' || k === 'd';
     if (isL) { keys.l = true; keys.last = 'l'; if (!e.repeat) { if (now - lastKey.l < DOUBLE_MS) action('L'); lastKey.l = now; } }
     if (isR) { keys.r = true; keys.last = 'r'; if (!e.repeat) { if (now - lastKey.r < DOUBLE_MS) action('R'); lastKey.r = now; } }
-    if ((k === 'arrowup' || k === 'w' || k === ' ') && !e.repeat) action('M');
-    if (k === 'e' && !e.repeat && state === 'play') shout();
+    if ((k === 'arrowup' || k === 'w') && !e.repeat) action('M');
+    if ((k === 'e' || k === ' ') && !e.repeat && state === 'play') shout();
     if (state === 'play' && (k === ' ' || k.startsWith('arrow'))) e.preventDefault();
   });
   // Never let a missed release trap the player against a wall: drop all held input whenever the page loses focus or a touch ends.

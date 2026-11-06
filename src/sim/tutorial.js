@@ -14,11 +14,13 @@ export const TUT = [
   { text: 'Double tap one side to DASH sideways.', zone: 'LR', done: () => S.dashT > 0 },
   { text: 'Double tap BOTH sides at the same time to BURST forward.', zone: 'both', done: () => S.burstT > 0 },
   { text: 'Swipe up to say "Excuse me". The person ahead steps aside.', zone: null, done: () => S.shoutCD > 0 },
+  { text: 'Skill move: walk at the person ahead, then DASH sideways at the very last moment. Close calls give a free boost.', zone: 'LR', done: () => S.perfectT > 0 },
+  { text: 'Another: walk up close, then swipe up just before you would touch them. A well timed "Excuse me" is stronger and recharges faster.', zone: null, done: () => S.tutPerfectShout },
   { text: "That's it. Pass people for points and don't touch anyone. Go!", zone: null, done: () => S.tut.t > 2.6 }
 ];
 
 export function beginTut() {
-  S.tut = { step: 0, t: 0 }; S.tutHold = 0;
+  S.tut = { step: 0, t: 0 }; S.tutHold = 0; S.tutPerfectShout = false;
   S.people = S.people.filter(p => p.prop);
   $('tut').hidden = false; tutUI();
 }
@@ -31,9 +33,14 @@ export function tutTick(dt) {
     S.tut.step++; S.tut.t = 0; S.tutHold = 0; Music.sfx('combo'); buzz(10);
     if (S.tut.step >= TUT.length) { endTut(); return; }
     if (S.tut.step === 4) mk(S.px, S.pz + 9, { hx: 0, hz: 1, v0: 1.0, laneX: S.px, fadeT: 0 });
+    if (S.tut.step === 5 || S.tut.step === 6) spawnStander();
     tutUI();
   }
+  // practice steps: if the player has walked past the practice person, put a fresh one ahead
+  if (S.tut && (S.tut.step === 5 || S.tut.step === 6) && S.tut.t > 1 && !S.people.some(p => !p.prop && !p.dead && p.z - S.pz > 1.5)) spawnStander();
 }
+
+function spawnStander() { mk(S.px, S.pz + 9, { v0: 0, laneX: S.px, fadeT: 0 }); }
 
 export function endTut() {
   S.tut = null; store.set('excuseme_tut', '1'); $('tut').hidden = true;
