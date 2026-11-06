@@ -1,0 +1,88 @@
+# Excuse Me: Next Steps
+
+Written 2026-11-05 at the end of a long build session. Start here next time.
+Live game: https://stefanvargas100-hue.github.io/excuse-me/
+
+## Where things stand
+Built and live: endless Classic, one-try Daily and Weekly, Race vs bots, race stats, 40 unlockable items earned through challenges, Fit Check, slipstream, fast strips, the skill pack, ghost and replay, no-scroll menus, hand-drawn Candy pop look.
+Nobody has played most of this on a real phone yet. All balance numbers are first guesses.
+
+## Next steps, in order
+
+### 1. Stefan: play it and report (no code needed)
+- [ ] Play a few races and classic runs on your phone.
+- [ ] Do the sounds work? Is the drafting whistle pleasant or annoying?
+- [ ] Do the wind lines look right in motion? I have only seen still frames.
+- [ ] Is the tiny freeze on a bump good, or too much?
+- [ ] Do the menus fit your phone without scrolling?
+- [ ] How do the clothes look in the game and on the customize screen?
+- [ ] Note your best race times on Hard. Bot tuning needs them.
+- [ ] Share the link with friends again for fresh feedback.
+
+### 2. Decision needed from Stefan
+- [ ] **Leaderboard service: Supabase (recommended) or Firebase.** Either needs you to create a free account and share a key.
+- [ ] **Character art:** keep improving the current figures, or commission or generate hand-painted art? This sets how far the clothes can go.
+
+### 3. Tune from that feedback
+- [ ] Hard bot speed, using your real times.
+- [ ] Challenge targets. Are any impossible, or too quick?
+- [ ] Stat strength, Fit Check size, slipstream and fast strip boosts.
+- [ ] Clothes that look wrong on small, medium or large, male or female.
+
+### 4. Leaderboards and online (roadmap Phase 6)
+- [ ] Anonymous accounts with generated names.
+- [ ] Boards for the daily run, weekly run and each stage.
+- [ ] Server checks on scores, and a real one-try rule. It is only enforced on the phone today.
+- [ ] Live 1v1 and 4-8 player races by invite link, then cut-offs between players.
+
+### 5. Getting ready to launch
+- [ ] Bundle the fonts so a first launch works offline.
+- [ ] Real app icon and splash screen. The icon is a placeholder.
+- [ ] Measure frame rate on an older Android phone.
+- [ ] Wrap as a phone app (roadmap Phase 3). Android needs Android Studio; iPhone needs a Mac. **Does Stefan have a Mac?** Still unanswered.
+- [ ] Move saves to phone storage. Browser storage can be wiped, which would lose all progress.
+- [ ] Privacy policy, store listing, beta testers.
+
+### Housekeeping
+- [ ] Remove leftovers from the old modes: the finish and timeout code in classic, level timer text, star targets, the unused Next level button.
+- [ ] Add a screen-fit check to the automatic tests. It is only done by hand today.
+
+## New recommendations from the final review
+
+### Teaching (highest value, players will miss what is already built)
+1. **Teach the new skills.** The tutorial stops at the basic controls. Perfect dash, perfect "Excuse me" and near-miss stamina are the heart of the skill game, and only How to play mentions them.
+2. **Add a race tutorial.** Slipstream, fast strips and bumps are never taught in play.
+3. **Practice stage.** A short course with repeatable setups for perfect dashes and threading gaps.
+
+### Gameplay
+4. **Bots use "Excuse me".** They are the only racers who never do, and it is now a key skill.
+5. **Reward clean streaks.** A growing bonus for each 100 m without a bump in races, so clean driving and aggression both pay.
+6. **Comeback pressure with no rubber-banding.** Last place gets stronger slipstreams from the pack, which is earned, not handed out.
+7. **Daily modifiers.** Rush hour only, no stamina regen, everyone on phones. This keeps dailies fresh with no new art.
+8. **Race types.** Elimination (last place out every 100 m) and time attack use the same stages.
+9. **More stages.** Subway platform, music festival, Black Friday mall and train station from the roadmap, each with its own crowd behaviour.
+10. **Crowd personalities per stage.** Festival crowds that surge, commuters who hold their lane.
+
+### Progress
+11. **Rotating daily and weekly challenges** on top of the long ones, so there is always something close to finishing.
+12. **Show progress during play.** "12 more Razors to Shades" on the results screen makes the next goal feel near.
+13. **Saved outfits.** Three loadouts to swap between, for different stages.
+14. **Named sets.** "Full Y2K" shown with a set icon once all five pieces are unlocked.
+15. **Lifetime stats screen.** Distance walked, people passed, wins, favourite stage.
+
+### Look and feel
+16. **Stage-specific menu art,** so the menu backdrop feels like a place.
+17. **Bump and near-miss reactions from the crowd,** more voices and animations for life and humour.
+18. **Music that reacts to race position,** not only to combo.
+19. **Show your stats before a race,** on the stage screen, so builds feel like a choice.
+
+### Functional
+20. **Save backup and restore,** at least a code to copy, until accounts exist.
+21. **Left-handed and swipe sensitivity options.**
+22. **Pause when an update is ready rather than waiting for the menu,** with a small "new version" note.
+23. **Privacy-friendly analytics:** where runs end, which challenges get finished. This feeds all the tuning above.
+
+## My top three if you only pick a few
+1. Teach the new skills (1, 2), because the depth you asked for is invisible without it.
+2. Rotating challenges plus progress on the results screen (11, 12), which gives a reason to play one more run.
+3. Daily modifiers (7), the cheapest way to keep the daily fresh.
