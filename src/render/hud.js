@@ -71,7 +71,7 @@ export function zoneGuide() {
     const tz = S.tut ? TUT[S.tut.step].zone : null;
     const want = tz && (tz === z || tz === 'LR' || tz === 'both');
     const al = held[z] ? 0.32 : want ? 0.22 + 0.18 * Math.sin(S.clock * 6) : 0.10;
-    g.addColorStop(0, (held[z] || want) ? 'rgba(255,207,31,' + al.toFixed(2) + ')' : 'rgba(255,255,255,0.10)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+    g.addColorStop(0, (held[z] || want) ? 'rgba(255,107,157,' + al.toFixed(2) + ')' : 'rgba(255,255,255,0.10)'); g.addColorStop(1, 'rgba(255,255,255,0)');
     ctx.fillStyle = g; ctx.fillRect(x0, H * 0.45, w, H * 0.55);
   }
 }

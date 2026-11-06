@@ -3,6 +3,7 @@ import { LV } from '../config/levels.js';
 import { BASE, BOOST, CHAIN_WINDOW, LAT_ACC, LAT_MAX, REGEN, R_PLAYER } from '../config/tuning.js';
 import { clamp, mulberry32 } from '../config/util.js';
 import { REACT } from '../config/colour.js';
+import { BOT_NAMES } from '../config/names.js';
 import { COST_DASH, DASH_T, DASH_V } from '../input/input.js';
 import { buzz, store } from '../save/store.js';
 import { banner } from './actions.js';
@@ -43,14 +44,14 @@ export const ordinal = n => n + (n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd
 
 export function raceDifficulty() { const v = parseInt(store.get('excuseme_botlvl', '1'), 10); return clamp(isNaN(v) ? 1 : v, 0, DIFFICULTIES.length - 1); }
 
-function makeBot(i, diff) {
+function makeBot(i, diff, name) {
   const d = BOTS[i % BOTS.length];
   const p = {
     x: ((i % 2 ? 1 : -1) * (0.7 + 0.6 * Math.floor(i / 2) + 0.6)), z: -0.3 * (i % 2), vx: 0, vz: 0, phase: i * 1.7, t: 0, h: 1.72 + 0.03 * i, lug: 0, lugCol: '#000000', dog: 0,
     phone: false, fast: false, rival: false, tele: false, hit: false, isMe: false, fx: 0, fz: 1, walkA: 0,
     circles: [{ ox: 0, oz: 0, r: R_PLAYER }], pants: '#1f2937', shoe: '#f4f6f8', hat: i % 2 ? 'none' : 'cap', face: 'none', pack: 'none', gear: '#111827',
     shirt: d.shirt, hair: d.hair, hairStyle: d.hairStyle, skin: d.skin,
-    racer: true, name: d.name, color: d.color
+    racer: true, name, color: d.color
   };
   dress(p);
   Object.assign(p, {
@@ -64,7 +65,8 @@ function makeBot(i, diff) {
 export function initRace(botCount) {
   const diff = DIFFICULTIES[raceDifficulty()], n = clamp(botCount || 3, 1, BOTS.length);
   S.race = { diff, bots: [], countT: COUNTDOWN, countLast: 99, rng: mulberry32(0x5eed + n), finished: false, place: 0, board: [], elapsed: 0 };
-  for (let i = 0; i < n; i++) S.race.bots.push(makeBot(i, diff));
+  const pool = BOT_NAMES.slice();   // each race draws its racers' names at random, no repeats within a race
+  for (let i = 0; i < n; i++) S.race.bots.push(makeBot(i, diff, pool.splice((Math.random() * pool.length) | 0, 1)[0]));
   S.timeLeft = 99999;   // no clock in a race
 }
 

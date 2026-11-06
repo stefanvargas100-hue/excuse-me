@@ -61,6 +61,11 @@ export function hud() {
   const en = Math.round(S.energy);
   if (en !== last.en) { last.en = en; $('en').style.width = en + '%'; }
   if (S.exhausted !== last.low) { last.low = S.exhausted; $('en').classList.toggle('low', S.exhausted); }
+  // colour shifts as stamina drops; in a race, say out loud how much speed it is costing you
+  const lvl = en < 34 ? 2 : en < 67 ? 1 : 0;
+  if (lvl !== last.lvl) { last.lvl = lvl; $('en').classList.toggle('mid', lvl === 1); $('en').classList.toggle('empty', lvl === 2); }
+  const cost = S.race ? Math.round((1 - racePace(0, S.energy)) * 100) : 0;
+  if (cost !== last.cost) { last.cost = cost; const t = $('slowTag'); t.hidden = cost < 2; t.textContent = '-' + cost + '% speed'; }
   if (S.chain !== last.chain) {
     last.chain = S.chain;
     $('combo').classList.toggle('off', S.chain === 0);
@@ -72,7 +77,7 @@ export function hud() {
   if (tl !== last.tl) {
     last.tl = tl;
     const ck = $('clock');
-    ck.innerHTML = '<small>' + (S.race ? 'RACE TIME' : LV.timerLabel) + '</small>' + Math.floor(tl / 60) + ':' + String(tl % 60).padStart(2, '0');
+    ck.innerHTML = '<small>' + (S.race ? 'TIME' : LV.timerLabel) + '</small>' + Math.floor(tl / 60) + ':' + String(tl % 60).padStart(2, '0');
     ck.classList.toggle('low', !S.race && tl <= 15);
   }
   const cd = Math.ceil(S.shoutCD);
