@@ -6,7 +6,7 @@ import { R, clamp, hashStr, mulberry32, pick, rnd, setR, todayKey, weekKey } fro
 import { $ } from '../dom.js';
 import { COST_DASH, DASH_V, action, keys, pendingDash, setPendingDash, touches } from '../input/input.js';
 import { radarTop, setRadarTop } from '../render/hud.js';
-import { track, trackMax } from '../save/challenges.js';
+import { nextGoal, track, trackMax } from '../save/challenges.js';
 import { buzz, store } from '../save/store.js';
 import { PERFECT_SPEED, banner } from './actions.js';
 import { collide, updMe, updPeople } from './crowd.js';
@@ -226,6 +226,9 @@ function showUnlocks() {
   const un = $('unlockNote');
   un.hidden = !S.unlocked.length;
   if (S.unlocked.length) un.textContent = 'Unlocked: ' + S.unlocked.join(', ') + '. Try it in Change look.';
+  const ng = nextGoal(), nn = $('nextNote');
+  nn.hidden = !ng;
+  if (ng) nn.textContent = 'Next unlock: ' + ng.name + '. ' + fmt(ng.remaining) + ' to go: ' + ng.text + '.';
 }
 
 function showRaceEnd() {

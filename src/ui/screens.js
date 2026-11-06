@@ -1,7 +1,7 @@
 import { $ } from '../dom.js';
 
 /* ---------- menu screens: one full screen at a time, tap in and back out, nothing ever scrolls ---------- */
-const SCREENS = ['start', 'play', 'stages', 'howto', 'settings', 'look', 'chal', 'pause', 'end'];
+const SCREENS = ['start', 'play', 'stages', 'friend', 'howto', 'settings', 'look', 'chal', 'pause', 'end'];
 let stack = [];
 let onResize = null;
 
@@ -27,6 +27,16 @@ export function init() { window.addEventListener('resize', () => { if (onResize)
 
 // Fills a box with as many items as fit, and splits the rest into pages with arrows. The box must already be on screen.
 export function pageInto(box, nodes, ctrl, isStart) {
+  ctrl.innerHTML = '';
+  const mk = (txt, label, d) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'pagebtn'; b.textContent = txt; b.setAttribute('aria-label', label);
+    b.addEventListener('click', () => show(cur + d));
+    return b;
+  };
+  const prev = mk('‹', 'Previous page', -1), next = mk('›', 'Next page', 1), num = document.createElement('span');
+  ctrl.appendChild(prev); ctrl.appendChild(num); ctrl.appendChild(next);
+  ctrl.style.visibility = 'visible';   // the buttons take space, so they must be there before the fit is measured
+  let cur = 0;
   const pages = [[]];
   box.innerHTML = '';
   for (const n of nodes) {
@@ -38,16 +48,7 @@ export function pageInto(box, nodes, ctrl, isStart) {
     }
     pages[pages.length - 1].push(n);
   }
-  let cur = 0;
   if (isStart) { const at = pages.findIndex(p => p.some(isStart)); if (at > 0) cur = at; }
-  ctrl.innerHTML = '';
-  const mk = (txt, label, d) => {
-    const b = document.createElement('button'); b.type = 'button'; b.className = 'pagebtn'; b.textContent = txt; b.setAttribute('aria-label', label);
-    b.addEventListener('click', () => show(cur + d));
-    return b;
-  };
-  const prev = mk('‹', 'Previous page', -1), next = mk('›', 'Next page', 1), num = document.createElement('span');
-  ctrl.appendChild(prev); ctrl.appendChild(num); ctrl.appendChild(next);
   function show(i) {
     cur = Math.max(0, Math.min(pages.length - 1, i));
     box.innerHTML = '';

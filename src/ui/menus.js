@@ -4,6 +4,7 @@ import { CHAIN_WINDOW } from '../config/tuning.js';
 import { clamp, todayKey, weekKey } from '../config/util.js';
 import { $ } from '../dom.js';
 import { CHALLENGES, doneCount, isDone, tallyOf } from '../save/challenges.js';
+import { rotatingList, rotatingTotal } from '../save/rotating.js';
 import { ITEM_STATS, statHint } from '../config/stats.js';
 import { setVibOn, store, vibOn } from '../save/store.js';
 import { dailyLevel, fmt, hasPlayed, lastDaily, lastMode, pauseGame, quitRun, resumeGame, start, startDaily, startWeekly, toMenu, weeklyLevel } from '../sim/game.js';
@@ -138,10 +139,21 @@ function raceHud() {
 
 // Every challenge, closest to finished first, with its reward's stats so players can pick what to chase.
 function buildChallenges() {
-  $('chalNote').textContent = doneCount() + ' of ' + CHALLENGES.length + ' unlocked. Progress carries across every run.';
+  $('chalNote').textContent = doneCount() + ' of ' + CHALLENGES.length + ' unlocked. Progress carries across every run. Yellow ones are today and this week. Completed so far: ' + rotatingTotal() + '.';
   const pct = c => Math.min(1, tallyOf(c.tally) / c.target);
   const draw = () => {
-    const nodes = CHALLENGES.slice().sort((a, b) => (isDone(a) - isDone(b)) || (pct(b) - pct(a))).map(c => {
+    const rot = rotatingList().map(c => {
+      const li = document.createElement('li'); li.className = c.done ? 'done rot' : 'rot';
+      const head = document.createElement('div'); head.className = 'chalh';
+      const name = document.createElement('b'); name.textContent = c.period === 'daily' ? 'Today' : 'This week';
+      const num = document.createElement('small'); num.textContent = c.done ? 'Done' : fmt(c.progress) + ' / ' + fmt(c.target);
+      head.appendChild(name); head.appendChild(num);
+      const what = document.createElement('span'); what.textContent = c.text;
+      const bar = document.createElement('div'); bar.className = 'statb'; const fill = document.createElement('i'); fill.className = 'up'; fill.style.width = (c.progress / c.target * 100).toFixed(0) + '%'; bar.appendChild(fill);
+      [head, what, bar].forEach(n => li.appendChild(n));
+      return li;
+    });
+    const nodes = rot.concat(CHALLENGES.slice().sort((a, b) => (isDone(a) - isDone(b)) || (pct(b) - pct(a))).map(c => {
       const li = document.createElement('li'); if (isDone(c)) li.className = 'done';
       const stats = ITEM_STATS[c.key] && ITEM_STATS[c.key][c.val];
       const head = document.createElement('div'); head.className = 'chalh';
@@ -153,7 +165,7 @@ function buildChallenges() {
       const hint = document.createElement('small'); hint.textContent = stats ? 'Race stats: ' + statHint(stats) : 'Looks only';
       [head, what, bar, hint].forEach(n => li.appendChild(n));
       return li;
-    });
+    }));
     pageInto($('chalList'), nodes, $('chalPager'));
   };
   draw();

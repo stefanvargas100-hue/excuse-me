@@ -54,3 +54,4 @@
 - Character look: ink outlines on near figures in the menu ink colour, matching the hand-drawn UI. Still built from simple shapes; hand-painted art would be the next step up.
 - Online (2026-11-06): Supabase via plain fetch (no library). Anonymous sign-in, one `scores` table, unique (player, board) so one-try is enforced by the server, no update/delete. Publishable key is public by design. Scores are still reported by the phone, so cheating is possible until input replays are checked server-side. Setup SQL in supabase/schema.sql.
 - Classic boards (2026-11-06): one row per player per stage (board classic:<stage>), upsert; a database trigger only ever raises the score. Needs the second half of supabase/schema.sql run once.
+- Character lineup review page: open the game with ?lineup on the address (src/dev/lineup.js). It reuses the real figure code, so it always matches the game. Nothing links to it.

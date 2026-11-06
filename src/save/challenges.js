@@ -1,4 +1,5 @@
 import { store } from './store.js';
+import { createRotating, liveKeys, rotateAdd, setRotating } from './rotating.js';
 
 /* ---------- challenges: the only way to unlock gear. Tallies last across every run and never reset. ---------- */
 // [unlock slot, unlock value, reward name, tally, target, what to do]
@@ -62,6 +63,12 @@ try { tally = JSON.parse(store.get('excuseme_tally', '{}')) || {}; } catch (e) {
 export const tallyOf = name => tally[name] || 0;
 export const isDone = c => tallyOf(c.tally) >= c.target;
 export const isLocked = (key, val) => { const c = challengeFor(key, val); return !!c && !isDone(c); };
+// The unfinished challenge you are closest to (and have started), for the results screen.
+export function nextGoal() {
+  let best = null, bp = 0;
+  for (const c of CHALLENGES) { if (isDone(c)) continue; const p = tallyOf(c.tally) / c.target; if (p > bp) { bp = p; best = c; } }
+  return best ? { name: best.name, text: best.text, remaining: best.target - tallyOf(best.tally), c: best } : null;
+}
 export const doneCount = () => CHALLENGES.filter(isDone).length;
 
 let listener = null;
@@ -74,6 +81,11 @@ function setTally(name, value) {
   if (listener) for (const c of before) if (isDone(c)) listener(c);
 }
 // Add to a running total, such as people passed.
-export const track = (name, n = 1) => setTally(name, tallyOf(name) + n);
+export const track = (name, n = 1) => { setTally(name, tallyOf(name) + n); rotateAdd(name, n); };
+
+// Today's and this week's rotating challenges count the same events.
+let rotListener = null;
+export function setRotatingListener(fn) { rotListener = fn; }
+setRotating(createRotating({ store, keys: liveKeys, onComplete: c => { if (rotListener) rotListener(c); } }));
 // Keep the best single result, such as distance in one run.
 export const trackMax = (name, value) => { const v = Math.floor(value); if (v > tallyOf(name)) setTally(name, v); };
