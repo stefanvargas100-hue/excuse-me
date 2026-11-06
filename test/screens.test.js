@@ -12,3 +12,12 @@ test('each id in SCREENS has a matching element in index.html', () => {
   assert.ok(ids.length >= 8);
   for (const id of ids) assert.ok(html.includes('id="' + id + '"'), 'index.html has #' + id);
 });
+
+test('each menu panel in index.html is in SCREENS, or Back cannot close it', () => {
+  const js = fs.readFileSync(path.join(__dirname, '..', 'src', 'ui', 'screens.js'), 'utf8');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const ids = js.match(/const SCREENS = \[([^\]]+)\]/)[1].split(',').map(s => s.trim().replace(/['"]/g, ''));
+  const panels = [...html.matchAll(/<div id="([^"]+)" class="panel"/g)].map(m => m[1]);
+  assert.ok(panels.length >= 8);
+  for (const p of panels) assert.ok(ids.includes(p), '#' + p + ' is missing from SCREENS');
+});
