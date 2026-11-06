@@ -30,8 +30,8 @@ Installable from the browser, full screen, works offline. No app store needed.
 ## Phase 2: Set up a proper project (2–4 days)
 
 - [x] `git init`, push to GitHub.
-- [ ] Tooling: Vite + TypeScript (optional but worth it as the code grows).
-- [ ] Split the IIFE into modules:
+- [x] Tooling: Vite (TypeScript skipped for now; revisit when the code grows).
+- [x] Split the IIFE into modules (done in src/; layout differs slightly: config, input, sim, render, audio, save, ui):
   - `config/` (tuning constants, levels)
   - `input/` (zones, double taps, keyboard)
   - `sim/` (people, crowd, rivals, scoring)

@@ -1,4 +1,4 @@
-// Generates icon PNGs with no dependencies: node icons/make-icons.js
+// Generates icon PNGs with no dependencies: node tools/make-icons.js
 const fs = require('fs'), zlib = require('zlib'), path = require('path');
 const crc = (() => { const t = []; for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; }
   return b => { let c = ~0; for (const x of b) c = t[(c ^ x) & 255] ^ (c >>> 8); return ~c >>> 0; }; })();
@@ -18,4 +18,4 @@ function png(size) {
   const ihdr = Buffer.alloc(13); ihdr.writeUInt32BE(size, 0); ihdr.writeUInt32BE(size, 4); ihdr[8] = 8; ihdr[9] = 2;
   return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk('IHDR', ihdr), chunk('IDAT', zlib.deflateSync(raw)), chunk('IEND', Buffer.alloc(0))]);
 }
-for (const s of [180, 192, 512]) fs.writeFileSync(path.join(__dirname, `icon-${s}.png`), png(s));
+for (const s of [180, 192, 512]) fs.writeFileSync(path.join(__dirname, '..', 'public', 'icons', `icon-${s}.png`), png(s));

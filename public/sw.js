@@ -1,6 +1,6 @@
-const CACHE = 'excuse-me-v4';
-const FILES = ['./', 'index.html', 'style.css', 'game.js', 'manifest.webmanifest',
-  'icons/icon.svg', 'icons/icon-180.png', 'icons/icon-192.png', 'icons/icon-512.png'];
+// The build fills in the version and file list (see vite.config.mjs).
+const CACHE = 'excuse-me-__CACHE_VERSION__';
+const FILES = __PRECACHE_FILES__;
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));

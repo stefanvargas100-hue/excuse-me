@@ -4,7 +4,17 @@
   "private": true,
   "description": "Excuse Me: weave through the crowd without touching anyone.",
   "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "test": "node --test \"test/*.test.js\""
   },
-  "engines": { "node": ">=20" }
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "vite": "^8.3.6"
+  },
+  "type": "commonjs"
 }

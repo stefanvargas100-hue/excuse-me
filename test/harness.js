@@ -1,5 +1,5 @@
 // Loads game.js headlessly (no browser) with a stub DOM so the simulation can be driven from tests.
-const fs = require('fs'), path = require('path'), vm = require('vm');
+const path = require('path'), vm = require('vm'), esbuild = require('esbuild');
 
 // A stand-in for any DOM/canvas/audio object: every property is another stub, every call returns a stub.
 function stub() {
@@ -20,7 +20,8 @@ function stub() {
 }
 
 function load(sourceFile) {
-  const code = fs.readFileSync(sourceFile || path.join(__dirname, '..', 'game.js'), 'utf8');
+  // the game is ES modules; bundle them into one script so each load() gets its own independent copy of the game state
+  const code = esbuild.buildSync({ entryPoints: [sourceFile || path.join(__dirname, '..', 'src', 'main.js')], bundle: true, format: 'iife', write: false, logLevel: 'silent' }).outputFiles[0].text;
   const store = { excuseme_tut: '1' };   // skip the first-run tutorial
   const win = {
     innerWidth: 390, innerHeight: 844, devicePixelRatio: 2,
@@ -40,7 +41,7 @@ function load(sourceFile) {
   };
   sandbox.globalThis = sandbox; Object.assign(win, sandbox.window);
   vm.createContext(sandbox);
-  vm.runInContext(code, sandbox, { filename: 'game.js' });
+  vm.runInContext(code, sandbox, { filename: 'game-bundle.js' });
   return sandbox.window.__excuse || win.__excuse;
 }
 module.exports = { load, stub };

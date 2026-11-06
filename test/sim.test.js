@@ -54,3 +54,13 @@ test('different non-daily runs produce different crowds', () => {
   for (let i = 0; i < 60; i++) { a.tick(DT); b.tick(DT); }
   assert.notStrictEqual(snapshot(a), snapshot(b));
 });
+
+for (const lv of levels) {
+  test(`level ${lv}: drawing the scene, the radar and the character preview does not throw`, () => {
+    const E = fresh(lv);
+    for (let i = 0; i < 300; i++) E.tick(DT);
+    E.keys.l = true; E.action('L'); E.action('M'); E.shout(); E.onTap('R', 1000);
+    for (let i = 0; i < 30; i++) { E.tick(DT); E.render(); }
+    E.drawPreview(1000);
+  });
+}
