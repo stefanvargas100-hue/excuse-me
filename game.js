@@ -745,13 +745,14 @@ function tick(dt) {
   for (const q of S.pops) q.t += dt;
   if (S.banner) { S.banner.t += dt; if (S.banner.t > 2.4) S.banner = null; }
   S.pops = S.pops.filter(q => q.t < 1.3);
-  S.camX += (S.px - S.camX) * Math.min(1, dt * 5);
+  S.camX += (S.px - S.camX) * (1 - Math.exp(-dt * 5));
   updMe(dt);
   updCars(dt);
   if (state === 'play') {
     S.time += dt;
     if (pendingDash && performance.now() >= pendingDash.at) { action(pendingDash.z); pendingDash = null; }
     movePlayer(dt);
+    S.me.x = S.px; S.me.z = S.pz;
     if (S.tut) {
       tutTick(dt);
       if (S.tut) { updPeople(dt); S.people = S.people.filter(p => !p.dead && p.z > S.pz - 16); return; }
@@ -1937,8 +1938,11 @@ function hud() {
 }
 
 let lastT = performance.now();
+const dtHist = [];
 function frame(now) {
-  const dt = Math.min(0.05, Math.max(0, (now - lastT) / 1000)); lastT = now;
+  const raw = Math.min(0.05, Math.max(0, (now - lastT) / 1000)); lastT = now;
+  dtHist.push(raw); if (dtHist.length > 4) dtHist.shift();
+  const dt = raw > 0.04 ? raw : dtHist.reduce((a, b) => a + b, 0) / dtHist.length;   // average the last few frames; keep real long gaps
   // slow motion runs on real time so it always lasts the same
   S.slowT -= dt; S.slow += ((S.slowT > 0 ? 1 : 0) - S.slow) * Math.min(1, dt * (S.slowT > 0 ? 14 : 5));
   S.breakFlash = Math.max(0, S.breakFlash - dt);
