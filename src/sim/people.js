@@ -2,14 +2,14 @@ import { Music } from '../audio/music.js';
 import { DOGS, FASTSHIRTS, GEARS, HAIRS, LUGS, PANTS, SHIRTS, SHOES, SKINS, shade } from '../config/colour.js';
 import { LV, SPAWN_FAR } from '../config/levels.js';
 import { R_BODY, R_LUGGAGE, R_PLAYER, walkSpeed } from '../config/tuning.js';
-import { R, TAU, clamp, pick, randn, rnd, sgn } from '../config/util.js';
+import { R, TAU, clamp, hashStr, mulberry32, pick, randn, rnd, setR, sgn } from '../config/util.js';
 import { ctx } from '../dom.js';
 import { VY, VZ } from '../render/camera.js';
 import { W3 } from '../render/draw.js';
 import { LOOK } from '../save/progress.js';
 import { banner } from './actions.js';
 import { addPop } from './scoring.js';
-import { S, state } from './state.js';
+import { S, goalOf, state } from './state.js';
 
 
 
@@ -166,7 +166,7 @@ export function spawnRival() {
   });
 }
 
-export const inXing = z => { if (LV.id !== 'nyc') return false; const m = z % 90; return z >= 90 && z < LV.goal - 30 && m >= 0 && m < 12; };
+export const inXing = z => { if (LV.id !== 'nyc') return false; const m = z % 90; return z >= 90 && z < goalOf() - 30 && m >= 0 && m < 12; };
 
 // Fifth Avenue sidewalk furniture along the curb (and a few sandwich boards by the shops).
 function nycProps(z0) {
@@ -181,7 +181,7 @@ function nycProps(z0) {
   }
 }
 
-export function genChunk(z0) {
+function genChunkInner(z0) {
   const d = clamp(z0 / LV.goal, 0, 1);
   if (LV.id === 'nyc') nycProps(z0);
   if (inXing(z0 + 2)) return;   // the crosswalk crowds come from the signal waves instead
@@ -191,6 +191,7 @@ export function genChunk(z0) {
 
 // Fifth Avenue: crowds wait at each corner, then pour across when the signal changes.
 export function updXings() {
+  if (S.endless) while (!S.xings.length || S.xings[S.xings.length - 1].z < S.pz + 250) S.xings.push({ z: (S.xings.length ? S.xings[S.xings.length - 1].z : 0) + 90, sig: false, spawned: false, walk: false });
   for (const x of S.xings) {
     if (!x.sig && S.pz > x.z - 75) {
       x.sig = true;
@@ -199,10 +200,12 @@ export function updXings() {
     }
     if (!x.spawned && S.pz > x.z - (SPAWN_FAR + 2)) {
       x.spawned = true;
+      seeded(':x' + x.z, () => {
       const n1 = 3 + ((R() * 4) | 0), n2 = 4 + ((R() * 5) | 0), n3 = 2 + ((R() * 3) | 0);
       for (let i = 0; i < n1; i++) mk(rnd(-3.0, 3.6), x.z - rnd(0.4, 2.2), { v0: 0, hx: 0, hz: 1, fx: 0, fz: 1, wait: x });
       for (let i = 0; i < n2; i++) mk(rnd(-3.0, 3.6), x.z + 12 + rnd(0.4, 2.4), { v0: 0, hx: 0, hz: -1, fx: 0, fz: -1, wait: x });
       for (let i = 0; i < n3; i++) mk(rnd(-9.5, -6), x.z + 12 + rnd(0.5, 2.5), { v0: 0, hx: 1, hz: 0, fx: 1, fz: 0, wait: x, free: true, turnX: rnd(-2.5, 2.5), turnDir: pick([1, -1]) });
+      });
     }
     if (!x.walk && S.pz > x.z - 16) { x.walk = true; if (state === 'play') addPop('WALK', '#f4f6f8', 24); }
   }
@@ -263,4 +266,19 @@ export function scramble() {
     mk(side * (LV.half - 0.5), S.pz + rnd(SPAWN_FAR, SPAWN_FAR + 20), { hx: -side * 0.6, hz: pick([1, -1]) * 0.8, v0: walkSpeed(1.4), free: true, exit: true });
   }
   if (state === 'play') { addPop('SCRAMBLE', '#20e3ff', 26); Music.chirp(); }
+}
+
+// Daily and weekly runs: each piece of the crowd comes from its own seeded stream, so everyone who plays that
+// run meets the same people in the same places, whatever pace they take.
+export function seeded(tag, fn) {
+  if (!S.seed) return fn();
+  const prev = R;
+  setR(mulberry32(hashStr(S.seed + tag)));
+  try { return fn(); } finally { setR(prev); }
+}
+
+export function genChunk(z0) {
+  const n0 = S.people.length;
+  seeded(':c' + z0, () => genChunkInner(z0));
+  if (S.seed) { let sum = 0; for (let i = n0; i < S.people.length; i++) { const q = S.people[i]; sum += q.x * 7 + q.z; } S.chunkSum[z0] = Math.round(sum * 100); }
 }

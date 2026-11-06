@@ -8,6 +8,13 @@ export function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 
 
 export function hashStr(str) { let h = 2166136261; for (let i = 0; i < str.length; i++) h = Math.imul(h ^ str.charCodeAt(i), 16777619); return h >>> 0; }
 
+// ISO week, e.g. 2026-W45: the weekly run changes every Monday
+export const weekKey = (date) => {
+  const d = date || new Date(), t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())), day = t.getUTCDay() || 7;
+  t.setUTCDate(t.getUTCDate() + 4 - day);
+  const y = t.getUTCFullYear(), w = Math.ceil(((t - Date.UTC(y, 0, 1)) / 86400000 + 1) / 7);
+  return y + '-W' + String(w).padStart(2, '0');
+};
 export const todayKey = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
 
 export const rnd = (a = 0, b = 1) => a + R() * (b - a);

@@ -6,7 +6,7 @@ import { ctx } from '../dom.js';
 import { F, VZ } from './camera.js';
 import { P, ball, box3D, cq, forSegs, fq, label, poly, sky, sub, wq } from './draw.js';
 import { inXing } from '../sim/people.js';
-import { S } from '../sim/state.js';
+import { S, goalOf } from '../sim/state.js';
 
 
 
@@ -22,7 +22,7 @@ function goalAirport(d) {
 
 export function paintAirport() {
   const Wl = LV.half;
-  if (LV.goal - VZ < 84) goalAirport(LV.goal - VZ);
+  if (goalOf() - VZ < 84) goalAirport(goalOf() - VZ);
   forSegs(3, 82, (k, za, zb, da, db) => {
     const par = k & 1;
     fq(-Wl, Wl, CEIL, da, db, mixc(C.ceil, da));
@@ -84,7 +84,7 @@ function goalNYC(d) {
 export function paintNYC() {
   sky('#7fb0dd');
   const hw = LV.half;
-  if (LV.goal - VZ < 86) goalNYC(LV.goal - VZ);
+  if (goalOf() - VZ < 86) goalNYC(goalOf() - VZ);
   forSegs(3, 85, (k, za, zb, da, db) => {
     const par = k & 1, xing = inXing(za + 0.1), bi = Math.floor(za / 12);
     wq(-17, 0, 18 + mod(bi * 53, 6) * 5, da, db, mixc(scl(hex(BLD[mod(bi + 3, BLD.length)]), 0.85), da));
@@ -126,7 +126,7 @@ function goalShibuya(d) {
 
 export function paintShibuya() {
   sky('#0e0b1f');
-  if (LV.goal - VZ < 86) goalShibuya(LV.goal - VZ);
+  if (goalOf() - VZ < 86) goalShibuya(goalOf() - VZ);
   const hw = 15;
   forSegs(3, 85, (k, za, zb, da, db) => {
     const par = k & 1, m = mod(za, 45);

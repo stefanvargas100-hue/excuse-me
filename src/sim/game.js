@@ -1,7 +1,7 @@
 import { Music } from '../audio/music.js';
 import { LEVELS, LV, LVI, SPAWN_FAR, setLevel } from '../config/levels.js';
 import { BASE, BOOST, CHAIN_WINDOW, LAT_ACC, LAT_MAX, REGEN } from '../config/tuning.js';
-import { R, clamp, hashStr, mulberry32, pick, rnd, setR, todayKey } from '../config/util.js';
+import { R, clamp, hashStr, mulberry32, pick, rnd, setR, todayKey, weekKey } from '../config/util.js';
 import { $ } from '../dom.js';
 import { COST_DASH, DASH_V, action, keys, pendingDash, setPendingDash, touches } from '../input/input.js';
 import { radarTop, setRadarTop } from '../render/hud.js';
@@ -9,9 +9,9 @@ import { STAR_CHAIN, starsOf, totalStars, unlockables } from '../save/progress.j
 import { buzz, store } from '../save/store.js';
 import { banner } from './actions.js';
 import { collide, updMe, updPeople } from './crowd.js';
-import { genChunk, runEvent, scramble, spawnFast, spawnRival, updXings, walker } from './people.js';
+import { genChunk, runEvent, scramble, seeded, spawnFast, spawnRival, updXings, walker } from './people.js';
 import { addPop, onPass } from './scoring.js';
-import { S, bestOf, endShown, reset, setEndShown, setState, state } from './state.js';
+import { S, bestOf, endShown, goalOf, reset, setEndShown, setState, state } from './state.js';
 import { BUMP_SPEED, finishRace, fmtTime, initRace, leadZ, ordinal, raceBest, raceCollide, raceCountdown, racePace, rearZ, updRace } from './race.js';
 import { updCars } from './traffic.js';
 import { beginTut, tutTick } from './tutorial.js';
@@ -73,12 +73,12 @@ export function tick(dt) {
       tutTick(dt);
       if (S.tut) { updPeople(dt); S.people = S.people.filter(p => !p.dead && p.z > S.pz - 16); return; }
     }
-    while (S.nextChunk < leadZ() + SPAWN_FAR && S.nextChunk < LV.goal - 15) { genChunk(S.nextChunk); S.nextChunk += 4; }
+    while (S.nextChunk < leadZ() + SPAWN_FAR && S.nextChunk < goalOf() - 15) { genChunk(S.nextChunk); S.nextChunk += 4; }
     const prog = clamp(S.pz / LV.goal, 0, 1);
     S.fastT -= dt;
     if (S.fastT <= 0) { spawnFast(true); if (R() < 0.3) spawnFast(true); S.fastT = rnd(LV.fastEvery[0], LV.fastEvery[1]) * (1.3 - 0.6 * prog); }
     S.rivalT -= dt;
-    if (S.rivalT <= 0 && S.pz > 25 && S.pz < LV.goal - 40) { spawnRival(); S.rivalT = rnd(LV.rivalEvery[0], LV.rivalEvery[1]) * (1.2 - 0.5 * prog); }
+    if (S.rivalT <= 0 && S.pz > 25 && S.pz < goalOf() - 40) { spawnRival(); S.rivalT = rnd(LV.rivalEvery[0], LV.rivalEvery[1]) * (1.2 - 0.5 * prog); }
     if (LV.id === 'nyc') updXings();
     // clock
     S.timeLeft -= dt;
@@ -87,9 +87,9 @@ export function tick(dt) {
     if (S.timeLeft <= 0 && !S.race) { loseTime(); return; }
     // scripted crowd moments
     S.eventT -= dt;
-    if (S.eventT <= 0 && S.pz < LV.goal - 60) { runEvent(pick(LV.events)); S.eventT = rnd(16, 24); }
+    if (S.eventT <= 0 && S.pz < goalOf() - 60) { seeded(':e' + (S.evN++), () => runEvent(pick(LV.events))); S.eventT = rnd(16, 24); }
     // rush hour surges
-    if (S.pz < LV.goal - 50) {
+    if (S.pz < goalOf() - 50) {
       S.rushT -= dt;
       if (S.rushT <= 0) {
         if (!S.rush) { S.rush = true; S.rushT = 10; banner('RUSH HOUR', '#ff9f43'); Music.sfx('combo'); }
@@ -101,7 +101,7 @@ export function tick(dt) {
       }
     }
     for (const p of S.people) if (p.prop === 'spill' && !p.slipped && Math.hypot(S.px - p.x, (S.pz - p.z) * 0.8) < 1.0) { p.slipped = true; S.slipT = 0.7; addPop('SLIPPERY!', '#c8a165', 26); buzz([10, 20, 10]); }
-    if (LV.id === 'shibuya') { S.waveT -= dt; if (S.waveT <= 0 && S.pz < LV.goal - 60) { scramble(); S.waveT = rnd(8, 11); } }
+    if (LV.id === 'shibuya') { S.waveT -= dt; if (S.waveT <= 0 && S.pz < goalOf() - 60) { scramble(); S.waveT = rnd(8, 11); } }
     updPeople(dt);
     if (S.race) updRace(dt);
     S.people = S.people.filter(p => !p.dead && p.z > rearZ() - 16);
@@ -119,7 +119,7 @@ export function tick(dt) {
     S.heat = Math.max(0, S.heat - dt * 0.16);
     const mult = Math.min(8, 1 + Math.floor(S.chain / 3));
     Music.target(clamp(0.15 + (mult - 1) * 0.12 + S.heat + (S.timeLeft < 15 ? 0.3 : 0), 0, 1));
-    if (S.pz >= LV.goal) { if (S.race) winRace(); else win(); }
+    if (S.pz >= goalOf()) { if (S.race) winRace(); else win(); }
   } else if (state === 'ready') {
     updPeople(dt);
     S.people = S.people.filter(p => !p.dead);
@@ -132,8 +132,8 @@ export function tick(dt) {
 
 function recordBest() {
   S.score = Math.floor(S.score);
-  if (S.daily) {
-    const k = 'excuseme_daily_' + S.dailyKey, b = parseInt(store.get(k, '0'), 10) || 0;
+  if (S.daily || S.weekly) {
+    const k = 'excuseme_' + (S.daily ? 'daily_' : 'weekly_') + S.dailyKey, b = parseInt(store.get(k, '0'), 10) || 0;
     S.newBest = S.score > b; if (S.newBest) store.set(k, String(S.score));
     S.newStars = 0; S.unlocked = [];
     return;
@@ -143,7 +143,7 @@ function recordBest() {
   if (S.newBest) store.set('excuseme_best_' + LV.id, String(S.score));
   // stars: finish, score target, chain of 15
   const before = totalStars(), old = starsOf(LV.id);
-  const mask = (state === 'won' ? 1 : 0) | (S.score >= LV.starScore ? 2 : 0) | (S.bestChain >= STAR_CHAIN ? 4 : 0);
+  const mask = (S.pz >= LV.goal ? 1 : 0) | (S.score >= LV.starScore ? 2 : 0) | (S.bestChain >= STAR_CHAIN ? 4 : 0);
   store.set('excuseme_stars_' + LV.id, String(old | mask));
   S.newStars = mask & ~old;
   const after = totalStars();
@@ -178,25 +178,26 @@ function showEnd() {
   if (S.race) { showRaceEnd(); return; }
   resetEndLabels();
   const won = state === 'won';
+  const seededRun = S.daily || S.weekly;
   $('endEyebrow').textContent = LV.city + ' · ' + LV.name;
   const t = $('endTitle'); t.textContent = won ? 'Made it' : S.timeout ? 'Too late' : 'Bump'; t.className = won ? 'good' : 'bad';
   $('endLead').textContent = won
     ? 'You reached ' + LV.goalText + ' in ' + Math.floor(S.time / 60) + ':' + String(Math.floor(S.time % 60)).padStart(2, '0') + ' without touching anyone. Finish bonus 1,000, time bonus ' + fmt(S.timeBonus) + '.'
     : S.timeout ? LV.timeFail + ' You were ' + Math.max(0, LV.goal - Math.floor(S.pz)) + ' m short of ' + LV.goalText + '.'
-    : 'You walked into ' + (S.people.some(p => p.hit && p.prop) ? 'something' : 'someone') + ' ' + Math.max(0, LV.goal - Math.floor(S.pz)) + ' m short of ' + LV.goalText + '.';
+    : 'You walked into ' + (S.people.some(p => p.hit && p.prop) ? 'something' : 'someone') + ' ' + Math.floor(S.pz) + ' m in' + (S.pz >= LV.goal ? ', past ' + LV.goalText + '.' : '.') + (seededRun ? (S.daily ? ' That was your one run for today. Come back tomorrow for a new crowd.' : ' That was your one run for this week. Come back on Monday for a new crowd.') : '');
   $('sScoreLabel').textContent = S.newBest ? 'Score · new best' : 'Score';
   $('sScore').textContent = fmt(S.score);
-  $('sBest').textContent = fmt(S.daily ? (parseInt(store.get('excuseme_daily_' + S.dailyKey, '0'), 10) || 0) : bestOf(LV.id));
+  $('sBest').textContent = fmt(seededRun ? S.score : bestOf(LV.id));
   $('sDist').textContent = Math.floor(S.pz) + ' m';
   $('sChain').textContent = S.bestChain;
   $('sClose').textContent = S.close;
   $('sPassed').textContent = S.passed;
   $('sRival').textContent = S.dodged;
   // stars and unlocks
-  const have = S.daily ? 0 : starsOf(LV.id), sb = $('endStars');
-  sb.hidden = !!S.daily;
-  if (!S.daily) {
-    const labels = ['Reach ' + LV.goalText, 'Score ' + fmt(LV.starScore), 'Chain of ' + STAR_CHAIN];
+  const have = seededRun ? 0 : starsOf(LV.id), sb = $('endStars');
+  sb.hidden = !!seededRun;
+  if (!seededRun) {
+    const labels = ['Reach ' + LV.goal + ' m', 'Score ' + fmt(LV.starScore), 'Chain of ' + STAR_CHAIN];
     sb.innerHTML = '';
     labels.forEach((t, i) => {
       const d = document.createElement('div'); const bit = 1 << i;
@@ -208,10 +209,11 @@ function showEnd() {
   const un = $('unlockNote');
   if (S.unlocked && S.unlocked.length) { un.hidden = false; un.textContent = 'Unlocked: ' + S.unlocked.join(', ') + '. Try it in Change look.'; } else un.hidden = true;
   if (S.daily) { $('endEyebrow').textContent = 'Daily run · ' + S.dailyKey + ' · ' + LV.name; }
+  if (S.weekly) { $('endEyebrow').textContent = 'Weekly run · ' + S.dailyKey + ' · ' + LV.name; }
   const nx = $('next');
-  if (won && !S.daily && LVI < LEVELS.length - 1) { nx.hidden = false; nx.textContent = 'Next: ' + LEVELS[LVI + 1].name; } else nx.hidden = true;
-  $('again').textContent = won ? 'Play again' : 'Try again';
-  $('again').className = won && !S.daily && LVI < LEVELS.length - 1 ? 'ghost' : 'big';
+  nx.hidden = true;
+  $('again').hidden = !!seededRun;   // daily and weekly runs are one try only
+  $('again').textContent = 'Try again'; $('again').className = 'big';
   $('end').hidden = false;
 }
 
@@ -242,28 +244,39 @@ function showRaceEnd() {
     li.textContent = (i + 1) + '. ' + r.name + ' · ' + gap;
     bd.appendChild(li);
   });
-  $('endStars').hidden = true; $('unlockNote').hidden = true; $('next').hidden = true;
+  $('endStars').hidden = true; $('unlockNote').hidden = true; $('next').hidden = true; $('again').hidden = false;
   $('again').textContent = 'Race again'; $('again').className = 'big';
   $('end').hidden = false;
 }
 
 export let lastDaily = false, lastMode = 'classic';
 
-export function startDaily() { const key = todayKey(); setLevel(hashStr(key + ':level') % LEVELS.length); start(true); }
+// One try per day and per week, remembered on this device. Quitting mid-run still uses the try.
+export const playedKey = mode => store.get('excuseme_played_' + mode, '');
+export const periodKey = mode => (mode === 'weekly' ? weekKey() : todayKey());
+export const hasPlayed = mode => playedKey(mode) === periodKey(mode);
+export const dailyLevel = () => hashStr(todayKey() + ':level') % LEVELS.length;
+export const weeklyLevel = () => hashStr(weekKey() + ':wlevel') % LEVELS.length;
+export function startDaily() { if (hasPlayed('daily')) return; setLevel(dailyLevel()); start('daily'); }
+export function startWeekly() { if (hasPlayed('weekly')) return; setLevel(weeklyLevel()); start('weekly'); }
 
-export function start(daily, mode) {
-  daily = daily === true;
-  mode = daily ? 'classic' : (mode || lastMode);
+// start('classic' | 'race' | 'daily' | 'weekly'); the older start(true) and start(false, 'race') forms still work.
+export function start(a, b) {
+  const mode = a === true ? 'daily' : typeof a === 'string' ? a : (b || lastMode);
+  const daily = mode === 'daily', weekly = mode === 'weekly', key = daily || weekly ? periodKey(mode) : null;
+  if (key) { if (hasPlayed(mode)) return; store.set('excuseme_played_' + mode, key); }
   lastDaily = daily; lastMode = mode;
-  setR(daily ? mulberry32(hashStr(todayKey())) : Math.random);
+  setR(key ? mulberry32(hashStr(key)) : Math.random);
   reset();
-  S.mode = mode; if (mode === 'race') initRace(3);
-  S.daily = daily; S.dailyKey = todayKey(); for (const k in last) last[k] = k === 'low' ? null : -1; S.live = true; setState('play'); setEndShown(false);
+  S.mode = mode; S.kind = mode; S.endless = mode !== 'race'; S.seed = key;
+  if (S.endless) S.timeLeft = Infinity;
+  if (mode === 'race') initRace(3);
+  S.daily = daily; S.weekly = weekly; S.dailyKey = key; for (const k in last) last[k] = k === 'low' ? null : -1; S.live = true; setState('play'); setEndShown(false);
   $('start').hidden = true; $('end').hidden = true; $('look').hidden = true; $('pause').hidden = true; $('hud').hidden = false;
   const hb = $('hud').getBoundingClientRect ? $('hud').getBoundingClientRect() : null;
   setRadarTop(hb && hb.bottom ? hb.bottom + 6 : 120);
   if (LV.id === 'shibuya') { S.waveT = 1.5; }
-  if (!daily && mode !== 'race' && store.get('excuseme_tut', '0') !== '1') beginTut();
+  if (mode === 'classic' && store.get('excuseme_tut', '0') !== '1') beginTut();
   Music.start(LV.music); Music.ambStart(LV.id);
 }
 
@@ -271,6 +284,7 @@ export function pauseGame() {
   if (state !== 'play') return;
   setState('paused'); touches.clear(); Music.suspend();
   $('pauseEyebrow').textContent = (S.race ? 'Race · ' : '') + LV.city + ' · ' + LV.name + ' · ' + Math.floor(S.pz) + ' m';
+  $('restart').hidden = !!(S.daily || S.weekly);   // daily and weekly runs are one try
   $('pause').hidden = false;
 }
 

@@ -2,7 +2,7 @@ import { RIVAL_LINES } from '../config/colour.js';
 import { LV } from '../config/levels.js';
 import { R_PLAYER, walkSpeed } from '../config/tuning.js';
 import { R, clamp, pick, rnd, sgn } from '../config/util.js';
-import { S, state } from './state.js';
+import { S, goalOf, state } from './state.js';
 
 
 
@@ -105,7 +105,7 @@ export function updPeople(dt) {
     p.x += p.vx * dt; p.z += p.vz * dt;
     if (!p.free && Math.abs(p.x) > lim) { p.x = clamp(p.x, -lim, lim); if (p.locked) p.vx = 0; }
     if (p.exit && Math.abs(p.x) > (LV.id === 'shibuya' ? 14.5 : LV.half + 0.2)) p.dead = true;
-    if (p.z > LV.goal - 1.5 && p.hz > 0) { p.hz = -p.hz; p.dirz = -1; }
+    if (p.z > goalOf() - 1.5 && p.hz > 0) { p.hz = -p.hz; p.dirz = -1; }
     const sp = Math.hypot(p.vx, p.vz);
     let tx = null, tz = null;
     if (p.faceTo) { tx = p.faceTo[0]; tz = p.faceTo[1]; } else if (sp > 0.15) { tx = p.vx / sp; tz = p.vz / sp; }

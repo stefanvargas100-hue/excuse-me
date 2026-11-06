@@ -1,3 +1,4 @@
+import { goalOf } from '../sim/state.js';
 import { scl } from '../config/colour.js';
 import { FOGCSS, LV, mixc } from '../config/levels.js';
 import { TAU } from '../config/util.js';
@@ -35,7 +36,7 @@ export function label(str, x, y, px, color) {
 }
 
 export function forSegs(seg, far, cb) {
-  const kMax = Math.min(Math.floor(LV.goal / seg) - 1, Math.ceil((VZ + far) / seg));
+  const kMax = Math.min(Math.floor(goalOf() / seg) - 1, Math.ceil((VZ + far) / seg));
   const kMin = Math.floor(VZ / seg);
   for (let k = kMax; k >= kMin; k--) {
     const za = k * seg, zb = za + seg, da = Math.max(za - VZ, 0.2), db = zb - VZ;

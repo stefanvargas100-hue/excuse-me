@@ -6,10 +6,11 @@ import { init as initCamera } from './render/camera.js';
 import { drawPreview, init as initPreview } from './render/preview.js';
 import { render } from './render/render.js';
 import { shout } from './sim/actions.js';
-import { start, tick } from './sim/game.js';
+import { hasPlayed, start, tick } from './sim/game.js';
 import { runEvent } from './sim/people.js';
 import { S, reset, state } from './sim/state.js';
 import { buildLevels, hud, init as initMenus } from './ui/menus.js';
+import { weekKey } from './config/util.js';
 
 
 
@@ -44,6 +45,6 @@ reset();
 
 buildLevels();
 
-window.__excuse = { tick, reset, start, setLevel, get S() { return S; }, get state() { return state; }, keys, action, onTap, render, drawPreview, LEVELS, runEvent, shout };
+window.__excuse = { tick, reset, start, setLevel, get S() { return S; }, get state() { return state; }, keys, action, onTap, render, drawPreview, LEVELS, runEvent, shout, weekKey, hasPlayed };
 
 requestAnimationFrame(frame);

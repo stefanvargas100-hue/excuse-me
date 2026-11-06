@@ -1,12 +1,12 @@
 import { Music } from '../audio/music.js';
 import { LEVELS, LV, LVI, setLevel } from '../config/levels.js';
 import { CHAIN_WINDOW } from '../config/tuning.js';
-import { clamp, hashStr, todayKey } from '../config/util.js';
+import { clamp, todayKey, weekKey } from '../config/util.js';
 import { $ } from '../dom.js';
 import { starsOf } from '../save/progress.js';
 import { setVibOn, store, vibOn } from '../save/store.js';
-import { fmt, lastDaily, lastMode, pauseGame, resumeGame, start, startDaily, toMenu } from '../sim/game.js';
-import { ordinal, racePace, raceDifficulty, standings } from '../sim/race.js';
+import { dailyLevel, fmt, hasPlayed, lastDaily, lastMode, pauseGame, resumeGame, start, startDaily, startWeekly, toMenu, weeklyLevel } from '../sim/game.js';
+import { fmtTime, ordinal, raceBest, racePace, raceDifficulty, standings } from '../sim/race.js';
 import { S, bestOf, camBob, reset, setCamBob, setShowHB, showHB, state } from '../sim/state.js';
 import { endTut } from '../sim/tutorial.js';
 
@@ -16,30 +16,35 @@ import { endTut } from '../sim/tutorial.js';
 export function buildLevels() {
   const box = $('levels'); if (!box || !document.createElement) return;
   box.innerHTML = '';
-  const key = todayKey(), dl = LEVELS[hashStr(key + ':level') % LEVELS.length], dbest = parseInt(store.get('excuseme_daily_' + key, '0'), 10) || 0;
-  const d = document.createElement('button'); d.type = 'button'; d.className = 'lvl daily';
-  d.innerHTML = '<span class="lc"></span><span class="ln"></span><span class="lm"></span><span class="lb"></span>';
-  d.children[0].textContent = 'Daily run · ' + key;
-  d.children[1].textContent = dl.name;
-  d.children[2].textContent = dbest ? 'today ' + fmt(dbest) : 'Play';
-  d.children[3].textContent = 'Same seeded crowd for everyone today. Tap to start.';
-  d.addEventListener('click', startDaily);
-  box.appendChild(d);
+  const race = store.get('excuse_mode', 'classic') === 'race';
+  const card = cls => { const x = document.createElement('button'); x.type = 'button'; x.className = cls; x.innerHTML = '<span class="lc"></span><span class="ln"></span><span class="lm"></span><span class="lb"></span>'; return x; };
+  // Daily and weekly runs: endless, one try each, the same crowd for everyone.
+  const periodic = (mode, title, lvl, key, startFn, blurb) => {
+    const x = card('lvl daily'), done = hasPlayed(mode), best = parseInt(store.get('excuse' + 'me_' + mode + '_' + key, '0'), 10) || 0;
+    x.children[0].textContent = title + ' · ' + key;
+    x.children[1].textContent = LEVELS[lvl].name;
+    x.children[2].textContent = done ? (best ? fmt(best) + ' pts' : 'Played') : 'One try';
+    x.children[3].textContent = done ? (mode === 'daily' ? 'Played today. A new crowd arrives tomorrow.' : 'Played this week. A new crowd arrives on Monday.') : blurb;
+    if (done) { x.setAttribute('aria-disabled', 'true'); x.classList.add('done'); }
+    x.addEventListener('click', startFn);
+    box.appendChild(x);
+  };
+  periodic('daily', 'Daily run', dailyLevel(), todayKey(), startDaily, 'Go as far as you can. Same crowd for everyone today.');
+  periodic('weekly', 'Weekly run', weeklyLevel(), weekKey(), startWeekly, 'Go as far as you can. Same crowd for everyone this week.');
   LEVELS.forEach((L, i) => {
-    const b = document.createElement('button'); b.type = 'button'; b.className = 'lvl';
-    b.setAttribute('aria-pressed', String(i === LVI));
-    const best = bestOf(L.id);
-    b.innerHTML = '<span class="lc"></span><span class="ln"></span><span class="lm"></span><span class="lb"></span>';
-    b.children[0].textContent = (i + 1) + ' · ' + L.city;
-    b.children[1].textContent = L.name;
+    const x = card('lvl');
+    x.setAttribute('aria-pressed', String(i === LVI));
+    const best = bestOf(L.id), rb = raceBest(L.id);
+    x.children[0].textContent = (i + 1) + ' · ' + L.city;
+    x.children[1].textContent = L.name;
     const st = starsOf(L.id);
-    const lm = b.children[2], ss = document.createElement('span');
+    const lm = x.children[2], ss = document.createElement('span');
     lm.textContent = ''; ss.className = 'st'; ss.textContent = [1, 2, 4].map(bit => st & bit ? '★' : '☆').join('');
     lm.appendChild(ss); lm.appendChild(document.createElement('br'));
-    lm.appendChild(document.createTextNode(L.goal + ' m' + (best ? ' · ' + fmt(best) : '')));
-    b.children[3].textContent = L.blurb;
-    b.addEventListener('click', () => { setLevel(i); reset(); buildLevels(); });
-    box.appendChild(b);
+    lm.appendChild(document.createTextNode(race ? L.goal + ' m' + (rb ? ' · ' + fmtTime(rb) : '') : 'Endless' + (best ? ' · best ' + fmt(best) : '')));
+    x.children[3].textContent = L.blurb;
+    x.addEventListener('click', () => { setLevel(i); reset(); buildLevels(); });
+    box.appendChild(x);
   });
 }
 
@@ -50,7 +55,7 @@ export function hud() {
   if (state === 'ready') return;
   raceHud();
   const dm = Math.floor(S.pz);
-  if (dm !== last.dist) { last.dist = dm; $('dist').textContent = dm + ' / ' + LV.goal + ' m'; $('prog').style.width = (clamp(S.pz / LV.goal, 0, 1) * 100).toFixed(1) + '%'; }
+  if (dm !== last.dist) { last.dist = dm; $('dist').textContent = S.endless ? dm + ' m' + (dm < LV.goal ? ' / ' + LV.goal + ' m' : '') : dm + ' / ' + LV.goal + ' m'; $('prog').style.width = (clamp(S.pz / LV.goal, 0, 1) * 100).toFixed(1) + '%'; }
   // race mode shows your pace instead of a score: combo adds speed, low stamina takes it away
   const sc = S.race ? Math.round(racePace(S.chain, S.energy) * 100) : Math.floor(S.score);
   if (sc !== last.score || last.race !== !!S.race) {
@@ -73,7 +78,8 @@ export function hud() {
     $('chain').textContent = S.chain + ' chain';
   }
   if (S.chain > 0) $('cbar').style.width = (clamp(1 - (S.time - S.lastPassT) / CHAIN_WINDOW, 0, 1) * 100).toFixed(0) + '%';
-  const tl = S.race ? Math.floor(S.time) : Math.max(0, Math.ceil(S.timeLeft));
+  $('clock').style.visibility = S.endless ? 'hidden' : '';   // endless runs have no clock
+  const tl = S.race ? Math.floor(S.time) : S.endless ? 0 : Math.max(0, Math.ceil(S.timeLeft));
   if (tl !== last.tl) {
     last.tl = tl;
     const ck = $('clock');
@@ -117,8 +123,8 @@ function syncMode() {
 }
 
 export function init() {
-  $('modeClassic').addEventListener('click', () => { store.set('excuse_mode', 'classic'); syncMode(); });
-  $('modeRace').addEventListener('click', () => { store.set('excuse_mode', 'race'); syncMode(); });
+  $('modeClassic').addEventListener('click', () => { store.set('excuse_mode', 'classic'); syncMode(); buildLevels(); });
+  $('modeRace').addEventListener('click', () => { store.set('excuse_mode', 'race'); syncMode(); buildLevels(); });
   document.querySelectorAll('#raceOpts .chip').forEach((c, i) => c.addEventListener('click', () => { store.set('excuseme_botlvl', String(i)); syncMode(); }));
   syncMode();
   $('go').addEventListener('click', () => start(false, store.get('excuse_mode', 'classic')));
