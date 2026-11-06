@@ -1,0 +1,10 @@
+{
+  "name": "excuse-me",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Excuse Me: weave through the crowd without touching anyone.",
+  "scripts": {
+    "test": "node --test \"test/*.test.js\""
+  },
+  "engines": { "node": ">=20" }
+}

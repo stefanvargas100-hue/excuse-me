@@ -12,3 +12,4 @@
 - Spawning: nothing is drawn past 62 m and every spawn lands beyond 66 m, so people always walk in. Rivals spawn behind or far ahead. Tutorial-end crowd fades in.
 - Removed the on-screen control tips (hint box and HOLD/DASH labels); the tutorial and the start-screen How to play now teach controls. Radar moved to the bottom corner.
 - Online plan: shared-crowd races first, front-runner-wins cut-offs as a later step; own anonymous accounts and generated names before any Game Center sign-in.
+- Phase 2 work lives on branch phase-2 so the live game (served from main) stays stable for playtesters. Tests run headless in Node with a stub DOM (test/harness.js); CI runs npm test on every push.

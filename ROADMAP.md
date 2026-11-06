@@ -29,7 +29,7 @@ Installable from the browser, full screen, works offline. No app store needed.
 
 ## Phase 2: Set up a proper project (2–4 days)
 
-- [ ] `git init`, push to GitHub.
+- [x] `git init`, push to GitHub.
 - [ ] Tooling: Vite + TypeScript (optional but worth it as the code grows).
 - [ ] Split the IIFE into modules:
   - `config/` (tuning constants, levels)
@@ -38,8 +38,8 @@ Installable from the browser, full screen, works offline. No app store needed.
   - `render/` (camera, world painters, figures, HUD)
   - `audio/` (music, SFX, ambience)
   - `save/` (stars, bests, look, settings)
-- [ ] Move the node `vm` test harness and bot into `npm test` (headless sim, NaN checks, lane-formation check, daily-seed determinism).
-- [ ] Add CI (GitHub Actions) that runs the tests on every push.
+- [x] Move the node `vm` test harness and bot into `npm test` (headless sim, NaN checks, lane-formation check, daily-seed determinism).
+- [x] Add CI (GitHub Actions) that runs the tests on every push.
 - **Exit:** `npm run dev`, `npm test` and `npm run build` all work.
 
 ## Phase 2.5: Gameplay sprint and Race mode (after the playtest and Phase 2)
