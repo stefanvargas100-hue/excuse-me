@@ -168,6 +168,16 @@
 </div>
 
 <script type="module" src="./src/main.js"></script>
-<script>if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));</script>
+<script>
+if ("serviceWorker" in navigator) {
+  const had = !!navigator.serviceWorker.controller;
+  // When a newer version has been downloaded, switch to it on the menu screen (never in the middle of a run).
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    const menu = document.getElementById("start");
+    if (had && menu && !menu.hidden) location.reload();
+  });
+  addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+}
+</script>
 </body>
 </html>

@@ -28,3 +28,4 @@
 - UI restyled as hand-drawn: cream paper with notebook lines, thick ink outlines, wobbly corners, hard offset shadows, highlighter yellow. Fonts: Permanent Marker (headings) and Patrick Hand (text). The 3D scene itself is unchanged.
 - Colour scheme: Candy pop (deep purple ink, warm cream paper, hot and soft pink, teal, yellow, violet). Stamina bar shifts green, yellow, orange, red as it drops, and in a race a red tag shows the speed it is costing you. Bots get random names from a list of 100 (src/config/names.js).
 - Removed the notebook-line background from cards (plain cream paper).
+- Updates: when the installed app finds a newer version it switches to it automatically if you are on the menu screen (never mid-run); otherwise it applies on the next launch.
