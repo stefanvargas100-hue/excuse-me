@@ -123,7 +123,8 @@ function spawnUnit(z, d) {
     pool = [['oncoming', 5], ['walker', 3], ['pair', 2], ['phone', 1.5], ['diagonal', 2], ['luggage', 0.5]];
     if (d > 0.15) pool.push(['trio', 1], ['swerver', 1], ['speedster', 0.5]);
   }
-  const type = wpick(pool), dirv = R() < 0.5 ? 1 : -1;
+  let type = wpick(pool); const dirv = R() < 0.5 ? 1 : -1;
+  if (raceBuild && (type === 'crosser' || type === 'diagonal') && beltInfo(id) && beltHasZ(beltInfo(id), z)) type = 'walker';   // nobody cuts across the glass walls
   switch (type) {
     case 'walker': walker(z, 1); break;
     case 'oncoming': walker(z, -1, { lug: id === 'airport' && R() < 0.35 ? pick([-1, 1]) : 0 }); break;

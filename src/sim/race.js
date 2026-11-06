@@ -4,7 +4,7 @@ import { BASE, BOOST, CHAIN_WINDOW, LAT_ACC, LAT_MAX, REGEN, R_PLAYER } from '..
 import { clamp, mulberry32 } from '../config/util.js';
 import { REACT } from '../config/colour.js';
 import { BOT_NAMES } from '../config/names.js';
-import { BELT_SPEED, STRIP_SPEED, beltAt, onStrip } from '../config/strips.js';
+import { STRIP_SPEED, beltAt, beltSpeedAt, contain, onStrip } from '../config/strips.js';
 import { effects, fitOf, randomLoadout, statsOf } from '../config/stats.js';
 import { COST_DASH, DASH_T, DASH_V } from '../input/input.js';
 import { buzz, store } from '../save/store.js';
@@ -259,6 +259,7 @@ function think(b) {
   const wander = Math.sin(S.clock * 0.7 + b.seed) * lim * 0.45;
   let bestX = b.x, bestC = Infinity, danger = 99;
   for (let tx = -lim; tx <= lim + 1e-6; tx += 0.4) {
+    if (contain(LV.id, b.x, tx, b.z) !== tx) continue;   // behind the glass: not a place this bot can go
     let c = Math.abs(tx - b.x) * 0.18 + (Math.abs(tx - b.target) < 0.01 ? -0.25 : 0);
     const reachBase = Math.abs(tx - b.x);
     for (const p of S.people) {
@@ -289,8 +290,8 @@ function think(b) {
       }
       if (b.pressT > 0 && Math.abs(tx - S.px) < 0.8) c += 1.6 * fight;
       if (onStrip(LV.id, tx, b.z + 6)) c -= 1.1 * fight;
-      const bd = beltAt(LV.id, tx, b.z + 6);   // airport walkway: ride the belt that goes our way, on its passing side; keep off the other
-      if (bd > 0) c -= (tx < 2.9 ? 1.0 : 0.3) * fight;
+      const bd = beltAt(LV.id, tx, b.z + 10);   // airport walkway: plan the approach early (the glass is shut once you are alongside), aim for the middle of the passing lane
+      if (bd > 0) c -= (tx >= 2.25 && tx < 2.9 ? 1.0 : tx >= 2.9 ? 0.3 : 0.2) * fight;
       else if (bd < 0) c += 0.8 + 1.6 * fight;
     }
     if (c < bestC) { bestC = c; bestX = tx; }
@@ -323,8 +324,10 @@ function stepBot(b, dt) {
   if (stepDraft(b, b.x, b.z, b.bumpT > 0, dt) && b.draftWho === S) addPop(b.name.toUpperCase() + ' SLIPSTREAMED YOU', b.color, 22);
   const bTarget = (bursting ? BOOST : BASE) * b.pace * b.st.speed * weave * racePace(b.chain, b.energy) * draftMul(b) * (onStrip(LV.id, b.x, b.z) ? STRIP_SPEED : 1) * (b.bumpT > 0 ? BUMP_SPEED : 1);
   b.speed += (bTarget - b.speed) * Math.min(1, dt * (bTarget > b.speed ? b.st.accel : 5));
+  const bx0 = b.x;
   b.x = clamp(b.x + b.vx * dt, -lim, lim); b.z += b.speed * dt;
-  b.belt = BELT_SPEED * beltAt(LV.id, b.x, b.z); b.z += b.belt * dt;   // the walkway carries bots too
+  { const cx = contain(LV.id, bx0, b.x, b.z); if (cx !== b.x) { b.x = cx; b.vx = 0; } }   // glass railings lock bots on the walkway too
+  b.belt = beltSpeedAt(LV.id, b.x, b.z); b.z += b.belt * dt;   // the walkway carries bots too
   if (Math.abs(b.x) >= lim) b.vx = 0;
   // solid people
   if (b.ghostT <= 0) {

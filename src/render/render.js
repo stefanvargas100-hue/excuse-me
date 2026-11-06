@@ -6,7 +6,7 @@ import { CAM_BACK, CAM_UP, CX, F, H, HOR, VX, VY, VZ, W, setCX, setF, setHOR, se
 import { FONT } from './draw.js';
 import { drawPerson, rrect } from './figures.js';
 import { drawPops, radarTop, zoneGuide } from './hud.js';
-import { drawBelts, drawSlipstream, drawStrips } from './slipstream.js';
+import { drawBelts, drawGlass, drawSlipstream, drawStrips, glassPanels } from './slipstream.js';
 import { drawCars, paintAirport, paintNYC, paintShibuya } from './world.js';
 import { S, calm, camBob, state } from '../sim/state.js';
 
@@ -26,8 +26,8 @@ export function render() {
   drawBelts();
   drawStrips();
   for (const p of S.people) if (p.prop === 'spill') drawPerson(p);   // puddles lie under everyone
-  const list = S.people.filter(p => p.prop !== 'spill').concat([S.me], S.race ? S.race.bots : [], S.ghost ? [S.ghost] : []).sort((a, b) => b.z - a.z);
-  for (const p of list) drawPerson(p);
+  const list = S.people.filter(p => p.prop !== 'spill').concat([S.me], S.race ? S.race.bots : [], S.ghost ? [S.ghost] : [], glassPanels()).sort((a, b) => b.z - a.z);
+  for (const p of list) { if (p.glass) drawGlass(p); else drawPerson(p); }
   drawSlipstream();
   ctx.restore();
 

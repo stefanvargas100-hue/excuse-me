@@ -1,9 +1,9 @@
 import { LV } from '../config/levels.js';
-import { BELT_SPEED, beltInfo, stripHasZ, stripLane } from '../config/strips.js';
+import { BELT_BACK, BELT_SPEED, beltInfo, stripHasZ, stripLane } from '../config/strips.js';
 import { clamp } from '../config/util.js';
 import { ctx } from '../dom.js';
 import { F, VZ } from './camera.js';
-import { W3, fq } from './draw.js';
+import { W3, fq, wq } from './draw.js';
 import { draftCharge } from '../sim/race.js';
 import { S, state } from '../sim/state.js';
 
@@ -76,8 +76,8 @@ export function drawBelts() {
     const s0 = B.start + k * B.every, s1 = s0 + B.len, a = Math.max(s0, VZ + 0.4), b = Math.min(s1, VZ + VIEW);
     if (b <= a) continue;
     belt(B.fwd, 1, a, b); belt(B.rev, -1, a, b);
-    // handrails along both outer edges and the divider
-    for (const x of [B.rev[0], B.fwd[0], B.fwd[1]]) { ctx.globalAlpha = 1; fq(x - 0.07, x + 0.07, 0.03, a - VZ, b - VZ, '#aab3bf'); }
+    // floor rails under the glass on both outer edges, and a low rail on the open divider
+    for (const x of [B.fwd[0], B.fwd[1], B.rev[1]]) { ctx.globalAlpha = 1; fq(x - 0.07, x + 0.07, 0.03, a - VZ, b - VZ, '#aab3bf'); }
     // yellow comb plates where you step on and off
     for (const [z0, z1] of [[s0 - 0.5, s0], [s1, s1 + 0.5]]) { const za = Math.max(z0, VZ + 0.4), zb = Math.min(z1, VZ + VIEW); if (zb > za) { ctx.globalAlpha = 1; fq(B.rev[0], B.fwd[1], 0.025, za - VZ, zb - VZ, '#e8b931'); } }
   }
@@ -89,12 +89,12 @@ function belt(range, dir, a, b) {
   // rubber, in slices so the far end fades into the haze
   for (let z = a; z < b; z += 3) { const e = Math.min(b, z + 3); ctx.globalAlpha = fade((z + e) / 2); fq(x0, x1, 0.015, z - VZ, e - VZ, dir > 0 ? '#323a46' : '#413b48'); }
   // grooves that slide along the belt's way
-  const off = ((S.clock * BELT_SPEED * dir) % 0.6 + 0.6) % 0.6;
+  const sp = dir > 0 ? BELT_SPEED : -BELT_BACK, off = ((S.clock * sp) % 0.6 + 0.6) % 0.6;
   ctx.fillStyle = 'rgba(255,255,255,0.12)';
   for (let z = Math.ceil((a - off) / 0.6) * 0.6 + off; z < b - 0.07; z += 0.6) { if (z < a) continue; ctx.globalAlpha = fade(z); fq(x0 + 0.05, x1 - 0.05, 0.017, z - VZ, z + 0.07 - VZ, 'rgba(255,255,255,0.13)'); }
   // arrows showing which way it goes: teal for yours, orange for the one coming back
   ctx.fillStyle = dir > 0 ? '#2ec4b6' : '#ff8a5c';
-  const step = 3, aoff = ((S.clock * BELT_SPEED * dir) % step + step) % step, xi0 = x0 + 0.3, xi1 = x1 - 0.3, xm = mid;
+  const step = 3, aoff = ((S.clock * sp) % step + step) % step, xi0 = x0 + 0.3, xi1 = x1 - 0.3, xm = mid;
   for (let z = Math.ceil((a - aoff) / step) * step + aoff; z < b - 0.9; z += step) {
     if (z < a) continue;
     ctx.globalAlpha = fade(z) * 0.8;
@@ -103,4 +103,32 @@ function belt(range, dir, a, b) {
       : [W3(xi0, 0.02, z + 0.9), W3(xm, 0.02, z + 0.3), W3(xi1, 0.02, z + 0.9), W3(xi1, 0.02, z + 0.6), W3(xm, 0.02, z), W3(xi0, 0.02, z + 0.6)];
     ctx.beginPath(); p.forEach((q, i) => (i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]))); ctx.closePath(); ctx.fill();
   }
+}
+
+// Glass railings along both outer edges of every walkway stretch, cut into 2 m panels that are sorted in with the people so
+// someone standing in front of the glass is drawn over it and someone behind it is drawn under it.
+export function glassPanels() {
+  const B = S.race ? beltInfo(LV.id) : null, out = [];
+  if (!B) return out;
+  const k0 = Math.max(0, Math.floor((VZ - B.start - B.len) / B.every));
+  for (let k = k0; B.start + k * B.every < VZ + VIEW; k++) {
+    const s0 = B.start + k * B.every, s1 = s0 + B.len;
+    for (let z0 = s0; z0 < s1; z0 += 2) {
+      const z1 = Math.min(z0 + 2, s1);
+      if (z1 < VZ + 0.3 || z0 > VZ + VIEW) continue;
+      for (const x of [B.fwd[0], B.rev[1]]) out.push({ glass: true, z: (z0 + z1) / 2, z0, z1, x });
+    }
+  }
+  return out;
+}
+
+export function drawGlass(w) {
+  const a = Math.max(w.z0 - VZ, 0.25), b = w.z1 - VZ;
+  if (b <= a) return;
+  ctx.save(); ctx.globalAlpha = clamp((VZ + VIEW - w.z) / 14, 0, 1);
+  wq(w.x, 0.1, 1.05, a, b, 'rgba(170,215,235,0.28)');   // the glass
+  wq(w.x, 0, 0.1, a, b, '#4b5563');                      // steel skirt
+  wq(w.x, 1.05, 1.13, a, b, '#6b7683');                  // handrail
+  if (w.z0 - VZ >= 0.25) wq(w.x, 0, 1.13, a, a + 0.07, '#6b7683');   // post
+  ctx.restore();
 }

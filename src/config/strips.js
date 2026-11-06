@@ -10,7 +10,8 @@ export const STRIP_SPEED = 1.12;
 
 // Airport: a real moving walkway, two belts side by side. The right one goes your way and carries you, the left one goes the
 // other way. People ride on the right of their belt and walk on the left, like in an airport.
-export const BELT_SPEED = 1.2;   // m/s the belt itself moves
+export const BELT_SPEED = 1.2;   // m/s the belt that goes your way carries you
+export const BELT_BACK = 0.8;    // m/s the belt coming back pulls you: gentler than the other pushes, so going the wrong way is a setback, not a disaster
 const BELTS = { airport: { start: 30, every: 100, len: 46, fwd: [1.9, 3.9], rev: [3.9, 5.9] } };
 export const beltInfo = id => BELTS[id] || null;
 export const beltHasZ = (B, z) => z > B.start && (z - B.start) % B.every < B.len;
@@ -21,6 +22,19 @@ export const beltAt = (id, x, z) => {
   if (x > B.rev[0] && x <= B.rev[1]) return -1;
   return 0;
 };
+
+// How fast the belt under (x, z) moves along z: positive carries you forward, negative back, 0 on plain floor.
+export const beltSpeedAt = (id, x, z) => { const d = beltAt(id, x, z); return d > 0 ? BELT_SPEED : d < 0 ? -BELT_BACK : 0; };
+
+// Glass railings run along both outer edges of every walkway stretch. Anyone on the walkway is locked in, anyone beside it is locked out,
+// and the divider between the two belts is open. Given where you were (prevX) and where you want to be (x), returns where you end up.
+export function contain(id, prevX, x, z, m = 0.22) {
+  const B = BELTS[id]; if (!B || !beltHasZ(B, z)) return x;
+  const a = B.fwd[0], b = B.rev[1];
+  if (prevX < a) return Math.min(x, Math.max(prevX, a - m));
+  if (prevX > b) return Math.max(x, Math.min(prevX, b + m));
+  return Math.min(Math.max(x, Math.min(prevX, a + m)), Math.max(prevX, b - m));
+}
 
 export const stripLane = id => LANES[id] || null;
 export const stripHasZ = (L, z) => z > START && (z - START) % L.every < L.len;

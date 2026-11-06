@@ -1,6 +1,6 @@
 import { Music } from '../audio/music.js';
 import { LEVELS, LV, LVI, SPAWN_FAR, setLevel } from '../config/levels.js';
-import { BELT_SPEED, STRIP_SPEED, beltAt, onStrip, stripLane } from '../config/strips.js';
+import { STRIP_SPEED, beltAt, beltSpeedAt, contain, onStrip, stripLane } from '../config/strips.js';
 import { BASE, BOOST, CHAIN_WINDOW, LAT_ACC, LAT_MAX, REGEN } from '../config/tuning.js';
 import { R, clamp, hashStr, mulberry32, pick, rnd, setR, todayKey, weekKey } from '../config/util.js';
 import { $ } from '../dom.js';
@@ -56,13 +56,15 @@ function movePlayer(dt) {
     S.vx += clamp(steer * LAT_MAX - S.vx, -acc * dt, acc * dt);
   }
   if (S.sweepDir && S.vx * S.sweepDir < 0.3) { S.sweepDir = 0; S.sweepCount = 0; }
+  const px0 = S.px;
   S.px += S.vx * dt;
+  if (S.race) { const cx = contain(LV.id, px0, S.px, S.pz); if (cx !== S.px) { S.px = cx; S.vx = 0; } }   // glass railings on the airport walkway
   const lim = LV.half - 0.5;
   if (Math.abs(S.px) > lim) { S.px = clamp(S.px, -lim, lim); S.vx = 0; }
   S.pz += S.speed * dt;
   // moving walkway (airport races): the belt carries you along, or back
   const bd = S.race ? beltAt(LV.id, S.px, S.pz) : 0;
-  S.belt = bd * BELT_SPEED; S.pz += S.belt * dt;
+  S.belt = S.race ? beltSpeedAt(LV.id, S.px, S.pz) : 0; S.pz += S.belt * dt;
   if (bd !== (S.beltOn || 0)) { S.beltOn = bd; if (bd > 0) addPop('WALKWAY', '#2ec4b6', 24); else if (bd < 0) addPop('WRONG WAY', '#ff8a5c', 24); }
   const sn = Math.floor(S.step / Math.PI);
   if (sn !== S.stepN) { S.stepN = sn; Music.sfx('step'); }

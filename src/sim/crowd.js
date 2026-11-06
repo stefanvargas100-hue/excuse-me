@@ -1,5 +1,5 @@
 import { RIVAL_LINES } from '../config/colour.js';
-import { BELT_SPEED, beltAt } from '../config/strips.js';
+import { beltSpeedAt, contain } from '../config/strips.js';
 import { LV } from '../config/levels.js';
 import { R_PLAYER, walkSpeed } from '../config/tuning.js';
 import { R, clamp, pick, rnd, sgn } from '../config/util.js';
@@ -107,8 +107,12 @@ export function updPeople(dt) {
       else { const k = Math.max(0, 1 - dt * 6); p.vx *= k; p.vz *= k; }
     }
     if (p.aside > 0) p.aside -= dt;
+    const px0 = p.x;
     p.x += p.vx * dt; p.z += p.vz * dt;
-    if (S.race && LV.id === 'airport') p.z += BELT_SPEED * beltAt(LV.id, p.x, p.z) * dt;   // moving walkway carries everyone on it
+    if (S.race && LV.id === 'airport') {
+      p.z += beltSpeedAt(LV.id, p.x, p.z) * dt;   // moving walkway carries everyone on it
+      if (!p.free) { const cx = contain(LV.id, px0, p.x, p.z); if (cx !== p.x) { p.x = cx; p.vx = 0; } }   // and the glass keeps them on it, or off it
+    }
     if (!p.free && Math.abs(p.x) > lim) { p.x = clamp(p.x, -lim, lim); if (p.locked) p.vx = 0; }
     if (p.exit && Math.abs(p.x) > (LV.id === 'shibuya' ? 14.5 : LV.half + 0.2)) p.dead = true;
     if (p.z > goalOf() - 1.5 && p.hz > 0) { p.hz = -p.hz; p.dirz = -1; }
