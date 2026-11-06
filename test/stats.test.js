@@ -112,3 +112,37 @@ test('race: body changes real speed and recovery, classic ignores it', () => {
   const run = body => { const E = load(); E.LOOK.body = body; E.setLevel(0); E.start('classic'); runEmpty(E, 90); return [E.S.speed, E.S.pz]; };
   assert.deepStrictEqual(run('m'), run('f'));
 });
+
+const plain = { body: 'm', build: 'medium', shirtType: 'tee', pantsType: 'jeans', shoeType: 'sneakers', hat: 'cap', pack: 'pack' };
+const y2k = { ...plain, shirtType: 'baby', pantsType: 'flares', shoeType: 'platforms', hat: 'bucket', pack: 'fanny' };
+
+test('fit check: starter clothes earn nothing, matching pieces earn more up to a full set', () => {
+  const { fitOf } = load();
+  assert.strictEqual(fitOf(plain).boost, 0);
+  assert.strictEqual(fitOf({ ...plain, shirtType: 'baby', pantsType: 'flares' }).stylePts, 0, 'two pieces is not a look');
+  assert.strictEqual(fitOf({ ...plain, shirtType: 'baby', pantsType: 'flares', shoeType: 'platforms' }).stylePts, 1);
+  assert.strictEqual(fitOf({ ...y2k, pack: 'pack' }).stylePts, 2);
+  assert.strictEqual(fitOf(y2k).stylePts, 3);
+  assert.strictEqual(fitOf(y2k).boost, 3);
+});
+
+test('fit check: a mixed bag with a clear purpose earns a boost too, and the total never passes +3', () => {
+  const { fitOf } = load();
+  const mixed = { ...plain, shirtType: 'suit', pantsType: 'joggers', shoeType: 'runners' };   // three styles, all speed
+  const f = fitOf(mixed);
+  assert.ok(f.focusPts >= 1 && f.focus === 'Speed', JSON.stringify(f));
+  assert.ok(f.stylePts === 0 && f.boost >= 1);
+  const stacked = { ...plain, shirtType: 'jacket', pantsType: 'joggers', shoeType: 'runners', hat: 'visor', pack: 'sling' };
+  assert.ok(fitOf(stacked).boost <= 3);
+});
+
+test('fit check adds to all three stats, in races only, and a hidden headpiece still counts', () => {
+  const E = load();
+  const off = E.statsOf({ ...y2k, pack: 'pack' }), on = E.statsOf(y2k);
+  assert.ok(on.rec > off.rec - 1);
+  assert.strictEqual(E.fitOf({ ...y2k, showHead: '0' }).boost, 3);
+  const base = E.statsOf(plain), full = E.statsOf(y2k);
+  assert.ok(full.speed + full.accel + full.rec > base.speed + base.accel + base.rec, 'a full set is worth more than plain clothes');
+  const run = look => { const G = load(); Object.assign(G.LOOK, look); G.setLevel(0); G.start('classic'); for (let i = 0; i < 90; i++) { G.S.people.length = 0; G.S.nextChunk = 1e9; G.tick(DT); } return [G.S.speed, G.S.pz]; };
+  assert.deepStrictEqual(run(plain), run(y2k));
+});

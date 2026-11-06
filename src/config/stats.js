@@ -33,6 +33,35 @@ export const ITEM_STATS = {
   pack: { pack: NONE, sling: pts(0, 1, -1), jet: pts(0, 2, -2), fanny: pts(-1, 2, -1), messenger: pts(1, -1, 0), boombox: pts(-2, -1, 3) }
 };
 
+// Fit check: a race bonus to every stat for a good outfit, up to +3.
+// Style: 3 matching pieces earn 1, 4 earn 2, a full set of 5 earns 3. Plain starter clothes belong to no style.
+// Focus: gear that adds up to 4 or more in one stat earns 1, 7 or more earns 2, so a mixed bag with a clear purpose counts too.
+// A hidden headpiece still counts, as it does for stats.
+export const STYLE_NAMES = { y2k: 'Y2K', '80s': '80s', modern: 'Modern', formal: 'Formal', sport: 'Sport' };
+export const ITEM_STYLES = {
+  shirtType: { tank: 'sport', jacket: 'sport', hoodie: 'modern', baby: 'y2k', velour: 'y2k', wind: '80s', varsity: '80s', power: '80s formal', puffer: 'modern', dress: 'formal y2k', suit: 'formal' },
+  pantsType: { shorts: 'sport', joggers: 'sport', cargo: 'modern', track: '80s sport', flares: 'y2k', acid: '80s', parachute: '80s', slacks: 'formal', pleats: 'y2k formal', pencil: 'formal' },
+  shoeType: { runners: 'sport', boots: 'modern', slides: 'sport', hightops: '80s', dad: 'modern', platforms: 'y2k', heels: 'formal', oxfords: 'formal' },
+  hat: { beanie: 'modern', headphones: 'modern', shades: 'y2k', visor: 'sport', sweatband: '80s sport', bucket: 'y2k', fedora: 'formal', tiara: 'formal', crown: 'formal' },
+  pack: { sling: 'sport', fanny: 'y2k', messenger: 'modern formal', boombox: '80s', jet: 'modern' }
+};
+export const styleLabel = (key, val) => { const s = ITEM_STYLES[key] && ITEM_STYLES[key][val]; return s ? s.split(' ').map(x => STYLE_NAMES[x]).join('/') : ''; };
+
+export function fitOf(look) {
+  const counts = {}, gear = { speed: 0, accel: 0, rec: 0 };
+  for (const key in ITEM_STATS) {
+    const it = ITEM_STATS[key][look[key]] || NONE, tags = ITEM_STYLES[key][look[key]];
+    gear.speed += it.speed; gear.accel += it.accel; gear.rec += it.rec;
+    if (tags) for (const t of tags.split(' ')) counts[t] = (counts[t] || 0) + 1;
+  }
+  let style = null, count = 0;
+  for (const t in counts) if (counts[t] > count) { style = t; count = counts[t]; }
+  const stylePts = count >= 3 ? count - 2 : 0;
+  const top = Math.max(gear.speed, gear.accel, gear.rec), focusPts = top >= 7 ? 2 : top >= 4 ? 1 : 0;
+  const focus = !focusPts ? null : top === gear.speed ? 'Speed' : top === gear.accel ? 'Acceleration' : 'Recovery';
+  return { style, count, stylePts, focus, focusPts, boost: Math.min(3, stylePts + focusPts) };
+}
+
 const CAP = 10;   // no loadout can stack a stat past this many points
 const clampPts = v => Math.max(-CAP, Math.min(CAP, v));
 
@@ -44,7 +73,8 @@ export function statsOf(look) {
     const it = ITEM_STATS[key][look[key]] || NONE;
     speed += it.speed; accel += it.accel; rec += it.rec;
   }
-  return { speed: clampPts(speed), accel: clampPts(accel), rec: clampPts(rec) };
+  const fit = fitOf(look).boost;
+  return { speed: clampPts(speed + fit), accel: clampPts(accel + fit), rec: clampPts(rec + fit) };
 }
 
 // What the points do in a race.

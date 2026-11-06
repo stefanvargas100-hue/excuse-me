@@ -215,3 +215,8 @@ button.big:focus-visible, button.ghost:focus-visible, .toggle input:focus-visibl
 .chals li span { font-size: 17px; line-height: 1.15; }
 .chals li.done { background: #c6f1ec; }
 .chals .statb::after { display: none; }
+
+/* fit check */
+.fit { font-size: 14px; line-height: 1.1; padding: 3px 7px; border: 2px dashed var(--ink); border-radius: var(--wob-s); }
+.fit b { font-family: var(--display); font-weight: 400; }
+.fit.on { border-style: solid; background: var(--sign); }

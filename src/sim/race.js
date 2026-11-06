@@ -4,7 +4,7 @@ import { BASE, BOOST, CHAIN_WINDOW, LAT_ACC, LAT_MAX, REGEN, R_PLAYER } from '..
 import { clamp, mulberry32 } from '../config/util.js';
 import { REACT } from '../config/colour.js';
 import { BOT_NAMES } from '../config/names.js';
-import { effects, randomLoadout, statsOf } from '../config/stats.js';
+import { effects, fitOf, randomLoadout, statsOf } from '../config/stats.js';
 import { COST_DASH, DASH_T, DASH_V } from '../input/input.js';
 import { buzz, store } from '../save/store.js';
 import { banner } from './actions.js';
@@ -117,7 +117,11 @@ export function raceCountdown(dt) {
   if (sec !== R.countLast) {
     R.countLast = sec;
     if (sec > 0) { addPop(String(sec), '#ffffff', 56); Music.sfx('tick'); }
-    else { addPop('GO!', '#27c27a', 60); Music.sfx('combo'); buzz(20); }
+    else {
+      addPop('GO!', '#27c27a', 60); Music.sfx('combo'); buzz(20);
+      const fit = fitOf(LOOK).boost;
+      if (fit) addPop('FIT CHECK +' + fit, '#ff6b9d', 30);
+    }
   }
 }
 

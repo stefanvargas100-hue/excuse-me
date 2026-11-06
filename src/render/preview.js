@@ -1,4 +1,4 @@
-import { BODIES, BUILDS, ITEM_STATS, STAT_CAP, statHint, statPercents, statsOf } from '../config/stats.js';
+import { BODIES, BUILDS, ITEM_STATS, STYLE_NAMES, fitOf, styleLabel, STAT_CAP, statHint, statPercents, statsOf } from '../config/stats.js';
 import { $, ctx, setCtx } from '../dom.js';
 import { CX, DPR, F, H, HOR, VX, VY, VZ, W, setCX, setF, setH, setHOR, setVX, setVY, setVZ, setW } from './camera.js';
 import { drawPerson } from './figures.js';
@@ -23,7 +23,11 @@ function renderStats(tryOn) {
     const label = tryOn && s[key] !== now[key] ? fmtPct(was[key]) + ' to ' + fmtPct(pc[key]) : fmtPct(pc[key]);
     return '<div class="stat"><div class="statl"><span>' + name + '</span><span class="' + cls + '">' + label + '</span></div><div class="statb"><i class="' + cls + '" style="width:' + ((points + STAT_CAP) / (2 * STAT_CAP) * 100).toFixed(0) + '%"></i></div></div>';
   };
-  box.innerHTML = '<div class="statn">' + (tryOn ? 'If you wore it' : 'Race stats') + '</div>' + row('Top speed', 'speed') + row('Acceleration', 'accel') + row('Recovery', 'rec');
+  const fit = fitOf({ ...LOOK, ...tryOn }), why = [];
+  if (fit.stylePts) why.push(fit.count === 5 ? 'Full ' + STYLE_NAMES[fit.style] + ' set' : fit.count + ' ' + STYLE_NAMES[fit.style] + ' pieces');
+  if (fit.focusPts) why.push(fit.focus + ' focus');
+  const fitRow = '<div class="fit' + (fit.boost ? ' on' : '') + '"><b>Fit check ' + (fit.boost ? '+' + fit.boost : '0') + '</b> ' + (why.join(', ') || 'Match 3 pieces, or stack one stat') + '</div>';
+  box.innerHTML = '<div class="statn">' + (tryOn ? 'If you wore it' : 'Race stats') + '</div>' + row('Top speed', 'speed') + row('Acceleration', 'accel') + row('Recovery', 'rec') + fitRow;
 }
 
 // Try on a locked item: the character and bars change, nothing is equipped, and the challenge for it is shown.
@@ -73,7 +77,7 @@ function buildLook() {
       else {
         b.className = 'chip'; b.textContent = v[1];
         const stats = o.key === 'body' ? BODIES[val] : o.key === 'build' ? BUILDS[val] : ITEM_STATS[o.key] && ITEM_STATS[o.key][val];
-        if (stats) { const hint = document.createElement('small'); hint.textContent = statHint(stats); b.appendChild(hint); }
+        if (stats) { const hint = document.createElement('small'); const tag = styleLabel(o.key, val); hint.textContent = (tag ? tag + ' · ' : '') + statHint(stats); b.appendChild(hint); }
       }
       if (locked) {
         b.classList.add('locked');

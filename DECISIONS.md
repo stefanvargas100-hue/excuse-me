@@ -43,3 +43,4 @@
 - Tapping a locked item tries it on: the character and stat bars change, nothing is equipped, and the challenge and progress show. A Challenges screen lists everything, closest to done first, with each reward's stats.
 - Clothing catalogue: 28 new unlockable pieces across Y2K, 80s, modern and formal, in tops, bottoms, shoes, headpieces and bags, all free to mix. A dress or skirt hangs over whatever is below it. All stat trade-offs add to zero.
 - Stat categories: staying at three for now. Bars with real percentages are on the customize screen.
+- Fit check (race only): up to +3 points on all three stats, the one reward that is not a zero-sum trade-off. Style: 3 matching pieces +1, 4 +2, full set of 5 +3 (Y2K, 80s, Modern, Formal, Sport; plain starter clothes have no style). Focus: gear adding up to 4+ in one stat +1, 7+ +2, so a purposeful mixed bag also qualifies. Hidden headpieces count. Bots get it under the same rules.
