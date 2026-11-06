@@ -145,12 +145,12 @@ export const Music = (() => {
       if (!ac || !enabled || ac.state !== 'running') return;
       if (!windO) {
         windO = ac.createOscillator(); windG = ac.createGain(); const f = ac.createBiquadFilter();
-        windO.type = 'sine'; f.type = 'bandpass'; f.frequency.value = 1500; f.Q.value = 0.8; windG.gain.value = 0;
+        windO.type = 'sine'; f.type = 'lowpass'; f.frequency.value = 900; f.Q.value = 0.3; windG.gain.value = 0;
         windO.connect(f); f.connect(windG); windG.connect(sfxBus); windO.start();
       }
       const t = ac.currentTime;
-      windG.gain.setTargetAtTime(level > 0.03 ? 0.02 + 0.09 * level : 0, t, 0.08);
-      windO.frequency.setTargetAtTime(700 + 1400 * level, t, 0.1);
+      windG.gain.setTargetAtTime(level > 0.03 ? 0.008 + 0.03 * level : 0, t, 0.15);
+      windO.frequency.setTargetAtTime(320 + 380 * level, t, 0.2);
     },
     suspend() { if (ac && ac.suspend) ac.suspend(); },
     resume() { if (ac && ac.resume && playing) ac.resume(); }

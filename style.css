@@ -18,12 +18,14 @@
   --line: 3px solid var(--ink);
   color-scheme: light;
 }
-html, body { height: 100%; margin: 0; background: var(--paper2); overflow: hidden; overscroll-behavior: none; }
+html, body { height: 100%; margin: 0; background: var(--haze); overflow: hidden; overscroll-behavior: none; }
+html { position: fixed; inset: 0; width: 100%; height: 100vh; height: 100dvh; }   /* fill the whole phone screen so no page colour shows as a bar */
+body { position: fixed; inset: 0; height: 100%; }
 body {
   font-family: var(--body); font-size: 18px; color: var(--ink);
   -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
 }
-#game { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; background: var(--haze); }
+#game { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; background: var(--haze); }
 
 /* ---- in-game HUD: little paper stickers on top of the scene ---- */
 #hud {
