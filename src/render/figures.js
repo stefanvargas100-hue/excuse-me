@@ -325,7 +325,7 @@ export function drawPerson(p) {
   if (bx < -s * 3 || bx > W + s * 3) return;
   const fy = HOR + VY * s;
   // fog in the distance; fade people right in front of the camera so they never block your character
-  const ghost = (p.isMe ? S.ghostT : p.ghostT) > 0 ? 0.5 + 0.25 * Math.sin(S.clock * 30) : 1;   // race mode: blink while you can pass through people
+  const ghost = (p.isMe ? S.ghostT : p.ghostT) > 0 ? 0.5 + 0.25 * Math.sin(S.clock * 30) : 1;   // race mode: blink during the rare safety slip-through
   ctx.globalAlpha = Math.min(fogA(dz), p.isMe ? 1 : clamp((dz - 0.6) / 1.6, 0.22, 1), clamp((DRAW_FAR - dz) / 8, 0, 1), p.fadeT === undefined ? 1 : p.fadeT / 0.9) * ghost;
   if (p.prop !== 'spill') {
     ctx.fillStyle = LV.night ? 'rgba(0,0,0,0.35)' : 'rgba(15,27,45,0.18)';

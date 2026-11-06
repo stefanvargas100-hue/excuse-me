@@ -20,12 +20,13 @@ function stub() {
 }
 
 function load(sourceFile) {
+  const listeners = [];   // window listeners, so tests can fire keyboard events like a browser would
   // the game is ES modules; bundle them into one script so each load() gets its own independent copy of the game state
   const code = esbuild.buildSync({ entryPoints: [sourceFile || path.join(__dirname, '..', 'src', 'main.js')], bundle: true, format: 'iife', write: false, logLevel: 'silent' }).outputFiles[0].text;
   const store = { excuseme_tut: '1' };   // skip the first-run tutorial
   const win = {
     innerWidth: 390, innerHeight: 844, devicePixelRatio: 2,
-    addEventListener() {}, removeEventListener() {},
+    addEventListener(type, fn) { listeners.push([type, fn]); }, removeEventListener() {},
     matchMedia: () => ({ matches: false, addEventListener() {} }),
     requestAnimationFrame() { return 0; }, cancelAnimationFrame() {},
     AudioContext: undefined, webkitAudioContext: undefined
@@ -42,6 +43,9 @@ function load(sourceFile) {
   sandbox.globalThis = sandbox; Object.assign(win, sandbox.window);
   vm.createContext(sandbox);
   vm.runInContext(code, sandbox, { filename: 'game-bundle.js' });
-  return sandbox.window.__excuse || win.__excuse;
+  const E = sandbox.window.__excuse || win.__excuse;
+  E.storage = store;   // the fake localStorage, so tests can pick settings such as bot difficulty
+  E.fire = (type, ev) => { for (const [t, fn] of listeners) if (t === type) fn(Object.assign({ preventDefault() {}, repeat: false }, ev)); };
+  return E;
 }
 module.exports = { load, stub };

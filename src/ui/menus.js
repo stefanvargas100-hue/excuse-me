@@ -6,7 +6,7 @@ import { $ } from '../dom.js';
 import { starsOf } from '../save/progress.js';
 import { setVibOn, store, vibOn } from '../save/store.js';
 import { fmt, lastDaily, lastMode, pauseGame, resumeGame, start, startDaily, toMenu } from '../sim/game.js';
-import { ordinal, raceDifficulty, standings } from '../sim/race.js';
+import { ordinal, racePace, raceDifficulty, standings } from '../sim/race.js';
 import { S, bestOf, camBob, reset, setCamBob, setShowHB, showHB, state } from '../sim/state.js';
 import { endTut } from '../sim/tutorial.js';
 
@@ -51,8 +51,13 @@ export function hud() {
   raceHud();
   const dm = Math.floor(S.pz);
   if (dm !== last.dist) { last.dist = dm; $('dist').textContent = dm + ' / ' + LV.goal + ' m'; $('prog').style.width = (clamp(S.pz / LV.goal, 0, 1) * 100).toFixed(1) + '%'; }
-  const sc = Math.floor(S.score);
-  if (sc !== last.score) { last.score = sc; $('score').textContent = fmt(sc); }
+  // race mode shows your pace instead of a score: combo adds speed, low stamina takes it away
+  const sc = S.race ? Math.round(racePace(S.chain, S.energy) * 100) : Math.floor(S.score);
+  if (sc !== last.score || last.race !== !!S.race) {
+    last.score = sc; last.race = !!S.race;
+    $('score').textContent = S.race ? sc + '%' : fmt(sc);
+    const lab = $('score').previousElementSibling; if (lab) lab.textContent = S.race ? 'PACE' : 'SCORE';
+  }
   const en = Math.round(S.energy);
   if (en !== last.en) { last.en = en; $('en').style.width = en + '%'; }
   if (S.exhausted !== last.low) { last.low = S.exhausted; $('en').classList.toggle('low', S.exhausted); }

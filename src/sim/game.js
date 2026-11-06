@@ -12,7 +12,7 @@ import { collide, updMe, updPeople } from './crowd.js';
 import { genChunk, runEvent, scramble, spawnFast, spawnRival, updXings, walker } from './people.js';
 import { addPop, onPass } from './scoring.js';
 import { S, bestOf, endShown, reset, setEndShown, setState, state } from './state.js';
-import { BUMP_SPEED, finishRace, fmtTime, initRace, leadZ, ordinal, raceBest, raceBump, raceCountdown, rearZ, updRace } from './race.js';
+import { BUMP_SPEED, finishRace, fmtTime, initRace, leadZ, ordinal, raceBest, raceCollide, raceCountdown, racePace, rearZ, updRace } from './race.js';
 import { updCars } from './traffic.js';
 import { beginTut, tutTick } from './tutorial.js';
 import { buildLevels, last } from '../ui/menus.js';
@@ -23,21 +23,21 @@ import { buildLevels, last } from '../ui/menus.js';
 function movePlayer(dt) {
   let steer = 0;
   for (const z of touches.values()) steer += z === 'L' ? -1 : 1;
-  if (keys.l) steer -= 1;
-  if (keys.r) steer += 1;
+  steer += keys.l && keys.r ? (keys.last === 'l' ? -1 : 1) : keys.l ? -1 : keys.r ? 1 : 0;   // both keys down: the newest one wins, so a stuck key cannot cancel you
   steer = clamp(steer, -1, 1);
   S.shoutCD = Math.max(0, S.shoutCD - dt);
   if (S.slipT > 0) { S.slipT -= dt; steer = 0; }
   if (S.tut) S.tutHold = steer > 0 ? Math.max(0, S.tutHold) + dt : steer < 0 ? Math.min(0, S.tutHold) - dt : 0;
   S.burstT -= dt; S.dashT -= dt; S.dashCool -= dt; S.flash -= dt;
-  S.bumpT = Math.max(0, S.bumpT - dt); S.ghostT = Math.max(0, S.ghostT - dt);   // race mode only: after a bump you are slow, then briefly able to pass through people
+  S.bumpT = Math.max(0, S.bumpT - dt); S.ghostT = Math.max(0, S.ghostT - dt);   // race mode only: a bump leaves you slow for a moment
   const bursting = S.burstT > 0 && S.bumpT <= 0;
   if (!bursting && S.dashT <= 0) S.energy = Math.min(100, S.energy + REGEN * dt);
   S.exhausted = S.energy < COST_DASH || S.flash > 0;
   S.boostV += ((bursting ? 1 : 0) - S.boostV) * Math.min(1, dt * 8);
   if (S.boostV < 0.2) S.boostPasses = 0;
   const weave = 1 - 0.14 * Math.min(1.4, Math.abs(S.vx) / LAT_MAX);   // weaving costs a little forward speed
-  S.speed += ((bursting ? BOOST : BASE) * weave * (S.bumpT > 0 ? BUMP_SPEED : 1) - S.speed) * Math.min(1, dt * 5);
+  const pace = S.race ? racePace(S.chain, S.energy) : 1;   // race mode: combo speeds you up, low stamina slows you down
+  S.speed += ((bursting ? BOOST : BASE) * weave * pace * (S.bumpT > 0 ? BUMP_SPEED : 1) - S.speed) * Math.min(1, dt * 5);
   if (S.dashT > 0) S.vx = S.dashDir * DASH_V;
   else if (S.slipT > 0) S.vx *= Math.max(0, 1 - dt * 0.4);   // sliding: no grip
   else {
@@ -105,8 +105,8 @@ export function tick(dt) {
     updPeople(dt);
     if (S.race) updRace(dt);
     S.people = S.people.filter(p => !p.dead && p.z > rearZ() - 16);
-    const hit = S.ghostT > 0 ? null : collide();
-    if (hit) { if (S.race) raceBump(hit); else { lose(hit); return; } }
+    if (S.race) raceCollide(dt);   // race: people are solid, you are stopped and slowed
+    else { const hit = collide(); if (hit) { lose(hit); return; } }
     for (const p of S.people) {
       const dz = p.z - S.pz;
       if (!p.passed && p.prevDz > 0 && dz <= 0) { p.passed = true; onPass(p); }

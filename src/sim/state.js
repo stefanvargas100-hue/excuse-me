@@ -23,7 +23,7 @@ export function reset() {
         burstT: 0, dashT: 0, dashCool: 0, dashDir: 0, flash: 0, lastDashT: -9,
         meProxy: { x: 0, z: 0, vx: 0, vz: 0, prop: null },
         slow: 0, slowT: 0, breakFlash: 0, multPrev: 1, stepN: 0,
-        bumpT: 0, ghostT: 0, bumps: 0, race: null, mode: 'classic',
+        bumpT: 0, ghostT: 0, bumpCool: 0, blockT: 0, bumps: 0, race: null, mode: 'classic',
         timeLeft: LV.limit, timeout: false, lastSec: 99, shoutCD: 0, slipT: 0, eventT: 16, rush: false, rushT: rnd(28, 40), rushSpawn: 0, banner: null };
   touches.clear(); keys.l = keys.r = false; setPendingDash(null); setLastBoth(-9999);
   S.me = makeMe();
