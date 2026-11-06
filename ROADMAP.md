@@ -42,6 +42,15 @@ Installable from the browser, full screen, works offline. No app store needed.
 - [ ] Add CI (GitHub Actions) that runs the tests on every push.
 - **Exit:** `npm run dev`, `npm test` and `npm run build` all work.
 
+## Phase 2.5: Gameplay sprint and Race mode (after the playtest and Phase 2)
+
+Fix what the playtest shows first, then add one mechanic at a time and playtest each.
+
+- [ ] **Race mode (A to B):** a bump slows you down instead of ending the run. First to the finish wins. Playable solo against a ghost or bots, so it can be tuned with no server.
+- [ ] Tune the slowdown (length, how much, recovery) so a bump hurts but a comeback is possible.
+- [ ] Decide how race results are scored (finish time), separate from classic score runs.
+- **Exit:** a race against a ghost that friends call fun, and a bump that feels fair.
+
 ## Phase 3: Wrap as a native app with Capacitor (3–5 days)
 
 Capacitor packages the web build inside a native iOS/Android shell.
@@ -78,16 +87,27 @@ Capacitor packages the web build inside a native iOS/Android shell.
 - [ ] Privacy policy page (required by both stores, even if you collect nothing).
 - **Exit:** a build you would hand to a stranger without explaining anything.
 
-## Phase 6: Online features (optional, 1–3 weeks)
+## Phase 6: Online features (after Race mode is fun)
 
-Only after the core is fun. The daily run already uses a seeded crowd, so it is ready for a shared leaderboard.
+Decisions made: anonymous accounts with generated names first (works on web and phone, one leaderboard for everyone); Game Center / Apple / Google sign-in added later when the store apps exist. Live races use a shared crowd (same seed for everyone). Lobbies: 1v1, and a 4–8 player race, joined by invite link first.
 
+**6a. Leaderboards (1–2 weeks)**
 - [ ] Backend: Firebase, Supabase or Cloudflare Workers + KV. Keep it small.
-- [ ] Anonymous sign-in (device ID) first. Add Apple/Google sign-in later if needed.
-- [ ] Daily leaderboard (same seed, so scores are comparable) and friends-only boards.
-- [ ] Basic anti-cheat: submit the seed, a replay of inputs and the score. The server re-simulates, or at least sanity-checks the score against the replay. Do not trust a raw score.
-- [ ] Privacy-friendly analytics: levels started, finished, where runs end, tutorial drop-off. This feeds balancing.
-- [ ] Crash reporting (Sentry or Firebase Crashlytics).
+- [ ] Anonymous account per device with a generated name. Custom names later, with a profanity filter.
+- [ ] Boards: daily run, weekly run (same seeded crowd for the whole week), and one per stage.
+- [ ] Anti-cheat: submit the seed, an input recording and the score; the server re-checks. Never trust a raw score.
+- [ ] Privacy-friendly analytics and crash reporting (Sentry or Firebase Crashlytics).
+
+**6b. Live lobbies (2–4 weeks)**
+- [ ] Invite-link lobbies: 1v1, then 4–8 players. Everyone runs the same seeded crowd; others appear as see-through runners. Finish order decides the winner.
+- [ ] Ongoing server cost: watch the free tier.
+
+**6c. Cut-offs between players (about 1 week, after 6b)**
+- [ ] Rule: when two runners overlap, the one in front keeps going and the one behind slows (same logic as rivals). Each phone applies it to itself, no server referee.
+- [ ] Known limit: network delay can make tight contacts feel unfair. Fine for friends; revisit before any ranked play.
+
+**6d. Later**
+- [ ] Public matchmaking, Game Center / Apple / Google sign-in, ranked play.
 
 ## Phase 7: Release (1–3 weeks, mostly waiting on review)
 
@@ -120,6 +140,7 @@ Only after the core is fun. The daily run already uses a seeded crowd, so it is 
 | Keep web tech or rewrite in Unity/Godot? | Keep web + Capacitor. The game is 2D canvas pseudo-3D and already works. Rewrite only if profiling shows you cannot reach 60 fps. |
 | JavaScript or TypeScript? | TypeScript once you split into modules. It catches the exact kind of bugs we hit (undefined colours, NaN). |
 | iOS and Android together? | Ship Android and PWA first if you have no Mac. Add iOS when you can build on one. |
+| Sign-in for leaderboards? | Own anonymous accounts first; add Apple/Google sign-in with the store apps. |
 | Free or paid? | Decide after Phase 0–1 feedback. |
 
 ## Known risks
@@ -134,8 +155,8 @@ Only after the core is fun. The daily run already uses a seeded crowd, so it is 
 
 1. Phase 0, then Phase 1 (PWA) for fast real-world feedback.
 2. Phase 2 (project structure) before the code grows further.
-3. Phase 3 and Phase 4 together, since you need real-device testing for both.
-4. Phase 5, then beta (Phase 7), then Phase 6 only if players want it.
+3. Phase 2.5 (gameplay sprint and Race mode), then Phase 3 and Phase 4 together, since you need real-device testing for both.
+4. Phase 5, then beta (Phase 7). Phase 6 (online) can start earlier, once Race mode is fun.
 
 ## Rough timeline (solo, part-time)
 
