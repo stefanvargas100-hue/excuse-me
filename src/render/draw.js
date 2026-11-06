@@ -26,7 +26,7 @@ export const cq = (x0, x1, y0, y1, d, col) => poly([[x0, y0, d], [x1, y0, d], [x
  // faces the camera
 export const sub = (z0, z1) => [Math.max(z0 - VZ, 0.2), z1 - VZ];
 
-export const FONT = "'Barlow Condensed','Arial Narrow',sans-serif";
+export const FONT = "'Patrick Hand','Comic Sans MS',cursive,sans-serif";
 
 export function label(str, x, y, px, color) {
   if (px < 8) return;

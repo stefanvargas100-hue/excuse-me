@@ -25,3 +25,4 @@
 - Stuck-on-wall fix: a missed key release or touch end could leave a phantom direction that cancelled your real input (left + right = nothing) and pinned you to a wall. Newest key now wins, and focus loss or any touch end releases everything. Reproduced in a test first.
 - Race pace: combos add speed (+2.5% per level, up to +17.5% at x8); low stamina slows walking (up to -20% at zero). Same rules for bots. The race HUD shows PACE % instead of score.
 - Bots: look further ahead, plan overtakes early, drift side to side on clear road, dash around trouble and burst on clear road. Hard: faster, almost never miss people, dash readily.
+- UI restyled as hand-drawn: cream paper with notebook lines, thick ink outlines, wobbly corners, hard offset shadows, highlighter yellow. Fonts: Permanent Marker (headings) and Patrick Hand (text). The 3D scene itself is unchanged.
