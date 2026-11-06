@@ -12,7 +12,7 @@ import { collide, updMe, updPeople } from './crowd.js';
 import { genChunk, runEvent, scramble, seeded, spawnFast, spawnRival, updXings, walker } from './people.js';
 import { addPop, onPass } from './scoring.js';
 import { S, bestOf, endShown, goalOf, reset, setEndShown, setState, state } from './state.js';
-import { BUMP_SPEED, finishRace, fmtTime, initRace, leadZ, ordinal, raceBest, raceCollide, raceCountdown, racePace, rearZ, updRace } from './race.js';
+import { BUMP_SPEED, draftMul, finishRace, fmtTime, initRace, leadZ, ordinal, raceBest, raceCollide, raceCountdown, racePace, rearZ, updRace } from './race.js';
 import { updCars } from './traffic.js';
 import { beginTut, tutTick } from './tutorial.js';
 import { buildLevels, last } from '../ui/menus.js';
@@ -31,17 +31,19 @@ function movePlayer(dt) {
   S.burstT -= dt; S.dashT -= dt; S.dashCool -= dt; S.flash -= dt;
   S.bumpT = Math.max(0, S.bumpT - dt); S.ghostT = Math.max(0, S.ghostT - dt);   // race mode only: a bump leaves you slow for a moment
   const bursting = S.burstT > 0 && S.bumpT <= 0;
-  if (!bursting && S.dashT <= 0) S.energy = Math.min(100, S.energy + REGEN * dt);
+  const st = S.race ? S.race.me : null;   // stats only ever apply in a race
+  if (!bursting && S.dashT <= 0) S.energy = Math.min(100, S.energy + REGEN * (st ? st.regen : 1) * dt);
   S.exhausted = S.energy < COST_DASH || S.flash > 0;
-  S.boostV += ((bursting ? 1 : 0) - S.boostV) * Math.min(1, dt * 8);
+  S.boostV += ((bursting || S.draftT > 0 ? 1 : 0) - S.boostV) * Math.min(1, dt * 8);
   if (S.boostV < 0.2) S.boostPasses = 0;
   const weave = 1 - 0.14 * Math.min(1.4, Math.abs(S.vx) / LAT_MAX);   // weaving costs a little forward speed
-  const pace = S.race ? racePace(S.chain, S.energy) : 1;   // race mode: combo speeds you up, low stamina slows you down
-  S.speed += ((bursting ? BOOST : BASE) * weave * pace * (S.bumpT > 0 ? BUMP_SPEED : 1) - S.speed) * Math.min(1, dt * 5);
+  const pace = S.race ? racePace(S.chain, S.energy) * draftMul(S) : 1;   // race mode: combo speeds you up, low stamina slows you down
+  const target = (bursting ? BOOST : BASE) * weave * pace * (st ? st.speed : 1) * (S.bumpT > 0 ? BUMP_SPEED : 1);
+  S.speed += (target - S.speed) * Math.min(1, dt * (st && target > S.speed ? st.accel : 5));
   if (S.dashT > 0) S.vx = S.dashDir * DASH_V;
   else if (S.slipT > 0) S.vx *= Math.max(0, 1 - dt * 0.4);   // sliding: no grip
   else {
-    const acc = Math.abs(S.vx) > LAT_MAX ? LAT_ACC * 2.2 : LAT_ACC;   // shed dash speed quickly
+    const acc = (Math.abs(S.vx) > LAT_MAX ? LAT_ACC * 2.2 : LAT_ACC) * (st ? st.lat : 1);   // shed dash speed quickly
     S.vx += clamp(steer * LAT_MAX - S.vx, -acc * dt, acc * dt);
   }
   if (S.sweepDir && S.vx * S.sweepDir < 0.3) { S.sweepDir = 0; S.sweepCount = 0; }

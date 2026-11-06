@@ -6,7 +6,7 @@ import { $ } from '../dom.js';
 import { starsOf } from '../save/progress.js';
 import { setVibOn, store, vibOn } from '../save/store.js';
 import { dailyLevel, fmt, hasPlayed, lastDaily, lastMode, pauseGame, resumeGame, start, startDaily, startWeekly, toMenu, weeklyLevel } from '../sim/game.js';
-import { fmtTime, ordinal, raceBest, racePace, raceDifficulty, standings } from '../sim/race.js';
+import { draftCharge, draftMul, fmtTime, ordinal, raceBest, racePace, raceDifficulty, standings } from '../sim/race.js';
 import { S, bestOf, camBob, reset, setCamBob, setShowHB, showHB, state } from '../sim/state.js';
 import { endTut } from '../sim/tutorial.js';
 
@@ -57,7 +57,7 @@ export function hud() {
   const dm = Math.floor(S.pz);
   if (dm !== last.dist) { last.dist = dm; $('dist').textContent = S.endless ? dm + ' m' + (dm < LV.goal ? ' / ' + LV.goal + ' m' : '') : dm + ' / ' + LV.goal + ' m'; $('prog').style.width = (clamp(S.pz / LV.goal, 0, 1) * 100).toFixed(1) + '%'; }
   // race mode shows your pace instead of a score: combo adds speed, low stamina takes it away
-  const sc = S.race ? Math.round(racePace(S.chain, S.energy) * 100) : Math.floor(S.score);
+  const sc = S.race ? Math.round(racePace(S.chain, S.energy) * draftMul(S) * 100) : Math.floor(S.score);
   if (sc !== last.score || last.race !== !!S.race) {
     last.score = sc; last.race = !!S.race;
     $('score').textContent = S.race ? sc + '%' : fmt(sc);
@@ -99,7 +99,7 @@ export function hud() {
 const dotsKey = { n: -1 };
 function raceHud() {
   const pl = $('place');
-  if (!S.race) { if (!pl.hidden) pl.hidden = true; if (dotsKey.n !== 0) { dotsKey.n = 0; $('raceDots').innerHTML = ''; } return; }
+  if (!S.race) { $('slip').hidden = true; if (!pl.hidden) pl.hidden = true; if (dotsKey.n !== 0) { dotsKey.n = 0; $('raceDots').innerHTML = ''; } return; }
   pl.hidden = false;
   const rows = standings(), me = rows.findIndex(r => r.me), n = rows.length;
   let gap = '';
@@ -108,6 +108,9 @@ function raceHud() {
   else gap = Math.max(1, Math.round(S.pz - rows[1].z)) + ' m ahead';
   const txt = ordinal(me + 1) + ' of ' + n + ' · ' + gap + (S.bumpT > 0 ? ' · BUMPED' : '');
   if (pl.textContent !== txt) { pl.textContent = txt; pl.classList.toggle('bumped', S.bumpT > 0); }
+  // slipstream: fills while you tuck in behind someone, then shows while the boost lasts
+  const sl = $('slip'), c = draftCharge(S), slipTxt = S.draftT > 0 ? 'Slipstream!' : c > 0.05 ? 'Slipstream ' + Math.round(c * 100) + '%' : '';
+  if (sl.textContent !== slipTxt) { sl.textContent = slipTxt; sl.hidden = !slipTxt; sl.classList.toggle('on', S.draftT > 0); }
   const box = $('raceDots');
   if (dotsKey.n !== n) { dotsKey.n = n; box.innerHTML = ''; for (let i = 0; i < n - 1; i++) { const d = document.createElement('i'); d.style.background = S.race.bots[i].color; box.appendChild(d); } }
   S.race.bots.forEach((b, i) => { const d = box.children[i]; if (d) d.style.left = (clamp(b.z / LV.goal, 0, 1) * 100).toFixed(1) + '%'; });

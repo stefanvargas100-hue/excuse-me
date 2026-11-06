@@ -1,6 +1,7 @@
 import { Music } from '../audio/music.js';
 import { DOGS, FASTSHIRTS, GEARS, HAIRS, LUGS, PANTS, SHIRTS, SHOES, SKINS, shade } from '../config/colour.js';
 import { LV, SPAWN_FAR } from '../config/levels.js';
+import { BUILDS } from '../config/stats.js';
 import { R_BODY, R_LUGGAGE, R_PLAYER, walkSpeed } from '../config/tuning.js';
 import { R, TAU, clamp, hashStr, mulberry32, pick, randn, rnd, setR, sgn } from '../config/util.js';
 import { ctx } from '../dom.js';
@@ -59,10 +60,18 @@ export function mk(x, z, o) {
   return p;
 }
 
+// Height and breadth come from the build. The hitbox stays the same size for everyone.
+export function applyBuild(p) {
+  const b = BUILDS[p.build] || BUILDS.medium; p.h = b.h; p.bulk = b.bulk;
+  const shown = p.showHead !== '0';   // what is drawn; the stats read the chosen item, shown or not
+  p.face = shown && p.hat === 'shades' ? 'shades' : 'none';
+  if (!shown || p.hat === 'shades') p.hat = 'none';
+}
+
 export function makeMe() {
   const p = Object.assign({ x: 0, z: 0, vx: 0, vz: 0, phase: 0, t: 0, h: 1.76, lug: 0, lugCol: '#000000', dog: 0, phone: false, fast: false,
     rival: false, tele: false, hit: false, isMe: true, fx: 0, fz: 1, circles: [{ ox: 0, oz: 0, r: R_PLAYER }] }, LOOK);
-  dress(p); return p;
+  applyBuild(p); dress(p); return p;
 }
 
 function wpick(pool) {

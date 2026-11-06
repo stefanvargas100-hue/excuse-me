@@ -91,7 +91,7 @@ test('race scene, radar and HUD draw without errors', () => {
 
 test('race pace: combos speed you up, low stamina slows you down', () => {
   const calm = race(0); for (let i = 0; i < 100; i++) calm.tick(DT);     // GO happens at 3 s
-  const mk = (chain, energy) => { const E = race(0); for (let i = 0; i < 100; i++) E.tick(DT); E.S.chain = chain; E.S.lastPassT = E.S.time + 99; E.S.energy = energy; for (let i = 0; i < 60; i++) { E.S.people.length = 0; E.S.energy = energy; E.tick(DT); } return E.S.speed; };
+  const mk = (chain, energy) => { const E = race(0); for (let i = 0; i < 100; i++) E.tick(DT); E.S.chain = chain; E.S.lastPassT = E.S.time + 99; E.S.energy = energy; for (let i = 0; i < 60; i++) { E.S.people.length = 0; E.S.race.bots.length = 0; E.S.energy = energy; E.tick(DT); } return E.S.speed; };
   const base = mk(0, 100), combo = mk(21, 100), tired = mk(0, 0);
   assert.ok(combo > base * 1.1, 'a x8 combo is clearly faster: ' + combo.toFixed(2) + ' vs ' + base.toFixed(2));
   assert.ok(tired < base * 0.9, 'no stamina is clearly slower: ' + tired.toFixed(2) + ' vs ' + base.toFixed(2));
@@ -122,4 +122,44 @@ test('"Excuse me" clears a row of people ahead, not just two', () => {
   E.shout();
   const stepped = lane.filter(p => p.aside > 0).length;
   assert.ok(stepped >= 4, 'at least four step aside: ' + stepped);
+});
+
+// Slipstream: one walker kept at a fixed spot relative to the player each step.
+function tail(E, ticks, dx, dz, vz) {
+  for (let i = 0; i < ticks; i++) {
+    E.S.people.length = 0; E.S.race.bots.length = 0; E.S.nextChunk = 1e9;
+    const p = E.mkPerson(E.S.px + dx, E.S.pz + dz); p.vz = vz; p.vx = 0;
+    E.tick(DT);
+  }
+}
+function atGo() { const E = race(0); for (let i = 0; i < 91; i++) E.tick(DT); return E; }
+
+test('slipstream: tucking in behind a walker earns a speed boost', () => {
+  const E = atGo();
+  tail(E, 60, 0, 2.5, 3);
+  const plain = atGo(); tail(plain, 60, 3, 2.5, 3);   // same walker, off to the side
+  assert.ok(E.S.draftT > 0, 'boost earned');
+  assert.strictEqual(plain.S.draftT, 0, 'no boost when not behind them');
+  tail(E, 15, 3, 2.5, 3); tail(plain, 15, 3, 2.5, 3);
+  assert.ok(E.S.speed > plain.S.speed * 1.08, E.S.speed.toFixed(2) + ' vs ' + plain.S.speed.toFixed(2));
+});
+
+test('slipstream: no boost behind someone standing or coming at you', () => {
+  for (const vz of [0, -1.5]) { const E = atGo(); tail(E, 60, 0, 2.5, vz); assert.strictEqual(E.S.draftT, 0, 'vz ' + vz); }
+});
+
+test('slipstream: the boost runs out, and a bump cancels it', () => {
+  const E = atGo();
+  tail(E, 60, 0, 2.5, 3); assert.ok(E.S.draftT > 0);
+  tail(E, 100, 3, 2.5, 3); assert.strictEqual(E.S.draftT, 0, 'runs out');
+  const B = atGo();
+  tail(B, 60, 0, 2.5, 3); assert.ok(B.S.draftT > 0);
+  tail(B, 3, 0, 0.2, 0); assert.strictEqual(B.S.draftT, 0, 'bump cancels');
+});
+
+test('slipstream does nothing outside a race', () => {
+  const E = load(); E.setLevel(0); E.start('classic');
+  for (let i = 0; i < 90; i++) { E.S.people.length = 0; E.S.nextChunk = 1e9; const p = E.mkPerson(E.S.px, E.S.pz + 2.5); p.vz = 3; E.tick(DT); }
+  assert.strictEqual(E.S.draftT, 0);
+  assert.ok(E.S.speed <= 3.001);
 });

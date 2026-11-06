@@ -161,6 +161,8 @@ Decided: launch with a fuller game. Candidates, to be confirmed after playtest f
 - [ ] More stages (Phase 8 ideas: subway platform, music festival, Black Friday mall, train station)
 - [ ] More crowd events and rival types; unlockable looks
 - [ ] Settings screen, accessibility, polish (Phase 5)
+- [x] Race stats from build and gear, slipstream
+- [ ] More random crowd events in endless runs (tour groups and the like), difficulty stays at its hardest
 - [ ] Anything the playtest shows is missing
 
 Rule: one feature at a time, each playtested before the next. Cut anything that does not clear a "is this fun?" bar rather than shipping it.

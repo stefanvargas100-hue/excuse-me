@@ -136,8 +136,8 @@ button.big:focus-visible, button.ghost:focus-visible, .toggle input:focus-visibl
 .toggle input { width: 22px; height: 22px; accent-color: var(--ink); }
 .desk { margin: 12px 0 0; font-size: 15px; opacity: .7; }
 
-.pv { position: sticky; top: -18px; z-index: 1; margin: 0 -20px 6px; padding: 8px 0 6px; background: var(--paper); border-bottom: 3px dashed var(--ink); }
-#preview { display: block; margin: 0 auto; width: 170px; height: 210px; border: 3px solid var(--ink); border-radius: var(--wob); background: radial-gradient(circle at 50% 70%, #fff3c4, #f6ecd8 70%); }
+.pv { position: sticky; top: -18px; z-index: 1; margin: 0 -20px 6px; padding: 8px 14px 6px; display: flex; align-items: center; gap: 12px; background: var(--paper); border-bottom: 3px dashed var(--ink); }
+#preview { display: block; flex: 0 0 auto; width: 136px; height: 168px; border: 3px solid var(--ink); border-radius: var(--wob); background: radial-gradient(circle at 50% 70%, #fff3c4, #f6ecd8 70%); }
 .opt { margin: 12px 0; }
 .optl { font-family: var(--display); font-size: 14px; text-transform: uppercase; margin-bottom: 6px; }
 .sws { display: flex; flex-wrap: wrap; gap: 9px; }
@@ -185,3 +185,22 @@ button.big:focus-visible, button.ghost:focus-visible, .toggle input:focus-visibl
 
 .lvl.done { opacity: .6; cursor: default; box-shadow: 2px 3px 0 var(--ink); }
 .lvl.done:active { transform: none; box-shadow: 2px 3px 0 var(--ink); }
+
+/* race stats on the customize screen */
+.statbars { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 7px; }
+.statn { font-family: var(--display); font-size: 14px; text-transform: uppercase; }
+.statl { display: flex; justify-content: space-between; gap: 6px; font-size: 15px; line-height: 1.1; }
+.statl .up { color: #16877c; font-weight: 700; }
+.statl .down { color: var(--alert); font-weight: 700; }
+.statb { position: relative; height: 12px; margin-top: 2px; border: 2.5px solid var(--ink); border-radius: 7px 9px 6px 10px; background: var(--paper2); overflow: hidden; }
+.statb i { display: block; height: 100%; background: var(--yellow); }
+.statb i.up { background: var(--go); }
+.statb i.down { background: var(--btn); }
+.statb::after { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: var(--ink); }
+.chip small { display: block; font-size: 12px; line-height: 1; padding-bottom: 3px; opacity: .8; }
+
+/* slipstream */
+.shoutrow { gap: 8px; }
+.slip { font-family: var(--display); font-size: 13px; padding: 2px 12px 3px; border: 2.5px solid var(--ink); border-radius: 999px 900px 999px 800px; background: var(--paper); box-shadow: 2px 3px 0 var(--ink); }
+.slip.on { background: var(--go); }
+.slip[hidden] { display: none; }

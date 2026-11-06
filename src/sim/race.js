@@ -4,19 +4,45 @@ import { BASE, BOOST, CHAIN_WINDOW, LAT_ACC, LAT_MAX, REGEN, R_PLAYER } from '..
 import { clamp, mulberry32 } from '../config/util.js';
 import { REACT } from '../config/colour.js';
 import { BOT_NAMES } from '../config/names.js';
+import { effects, randomLoadout, statsOf } from '../config/stats.js';
 import { COST_DASH, DASH_T, DASH_V } from '../input/input.js';
 import { buzz, store } from '../save/store.js';
 import { banner } from './actions.js';
-import { dress } from './people.js';
+import { LOOK } from '../save/progress.js';
+import { applyBuild, dress } from './people.js';
 import { addPop } from './scoring.js';
 import { S } from './state.js';
 
 /* ---------- race mode: A to B against bots; a bump slows you down instead of ending the run ---------- */
-export const BUMP_T = 1.3;        // seconds spent slowed after a bump
 export const BUMP_SPEED = 0.3;    // fraction of normal speed while slowed
 const BUMP_COOL = 0.7;            // a long contact counts as one bump per this many seconds, not one per frame
 const STUCK_T = 1.8, STUCK_GHOST = 0.8;   // safety net: pinned for this long, you may slip through for a moment
 const COUNTDOWN = 3;
+
+// Slipstream: walk close behind someone heading your way for a moment and you earn a burst of speed to overtake with.
+const DRAFT_LEN = 4, DRAFT_W = 0.6;   // the zone behind them, in metres
+const DRAFT_CHARGE = 1.2;             // seconds in the zone to earn it
+const DRAFT_T = 2.5, DRAFT_BOOST = 1.18;   // how long it lasts and how much faster you go
+const DRAFT_MIN_V = 0.8;              // they have to be walking your way, not standing or coming at you
+export const draftMul = r => (r.draftT > 0 ? DRAFT_BOOST : 1);
+export const draftCharge = r => clamp(r.draftC / DRAFT_CHARGE, 0, 1);
+
+function inDraft(x, z, self) {
+  const behind = (ox, oz, ov) => ov > DRAFT_MIN_V && oz - z > 0.3 && oz - z < DRAFT_LEN && Math.abs(ox - x) < DRAFT_W;
+  for (const p of S.people) if (!p.dead && !p.prop && behind(p.x, p.z, p.vz)) return true;
+  if (self !== S && behind(S.px, S.pz, S.speed)) return true;
+  for (const b of S.race.bots) if (b !== self && !b.done && behind(b.x, b.z, b.speed)) return true;
+  return false;
+}
+// r is the player's state or a bot. Returns true at the moment the boost is earned.
+function stepDraft(r, x, z, slowed, dt) {
+  r.draftT = Math.max(0, r.draftT - dt);
+  if (r.draftT > 0) return false;
+  if (!slowed && inDraft(x, z, r)) r.draftC += dt; else r.draftC = Math.max(0, r.draftC - dt * 1.5);
+  if (r.draftC < DRAFT_CHARGE) return false;
+  r.draftC = 0; r.draftT = DRAFT_T;
+  return true;
+}
 
 // Race pace: a combo makes you walk faster, and running low on stamina makes you walk slower, so dashes and bursts
 // have to be spent wisely, but ordinary use of them costs next to nothing. Used for the player and the bots alike.
@@ -55,13 +81,18 @@ function makeBot(i, diff, name) {
   const p = {
     x: ((i % 2 ? 1 : -1) * (0.7 + 0.6 * Math.floor(i / 2) + 0.6)), z: -0.3 * (i % 2), vx: 0, vz: 0, phase: i * 1.7, t: 0, h: 1.72 + 0.03 * i, lug: 0, lugCol: '#000000', dog: 0,
     phone: false, fast: false, rival: false, tele: false, hit: false, isMe: false, fx: 0, fz: 1, walkA: 0,
-    circles: [{ ox: 0, oz: 0, r: R_PLAYER }], pants: '#1f2937', shoe: '#f4f6f8', hat: i % 2 ? 'none' : 'cap', face: 'none', pack: 'none', gear: '#111827',
+    circles: [{ ox: 0, oz: 0, r: R_PLAYER }], pants: '#1f2937', shoe: '#f4f6f8', gear: '#111827', body: d.hairStyle === 'long' ? 'f' : 'm',
     shirt: d.shirt, hair: d.hair, hairStyle: d.hairStyle, skin: d.skin,
     racer: true, name, color: d.color
   };
+  // bots get a random build and gear, with the same stat rules as you
+  const gear = randomLoadout(Math.random);
+  Object.assign(p, gear);
+  applyBuild(p);
   dress(p);
   Object.assign(p, {
-    speed: 0, energy: 100, chain: 0, lastPassT: -9, ahead: new WeakMap(), burstT: 0, dashT: 0, dashDir: 0, bumpT: 0, ghostT: 0, cool: 0, blockT: 0, bumps: 0, pace: diff.pace[i % diff.pace.length], diff,
+    st: effects(statsOf(gear)),
+    draftC: 0, draftT: 0, speed: 0, energy: 100, chain: 0, lastPassT: -9, ahead: new WeakMap(), burstT: 0, dashT: 0, dashDir: 0, bumpT: 0, ghostT: 0, cool: 0, blockT: 0, bumps: 0, pace: diff.pace[i % diff.pace.length], diff,
     target: p.x, thinkT: 0, seed: i * 2.3, done: false, finishT: null, seen: new WeakMap(), danger: 99, clear: true
   });
   return p;
@@ -73,6 +104,8 @@ export function initRace(botCount) {
   S.race = { diff, bots: [], countT: COUNTDOWN, countLast: 99, rng: mulberry32(0x5eed + n), finished: false, place: 0, board: [], elapsed: 0 };
   const pool = BOT_NAMES.slice();   // each race draws its racers' names at random, no repeats within a race
   for (let i = 0; i < n; i++) S.race.bots.push(makeBot(i, diff, pool.splice((Math.random() * pool.length) | 0, 1)[0]));
+  S.race.me = effects(statsOf(LOOK));   // your build and gear, race mode only
+  S.speed = 0;          // everyone starts from a standstill, so acceleration counts
   S.timeLeft = 99999;   // no clock in a race
 }
 
@@ -144,7 +177,7 @@ export function raceCollide(dt) {
     const fresh = S.bumpCool <= 0;
     S.bumpCool = BUMP_COOL;   // staying in contact is still the same bump
     if (fresh) {
-      S.bumpT = BUMP_T; S.bumps++;
+      S.bumpT = S.race.me.bumpT; S.bumps++; S.draftC = 0; S.draftT = 0;
       S.burstT = 0; S.dashT = 0; S.shake = Math.max(S.shake, 0.5);
       S.chain = 0; S.snake = 0; S.oncRun = 0; S.multPrev = 1;
       addPop('BUMP!', '#ff4d4f', 34); Music.sfx('bump'); buzz([40, 30, 80]);
@@ -202,7 +235,7 @@ function stepBot(b, dt) {
   if (b.thinkT <= 0) { think(b); b.thinkT = 0.1 + R.rng() * 0.18; }   // people do not react instantly
   b.bumpT = Math.max(0, b.bumpT - dt); b.ghostT = Math.max(0, b.ghostT - dt); b.cool = Math.max(0, b.cool - dt);
   b.burstT -= dt; b.dashT -= dt;
-  b.energy = Math.min(100, b.energy + REGEN * dt);
+  b.energy = Math.min(100, b.energy + REGEN * b.st.regen * dt);
   if (b.chain > 0 && S.time - b.lastPassT > CHAIN_WINDOW) b.chain = 0;
   // a good player dashes round a person who is about to be hit, and bursts when the way is clear
   const need = b.target - b.x;
@@ -213,11 +246,13 @@ function stepBot(b, dt) {
   const bursting = b.burstT > 0 && b.bumpT <= 0;
   if (b.dashT > 0) b.vx = b.dashDir * DASH_V;
   else {
-    const want = clamp(need * 3, -LAT_MAX, LAT_MAX), acc = Math.abs(b.vx) > LAT_MAX ? LAT_ACC * 2.2 : LAT_ACC;
+    const want = clamp(need * 3, -LAT_MAX, LAT_MAX), acc = (Math.abs(b.vx) > LAT_MAX ? LAT_ACC * 2.2 : LAT_ACC) * b.st.lat;
     b.vx += clamp(want - b.vx, -acc * dt, acc * dt);
   }
   const weave = 1 - 0.14 * Math.min(1.4, Math.abs(b.vx) / LAT_MAX);
-  b.speed += (((bursting ? BOOST : BASE) * b.pace) * weave * racePace(b.chain, b.energy) * (b.bumpT > 0 ? BUMP_SPEED : 1) - b.speed) * Math.min(1, dt * 5);
+  stepDraft(b, b.x, b.z, b.bumpT > 0, dt);
+  const bTarget = (bursting ? BOOST : BASE) * b.pace * b.st.speed * weave * racePace(b.chain, b.energy) * draftMul(b) * (b.bumpT > 0 ? BUMP_SPEED : 1);
+  b.speed += (bTarget - b.speed) * Math.min(1, dt * (bTarget > b.speed ? b.st.accel : 5));
   b.x = clamp(b.x + b.vx * dt, -lim, lim); b.z += b.speed * dt;
   if (Math.abs(b.x) >= lim) b.vx = 0;
   // solid people
@@ -227,7 +262,7 @@ function stepBot(b, dt) {
     b.x = t.x; b.z = t.z; b.vx = t.vx; b.speed = Math.max(0, t.speed);
     if (hit) {
       b.blockT += dt; shove(hit, b.x); b.seen.set(hit, false);   // they notice whoever they just hit
-      if (b.cool <= 0) { b.bumpT = BUMP_T; b.bumps++; b.burstT = 0; b.dashT = 0; b.chain = 0; }
+      if (b.cool <= 0) { b.bumpT = b.st.bumpT; b.draftC = 0; b.draftT = 0; b.bumps++; b.burstT = 0; b.dashT = 0; b.chain = 0; }
       b.cool = BUMP_COOL;
       if (b.blockT > STUCK_T) { b.ghostT = STUCK_GHOST; b.blockT = 0; }
     } else b.blockT = Math.max(0, b.blockT - dt * 2);
@@ -252,6 +287,7 @@ function stepBot(b, dt) {
 export function updRace(dt) {
   const R = S.race; if (!R) return;
   R.elapsed = S.time;
+  if (stepDraft(S, S.px, S.pz, S.bumpT > 0, dt)) { addPop('SLIPSTREAM!', '#2ec4b6', 30); Music.sfx('dash'); buzz(15); }
   for (const b of R.bots) {
     if (b.done) { b.speed *= Math.max(0, 1 - dt * 4); b.vx *= Math.max(0, 1 - dt * 6); b.vz = b.speed; b.phase += dt * b.speed * 2; b.walkA += ((b.speed > 0.15 ? 1 : 0) - b.walkA) * Math.min(1, dt * 8); b.z += b.speed * dt; continue; }
     stepBot(b, dt);

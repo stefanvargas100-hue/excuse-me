@@ -1,4 +1,5 @@
 import { LEVELS } from '../config/levels.js';
+import { BUILDS, ITEM_STATS, STAT_CAP, statHint, statPercents, statsOf } from '../config/stats.js';
 import { $, ctx, setCtx } from '../dom.js';
 import { CX, DPR, F, H, HOR, VX, VY, VZ, W, setCX, setF, setH, setHOR, setVX, setVY, setVZ, setW } from './camera.js';
 import { drawPerson } from './figures.js';
@@ -12,9 +13,20 @@ import { S, setShowHB, showHB } from '../sim/state.js';
 /* ---------- character preview ---------- */
 let PV = null;
 
+// Live bars for the three race stats. They only change with build and gear types, never with colours.
+function renderStats() {
+  const box = $('statBars'); if (!box) return;
+  const s = statsOf(LOOK), pc = statPercents(s), row = (name, points, pct) => {
+    const sign = pct > 0 ? '+' : '', cls = points > 0 ? 'up' : points < 0 ? 'down' : '';
+    return '<div class="stat"><div class="statl"><span>' + name + '</span><span class="' + cls + '">' + sign + (Math.round(pct * 10) / 10) + '%</span></div><div class="statb"><i class="' + cls + '" style="width:' + ((points + STAT_CAP) / (2 * STAT_CAP) * 100).toFixed(0) + '%"></i></div></div>';
+  };
+  box.innerHTML = '<div class="statn">Race stats</div>' + row('Top speed', s.speed, pc.speed) + row('Acceleration', s.accel, pc.accel) + row('Recovery', s.rec, pc.rec);
+}
+
 function refreshLook() {
   store.set('excuseme_look', JSON.stringify(LOOK));
   PV = makeMe();
+  renderStats();
   if (S) { const m = makeMe(); m.x = S.me.x; m.z = S.me.z; m.fx = S.me.fx; m.fz = S.me.fz; S.me = m; }
 }
 
@@ -26,7 +38,7 @@ export function drawPreview(now) {
   if (pc.width !== Math.round(pw * DPR)) { pc.width = Math.round(pw * DPR); pc.height = Math.round(ph * DPR); }
   const saved = [ctx, W, H, F, HOR, CX, VX, VZ, VY, showHB];
   setCtx(pctx); ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.clearRect(0, 0, pw, ph);
-  setW(pw); setH(ph); setF(290); setVX(0); setVZ(-3); setVY(1.0); setCX(pw / 2); setHOR(92); setShowHB(false);
+  setW(pw); setH(ph); setF(262); setVX(0); setVZ(-3); setVY(1.0); setCX(pw / 2); setHOR(92); setShowHB(false);
   const a = now / 1000 * 0.7;
   PV.fx = Math.sin(a); PV.fz = -Math.cos(a); PV.vx = PV.fx * 1.3; PV.vz = PV.fz * 1.3; PV.x = 0; PV.z = 0;
   PV.phase = now / 1000 * 5.5;
@@ -47,7 +59,11 @@ function buildLook() {
       const req = isObj ? v.req : o.type === 'chip' ? (v[2] || 0) : 0;
       const locked = req > totalStars();
       if (o.type === 'color') { b.className = 'sw'; b.style.background = val; b.setAttribute('aria-label', isObj ? v.name : o.label + ' ' + val); }
-      else { b.className = 'chip'; b.textContent = v[1]; }
+      else {
+        b.className = 'chip'; b.textContent = v[1];
+        const stats = o.key === 'build' ? BUILDS[val] : ITEM_STATS[o.key] && ITEM_STATS[o.key][val];
+        if (stats) { const hint = document.createElement('small'); hint.textContent = statHint(stats); b.appendChild(hint); }
+      }
       if (locked) {
         b.disabled = true; b.classList.add('locked');
         b.title = 'Unlock with ' + req + ' stars'; b.setAttribute('aria-label', (isObj ? v.name : (v[1] || val)) + ', locked, needs ' + req + ' stars');
