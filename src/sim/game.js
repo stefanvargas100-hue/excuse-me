@@ -16,6 +16,7 @@ import { BUMP_SPEED, draftMul, finishRace, fmtTime, initRace, leadZ, ordinal, ra
 import { updCars } from './traffic.js';
 import { beginTut, tutTick } from './tutorial.js';
 import { buildLevels, last } from '../ui/menus.js';
+import { hideMenus } from '../ui/screens.js';
 
 
 
@@ -199,7 +200,10 @@ function showEnd() {
 
 const END_LABELS = { sScore: 'Score', sBest: 'Best score', sDist: 'Distance', sChain: 'Longest chain' };
 function setStat(id, label, value) { $(id).textContent = value; const dt = $(id).previousElementSibling; if (dt) dt.textContent = label; }
+function setExtraStats(show) { for (const id of ['sClose', 'sPassed', 'sRival']) { const d = $(id).parentElement; if (d) d.hidden = !show; } }
 function resetEndLabels() {
+  setExtraStats(true);
+  $('endLead').hidden = false;
   for (const id in END_LABELS) { const dt = $(id).previousElementSibling; if (dt) dt.textContent = END_LABELS[id]; }
   $('raceBoard').hidden = true;
   $('sScoreLabel').textContent = END_LABELS.sScore;
@@ -215,6 +219,7 @@ function showRaceEnd() {
   const R = S.race, n = R.board.length, place = R.place;
   $('endEyebrow').textContent = 'Race · ' + LV.city + ' · ' + LV.name + ' · ' + R.diff.name + ' bots';
   const t = $('endTitle'); t.textContent = place === 1 ? 'You win!' : ordinal(place) + ' of ' + n; t.className = place === 1 ? 'good' : 'bad';
+  $('endLead').hidden = true;   // the standings say it all
   $('endLead').textContent = place === 1 ? 'First to ' + LV.goalText + '. Bumps cost you time, so a clean run wins.' : 'Not first this time. Every bump costs about a second and a half, so stay clean and look for gaps.';
   $('sScoreLabel').textContent = 'Finish time'; $('sScore').textContent = fmtTime(S.time);
   const best = raceBest(LV.id);
@@ -222,6 +227,7 @@ function showRaceEnd() {
   setStat('sDist', 'Place', ordinal(place) + ' of ' + n);
   setStat('sChain', 'Bumps', String(S.bumps));
   $('sClose').textContent = S.close; $('sPassed').textContent = S.passed; $('sRival').textContent = S.dodged;
+  setExtraStats(false);   // the standings take their place, so the screen still fits
   const bd = $('raceBoard'); bd.hidden = false; bd.innerHTML = '';
   const lead = R.board[0];
   R.board.forEach((r, i) => {
@@ -258,7 +264,7 @@ export function start(a, b) {
   if (S.endless) S.timeLeft = Infinity;
   if (mode === 'race') initRace(3);
   S.daily = daily; S.weekly = weekly; S.dailyKey = key; for (const k in last) last[k] = k === 'low' ? null : -1; S.live = true; setState('play'); setEndShown(false);
-  $('start').hidden = true; $('end').hidden = true; $('look').hidden = true; $('pause').hidden = true; $('hud').hidden = false;
+  hideMenus(); $('hud').hidden = false;
   const hb = $('hud').getBoundingClientRect ? $('hud').getBoundingClientRect() : null;
   setRadarTop(hb && hb.bottom ? hb.bottom + 6 : 120);
   if (LV.id === 'shibuya') { S.waveT = 1.5; }
@@ -278,6 +284,6 @@ export function resumeGame() { if (state !== 'paused') return; $('pause').hidden
 
 export function toMenu() {
   setR(Math.random); $('tut').hidden = true;
-  $('pause').hidden = true;
-  setState('ready'); reset(); $('end').hidden = true; $('hud').hidden = true; $('start').hidden = false; buildLevels();
+  hideMenus();
+  setState('ready'); reset(); $('hud').hidden = true; $('start').hidden = false; buildLevels();
 }

@@ -215,3 +215,132 @@ button.big:focus-visible, button.ghost:focus-visible, .toggle input:focus-visibl
 .fit { font-size: 14px; line-height: 1.1; padding: 3px 7px; border: 2px dashed var(--ink); border-radius: var(--wob-s); }
 .fit b { font-family: var(--display); font-weight: 400; }
 .fit.on { border-style: solid; background: var(--sign); }
+
+/* ---- no-scroll screens ---- */
+.panel { overflow: hidden; }
+.card { max-height: 100%; }
+.card.full { height: 100%; margin: 0 auto; display: flex; flex-direction: column; padding: 12px 16px 14px; overflow: hidden; }
+.topbar { display: flex; align-items: center; gap: 12px; flex: 0 0 auto; margin-bottom: 10px; }
+.topbar h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 26px; line-height: 1.1; text-transform: uppercase; text-shadow: 2px 2px 0 var(--sign); }
+.backbtn { flex: 0 0 auto; width: 46px; height: 46px; border: 3px solid var(--ink); border-radius: var(--wob-s); background: var(--paper); color: var(--ink); box-shadow: 2px 3px 0 var(--ink); font: 400 30px/1 var(--display); cursor: pointer; padding: 0 0 4px; }
+.backbtn:active, .tile:active, .pagebtn:active { transform: translate(2px, 3px); box-shadow: 0 0 0 var(--ink); }
+.home { text-align: center; padding: 26px 20px; }
+.home h1 { font-size: clamp(44px, 14vw, 56px); margin-bottom: 22px; }
+button.big.huge { min-height: 84px; font-size: 38px; margin-bottom: 18px; }
+.tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.tile { min-height: 70px; padding: 8px; border: 3px solid var(--ink); border-radius: var(--wob-s); background: var(--paper); color: var(--ink); box-shadow: 3px 4px 0 var(--ink); font-family: var(--display); font-size: 15px; text-transform: uppercase; cursor: pointer; }
+.tile small { display: block; margin-top: 3px; font: 400 14px var(--body); text-transform: none; color: var(--btn); }
+.tiles.areas { flex: 1 1 auto; min-height: 0; grid-auto-rows: minmax(0, 1fr); gap: 10px; }
+.tiles.areas .tile { min-height: 0; }
+.tiles[hidden], .lookedit[hidden] { display: none; }
+.stack { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 10px; margin: 0; }
+.stack .lvl { flex: 1 1 0; min-height: 0; overflow: hidden; align-content: center; }
+.stack .lvl .ln { font-size: clamp(18px, 3.2vh, 26px); }
+.pager { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 8px; font-size: 17px; }
+.pagebtn { width: 58px; height: 42px; border: 3px solid var(--ink); border-radius: var(--wob-s); background: var(--sign); color: var(--ink); box-shadow: 2px 3px 0 var(--ink); font: 400 24px/1 var(--display); cursor: pointer; padding: 0 0 3px; }
+.pagebtn:disabled { opacity: .35; }
+.paged { flex: 1 1 auto; min-height: 0; overflow: hidden; margin: 0; padding: 2px 4px 4px 0; }
+.rules.paged, .combos.paged { display: flex; flex-direction: column; gap: 12px; align-content: flex-start; }
+.rules.paged { font-size: 19px; }
+.combos.paged { font-size: 17px; }
+.tabs { flex: 0 0 auto; display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.tabs .chip { flex: 1 1 auto; padding: 0 6px; }
+.setlist { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 10px; justify-content: flex-start; }
+.setrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; padding: 4px 14px; border: 3px solid var(--ink); border-radius: var(--wob-s); background: var(--paper); box-shadow: 2px 3px 0 var(--ink); font-size: 19px; }
+.setrow input[type=checkbox] { width: 26px; height: 26px; accent-color: var(--btn); }
+.setrow.slider { flex-direction: column; align-items: stretch; gap: 2px; padding: 6px 14px 8px; }
+.setrow input[type=range] { width: 100%; accent-color: var(--btn); }
+/* customize */
+.card.full .pv { position: static; flex: 0 0 auto; margin: 0 0 8px; padding: 0; border: 0; display: flex; flex-wrap: nowrap; gap: 10px; }
+.card.full #preview { width: clamp(112px, 21vh, 158px); height: auto; aspect-ratio: 170 / 210; }
+.statbars { gap: 4px; }
+.card.full .lockinfo { flex: 0 0 auto; min-height: 44px; margin: 0 0 8px; padding: 4px 10px; font-size: 15px; background: var(--paper2); display: flex; align-items: center; }
+.card.full .lockinfo.on { background: var(--yellow); }
+.lookedit { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+.optl { margin-bottom: 4px; font-size: 13px; }
+.optl:empty { display: none; }
+.optrow { margin-bottom: 8px; }
+.chips { display: grid; gap: 8px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.chips.n3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.chips.n4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.chipgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; align-content: start; }
+.chips .chip, .chipgrid .chip { min-height: 48px; padding: 2px 4px; line-height: 1.05; font-size: 16px; }
+.chip small { font-size: 12px; padding: 1px 0 0; }
+#optColors { flex: 0 0 auto; margin-top: 6px; }
+#optColors .sws { gap: 6px; }
+.sw { width: 30px; height: 30px; }
+/* challenges */
+.chals.paged { display: flex; flex-direction: column; gap: 8px; }
+.chals li { padding: 5px 10px; flex: 0 0 auto; }
+.chals li span { font-size: 16px; }
+.chals li small { font-size: 13px; }
+.chals .statb { height: 10px; }
+/* end of a run */
+#end .card, #pause .card { padding: 14px 18px 16px; }
+#end .lead { font-size: 16px; line-height: 1.2; margin-bottom: 8px; }
+#end h1 { margin-bottom: 6px; }
+.stats { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; margin-bottom: 10px; }
+.stats div.wide { grid-column: span 3; padding: 4px; }
+.stats div { padding: 4px 3px; }
+.stats div[hidden] { display: none; }
+.stats dt { font-size: 13px; line-height: 1.05; }
+.stats dd { font-size: 19px; }
+.stats div.wide dd { font-size: 32px; }
+.board { gap: 5px; margin-bottom: 10px; }
+.board li { padding: 3px 10px; font-size: 16px; }
+.unlock { margin-bottom: 8px; padding: 5px 10px; font-size: 15px; }
+#end .btns { gap: 8px; }
+#end button.big { min-height: 50px; font-size: 20px; }
+#end button.ghost { min-height: 42px; font-size: 13px; }
+@media (max-height: 640px) {
+  .home h1 { margin-bottom: 12px; }
+  button.big.huge { min-height: 66px; font-size: 30px; }
+  .tile { min-height: 56px; }
+  .lvl .lb { font-size: 14px; }
+  .statl { font-size: 13px; }
+  .statb { height: 9px; }
+  .fit { font-size: 12px; padding: 1px 5px; }
+  .card.full .lockinfo { min-height: 36px; font-size: 13px; line-height: 1.05; }
+  .chips .chip, .chipgrid .chip { min-height: 42px; font-size: 14px; }
+  .chip small { font-size: 11px; }
+  .sw { width: 26px; height: 26px; }
+  .setrow { min-height: 44px; font-size: 17px; }
+  .rules.paged { font-size: 17px; }
+  #end .lead { font-size: 14px; }
+  .stats dd { font-size: 17px; }
+  .stats div.wide dd { font-size: 26px; }
+}
+
+/* tightening after measuring every screen */
+.lead[hidden] { display: none; }
+.chalh { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.chals li b { font-size: 15px; }
+.chals li { gap: 1px; padding: 4px 10px; }
+.chals li span { line-height: 1.05; }
+.chals li small { line-height: 1; white-space: nowrap; }
+.card.full #preview { width: clamp(92px, 17vh, 158px); }
+.setlist { gap: 8px; }
+.board li { line-height: 1.1; }
+#end .eyebrow { font-size: 15px; line-height: 1.1; }
+@media (max-height: 640px) {
+  .statn { display: none; }
+  .optrow { margin-bottom: 4px; }
+  .optl { margin-bottom: 2px; font-size: 12px; }
+  .pager { margin-top: 4px; }
+  .pagebtn { height: 34px; }
+  .topbar { margin-bottom: 6px; }
+  .backbtn { width: 40px; height: 40px; }
+  .card.full { padding: 8px 12px 10px; }
+  .setlist { gap: 6px; }
+  .setrow { min-height: 38px; padding: 2px 12px; font-size: 16px; }
+  .setrow.slider { padding: 3px 12px 5px; }
+  #tutBtn { min-height: 38px; }
+  #end .card { padding: 10px 14px 12px; }
+  #end h1 { font-size: 28px; margin-bottom: 4px; }
+  .stats { gap: 5px; margin-bottom: 6px; }
+  .stats dt { font-size: 12px; }
+  .board { grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 6px; }
+  .board li { font-size: 14px; padding: 3px 7px; }
+  #end button.big { min-height: 44px; }
+  #end button.ghost { min-height: 38px; }
+}

@@ -40,87 +40,123 @@
 </div>
 
 <div id="start" class="panel">
-  <div class="card">
+  <div class="card home">
     <div class="eyebrow">Don't touch anyone</div>
     <h1>Excuse Me</h1>
-    <div class="modes" role="group" aria-label="Game mode">
-      <button id="modeClassic" class="chip" type="button" aria-pressed="true">Classic</button>
-      <button id="modeRace" class="chip" type="button" aria-pressed="false">Race vs bots</button>
+    <button id="playBtn" class="big huge" type="button">Play</button>
+    <div class="tiles">
+      <button id="lookBtn" class="tile" type="button">Customize</button>
+      <button id="chalBtn" class="tile" type="button">Challenges</button>
+      <button id="howBtn" class="tile" type="button">How to play</button>
+      <button id="setBtn" class="tile" type="button">Settings</button>
     </div>
+  </div>
+</div>
+
+<div id="play" class="panel" hidden>
+  <div class="card full">
+    <div class="topbar"><button class="backbtn" data-back type="button" aria-label="Back">‹</button><h2>Play</h2></div>
+    <div id="playList" class="stack"></div>
+  </div>
+</div>
+
+<div id="stages" class="panel" hidden>
+  <div class="card full">
+    <div class="topbar"><button class="backbtn" data-back type="button" aria-label="Back">‹</button><h2 id="stagesTitle">Classic</h2></div>
     <div id="raceOpts" class="modes" role="group" aria-label="Bot difficulty" hidden>
       <span class="modelabel">Bots</span>
       <button class="chip" type="button" aria-pressed="false">Easy</button>
       <button class="chip" type="button" aria-pressed="true">Medium</button>
       <button class="chip" type="button" aria-pressed="false">Hard</button>
     </div>
-    <div class="levels" id="levels" role="group" aria-label="Choose a level"></div>
-    <details>
-      <summary>Install on your phone</summary>
-      <ul class="rules">
-        <li><b>iPhone</b><span>Open this page in Safari, tap Share, then "Add to Home Screen".</span></li>
-        <li><b>Android</b><span>Open in Chrome, tap the menu, then "Install app" or "Add to Home screen".</span></li>
+    <div id="levels" class="stack" role="group" aria-label="Choose a stage"></div>
+  </div>
+</div>
+
+<div id="howto" class="panel" hidden>
+  <div class="card full">
+    <div class="topbar"><button class="backbtn" data-back type="button" aria-label="Back">‹</button><h2>How to play</h2></div>
+    <div class="tabs" id="howTabs" role="group" aria-label="Topic">
+      <button class="chip" type="button" data-tab="howControls" aria-pressed="true">Controls</button>
+      <button class="chip" type="button" data-tab="howCombos" aria-pressed="false">Combos</button>
+      <button class="chip" type="button" data-tab="howRace" aria-pressed="false">Races</button>
+      <button class="chip" type="button" data-tab="howInstall" aria-pressed="false">Install</button>
+    </div>
+    <ul id="howList" class="paged rules"></ul>
+    <div id="howPager" class="pager"></div>
+    <div id="howSrc" hidden>
+      <ul id="howControls">
+        <li><b>1</b><span>You walk on your own. Hold the left or right side of the screen to steer.</span></li>
+        <li><b>2</b><span>Double tap one side to dash that way. Double tap both sides to burst forward. Both cost stamina.</span></li>
+        <li><b>3</b><span>Swipe up to say "Excuse me": up to 4 people ahead step aside. Rivals won't, and people on phones might not hear.</span></li>
+        <li><b>4</b><span>Red shirts are rivals. They spot your gap, cut across and brake.</span></li>
+        <li><b>5</b><span>In Classic, Daily and Weekly, touch anyone and the run is over. Go as far as you can.</span></li>
+        <li><b>6</b><span>On a computer: arrow keys or A / D steer, press twice to dash, W or Space to burst, E for "Excuse me", P to pause.</span></li>
       </ul>
-    </details>
-    <details>
-      <summary>How to play</summary>
-      <ul class="rules">
-        <li><b>1</b><span>You walk on your own. Hold the left or right side of the screen to steer, one thumb each.</span></li>
-        <li><b>2</b><span>Double tap one side to dash that way. Double tap both sides at once to burst forward. Both cost stamina.</span></li>
-        <li><b>3</b><span>Crowds flow like real ones: lanes form, people step to their keep side and brake behind slow walkers.</span></li>
-        <li><b>4</b><span>Red shirts are rivals. They spot your gap, cut across and brake. The panel up top shows who's behind you and which way they're heading.</span></li>
-        <li><b>5</b><span>Swipe up to say "Excuse me": the person ahead steps aside. Rivals won't, and people on their phones might not hear. It recharges in 6 seconds.</span></li>
-        <li><b>6</b><span>Beat the clock. Weaving hard costs you a little forward speed, so bursts help you make time.</span></li>
-        <li><b>7</b><span>Pass people for points. Touch anyone or anything and it's over.</span></li>
-      </ul>
-      <button id="tutBtn" class="ghost" type="button" style="margin-top:10px">Replay tutorial</button>
-    </details>
-    <details>
-      <summary>Combos</summary>
-      <ul class="combos">
-        <li><span>Chain</span>Pass again within 2 seconds to keep it going. Every 3 passes adds ×1, up to ×8.</li>
+      <ul id="howCombos" class="combos">
+        <li><span>Chain</span>Pass again within 2 seconds. Every 3 passes adds ×1, up to ×8.</li>
         <li><span>Close / Razor</span>Pass with under 40 cm / 15 cm to spare.<em>+25 / +50</em></li>
-        <li><span>Snake</span>Pass people on alternating sides, 3 or more in a row.<em>+40 each</em></li>
-        <li><span>Sweep</span>Pass 3 people while drifting the same way, left or right. 5 is a Mega Sweep.<em>+150 / +300</em></li>
+        <li><span>Snake</span>Pass on alternating sides, 3 or more in a row.<em>+40 each</em></li>
+        <li><span>Sweep</span>Pass 3 people drifting one way. 5 is a Mega Sweep.<em>+150 / +300</em></li>
         <li><span>Thread the Needle</span>Slip between two people side by side.<em>+150</em></li>
         <li><span>Bullet Train</span>Pass 3 people in a single burst.<em>+120</em></li>
         <li><span>Juke</span>Pass someone right after a dash.<em>+80</em></li>
-        <li><span>Slipstream</span>Overtake a speed walker.<em>+60</em></li>
+        <li><span>Overtake</span>Pass a speed walker.<em>+60</em></li>
         <li><span>Salmon Run</span>Pass 5 oncoming people in one chain.<em>+150</em></li>
         <li><span>Rival Burned</span>Get past a rival after they cut you off.<em>+250</em></li>
       </ul>
-    </details>
-    <div class="btns">
-      <button id="go" class="big" type="button">Start walking</button>
-      <div class="btnrow"><button id="lookBtn" class="ghost" type="button">Customize</button><button id="chalBtn" class="ghost" type="button">Challenges</button></div>
+      <ul id="howRace">
+        <li><b>1</b><span>First to the finish wins. People are solid: a bump stops you and slows you, but the race goes on.</span></li>
+        <li><b>2</b><span>Slipstream: stay close behind someone walking your way. Wind builds around you, then you get a burst of speed.</span></li>
+        <li><b>3</b><span>Combos make you walk faster. Running out of stamina makes you walk much slower.</span></li>
+        <li><b>4</b><span>Your build and gear set your top speed, acceleration and recovery. Only races use them.</span></li>
+        <li><b>5</b><span>Fit check: match 3 or more pieces of one style, or stack one stat, for a bonus to every stat.</span></li>
+      </ul>
+      <ul id="howInstall">
+        <li><b>1</b><span>iPhone: open this page in Safari, tap Share, then "Add to Home Screen".</span></li>
+        <li><b>2</b><span>Android: open in Chrome, tap the menu, then "Install app" or "Add to Home screen".</span></li>
+      </ul>
     </div>
-    <div class="toggles">
-      <label class="toggle"><input type="checkbox" class="sndt" checked> Music &amp; sound</label>
-      <label class="toggle"><input type="checkbox" class="vibt" checked> Vibration</label>
-      <label class="toggle"><input type="checkbox" class="bobt" checked> Camera bob</label>
-      <label class="toggle"><input type="checkbox" class="hbt"> Show hitboxes</label>
+  </div>
+</div>
+
+<div id="settings" class="panel" hidden>
+  <div class="card full">
+    <div class="topbar"><button class="backbtn" data-back type="button" aria-label="Back">‹</button><h2>Settings</h2></div>
+    <div class="setlist">
+      <label class="setrow"><span>Music and sound</span><input type="checkbox" class="sndt" checked></label>
+      <label class="setrow slider"><span>Music volume</span><input type="range" id="musicVol" min="0" max="100" step="5"></label>
+      <label class="setrow slider"><span>Sound effects volume</span><input type="range" id="sfxVol" min="0" max="100" step="5"></label>
+      <label class="setrow"><span>Vibration</span><input type="checkbox" class="vibt" checked></label>
+      <label class="setrow"><span>Camera bob</span><input type="checkbox" class="bobt" checked></label>
+      <label class="setrow"><span>Show hitboxes</span><input type="checkbox" class="hbt"></label>
+      <button id="tutBtn" class="ghost" type="button">Replay tutorial</button>
     </div>
-    <p class="desk">On a computer: hold arrow keys or A / D to steer, press twice quickly to dash, W or Space to burst, E to say "Excuse me", P to pause.</p>
   </div>
 </div>
 
 <div id="look" class="panel" hidden>
-  <div class="card">
-    <div class="pv"><canvas id="preview" width="340" height="420" aria-label="Preview of your character"></canvas><div id="statBars" class="statbars" aria-live="polite"></div><div id="lockInfo" class="lockinfo" hidden></div></div>
-    <div class="eyebrow">Your traveller</div>
-    <h1 class="mid">Customize</h1>
-    <p class="lead" id="starNote"></p>
-    <div id="opts"></div>
-    <div class="btns"><button id="lookDone" class="big" type="button">Done</button></div>
+  <div class="card full">
+    <div class="topbar"><button id="lookBack" class="backbtn" type="button" aria-label="Back">‹</button><h2 id="lookTitle">Customize</h2></div>
+    <div class="pv"><canvas id="preview" width="340" height="420" aria-label="Preview of your character"></canvas><div id="statBars" class="statbars" aria-live="polite"></div></div>
+    <p id="lockInfo" class="lockinfo"></p>
+    <div id="lookCats" class="tiles areas"></div>
+    <div id="lookEdit" class="lookedit" hidden>
+      <div id="optFixed"></div>
+      <div id="optPagedLabel" class="optl"></div>
+      <div id="optPaged" class="paged chipgrid"></div>
+      <div id="optPager" class="pager"></div>
+      <div id="optColors"></div>
+    </div>
   </div>
 </div>
 
 <div id="chal" class="panel" hidden>
-  <div class="card">
-    <div class="eyebrow">Earn new gear</div>
-    <h1 class="mid">Challenges</h1>
-    <p class="lead" id="chalNote"></p>
-    <ul id="chalList" class="chals"></ul>
-    <div class="btns"><button id="chalDone" class="big" type="button">Done</button></div>
+  <div class="card full">
+    <div class="topbar"><button class="backbtn" data-back type="button" aria-label="Back">‹</button><h2>Challenges</h2></div>
+    <p class="lockinfo" id="chalNote"></p>
+    <ul id="chalList" class="paged chals"></ul>
+    <div id="chalPager" class="pager"></div>
   </div>
 </div>
 
@@ -130,16 +166,9 @@
     <h1 class="mid">Paused</h1>
     <div class="btns">
       <button id="resume" class="big" type="button">Resume</button>
-      <div class="btnrow">
-        <button id="restart" class="ghost" type="button">Restart</button>
-        <button id="pmenu" class="ghost" type="button">Levels</button>
-      </div>
-    </div>
-    <div class="toggles">
-      <label class="toggle"><input type="checkbox" class="sndt" checked> Music &amp; sound</label>
-      <label class="toggle"><input type="checkbox" class="vibt" checked> Vibration</label>
-      <label class="toggle"><input type="checkbox" class="bobt" checked> Camera bob</label>
-      <label class="toggle"><input type="checkbox" class="hbt"> Show hitboxes</label>
+      <button id="restart" class="ghost" type="button">Restart</button>
+      <button id="pauseSet" class="ghost" type="button">Settings</button>
+      <button id="pmenu" class="ghost" type="button">Main menu</button>
     </div>
   </div>
 </div>
@@ -147,7 +176,7 @@
 <div id="end" class="panel" hidden>
   <div class="card">
     <div class="eyebrow" id="endEyebrow">Level</div>
-    <h1 id="endTitle" class="bad">Bump</h1>
+    <h1 id="endTitle" class="bad mid">Bump</h1>
     <p class="lead" id="endLead"></p>
     <dl class="stats">
       <div class="wide"><dt id="sScoreLabel">Score</dt><dd id="sScore">0</dd></div>
@@ -155,7 +184,7 @@
       <div><dt>Distance</dt><dd id="sDist">0 m</dd></div>
       <div><dt>Longest chain</dt><dd id="sChain">0</dd></div>
       <div><dt>Close calls</dt><dd id="sClose">0</dd></div>
-      <div><dt>People passed</dt><dd id="sPassed">0</dd></div>
+      <div><dt>Passed</dt><dd id="sPassed">0</dd></div>
       <div><dt>Rivals burned</dt><dd id="sRival">0</dd></div>
     </dl>
     <ol id="raceBoard" class="board" hidden></ol>
@@ -164,14 +193,9 @@
       <button id="next" class="big" type="button" hidden>Next level</button>
       <button id="again" class="big" type="button">Try again</button>
       <div class="btnrow">
-        <button id="endLook" class="ghost" type="button">Change look</button>
-        <button id="menu" class="ghost" type="button">Levels</button>
+        <button id="endLook" class="ghost" type="button">Customize</button>
+        <button id="menu" class="ghost" type="button">Main menu</button>
       </div>
-    </div>
-    <div class="toggles">
-      <label class="toggle"><input type="checkbox" class="sndt" checked> Music &amp; sound</label>
-      <label class="toggle"><input type="checkbox" class="bobt" checked> Camera bob</label>
-      <label class="toggle"><input type="checkbox" class="hbt"> Show hitboxes</label>
     </div>
   </div>
 </div>

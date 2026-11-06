@@ -41,7 +41,7 @@ export function onPass(p) {
   if (S.sweepCount === 5) { pts += 300; tags.push(['MEGA SWEEP', '#ff9f43']); }
   if (S.boostV > 0.5) { S.boostPasses++; if (S.boostPasses === 3) { pts += 120; tags.push(['BULLET TRAIN', '#c792ff']); } }
   if (now - S.lastDashT < 0.6) { pts += 80; tags.push(['JUKE', '#ffd166']); }
-  if (p.fast && !p.rival && p.vz > 3) { pts += 60; tags.push(['SLIPSTREAM', '#8be9fd']); }
+  if (p.fast && !p.rival && p.vz > 3) { pts += 60; tags.push(['OVERTAKE', '#8be9fd']); }
   if (p.vz < -0.3) { S.oncRun++; if (S.oncRun === 5) { pts += 150; tags.push(['SALMON RUN', '#ff7eb6']); } } else S.oncRun = 0;
   if (p.rival) {
     if (p.cutDone) { pts += 250; S.dodged++; tags.push(['RIVAL BURNED', '#ff2d3a']); }

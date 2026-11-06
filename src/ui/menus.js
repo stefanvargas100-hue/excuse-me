@@ -10,40 +10,65 @@ import { dailyLevel, fmt, hasPlayed, lastDaily, lastMode, pauseGame, resumeGame,
 import { draftMul, fmtTime, ordinal, raceBest, racePace, raceDifficulty, standings } from '../sim/race.js';
 import { S, bestOf, camBob, reset, setCamBob, setShowHB, showHB, state } from '../sim/state.js';
 import { endTut } from '../sim/tutorial.js';
+import { back, go, pageInto, relayoutWith } from './screens.js';
 
 
 
 /* ---------- menus ---------- */
-export function buildLevels() {
-  const box = $('levels'); if (!box || !document.createElement) return;
-  box.innerHTML = '';
-  const race = store.get('excuse_mode', 'classic') === 'race';
-  const card = cls => { const x = document.createElement('button'); x.type = 'button'; x.className = cls; x.innerHTML = '<span class="lc"></span><span class="ln"></span><span class="lm"></span><span class="lb"></span>'; return x; };
+let stageMode = 'classic';
+
+const menuCard = cls => { const x = document.createElement('button'); x.type = 'button'; x.className = cls; x.innerHTML = '<span class="lc"></span><span class="ln"></span><span class="lm"></span><span class="lb"></span>'; return x; };
+
+// The Play screen: the four ways to play.
+function buildPlay() {
+  const box = $('playList'); box.innerHTML = '';
+  const mode = (cls, tag, name, right, text, onTap) => {
+    const x = menuCard(cls);
+    x.children[0].textContent = tag; x.children[1].textContent = name; x.children[2].textContent = right; x.children[3].textContent = text;
+    x.addEventListener('click', onTap); box.appendChild(x); return x;
+  };
+  mode('lvl', 'Single player', 'Classic', 'Endless', 'Pick a stage and go until you bump into someone.', () => openStages('classic'));
+  mode('lvl', 'Competitive', 'Race vs bots', '4 racers', 'First to the finish. Your build and gear matter here.', () => openStages('race'));
   // Daily and weekly runs: endless, one try each, the same crowd for everyone.
-  const periodic = (mode, title, lvl, key, startFn, blurb) => {
-    const x = card('lvl daily'), done = hasPlayed(mode), best = parseInt(store.get('excuse' + 'me_' + mode + '_' + key, '0'), 10) || 0;
-    x.children[0].textContent = title + ' · ' + key;
-    x.children[1].textContent = LEVELS[lvl].name;
-    x.children[2].textContent = done ? (best ? fmt(best) + ' pts' : 'Played') : 'One try';
-    x.children[3].textContent = done ? (mode === 'daily' ? 'Played today. A new crowd arrives tomorrow.' : 'Played this week. A new crowd arrives on Monday.') : blurb;
+  const periodic = (kind, title, lvl, key, startFn, blurb) => {
+    const done = hasPlayed(kind), best = parseInt(store.get('excuseme_' + kind + '_' + key, '0'), 10) || 0;
+    const x = mode('lvl daily', title + ' · ' + key, LEVELS[lvl].name, done ? (best ? fmt(best) + ' pts' : 'Played') : 'One try',
+      done ? (kind === 'daily' ? 'Played today. A new crowd arrives tomorrow.' : 'Played this week. A new crowd arrives on Monday.') : blurb, startFn);
     if (done) { x.setAttribute('aria-disabled', 'true'); x.classList.add('done'); }
-    x.addEventListener('click', startFn);
-    box.appendChild(x);
   };
   periodic('daily', 'Daily run', dailyLevel(), todayKey(), startDaily, 'Go as far as you can. Same crowd for everyone today.');
   periodic('weekly', 'Weekly run', weeklyLevel(), weekKey(), startWeekly, 'Go as far as you can. Same crowd for everyone this week.');
+}
+
+// The stage screen: tap a stage and it starts.
+function buildStages() {
+  const box = $('levels'); box.innerHTML = '';
+  const race = stageMode === 'race';
   LEVELS.forEach((L, i) => {
-    const x = card('lvl');
-    x.setAttribute('aria-pressed', String(i === LVI));
+    const x = menuCard('lvl');
     const best = bestOf(L.id), rb = raceBest(L.id);
-    x.children[0].textContent = (i + 1) + ' · ' + L.city;
+    x.children[0].textContent = L.city;
     x.children[1].textContent = L.name;
-    x.children[2].appendChild(document.createTextNode(race ? L.goal + ' m' + (rb ? ' · ' + fmtTime(rb) : '') : 'Endless' + (best ? ' · best ' + fmt(best) : '')));
+    x.children[2].textContent = race ? L.goal + ' m' + (rb ? ' · ' + fmtTime(rb) : '') : best ? 'Best ' + fmt(best) : 'Endless';
     x.children[3].textContent = L.blurb;
-    x.addEventListener('click', () => { setLevel(i); reset(); buildLevels(); });
+    x.addEventListener('click', () => { setLevel(i); start(stageMode); });
     box.appendChild(x);
   });
 }
+
+function openStages(mode) {
+  stageMode = mode;
+  $('stagesTitle').textContent = mode === 'race' ? 'Race vs bots' : 'Classic';
+  $('raceOpts').hidden = mode !== 'race';
+  syncBots(); buildStages(); go('stages');
+}
+
+function syncBots() {
+  const d = raceDifficulty();
+  document.querySelectorAll('#raceOpts .chip').forEach((c, i) => c.setAttribute('aria-pressed', String(i === d)));
+}
+
+export function buildLevels() { buildPlay(); buildStages(); }
 
 
 export const last = { dist: -1, en: -1, low: null, score: -1, chain: -1, tl: -1, cd: -1 };
@@ -110,43 +135,53 @@ function raceHud() {
   S.race.bots.forEach((b, i) => { const d = box.children[i]; if (d) d.style.left = (clamp(b.z / LV.goal, 0, 1) * 100).toFixed(1) + '%'; });
 }
 
-function syncMode() {
-  const race = store.get('excuse_mode', 'classic') === 'race';
-  $('modeClassic').setAttribute('aria-pressed', String(!race)); $('modeRace').setAttribute('aria-pressed', String(race));
-  $('raceOpts').hidden = !race;
-  $('go').textContent = race ? 'Start race' : 'Start walking';
-  const d = raceDifficulty();
-  document.querySelectorAll('#raceOpts .chip').forEach((c, i) => c.setAttribute('aria-pressed', String(i === d)));
-}
-
 // Every challenge, closest to finished first, with its reward's stats so players can pick what to chase.
 function buildChallenges() {
   $('chalNote').textContent = doneCount() + ' of ' + CHALLENGES.length + ' unlocked. Progress carries across every run.';
-  const box = $('chalList'); box.innerHTML = '';
   const pct = c => Math.min(1, tallyOf(c.tally) / c.target);
-  CHALLENGES.slice().sort((a, b) => (isDone(a) - isDone(b)) || (pct(b) - pct(a))).forEach(c => {
-    const li = document.createElement('li'); if (isDone(c)) li.className = 'done';
-    const name = document.createElement('b'); name.textContent = c.name + (isDone(c) ? ' · unlocked' : '');
-    const stats = ITEM_STATS[c.key] && ITEM_STATS[c.key][c.val];
-    const hint = document.createElement('small'); hint.textContent = stats ? 'Race stats: ' + statHint(stats) : 'Looks only';
-    const what = document.createElement('span'); what.textContent = c.text;
-    const bar = document.createElement('div'); bar.className = 'statb'; const fill = document.createElement('i'); fill.className = 'up'; fill.style.width = (pct(c) * 100).toFixed(0) + '%'; bar.appendChild(fill);
-    const num = document.createElement('small'); num.textContent = fmt(Math.min(tallyOf(c.tally), c.target)) + ' / ' + fmt(c.target);
-    [name, hint, what, bar, num].forEach(n => li.appendChild(n));
-    box.appendChild(li);
-  });
+  const draw = () => {
+    const nodes = CHALLENGES.slice().sort((a, b) => (isDone(a) - isDone(b)) || (pct(b) - pct(a))).map(c => {
+      const li = document.createElement('li'); if (isDone(c)) li.className = 'done';
+      const stats = ITEM_STATS[c.key] && ITEM_STATS[c.key][c.val];
+      const head = document.createElement('div'); head.className = 'chalh';
+      const name = document.createElement('b'); name.textContent = c.name;
+      const num = document.createElement('small'); num.textContent = isDone(c) ? 'Unlocked' : fmt(Math.min(tallyOf(c.tally), c.target)) + ' / ' + fmt(c.target);
+      head.appendChild(name); head.appendChild(num);
+      const what = document.createElement('span'); what.textContent = c.text;
+      const bar = document.createElement('div'); bar.className = 'statb'; const fill = document.createElement('i'); fill.className = 'up'; fill.style.width = (pct(c) * 100).toFixed(0) + '%'; bar.appendChild(fill);
+      const hint = document.createElement('small'); hint.textContent = stats ? 'Race stats: ' + statHint(stats) : 'Looks only';
+      [head, what, bar, hint].forEach(n => li.appendChild(n));
+      return li;
+    });
+    pageInto($('chalList'), nodes, $('chalPager'));
+  };
+  draw();
+  relayoutWith(draw);
+}
+
+function showHowTab(id) {
+  document.querySelectorAll('#howTabs .chip').forEach(c => c.setAttribute('aria-pressed', String(c.dataset.tab === id)));
+  const src = $(id), list = $('howList');
+  list.className = 'paged ' + (id === 'howCombos' ? 'combos' : 'rules');
+  const draw = () => pageInto(list, Array.from(src.children).map(n => n.cloneNode(true)), $('howPager'));
+  draw();
+  relayoutWith(draw);
 }
 
 export function init() {
-  $('chalBtn').addEventListener('click', () => { buildChallenges(); $('start').hidden = true; $('chal').hidden = false; });
-  $('chalDone').addEventListener('click', () => { $('chal').hidden = true; $('start').hidden = false; });
-  $('modeClassic').addEventListener('click', () => { store.set('excuse_mode', 'classic'); syncMode(); buildLevels(); });
-  $('modeRace').addEventListener('click', () => { store.set('excuse_mode', 'race'); syncMode(); buildLevels(); });
-  document.querySelectorAll('#raceOpts .chip').forEach((c, i) => c.addEventListener('click', () => { store.set('excuseme_botlvl', String(i)); syncMode(); }));
-  syncMode();
-  $('go').addEventListener('click', () => start(false, store.get('excuse_mode', 'classic')));
+  $('playBtn').addEventListener('click', () => { buildPlay(); go('play'); });
+  $('chalBtn').addEventListener('click', () => { go('chal'); buildChallenges(); });
+  $('howBtn').addEventListener('click', () => { go('howto'); showHowTab('howControls'); });
+  $('setBtn').addEventListener('click', () => go('settings'));
+  $('pauseSet').addEventListener('click', () => go('settings'));
+  document.querySelectorAll('[data-back]').forEach(b => b.addEventListener('click', back));
+  document.querySelectorAll('#howTabs .chip').forEach(c => c.addEventListener('click', () => showHowTab(c.dataset.tab)));
+  document.querySelectorAll('#raceOpts .chip').forEach((c, i) => c.addEventListener('click', () => { store.set('excuseme_botlvl', String(i)); syncBots(); }));
+  const vol = (id, get, set) => { const el = $(id); el.value = String(Math.round(get() * 100)); el.addEventListener('input', e => set(e.target.value / 100)); };
+  vol('musicVol', () => Music.musicVol, v => Music.setMusicVol(v));
+  vol('sfxVol', () => Music.sfxVol, v => Music.setSfxVol(v));
   $('again').addEventListener('click', () => start(lastDaily, lastMode));
-  $('tutBtn').addEventListener('click', () => { store.set('excuseme_tut', '0'); start(); });
+  $('tutBtn').addEventListener('click', () => { store.set('excuseme_tut', '0'); start('classic'); });
   $('tutSkip').addEventListener('click', e => { e.stopPropagation(); if (S.tut) endTut(); });
   $('tutSkip').addEventListener('pointerdown', e => e.stopPropagation());
   $('next').addEventListener('click', () => { setLevel(Math.min(LEVELS.length - 1, LVI + 1)); start(false); });

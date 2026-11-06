@@ -15,6 +15,7 @@ import { CHALLENGES, isLocked, setUnlockListener, tallyOf, track, trackMax } fro
 import { addPop } from './sim/scoring.js';
 import { S, reset, state } from './sim/state.js';
 import { buildLevels, hud, init as initMenus } from './ui/menus.js';
+import { init as initScreens } from './ui/screens.js';
 import { weekKey } from './config/util.js';
 
 
@@ -43,6 +44,7 @@ function frame(now) {
 setUnlockListener(c => { if (!S) return; S.unlocked.push(c.name); addPop('UNLOCKED: ' + c.name.toUpperCase(), '#ff6b9d', 26); Music.sfx('win'); });
 
 // Wire up listeners only now that every module has finished loading (keeps load order from mattering).
+initScreens();
 initCamera();
 initInput();
 initPreview();

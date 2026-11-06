@@ -7,6 +7,7 @@ import { state } from '../sim/state.js';
 
 /* ---------- music: a procedural 148-158 BPM track whose energy follows your chain and close calls ---------- */
 export const Music = (() => {
+  let musicOut = null, sfxOut = null, musicVol = parseFloat(store.get('excuseme_musicvol', '1')), sfxVol = parseFloat(store.get('excuseme_sfxvol', '1'));
   let ac = null, master = null, sfxBus = null, noiseBuf = null, playing = false, next = 0, step = 0, I = 0.15, target = 0.15;
   let enabled = store.get('excuseme_snd', '1') !== '0', song = LEVELS[0].music;
   const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
@@ -17,8 +18,10 @@ export const Music = (() => {
     try {
       ac = new AC();
       const comp = ac.createDynamicsCompressor(); comp.connect(ac.destination);
-      master = ac.createGain(); master.gain.value = 0; master.connect(comp);
-      sfxBus = ac.createGain(); sfxBus.gain.value = 0.55; sfxBus.connect(comp);
+      musicOut = ac.createGain(); musicOut.gain.value = musicVol; musicOut.connect(comp);
+      sfxOut = ac.createGain(); sfxOut.gain.value = sfxVol; sfxOut.connect(comp);
+      master = ac.createGain(); master.gain.value = 0; master.connect(musicOut);
+      sfxBus = ac.createGain(); sfxBus.gain.value = 0.55; sfxBus.connect(sfxOut);
       noiseBuf = ac.createBuffer(1, Math.floor(ac.sampleRate * 0.5), ac.sampleRate);
       const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
     } catch (e) { ac = null; return false; }
@@ -131,6 +134,10 @@ export const Music = (() => {
     },
     setEnabled(v) { enabled = v; store.set('excuseme_snd', v ? '1' : '0'); if (!v) { this.stop(); this.ambStop(); } else if (state === 'play' || state === 'paused') { this.start(LV.music); this.ambStart(LV.id); } },
     get enabled() { return enabled; },
+    get musicVol() { return musicVol; },
+    get sfxVol() { return sfxVol; },
+    setMusicVol(v) { musicVol = v; store.set('excuseme_musicvol', String(v)); if (musicOut) musicOut.gain.value = v; },
+    setSfxVol(v) { sfxVol = v; store.set('excuseme_sfxvol', String(v)); if (sfxOut) sfxOut.gain.value = v; },
     suspend() { if (ac && ac.suspend) ac.suspend(); },
     resume() { if (ac && ac.resume && playing) ac.resume(); }
   };

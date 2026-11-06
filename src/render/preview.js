@@ -7,11 +7,25 @@ import { LOOK, LOOK_OPTS } from '../save/progress.js';
 import { store } from '../save/store.js';
 import { makeMe } from '../sim/people.js';
 import { S, setShowHB, showHB } from '../sim/state.js';
+import { back, go, pageInto, relayoutWith } from '../ui/screens.js';
 
 
 
 /* ---------- character preview ---------- */
 let PV = null;
+
+// Customize is split into body areas. Each opens its own screen: choices first, colours underneath.
+const AREAS = [
+  { id: 'body', name: 'Body', fixed: ['body', 'build'], colors: 'skin' },
+  { id: 'hair', name: 'Hair', fixed: ['hairStyle'], colors: 'hair' },
+  { id: 'top', name: 'Top', paged: 'shirtType', colors: 'shirt' },
+  { id: 'bottoms', name: 'Bottoms', paged: 'pantsType', colors: 'pants' },
+  { id: 'shoes', name: 'Shoes', paged: 'shoeType', colors: 'shoe' },
+  { id: 'head', name: 'Headpiece', fixed: ['showHead'], paged: 'hat', colors: 'gear' },
+  { id: 'back', name: 'Back', paged: 'pack', colors: 'gear' }
+];
+const optOf = key => LOOK_OPTS.find(o => o.key === key);
+const nameOf = (o, val) => { const v = o.vals.find(x => Array.isArray(x) && x[0] === val); return v ? v[1] : ''; };
 
 // Live bars for the three race stats. They only change with build and gear types, never with colours.
 function renderStats(tryOn) {
@@ -30,21 +44,22 @@ function renderStats(tryOn) {
   box.innerHTML = '<div class="statn">' + (tryOn ? 'If you wore it' : 'Race stats') + '</div>' + row('Top speed', 'speed') + row('Acceleration', 'accel') + row('Recovery', 'rec') + fitRow;
 }
 
-// Try on a locked item: the character and bars change, nothing is equipped, and the challenge for it is shown.
-function tryLocked(key, val) {
-  const saved = LOOK[key], c = challengeFor(key, val), info = $('lockInfo'), stats = ITEM_STATS[key] && ITEM_STATS[key][val];
-  LOOK[key] = val; PV = makeMe(); LOOK[key] = saved;
-  renderStats(stats ? { [key]: val } : null);
-  info.hidden = false;
-  info.textContent = c.name + ' is locked. ' + c.text + ' (' + Math.min(tallyOf(c.tally), c.target).toLocaleString('en-US') + ' / ' + c.target.toLocaleString('en-US') + ').' + (stats ? '' : ' Looks only, no stat change.');
-}
-
 function refreshLook() {
   store.set('excuseme_look', JSON.stringify(LOOK));
   PV = makeMe();
   renderStats();
   if (S) { const m = makeMe(); m.x = S.me.x; m.z = S.me.z; m.fx = S.me.fx; m.fz = S.me.fz; S.me = m; }
 }
+
+// Try on a locked item: the character and bars change, nothing is equipped, and the challenge for it is shown.
+function tryLocked(key, val) {
+  const saved = LOOK[key], c = challengeFor(key, val), stats = ITEM_STATS[key] && ITEM_STATS[key][val];
+  LOOK[key] = val; PV = makeMe(); LOOK[key] = saved;
+  renderStats(stats ? { [key]: val } : null);
+  setNote(c.name + ' is locked. ' + c.text + ' (' + Math.min(tallyOf(c.tally), c.target).toLocaleString('en-US') + ' / ' + c.target.toLocaleString('en-US') + ').' + (stats ? '' : ' Looks only.'), true);
+}
+
+function setNote(text, locked) { const n = $('lockInfo'); n.textContent = text; n.classList.toggle('on', !!locked); }
 
 export function drawPreview(now) {
   const pc = $('preview');
@@ -62,53 +77,94 @@ export function drawPreview(now) {
   setCtx(saved[0]); setW(saved[1]); setH(saved[2]); setF(saved[3]); setHOR(saved[4]); setCX(saved[5]); setVX(saved[6]); setVZ(saved[7]); setVY(saved[8]); setShowHB(saved[9]);
 }
 
-function buildLook() {
-  const box = $('opts'); box.innerHTML = '';
-  for (const o of LOOK_OPTS) {
-    const row = document.createElement('div'); row.className = 'opt';
-    const lab = document.createElement('div'); lab.className = 'optl'; lab.textContent = o.label; row.appendChild(lab);
-    const wrap = document.createElement('div'); wrap.className = 'sws'; wrap.setAttribute('role', 'group'); wrap.setAttribute('aria-label', o.label);
-    for (const v of o.vals) {
-      const b = document.createElement('button'); b.type = 'button';
-      const isObj = o.type === 'color' && typeof v === 'object';
-      const val = o.type === 'color' ? (isObj ? v.c : v) : v[0];
-      const locked = isLocked(o.key, val), ch = challengeFor(o.key, val);
-      if (o.type === 'color') { b.className = 'sw'; b.style.background = val; b.setAttribute('aria-label', isObj ? v.name : o.label + ' ' + val); }
-      else {
-        b.className = 'chip'; b.textContent = v[1];
-        const stats = o.key === 'body' ? BODIES[val] : o.key === 'build' ? BUILDS[val] : ITEM_STATS[o.key] && ITEM_STATS[o.key][val];
-        if (stats) { const hint = document.createElement('small'); const tag = styleLabel(o.key, val); hint.textContent = (tag ? tag + ' · ' : '') + statHint(stats); b.appendChild(hint); }
-      }
-      if (locked) {
-        b.classList.add('locked');
-        b.setAttribute('aria-label', ch.name + ', locked. ' + ch.text);
-        if (o.type === 'color') b.textContent = '?';
-      }
-      b.setAttribute('aria-pressed', String(LOOK[o.key] === val));
-      b.addEventListener('click', () => {
-        if (locked) { tryLocked(o.key, val); return; }
-        $('lockInfo').hidden = true;
-        LOOK[o.key] = val;
-        wrap.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
-        refreshLook();
-      });
-      wrap.appendChild(b);
+// One choice: a chip with its trade-off, or a colour dot. Locked ones can still be tapped to try them on.
+function optionButton(o, v, siblings) {
+  const b = document.createElement('button'); b.type = 'button';
+  const isObj = o.type === 'color' && typeof v === 'object', val = o.type === 'color' ? (isObj ? v.c : v) : v[0];
+  const locked = isLocked(o.key, val), ch = challengeFor(o.key, val);
+  if (o.type === 'color') { b.className = 'sw'; b.style.background = val; b.setAttribute('aria-label', isObj ? v.name : o.label + ' ' + val); }
+  else {
+    b.className = 'chip'; b.textContent = v[1];
+    const stats = o.key === 'body' ? BODIES[val] : o.key === 'build' ? BUILDS[val] : ITEM_STATS[o.key] && ITEM_STATS[o.key][val];
+    if (stats) { const hint = document.createElement('small'); const tag = styleLabel(o.key, val); hint.textContent = (tag ? tag + ' · ' : '') + statHint(stats); b.appendChild(hint); }
+  }
+  if (locked) {
+    b.classList.add('locked');
+    b.setAttribute('aria-label', ch.name + ', locked. ' + ch.text);
+    if (o.type === 'color') b.textContent = '?';
+  }
+  b.setAttribute('aria-pressed', String(LOOK[o.key] === val));
+  b.addEventListener('click', () => {
+    if (locked) { tryLocked(o.key, val); return; }
+    LOOK[o.key] = val;
+    siblings.forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    setNote(DEFAULT_NOTE);
+    refreshLook();
+  });
+  siblings.push(b);
+  return b;
+}
+
+const DEFAULT_NOTE = 'Tap a locked item to try it on and see its stats. Colours never change stats.';
+
+function groupLabel(text) { const d = document.createElement('div'); d.className = 'optl'; d.textContent = text; return d; }
+
+function openArea(area) {
+  $('lookTitle').textContent = area.name;
+  $('lookCats').hidden = true; $('lookEdit').hidden = false;
+  currentArea = area;
+  setNote(DEFAULT_NOTE);
+  const draw = () => {
+    const fixed = $('optFixed'); fixed.innerHTML = '';
+    for (const key of area.fixed || []) {
+      const o = optOf(key), row = document.createElement('div'), btns = [];
+      row.className = 'optrow'; row.appendChild(groupLabel(o.label));
+      const wrap = document.createElement('div'); wrap.className = 'chips n' + o.vals.length;
+      for (const v of o.vals) wrap.appendChild(optionButton(o, v, btns));
+      row.appendChild(wrap); fixed.appendChild(row);
     }
-    row.appendChild(wrap); box.appendChild(row);
+    const colors = $('optColors'); colors.innerHTML = '';
+    if (area.colors) {
+      const o = optOf(area.colors), btns = [], wrap = document.createElement('div');
+      colors.appendChild(groupLabel(o.label));
+      wrap.className = 'sws';
+      for (const v of o.vals) wrap.appendChild(optionButton(o, v, btns));
+      colors.appendChild(wrap);
+    }
+    const box = $('optPaged'), ctrl = $('optPager');
+    if (area.paged) {
+      const o = optOf(area.paged), btns = [], nodes = o.vals.map(v => optionButton(o, v, btns));
+      box.hidden = false; $('optPagedLabel').textContent = o.label;
+      pageInto(box, nodes, ctrl, n => n.getAttribute('aria-pressed') === 'true');
+    } else { box.innerHTML = ''; box.hidden = true; $('optPagedLabel').textContent = ''; ctrl.style.visibility = 'hidden'; }
+  };
+  draw();
+  relayoutWith(draw);
+}
+
+let currentArea = null;
+
+function openAreas() {
+  currentArea = null;
+  $('lookTitle').textContent = 'Customize';
+  $('lookEdit').hidden = true; $('lookCats').hidden = false;
+  setNote(doneCount() + ' of ' + CHALLENGES.length + ' items unlocked. Pick an area to change.');
+  refreshLook();
+  const box = $('lookCats'); box.innerHTML = '';
+  for (const area of AREAS) {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'tile';
+    const main = area.paged || (area.fixed && area.fixed[area.fixed.length - 1]);
+    b.textContent = area.name;
+    const now = document.createElement('small'); now.textContent = nameOf(optOf(main), LOOK[main]); b.appendChild(now);
+    b.addEventListener('click', () => openArea(area));
+    box.appendChild(b);
   }
 }
 
-let lookFrom = 'start';
-
-function openLook(from) {
-  lookFrom = from;
-  $('lockInfo').hidden = true;
-  $('starNote').textContent = doneCount() + ' of ' + CHALLENGES.length + ' items unlocked. Tap a locked item to try it on and see its stats. Colours never change stats.';
-  buildLook(); refreshLook(); $(from).hidden = true; $('look').hidden = false; }
-
+function openLook() { go('look'); openAreas(); }
 
 export function init() {
-  $('lookBtn').addEventListener('click', () => openLook('start'));
-  $('endLook').addEventListener('click', () => openLook('end'));
-  $('lookDone').addEventListener('click', () => { $('look').hidden = true; refreshLook(); $(lookFrom).hidden = false; });
+  $('lookBtn').addEventListener('click', openLook);
+  $('endLook').addEventListener('click', openLook);
+  $('lookBack').addEventListener('click', () => { if (currentArea) openAreas(); else { refreshLook(); back(); } });
 }
