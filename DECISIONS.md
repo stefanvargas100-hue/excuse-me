@@ -18,3 +18,4 @@
 - Listener wiring runs from main.js (init functions) so module load order cannot matter; a load-order bug showed up in the production build and was fixed this way.
 - Build: Vite. The build writes the service worker's file list and a content-based cache version, so no manual cache bumping any more.
 - Deploy: Pages must be switched to "GitHub Actions" BEFORE merging phase-2 into main, or the live link breaks (main would serve unbuilt source).
+- Goal changed (Nov 2026): launch with a fuller game (race mode, online, more stages) instead of shipping minimal and adding after. Downloadable/installable goal is done.

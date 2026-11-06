@@ -2,7 +2,9 @@
 
 **Where we are:** a single-file HTML5 canvas game (~2,200 lines, one IIFE) with 3 levels, character customization, procedural music, stars/unlocks, a daily run and a tutorial. It runs in a mobile browser today.
 
-**Goal:** an installable, polished app on iOS and Android, with an optional path to the App Store and Google Play.
+**Goal (updated Nov 2026):** launch a fuller game, not a minimal one. The original goal of having it downloadable and installable is done (live PWA, tests, automatic deploys). The new goal is that the features players would expect, including more levels, modes, online play and leaderboards, are in the game at launch rather than added afterwards.
+
+**Status:** Phases 0 (playtest in progress), 1 and 2 are done. Next is the launch-scope work below.
 
 **Recommended route:** keep the web codebase and wrap it. Do not rewrite it. Each phase below ships something usable.
 
@@ -151,16 +153,29 @@ Decisions made: anonymous accounts with generated names first (works on web and 
 - **Save loss** if you stay on `localStorage`. Move to Preferences in Phase 3.
 - **Leaderboard cheating** in Phase 6. Use input replays.
 
+## Launch scope (what must be in the game before release)
+
+Decided: launch with a fuller game. Candidates, to be confirmed after playtest feedback:
+- [ ] Race mode (A to B, bumps slow you down), Phase 2.5
+- [ ] Online: daily, weekly and per-stage leaderboards; live 1v1 and 4–8 player races (Phase 6a–6c)
+- [ ] More stages (Phase 8 ideas: subway platform, music festival, Black Friday mall, train station)
+- [ ] More crowd events and rival types; unlockable looks
+- [ ] Settings screen, accessibility, polish (Phase 5)
+- [ ] Anything the playtest shows is missing
+
+Rule: one feature at a time, each playtested before the next. Cut anything that does not clear a "is this fun?" bar rather than shipping it.
+
 ## Suggested order of work
 
-1. Phase 0, then Phase 1 (PWA) for fast real-world feedback.
-2. Phase 2 (project structure) before the code grows further.
-3. Phase 2.5 (gameplay sprint and Race mode), then Phase 3 and Phase 4 together, since you need real-device testing for both.
-4. Phase 5, then beta (Phase 7). Phase 6 (online) can start earlier, once Race mode is fun.
+1. Finish the Phase 0 playtest and collect feedback (in progress).
+2. Phase 2.5: gameplay sprint, starting with Race mode, then more stages and events.
+3. Phase 6a–6c: leaderboards, then live lobbies and player cut-offs, built on Race mode.
+4. Phase 3 and Phase 4 together (phone app and real-device performance), re-checked after each big feature.
+5. Phase 5 polish, then beta and release (Phase 7). Phase 8 becomes post-launch updates only.
 
 ## Rough timeline (solo, part-time)
 
-| Milestone | Target |
+| Milestone | Target (to be re-estimated for the larger launch scope) |
 |---|---|
 | Friends playtest | Week 1 |
 | PWA live | Week 1–2 |
