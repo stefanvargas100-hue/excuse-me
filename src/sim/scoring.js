@@ -5,7 +5,7 @@ import { CHAIN_WINDOW, R_PLAYER } from '../config/tuning.js';
 import { R, pick, sgn } from '../config/util.js';
 import { track, trackMax } from '../save/challenges.js';
 import { buzz } from '../save/store.js';
-import { S } from './state.js';
+import { S, calm } from './state.js';
 
 
 
@@ -59,7 +59,7 @@ export function onPass(p) {
   else if (tags.length) Music.sfx('combo');
   S.lastPassT = now; S.lastPass = { t: now, side, adx: Math.abs(dx) };
   // near-miss slow motion on the riskiest passes
-  if (gap < 0.15 || tags.some(t => t[0] === 'THREAD THE NEEDLE')) { S.slowT = 0.55; Music.sfx('slow'); }
+  if (gap < 0.15 || tags.some(t => t[0] === 'THREAD THE NEEDLE')) { S.hitStop = 0.05; if (!calm) { S.slowT = 0.55; Music.sfx('slow'); } }
   if (gap < 0.15) buzz(30); else if (gap < 0.4) buzz(12);
   // the person you brushed past reacts
   if (gap < 0.4 && !p.rival) {

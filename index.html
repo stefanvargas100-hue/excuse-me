@@ -125,13 +125,18 @@
   <div class="card full">
     <div class="topbar"><button class="backbtn" data-back type="button" aria-label="Back">‹</button><h2>Settings</h2></div>
     <div class="setlist">
-      <label class="setrow"><span>Music and sound</span><input type="checkbox" class="sndt" checked></label>
+      <div class="setgrid">
+        <label class="setrow"><span>Sound</span><input type="checkbox" class="sndt" checked></label>
+        <label class="setrow"><span>Vibration</span><input type="checkbox" class="vibt" checked></label>
+        <label class="setrow"><span>Camera bob</span><input type="checkbox" class="bobt" checked></label>
+        <label class="setrow"><span>Hitboxes</span><input type="checkbox" class="hbt"></label>
+        <label class="setrow"><span>Calm visuals</span><input type="checkbox" id="calmT"></label>
+        <label class="setrow"><span>Shape cues</span><input type="checkbox" id="cuesT"></label>
+      </div>
       <label class="setrow slider"><span>Music volume</span><input type="range" id="musicVol" min="0" max="100" step="5"></label>
       <label class="setrow slider"><span>Sound effects volume</span><input type="range" id="sfxVol" min="0" max="100" step="5"></label>
-      <label class="setrow"><span>Vibration</span><input type="checkbox" class="vibt" checked></label>
-      <label class="setrow"><span>Camera bob</span><input type="checkbox" class="bobt" checked></label>
-      <label class="setrow"><span>Show hitboxes</span><input type="checkbox" class="hbt"></label>
       <button id="tutBtn" class="ghost" type="button">Replay tutorial</button>
+      <p class="sethelp">Calm visuals removes slow motion, flashes, zoom and freeze frames. Shape cues mark rivals with ! and speed walkers with », so colour is not needed.</p>
     </div>
   </div>
 </div>

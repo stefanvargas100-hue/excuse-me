@@ -4,7 +4,7 @@ import { TAU, clamp, sgn } from '../config/util.js';
 import { ctx } from '../dom.js';
 import { CX, F, HOR, VX, VY, VZ, W } from './camera.js';
 import { FONT, W3, ball, box3D, label } from './draw.js';
-import { S, showHB } from '../sim/state.js';
+import { S, cues, showHB } from '../sim/state.js';
 
 
 
@@ -436,6 +436,11 @@ export function drawPerson(p) {
     ctx.fillStyle = p.color; ctx.strokeStyle = INK; ctx.lineWidth = Math.max(1, 0.03 * U); ctx.lineJoin = 'round';
     ctx.beginPath(); ctx.moveTo(hx, ay); ctx.lineTo(hx - aw, ay - aw * 1.3); ctx.lineTo(hx + aw, ay - aw * 1.3); ctx.closePath(); ctx.fill(); ctx.stroke();
     if (U > 40) { ctx.font = '700 ' + clamp(Math.round(0.2 * U), 11, 16) + 'px ' + FONT; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.lineWidth = 3; ctx.strokeText(p.name, hx, ay - aw * 1.5); ctx.fillStyle = '#ffffff'; ctx.fillText(p.name, hx, ay - aw * 1.5); }
+  }
+  if (cues && (p.rival || p.fast) && !p.isMe && !p.racer) {
+    const fs = clamp(Math.round(0.34 * U), 12, 30);
+    ctx.font = '700 ' + fs + 'px ' + FONT; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.lineWidth = 3; ctx.strokeStyle = INK; ctx.fillStyle = '#ffffff';
+    const mark = p.rival ? '!' : '»'; ctx.strokeText(mark, hx, hy - 0.2 * U); ctx.fillText(mark, hx, hy - 0.2 * U);
   }
   if (p.tele) {
     const a = 0.55 + 0.45 * Math.sin(S.clock * 18), sz = 0.12 * U, cy = hy - 0.34 * U;

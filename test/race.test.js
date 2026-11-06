@@ -183,3 +183,9 @@ test('no camera shake is left: a bump does not move the view', () => {
   assert.ok(E.S.bumps >= 1);
   assert.strictEqual(E.S.shake, undefined);
 });
+
+test('a bump lands with a tiny freeze instead of a camera shake', () => {
+  const E = atGo();
+  tail(E, 3, 0, 0.2, 0);
+  assert.ok(E.S.hitStop > 0);
+});

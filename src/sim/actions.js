@@ -20,7 +20,7 @@ export function shout() {
   // Timing: shout right before you would hit someone and it works better. More people move, they move further,
   // even people on their phones hear you, and the recharge is shorter.
   const perfect = S.people.some(p => !p.prop && !p.dead && !p.rival && p.z - S.pz > 0.2 && p.z - S.pz < PERFECT_SHOUT_M && Math.abs(p.x - S.px) < 0.7);
-  if (perfect) { S.shoutCD -= 2; S.score += 100; track('perfectShouts'); addPop('PERFECT EXCUSE ME', '#ff6b9d', 28); buzz([10, 20, 10]); }
+  if (perfect) { S.shoutCD -= 2; S.score += 100; track('perfectShouts'); addPop('PERFECT EXCUSE ME', '#ff6b9d', 28); buzz([10, 20, 10]); Music.sfx('perfect'); }
   S.me.react = { t: 0, text: 'Excuse me!', up: false };
   Music.sfx('shout'); buzz(8);
   const near = S.people.filter(p => !p.prop && !p.dead && p.z - S.pz > 0.2 && p.z - S.pz < (perfect ? 9 : 7.5) && Math.abs(p.x - S.px) < (perfect ? 2.6 : 2.0))
@@ -46,7 +46,7 @@ export function tryDash(dir) {
   // Timing: dash at the last moment before contact and it costs nothing and gives you a burst of pace.
   const perfect = S.people.some(p => !p.dead && p.z - S.pz > 0.1 && p.z - S.pz < PERFECT_DASH_M && p.circles.some(c => Math.abs(p.x + c.ox - S.px) < 0.55));
   if (S.energy < COST_DASH && !perfect) { S.flash = 0.45; return; }
-  if (perfect) { S.perfectT = PERFECT_T; S.score += 100; track('perfectDashes'); addPop('PERFECT DASH', '#2ec4b6', 28); buzz([10, 20, 10]); Music.sfx('combo'); }
+  if (perfect) { S.perfectT = PERFECT_T; S.score += 100; track('perfectDashes'); addPop('PERFECT DASH', '#2ec4b6', 28); buzz([10, 20, 10]); Music.sfx('perfect'); }
   else S.energy -= COST_DASH;
   S.dashT = DASH_T; track('dashes'); S.dashDir = dir; S.dashCool = 0.45; S.lastDashT = S.time; Music.sfx('dash');
 }

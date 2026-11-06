@@ -8,14 +8,14 @@ import { drawPerson, rrect } from './figures.js';
 import { drawPops, radarTop, rearRadar, zoneGuide } from './hud.js';
 import { drawSlipstream } from './slipstream.js';
 import { drawCars, paintAirport, paintNYC, paintShibuya } from './world.js';
-import { S, camBob, state } from '../sim/state.js';
+import { S, calm, camBob, state } from '../sim/state.js';
 
 
 
 export function render() {
   const F0 = F, multNow = Math.min(8, 1 + Math.floor(S.chain / 3));
-  setF(F0 * (1 + 0.07 * S.slow + 0.012 * (multNow - 1)));   // pull in during slow-mo and as the multiplier climbs
-  const live = S.live && camBob;
+  setF(calm ? F0 : F0 * (1 + 0.07 * S.slow + 0.012 * (multNow - 1)));   // pull in during slow-mo and as the multiplier climbs
+  const live = S.live && camBob && !calm;
   setVX(S.camX); setVZ(S.pz - CAM_BACK); setVY(CAM_UP);
   setHOR(H * 0.34 + (live ? (1 - Math.cos(S.step)) * H * 0.0012 : 0));
   setCX(W / 2);
@@ -29,7 +29,7 @@ export function render() {
   drawSlipstream();
   ctx.restore();
 
-  if (S.boostV > 0.25) {
+  if (S.boostV > 0.25 && !calm) {
     const R = Math.max(W, H), cx = W / 2, cy = H * 0.45, f = Math.floor(S.clock * 14);
     ctx.strokeStyle = 'rgba(255,255,255,' + (0.18 * S.boostV).toFixed(2) + ')'; ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.beginPath();
     for (let i = 0; i < 16; i++) {
@@ -40,7 +40,7 @@ export function render() {
   }
   setF(F0);
   // combo edge tint, slow-motion vignette, chain-break flash
-  if (multNow > 1 || S.slow > 0.02 || S.breakFlash > 0) {
+  if (!calm && (multNow > 1 || S.slow > 0.02 || S.breakFlash > 0)) {
     const g = ctx.createRadialGradient(W / 2, H * 0.5, Math.min(W, H) * 0.35, W / 2, H * 0.5, Math.max(W, H) * 0.75);
     const mc = hex(MULT_COLS[multNow - 1]);
     const tintA = multNow > 1 ? 0.06 + 0.03 * (multNow - 1) : 0;

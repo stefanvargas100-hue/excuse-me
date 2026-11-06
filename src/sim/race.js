@@ -191,9 +191,9 @@ export function raceCollide(dt) {
     S.bumpCool = BUMP_COOL;   // staying in contact is still the same bump
     if (fresh) {
       S.bumpT = S.race.me.bumpT; S.bumps++; S.draftC = 0; S.draftT = 0;
-      S.burstT = 0; S.dashT = 0; S.breakFlash = 0.3;
+      S.burstT = 0; S.dashT = 0; S.breakFlash = 0.3; S.hitStop = 0.07;
       S.chain = 0; S.snake = 0; S.oncRun = 0; S.multPrev = 1;
-      addPop('BUMP!', '#ff4d4f', 34); Music.sfx('bump'); buzz([40, 30, 80]);
+      addPop('BUMP!', '#ff4d4f', 34); Music.sfx('oof'); buzz([40, 30, 80]);
     }
     if (S.blockT > STUCK_T) { S.ghostT = STUCK_GHOST; S.blockT = 0; }   // never let anyone stay pinned
   } else S.blockT = Math.max(0, S.blockT - dt * 2);

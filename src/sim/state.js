@@ -10,6 +10,9 @@ import { CAR_LANES, spawnCar } from './traffic.js';
 
 /* ---------- state ---------- */
 export let S = null, state = 'ready', showHB = false, camBob = store.get('excuseme_bob', '1') !== '0', endShown = false;
+export let calm = store.get('excuseme_calm', '0') === '1', cues = store.get('excuseme_cues', '0') === '1';   // reduced motion, and shape cues as well as colour
+export function setCalm(v) { calm = v; }
+export function setCues(v) { cues = v; }
 
 // Endless modes (classic, daily, weekly) have no finish line; only a race ends at the stage goal.
 export const goalOf = () => (S && S.endless ? Infinity : LV.goal);
@@ -26,7 +29,7 @@ export function reset() {
         burstT: 0, dashT: 0, dashCool: 0, dashDir: 0, flash: 0, lastDashT: -9,
         meProxy: { x: 0, z: 0, vx: 0, vz: 0, prop: null },
         slow: 0, slowT: 0, breakFlash: 0, multPrev: 1, stepN: 0,
-        perfectT: 0, unlocked: [], farMark: 0, lastSlip: -99, draftC: 0, draftT: 0, draftFull: 1, draftNear: 0, draftX: 0, draftZ: 0, bumpT: 0, ghostT: 0, bumpCool: 0, blockT: 0, bumps: 0, race: null, mode: 'classic', kind: 'classic', endless: false, seed: null, evN: 0, chunkSum: {},
+        hitStop: 0, perfectT: 0, unlocked: [], farMark: 0, lastSlip: -99, draftC: 0, draftT: 0, draftFull: 1, draftNear: 0, draftX: 0, draftZ: 0, bumpT: 0, ghostT: 0, bumpCool: 0, blockT: 0, bumps: 0, race: null, mode: 'classic', kind: 'classic', endless: false, seed: null, evN: 0, chunkSum: {},
         timeLeft: LV.limit, timeout: false, lastSec: 99, shoutCD: 0, slipT: 0, eventT: 16, rush: false, rushT: rnd(28, 40), rushSpawn: 0, banner: null };
   touches.clear(); keys.l = keys.r = false; setPendingDash(null); setLastBoth(-9999);
   S.me = makeMe();

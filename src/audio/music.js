@@ -7,7 +7,7 @@ import { state } from '../sim/state.js';
 
 /* ---------- music: a procedural 148-158 BPM track whose energy follows your chain and close calls ---------- */
 export const Music = (() => {
-  let musicOut = null, sfxOut = null, musicVol = parseFloat(store.get('excuseme_musicvol', '1')), sfxVol = parseFloat(store.get('excuseme_sfxvol', '1'));
+  let windO = null, windG = null, musicOut = null, sfxOut = null, musicVol = parseFloat(store.get('excuseme_musicvol', '1')), sfxVol = parseFloat(store.get('excuseme_sfxvol', '1'));
   let ac = null, master = null, sfxBus = null, noiseBuf = null, playing = false, next = 0, step = 0, I = 0.15, target = 0.15;
   let enabled = store.get('excuseme_snd', '1') !== '0', song = LEVELS[0].music;
   const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
@@ -127,6 +127,8 @@ export const Music = (() => {
       else if (kind === 'combo') { tone(t, 81, 0.08, 0.05, 'square', 3000, sfxBus); tone(t + 0.08, 88, 0.12, 0.05, 'square', 3000, sfxBus); }
       else if (kind === 'bump') { kick(t, 1, sfxBus); noise(t, 0.25, 0.35, 'lowpass', 500, 0, sfxBus); }
       else if (kind === 'shout') { tone(t, 79, 0.1, 0.06, 'triangle', 4000, sfxBus); tone(t + 0.1, 84, 0.14, 0.06, 'triangle', 4000, sfxBus); }
+      else if (kind === 'oof') { noise(t, 0.12, 0.3, 'lowpass', 900, 0, sfxBus); sweep(t, 340, 120, 0.16, 0.2); }
+      else if (kind === 'perfect') { tone(t, 88, 0.09, 0.07, 'triangle', 5000, sfxBus); tone(t + 0.07, 95, 0.16, 0.07, 'triangle', 5000, sfxBus); }
       else if (kind === 'tick') tone(t, 96, 0.05, 0.06, 'square', 5000, sfxBus);
       else if (kind === 'step') noise(t, 0.035, 0.05, 'highpass', 2200, 0, sfxBus);
       else if (kind === 'slow') { const o = ac.createOscillator(), g = ac.createGain(); o.frequency.setValueAtTime(420, t); o.frequency.exponentialRampToValueAtTime(110, t + 0.5); g.gain.setValueAtTime(0.08, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.55); o.connect(g); g.connect(sfxBus); o.start(t); o.stop(t + 0.6); }
@@ -138,6 +140,18 @@ export const Music = (() => {
     get sfxVol() { return sfxVol; },
     setMusicVol(v) { musicVol = v; store.set('excuseme_musicvol', String(v)); if (musicOut) musicOut.gain.value = v; },
     setSfxVol(v) { sfxVol = v; store.set('excuseme_sfxvol', String(v)); if (sfxOut) sfxOut.gain.value = v; },
+    // Drafting whistle: level 0 is silent, and it climbs in pitch and volume as the slipstream builds.
+    wind(level) {
+      if (!ac || !enabled || ac.state !== 'running') return;
+      if (!windO) {
+        windO = ac.createOscillator(); windG = ac.createGain(); const f = ac.createBiquadFilter();
+        windO.type = 'sine'; f.type = 'bandpass'; f.frequency.value = 1500; f.Q.value = 0.8; windG.gain.value = 0;
+        windO.connect(f); f.connect(windG); windG.connect(sfxBus); windO.start();
+      }
+      const t = ac.currentTime;
+      windG.gain.setTargetAtTime(level > 0.03 ? 0.02 + 0.09 * level : 0, t, 0.08);
+      windO.frequency.setTargetAtTime(700 + 1400 * level, t, 0.1);
+    },
     suspend() { if (ac && ac.suspend) ac.suspend(); },
     resume() { if (ac && ac.resume && playing) ac.resume(); }
   };

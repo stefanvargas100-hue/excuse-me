@@ -8,12 +8,12 @@ import { render } from './render/render.js';
 import { shout } from './sim/actions.js';
 import { hasPlayed, pauseGame, quitRun, start, tick, toMenu } from './sim/game.js';
 import { mk, runEvent } from './sim/people.js';
-import { racePace } from './sim/race.js';
+import { draftCharge, racePace } from './sim/race.js';
 import { BODIES, BUILDS, ITEM_STATS, fitOf, effects, statsOf } from './config/stats.js';
 import { LOOK } from './save/progress.js';
 import { CHALLENGES, isLocked, setUnlockListener, tallyOf, track, trackMax } from './save/challenges.js';
 import { addPop } from './sim/scoring.js';
-import { S, reset, state } from './sim/state.js';
+import { S, calm, reset, state } from './sim/state.js';
 import { buildLevels, hud, init as initMenus } from './ui/menus.js';
 import { init as initScreens } from './ui/screens.js';
 import { weekKey } from './config/util.js';
@@ -31,7 +31,9 @@ function frame(now) {
   // slow motion runs on real time so it always lasts the same
   S.slowT -= dt; S.slow += ((S.slowT > 0 ? 1 : 0) - S.slow) * Math.min(1, dt * (S.slowT > 0 ? 14 : 5));
   S.breakFlash = Math.max(0, S.breakFlash - dt);
-  const gdt = dt * (1 - 0.68 * S.slow);
+  let gdt = dt * (1 - 0.68 * S.slow);
+  if (S.hitStop > 0) { S.hitStop -= dt; if (!calm) gdt = 0; }
+  Music.wind(state === 'play' && S.race ? (S.draftT > 0 ? 0.7 : draftCharge(S)) : 0);
   const n = Math.max(1, Math.ceil(gdt / 0.0167));
   if (state !== 'paused') for (let i = 0; i < n; i++) tick(gdt / n);
   render(); hud();

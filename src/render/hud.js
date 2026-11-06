@@ -4,7 +4,7 @@ import { ctx } from '../dom.js';
 import { touches } from '../input/input.js';
 import { H, W } from './camera.js';
 import { FONT } from './draw.js';
-import { S } from '../sim/state.js';
+import { S, cues } from '../sim/state.js';
 import { TUT } from '../sim/tutorial.js';
 
 
@@ -47,6 +47,7 @@ export function rearRadar() {
     const danger = gap < 0.6 && it.dz < 1.4 && it.dz > -2.5;
     ctx.globalAlpha = (0.5 + 0.5 * near) * (danger ? 0.65 + 0.35 * Math.sin(S.clock * 22) : 1);
     const sz = 5.5 + 3 * near;
+    if (cues && (p.rival || p.fast)) { ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.4; if (p.rival) ctx.strokeRect(x - sz, y - sz, sz * 2, sz * 2); else { ctx.beginPath(); ctx.arc(x, y, sz, 0, TAU); ctx.stroke(); } }
     if (p.rival) radarArrow(x, y, ang, sz, '#ff2d3a', '#ffffff');
     else if (p.fast) radarArrow(x, y, ang, sz, '#22b8e8', '#ffffff');
     else radarArrow(x, y, ang, sz, '#ffcf1f', 'rgba(255,255,255,0.85)');
