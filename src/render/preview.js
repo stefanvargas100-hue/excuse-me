@@ -17,6 +17,7 @@ let PV = null;
 // Customize is split into body areas. Each opens its own screen: choices first, colours underneath.
 const AREAS = [
   { id: 'body', name: 'Body', fixed: ['body', 'build'], colors: 'skin' },
+  { id: 'face', name: 'Face', fixed: ['eyes', 'nose', 'mouth'] },
   { id: 'hair', name: 'Hair', fixed: ['hairStyle'], colors: 'hair' },
   { id: 'top', name: 'Top', paged: 'shirtType', colors: 'shirt' },
   { id: 'bottoms', name: 'Bottoms', paged: 'pantsType', colors: 'pants' },

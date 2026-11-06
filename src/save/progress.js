@@ -1,4 +1,5 @@
 import { GEARS, HAIRS, SKINS } from '../config/colour.js';
+import { FACE_DEFAULT, FACE_PARTS, cleanFace } from '../config/faces.js';
 import { isLocked } from './challenges.js';
 import { store } from './store.js';
 
@@ -16,6 +17,9 @@ export const LOOK_OPTS = [
   { key: 'shoe', label: 'Shoe colour', type: 'color', vals: ['#f4f6f8', '#2b2f36', '#e2574c', '#2f80ed', '#7a4b2a', { c: '#d4af37', name: 'Gold sneakers' }] },
   { key: 'skin', label: 'Skin', type: 'color', vals: SKINS },
   { key: 'hair', label: 'Hair colour', type: 'color', vals: HAIRS },
+  { key: 'eyes', label: 'Eyes', type: 'chip', vals: FACE_PARTS.eyes },
+  { key: 'nose', label: 'Nose', type: 'chip', vals: FACE_PARTS.nose },
+  { key: 'mouth', label: 'Mouth', type: 'chip', vals: FACE_PARTS.mouth },
   { key: 'hairStyle', label: 'Hair style', type: 'chip', vals: [['short', 'Short'], ['long', 'Long'], ['bald', 'Bald'], ['mohawk', 'Mohawk']] },
   { key: 'hat', label: 'Headpiece', type: 'chip', vals: [['cap', 'Cap'], ['beanie', 'Beanie'], ['visor', 'Visor'], ['sweatband', '80s sweatband'], ['bucket', 'Y2K bucket hat'], ['headphones', 'Headphones'], ['shades', 'Shades'], ['beret', 'Beret'], ['fedora', 'Fedora'], ['tiara', 'Tiara'], ['crown', 'Crown']] },
   { key: 'showHead', label: 'Show headpiece (stats stay either way)', type: 'chip', vals: [['1', 'Show'], ['0', 'Hide']] },
@@ -23,7 +27,7 @@ export const LOOK_OPTS = [
   { key: 'gear', label: 'Headpiece and bag colour', type: 'color', vals: GEARS }
 ];
 
-const LOOK_DEFAULT = { body: 'm', build: 'medium', shirtType: 'tee', pantsType: 'jeans', shoeType: 'sneakers', shirt: '#ffcf1f', pants: '#1e3a5f', shoe: '#f4f6f8', skin: '#c68863', hair: '#3b2a1e', hairStyle: 'short', hat: 'cap', showHead: '1', pack: 'pack', gear: '#111827' };
+const LOOK_DEFAULT = { body: 'm', build: 'medium', shirtType: 'tee', pantsType: 'jeans', shoeType: 'sneakers', shirt: '#ffcf1f', pants: '#1e3a5f', shoe: '#f4f6f8', skin: '#c68863', hair: '#3b2a1e', hairStyle: 'short', hat: 'cap', showHead: '1', pack: 'pack', gear: '#111827', ...FACE_DEFAULT };
 
 export let LOOK = Object.assign({}, LOOK_DEFAULT);
 
@@ -33,6 +37,7 @@ try { Object.assign(LOOK, JSON.parse(store.get('excuseme_look', '{}'))); } catch
 if (LOOK.hat === 'none' || !LOOK.hat) { if (LOOK.face === 'shades') LOOK.hat = 'shades'; else { LOOK.hat = 'cap'; LOOK.showHead = '0'; } }
 if (LOOK.pack === 'none' || !LOOK.pack) LOOK.pack = 'sling';
 delete LOOK.face;
+Object.assign(LOOK, cleanFace(LOOK));   // old saves have no face parts yet
 
 
 function sanitizeLook() {   // take off anything not earned yet

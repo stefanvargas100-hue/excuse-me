@@ -65,3 +65,6 @@ buildLevels();
 window.__excuse = { startDuel, duelReceive, nextGoal, rotatingList, tick, reset, start, setLevel, get S() { return S; }, get state() { return state; }, keys, action, onTap, render, drawPreview, LEVELS, runEvent, shout, weekKey, hasPlayed, pauseGame, quitRun, toMenu, CHALLENGES, isLocked, tallyOf, track, trackMax, racePace, fitOf, BODIES, BUILDS, ITEM_STATS, effects, statsOf, LOOK, mkPerson: (x, z) => mk(x, z, { hx: 0, hz: 1, v0: 1 }) };
 
 requestAnimationFrame(frame);
+
+// Review tool: add ?lineup to the address to see every body and clothing item side by side.
+if (typeof location !== 'undefined' && location.search.includes('lineup')) import('./dev/lineup.js').then(m => m.openLineup());

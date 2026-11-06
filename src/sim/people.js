@@ -1,5 +1,6 @@
 import { Music } from '../audio/music.js';
 import { DOGS, FASTSHIRTS, GEARS, HAIRS, LUGS, PANTS, SHIRTS, SHOES, SKINS, shade } from '../config/colour.js';
+import { randomFace } from '../config/faces.js';
 import { LV, SPAWN_FAR } from '../config/levels.js';
 import { BUILDS } from '../config/stats.js';
 import { R_BODY, R_LUGGAGE, R_PLAYER, walkSpeed } from '../config/tuning.js';
@@ -39,6 +40,8 @@ export function mk(x, z, o) {
     hit: false, passed: false, fast: false, rival: false, rs: 'cruise', rt: 0, cuts: 0, cool: 0, cutDone: false,
     prop: null, photo: 0, stopT: 0, wait: null, turnX: null, turnDir: 0, faceTo: null
   }, o);
+  // a face for every crowd person, derived from their own phase so it never disturbs the seeded crowd (daily and race layouts stay the same)
+  { const rf = randomFace(mulberry32(Math.floor(p.phase * 1e6) >>> 0)); for (const k in rf) if (o[k] === undefined) p[k] = rf[k]; }
   if (o.vx === undefined && o.vz === undefined) { p.vx = p.hx * p.v0; p.vz = p.hz * p.v0; }
   p.dirz = sgn(p.hz);
   p.walkA = Math.hypot(p.vx, p.vz) > 0.15 ? 1 : 0;
