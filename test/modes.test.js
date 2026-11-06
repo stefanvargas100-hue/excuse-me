@@ -75,3 +75,22 @@ test('everyone on the same daily run meets the same crowd, whatever pace they ta
   assert.ok(b.z !== a.z, 'the two runs really did go at different paces');
   for (const k of common) assert.strictEqual(a.sums[k], b.sums[k], 'chunk at ' + k + ' m differs');
 });
+
+test('quitting from the pause menu keeps your best score and distance', () => {
+  const E = load(); E.setLevel(0); E.start('classic');
+  for (let i = 0; i < 150; i++) { clearNear(E); E.tick(DT); }
+  const sc = Math.floor(E.S.score), z = Math.floor(E.S.pz);
+  assert.ok(sc > 0);
+  E.pauseGame(); E.quitRun(); E.toMenu();
+  assert.ok(E.tallyOf('bestScore') >= sc, 'score kept');
+  assert.ok(E.tallyOf('far_airport') >= z - 1, 'distance kept');
+  assert.strictEqual(E.storage.excuseme_best_airport, String(sc));
+});
+
+test('quitting a daily run saves its score and the try stays used', () => {
+  const E = load(); E.setLevel(0); E.start('daily');
+  for (let i = 0; i < 90; i++) { clearNear(E); E.tick(DT); }
+  E.pauseGame(); E.quitRun(); E.toMenu();
+  assert.strictEqual(E.hasPlayed('daily'), true);
+  assert.strictEqual(E.tallyOf('dailyRuns'), 1);
+});

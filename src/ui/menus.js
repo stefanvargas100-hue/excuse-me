@@ -6,7 +6,7 @@ import { $ } from '../dom.js';
 import { CHALLENGES, doneCount, isDone, tallyOf } from '../save/challenges.js';
 import { ITEM_STATS, statHint } from '../config/stats.js';
 import { setVibOn, store, vibOn } from '../save/store.js';
-import { dailyLevel, fmt, hasPlayed, lastDaily, lastMode, pauseGame, resumeGame, start, startDaily, startWeekly, toMenu, weeklyLevel } from '../sim/game.js';
+import { dailyLevel, fmt, hasPlayed, lastDaily, lastMode, pauseGame, quitRun, resumeGame, start, startDaily, startWeekly, toMenu, weeklyLevel } from '../sim/game.js';
 import { draftMul, fmtTime, ordinal, raceBest, racePace, raceDifficulty, standings } from '../sim/race.js';
 import { S, bestOf, camBob, reset, setCamBob, setShowHB, showHB, state } from '../sim/state.js';
 import { endTut } from '../sim/tutorial.js';
@@ -190,7 +190,7 @@ export function init() {
   $('pauseBtn').addEventListener('pointerdown', e => e.stopPropagation());
   $('resume').addEventListener('click', resumeGame);
   $('restart').addEventListener('click', () => { $('pause').hidden = true; Music.ambStop(); start(lastDaily, lastMode); });
-  $('pmenu').addEventListener('click', () => { Music.stop(); Music.ambStop(); toMenu(); });
+  $('pmenu').addEventListener('click', () => { quitRun(); Music.stop(); Music.ambStop(); toMenu(); });
   window.addEventListener('keydown', e => { const k = e.key.toLowerCase(); if (k === 'escape' || k === 'p') { if (state === 'play') pauseGame(); else if (state === 'paused') resumeGame(); } });
   document.querySelectorAll('.vibt').forEach(el => {
     el.checked = vibOn;

@@ -277,10 +277,20 @@ export function pauseGame() {
   setState('paused'); touches.clear(); Music.suspend();
   $('pauseEyebrow').textContent = (S.race ? 'Race · ' : '') + LV.city + ' · ' + LV.name + ' · ' + Math.floor(S.pz) + ' m';
   $('restart').hidden = !!(S.daily || S.weekly);   // daily and weekly runs are one try
+  $('pmenu').textContent = S.daily || S.weekly ? 'End run' : 'Main menu';
   $('pause').hidden = false;
 }
 
-export function resumeGame() { if (state !== 'paused') return; $('pause').hidden = true; setState('play'); Music.resume(); }
+export function resumeGame() { if (state !== 'paused') return; hideMenus(); setState('play'); Music.resume(); }
+
+// Quitting mid-run: the score still counts, and a daily or weekly try is still used up.
+export function quitRun() {
+  if (!S || !S.live || S.race) return;
+  if (S.daily) track('dailyRuns');
+  if (S.weekly) track('weeklyRuns');
+  if (S.kind === 'classic') { trackMax('far_' + LV.id, S.pz); trackMax('bestScore', S.score); }
+  recordBest();
+}
 
 export function toMenu() {
   setR(Math.random); $('tut').hidden = true;

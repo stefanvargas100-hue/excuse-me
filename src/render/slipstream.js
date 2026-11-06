@@ -18,20 +18,21 @@ export function drawSlipstream() {
   if (!on && charge < 0.03) return;
   const power = on ? clamp(S.draftT / FADE_LEN, 0, 1) : charge * (0.55 + 0.45 * S.draftNear);
   // while charging the wind comes off whoever you are behind; during the boost it surrounds you
-  const fromX = on ? S.px : S.draftX, fromZ = on ? S.pz + 6 : S.draftZ, toZ = S.pz - 2.2;
+  const fromX = on ? S.px : S.draftX, fromZ = on ? S.pz + 6 : S.draftZ, toZ = S.pz - 1.2;
   const count = Math.round(5 + 25 * power), radius = 0.28 + 0.62 * power, flow = 0.5 + 0.7 * power, len = 0.5 + 2.4 * power;
-  ctx.lineCap = 'round';
   for (let i = 0; i < count; i++) {
     const u = frac(S.clock * flow + i * 0.381), ang = i * 2.399, wob = 0.8 + 0.2 * Math.sin(i * 1.7);
     const z = fromZ + (toZ - fromZ) * u, cx = fromX + (S.px - fromX) * u;
     const x = cx + Math.cos(ang) * radius * wob, y = Math.max(0.06, 0.95 + Math.sin(ang) * radius * wob * 1.1);
     const z2 = z - len;
-    if (z2 - VZ < 1) continue;
-    const a = W3(x, y, z), b = W3(x, y, z2), fadeIn = Math.sin(Math.PI * u);
+    if (z2 - VZ < 1.4) continue;
+    const a = W3(x, y, z), b = W3(x, y, z2), fadeIn = Math.sin(Math.PI * u) * clamp((z2 - VZ - 1) / 1.4, 0, 1);
     ctx.globalAlpha = clamp(fadeIn * (0.3 + 0.7 * power), 0, 1);
-    ctx.strokeStyle = i % 3 === 0 ? '#ffffff' : '#7fd0ff';
-    ctx.lineWidth = Math.max(1, (0.012 + 0.03 * power) * F / b[2]);
-    ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
+    // a thin lens shape: pointed at both ends, like a line of moving air
+    const dx = b[0] - a[0], dy = b[1] - a[1], d = Math.hypot(dx, dy) || 1, half = Math.min(3.2, (0.006 + 0.016 * power) * F / b[2]);
+    const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, nx = -dy / d * half, ny = dx / d * half;
+    ctx.fillStyle = i % 3 === 0 ? '#ffffff' : '#7fd0ff';
+    ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(mx + nx, my + ny); ctx.lineTo(b[0], b[1]); ctx.lineTo(mx - nx, my - ny); ctx.closePath(); ctx.fill();
   }
   const age = S.draftT > 0 ? S.draftFull - S.draftT : 99;
   if (age < BURST_LEN) {   // the moment it fires: a ring of wind bursts outward from you
