@@ -33,6 +33,7 @@ export function tutTick(dt) {
     S.tut.step++; S.tut.t = 0; S.tutHold = 0; Music.sfx('combo'); buzz(10);
     if (S.tut.step >= TUT.length) { endTut(); return; }
     if (S.tut.step === 4) mk(S.px, S.pz + 9, { hx: 0, hz: 1, v0: 1.0, laneX: S.px, fadeT: 0 });
+    if (S.tut.step === 6) S.tutPerfectShout = false;   // only a well timed shout made during this step counts
     if (S.tut.step === 5 || S.tut.step === 6) spawnStander();
     tutUI();
   }
