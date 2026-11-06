@@ -291,7 +291,7 @@ function think(b) {
       if (b.pressT > 0 && Math.abs(tx - S.px) < 0.8) c += 1.6 * fight;
       if (onStrip(LV.id, tx, b.z + 6)) c -= 1.1 * fight;
       const bd = beltAt(LV.id, tx, b.z + 10);   // airport walkway: plan the approach early (the glass is shut once you are alongside), aim for the middle of the passing lane
-      if (bd > 0) c -= (tx >= 2.25 && tx < 2.9 ? 1.0 : tx >= 2.9 ? 0.3 : 0.2) * fight;
+      if (bd > 0) c -= (tx >= 2.25 && tx < 2.9 ? 2.2 : tx >= 2.9 ? 0.8 : 0) * fight;   // never aim at the glass line itself: stopping a hair short of it leaves you outside
       else if (bd < 0) c += 0.8 + 1.6 * fight;
     }
     if (c < bestC) { bestC = c; bestX = tx; }

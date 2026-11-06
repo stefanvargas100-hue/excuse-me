@@ -200,7 +200,8 @@ test('fast strip (New York curb run): quicker on it, nothing outside a race', ()
 });
 
 test('bots contest the race: Hard bots use the walkway and draft people more than Easy bots', () => {
-  const run = lvl => { const E = load(); E.storage.excuseme_botlvl = String(lvl); E.setLevel(0); E.start('race'); for (let i = 0; i < 91; i++) E.tick(DT); let t = 0, n = 0, draft = 0; while (E.state === 'play' && t < 30 * 90) { for (const p of E.S.people) if (Math.abs(p.z - E.S.pz) < 1) p.dead = true; E.tick(DT); t++; for (const b of E.S.race.bots) { if (b.belt > 0) n++; if (b.draftT > 0) draft++; } } return { n, draft }; };
-  const easy = run(0), hard = run(2);
-  assert.ok(hard.n > easy.n, 'time on the forward belt ' + hard.n + ' vs ' + easy.n);
+  const run = lvl => { const E = load(); E.storage.excuseme_botlvl = String(lvl); E.setLevel(0); E.start('race'); for (let i = 0; i < 91; i++) E.tick(DT); let t = 0, n = 0, draft = 0; while (E.state === 'play' && t < 30 * 40) { for (const p of E.S.people) if (Math.abs(p.z - E.S.pz) < 1) p.dead = true; E.tick(DT); t++; for (const b of E.S.race.bots) { if (b.belt > 0) n++; if (b.draftT > 0) draft++; } } return { n, draft }; };
+  const sum = lvl => { let n = 0, draft = 0; for (let i = 0; i < 4; i++) { const r = run(lvl); n += r.n; draft += r.draft; } return { n, draft }; };   // four 40 s races each, so one unlucky crowd cannot decide it
+  const easy = sum(0), hard = sum(2);
+  assert.ok(hard.n > 0 && hard.n > easy.n, 'time on the forward belt ' + hard.n + ' vs ' + easy.n);
 });
