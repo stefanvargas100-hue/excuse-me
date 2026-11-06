@@ -14,7 +14,7 @@ import { S, state } from './state.js';
 
 
 /* ---------- people ---------- */
-function dress(p) {
+export function dress(p) {
   p.bald = p.hairStyle === 'bald' || p.hairStyle === 'mohawk';
   p.shirtL = shade(p.shirt, 1.2); p.shirtD = shade(p.shirt, 0.6);
   p.pantsL = shade(p.pants, 1.35); p.pantsD = shade(p.pants, 0.6);

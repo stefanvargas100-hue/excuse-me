@@ -24,7 +24,7 @@ export function render() {
   if (LV.id === 'airport') paintAirport(); else if (LV.id === 'nyc') paintNYC(); else paintShibuya();
   if (LV.id === 'nyc') drawCars();
   for (const p of S.people) if (p.prop === 'spill') drawPerson(p);   // puddles lie under everyone
-  const list = S.people.filter(p => p.prop !== 'spill').concat([S.me]).sort((a, b) => b.z - a.z);
+  const list = S.people.filter(p => p.prop !== 'spill').concat([S.me], S.race ? S.race.bots : []).sort((a, b) => b.z - a.z);
   for (const p of list) drawPerson(p);
   ctx.restore();
 

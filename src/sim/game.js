@@ -12,6 +12,7 @@ import { collide, updMe, updPeople } from './crowd.js';
 import { genChunk, runEvent, scramble, spawnFast, spawnRival, updXings, walker } from './people.js';
 import { addPop, onPass } from './scoring.js';
 import { S, bestOf, endShown, reset, setEndShown, setState, state } from './state.js';
+import { BUMP_SPEED, finishRace, fmtTime, initRace, leadZ, ordinal, raceBest, raceBump, raceCountdown, rearZ, updRace } from './race.js';
 import { updCars } from './traffic.js';
 import { beginTut, tutTick } from './tutorial.js';
 import { buildLevels, last } from '../ui/menus.js';
@@ -29,13 +30,14 @@ function movePlayer(dt) {
   if (S.slipT > 0) { S.slipT -= dt; steer = 0; }
   if (S.tut) S.tutHold = steer > 0 ? Math.max(0, S.tutHold) + dt : steer < 0 ? Math.min(0, S.tutHold) - dt : 0;
   S.burstT -= dt; S.dashT -= dt; S.dashCool -= dt; S.flash -= dt;
-  const bursting = S.burstT > 0;
+  S.bumpT = Math.max(0, S.bumpT - dt); S.ghostT = Math.max(0, S.ghostT - dt);   // race mode only: after a bump you are slow, then briefly able to pass through people
+  const bursting = S.burstT > 0 && S.bumpT <= 0;
   if (!bursting && S.dashT <= 0) S.energy = Math.min(100, S.energy + REGEN * dt);
   S.exhausted = S.energy < COST_DASH || S.flash > 0;
   S.boostV += ((bursting ? 1 : 0) - S.boostV) * Math.min(1, dt * 8);
   if (S.boostV < 0.2) S.boostPasses = 0;
   const weave = 1 - 0.14 * Math.min(1.4, Math.abs(S.vx) / LAT_MAX);   // weaving costs a little forward speed
-  S.speed += ((bursting ? BOOST : BASE) * weave - S.speed) * Math.min(1, dt * 5);
+  S.speed += ((bursting ? BOOST : BASE) * weave * (S.bumpT > 0 ? BUMP_SPEED : 1) - S.speed) * Math.min(1, dt * 5);
   if (S.dashT > 0) S.vx = S.dashDir * DASH_V;
   else if (S.slipT > 0) S.vx *= Math.max(0, 1 - dt * 0.4);   // sliding: no grip
   else {
@@ -62,6 +64,7 @@ export function tick(dt) {
   updMe(dt);
   updCars(dt);
   if (state === 'play') {
+    if (S.race && S.race.countT > 0) { raceCountdown(dt); return; }   // 3-2-1-GO: everything holds still
     S.time += dt;
     if (pendingDash && performance.now() >= pendingDash.at) { action(pendingDash.z); setPendingDash(null); }
     movePlayer(dt);
@@ -70,7 +73,7 @@ export function tick(dt) {
       tutTick(dt);
       if (S.tut) { updPeople(dt); S.people = S.people.filter(p => !p.dead && p.z > S.pz - 16); return; }
     }
-    while (S.nextChunk < S.pz + SPAWN_FAR && S.nextChunk < LV.goal - 15) { genChunk(S.nextChunk); S.nextChunk += 4; }
+    while (S.nextChunk < leadZ() + SPAWN_FAR && S.nextChunk < LV.goal - 15) { genChunk(S.nextChunk); S.nextChunk += 4; }
     const prog = clamp(S.pz / LV.goal, 0, 1);
     S.fastT -= dt;
     if (S.fastT <= 0) { spawnFast(true); if (R() < 0.3) spawnFast(true); S.fastT = rnd(LV.fastEvery[0], LV.fastEvery[1]) * (1.3 - 0.6 * prog); }
@@ -81,7 +84,7 @@ export function tick(dt) {
     S.timeLeft -= dt;
     const sec = Math.ceil(S.timeLeft);
     if (sec !== S.lastSec) { S.lastSec = sec; if (sec <= 10 && sec > 0) { Music.sfx('tick'); if (sec <= 5) buzz(6); } }
-    if (S.timeLeft <= 0) { loseTime(); return; }
+    if (S.timeLeft <= 0 && !S.race) { loseTime(); return; }
     // scripted crowd moments
     S.eventT -= dt;
     if (S.eventT <= 0 && S.pz < LV.goal - 60) { runEvent(pick(LV.events)); S.eventT = rnd(16, 24); }
@@ -100,9 +103,10 @@ export function tick(dt) {
     for (const p of S.people) if (p.prop === 'spill' && !p.slipped && Math.hypot(S.px - p.x, (S.pz - p.z) * 0.8) < 1.0) { p.slipped = true; S.slipT = 0.7; addPop('SLIPPERY!', '#c8a165', 26); buzz([10, 20, 10]); }
     if (LV.id === 'shibuya') { S.waveT -= dt; if (S.waveT <= 0 && S.pz < LV.goal - 60) { scramble(); S.waveT = rnd(8, 11); } }
     updPeople(dt);
-    S.people = S.people.filter(p => !p.dead && p.z > S.pz - 16);
-    const hit = collide();
-    if (hit) { lose(hit); return; }
+    if (S.race) updRace(dt);
+    S.people = S.people.filter(p => !p.dead && p.z > rearZ() - 16);
+    const hit = S.ghostT > 0 ? null : collide();
+    if (hit) { if (S.race) raceBump(hit); else { lose(hit); return; } }
     for (const p of S.people) {
       const dz = p.z - S.pz;
       if (!p.passed && p.prevDz > 0 && dz <= 0) { p.passed = true; onPass(p); }
@@ -115,7 +119,7 @@ export function tick(dt) {
     S.heat = Math.max(0, S.heat - dt * 0.16);
     const mult = Math.min(8, 1 + Math.floor(S.chain / 3));
     Music.target(clamp(0.15 + (mult - 1) * 0.12 + S.heat + (S.timeLeft < 15 ? 0.3 : 0), 0, 1));
-    if (S.pz >= LV.goal) win();
+    if (S.pz >= LV.goal) { if (S.race) winRace(); else win(); }
   } else if (state === 'ready') {
     updPeople(dt);
     S.people = S.people.filter(p => !p.dead);
@@ -161,10 +165,18 @@ function win() {
   recordBest();
 }
 
+function winRace() {
+  setState('won'); S.live = false; S.overT = 0; S.pz = LV.goal; touches.clear();
+  finishRace();
+  Music.sfx('win'); Music.stop(); Music.ambStop(); buzz([20, 60, 20, 60, 80]);
+}
+
 export const fmt = n => Math.floor(n).toLocaleString('en-US');
 
 function showEnd() {
   setEndShown(true);
+  if (S.race) { showRaceEnd(); return; }
+  resetEndLabels();
   const won = state === 'won';
   $('endEyebrow').textContent = LV.city + ' · ' + LV.name;
   const t = $('endTitle'); t.textContent = won ? 'Made it' : S.timeout ? 'Too late' : 'Bump'; t.className = won ? 'good' : 'bad';
@@ -203,28 +215,62 @@ function showEnd() {
   $('end').hidden = false;
 }
 
-export let lastDaily = false;
+const END_LABELS = { sScore: 'Score', sBest: 'Best score', sDist: 'Distance', sChain: 'Longest chain' };
+function setStat(id, label, value) { $(id).textContent = value; const dt = $(id).previousElementSibling; if (dt) dt.textContent = label; }
+function resetEndLabels() {
+  for (const id in END_LABELS) { const dt = $(id).previousElementSibling; if (dt) dt.textContent = END_LABELS[id]; }
+  $('raceBoard').hidden = true;
+  $('sScoreLabel').textContent = END_LABELS.sScore;
+}
+
+function showRaceEnd() {
+  const R = S.race, n = R.board.length, place = R.place;
+  $('endEyebrow').textContent = 'Race · ' + LV.city + ' · ' + LV.name + ' · ' + R.diff.name + ' bots';
+  const t = $('endTitle'); t.textContent = place === 1 ? 'You win!' : ordinal(place) + ' of ' + n; t.className = place === 1 ? 'good' : 'bad';
+  $('endLead').textContent = place === 1 ? 'First to ' + LV.goalText + '. Bumps cost you time, so a clean run wins.' : 'Not first this time. Every bump costs about a second and a half, so stay clean and look for gaps.';
+  $('sScoreLabel').textContent = 'Finish time'; $('sScore').textContent = fmtTime(S.time);
+  const best = raceBest(LV.id);
+  setStat('sBest', R.newBest ? 'Best time · new best' : 'Best win time', best ? fmtTime(best) : '-');
+  setStat('sDist', 'Place', ordinal(place) + ' of ' + n);
+  setStat('sChain', 'Bumps', String(S.bumps));
+  $('sClose').textContent = S.close; $('sPassed').textContent = S.passed; $('sRival').textContent = S.dodged;
+  const bd = $('raceBoard'); bd.hidden = false; bd.innerHTML = '';
+  const lead = R.board[0];
+  R.board.forEach((r, i) => {
+    const li = document.createElement('li'); if (r.me) li.className = 'me';
+    const gap = r.done ? (i === 0 ? fmtTime(r.finishT) : '+' + (r.finishT - lead.finishT).toFixed(1) + ' s') : Math.max(1, Math.round(LV.goal - r.z)) + ' m to go';
+    li.textContent = (i + 1) + '. ' + r.name + ' · ' + gap;
+    bd.appendChild(li);
+  });
+  $('endStars').hidden = true; $('unlockNote').hidden = true; $('next').hidden = true;
+  $('again').textContent = 'Race again'; $('again').className = 'big';
+  $('end').hidden = false;
+}
+
+export let lastDaily = false, lastMode = 'classic';
 
 export function startDaily() { const key = todayKey(); setLevel(hashStr(key + ':level') % LEVELS.length); start(true); }
 
-export function start(daily) {
+export function start(daily, mode) {
   daily = daily === true;
-  lastDaily = daily;
+  mode = daily ? 'classic' : (mode || lastMode);
+  lastDaily = daily; lastMode = mode;
   setR(daily ? mulberry32(hashStr(todayKey())) : Math.random);
   reset();
+  S.mode = mode; if (mode === 'race') initRace(3);
   S.daily = daily; S.dailyKey = todayKey(); for (const k in last) last[k] = k === 'low' ? null : -1; S.live = true; setState('play'); setEndShown(false);
   $('start').hidden = true; $('end').hidden = true; $('look').hidden = true; $('pause').hidden = true; $('hud').hidden = false;
   const hb = $('hud').getBoundingClientRect ? $('hud').getBoundingClientRect() : null;
   setRadarTop(hb && hb.bottom ? hb.bottom + 6 : 120);
   if (LV.id === 'shibuya') { S.waveT = 1.5; }
-  if (!daily && store.get('excuseme_tut', '0') !== '1') beginTut();
+  if (!daily && mode !== 'race' && store.get('excuseme_tut', '0') !== '1') beginTut();
   Music.start(LV.music); Music.ambStart(LV.id);
 }
 
 export function pauseGame() {
   if (state !== 'play') return;
   setState('paused'); touches.clear(); Music.suspend();
-  $('pauseEyebrow').textContent = LV.city + ' · ' + LV.name + ' · ' + Math.floor(S.pz) + ' m';
+  $('pauseEyebrow').textContent = (S.race ? 'Race · ' : '') + LV.city + ' · ' + LV.name + ' · ' + Math.floor(S.pz) + ' m';
   $('pause').hidden = false;
 }
 

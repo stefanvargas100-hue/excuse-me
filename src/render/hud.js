@@ -51,6 +51,10 @@ export function rearRadar() {
     else if (p.fast) radarArrow(x, y, ang, sz, '#22b8e8', '#ffffff');
     else radarArrow(x, y, ang, sz, '#ffcf1f', 'rgba(255,255,255,0.85)');
   }
+  if (S.race) for (const b of S.race.bots) {   // racers show as larger arrows in their own colour
+    const dx = b.x - S.px, dz = b.z - S.pz; if (Math.hypot(dx, dz) > RANGE + 0.5) continue;
+    ctx.globalAlpha = 1; radarArrow(cx + dx * sc, cy - dz * sc, Math.atan2(-(b.vz - S.speed), b.vx - S.vx), 8.5, b.color, '#ffffff');
+  }
   ctx.globalAlpha = 1;
   ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(cx, cy, 3.5, 0, TAU); ctx.fill();
   ctx.restore();

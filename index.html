@@ -28,7 +28,8 @@
       <button id="pauseBtn" type="button" aria-label="Pause"><span></span><span></span></button>
     </div>
   </div>
-  <div class="trackrow"><div class="track"><i id="prog"></i></div><span class="num" id="dist">0 m</span></div>
+  <div class="trackrow"><div class="track"><i id="prog"></i><span id="raceDots"></span></div><span class="num" id="dist">0 m</span></div>
+  <div id="place" class="place" hidden></div>
   <div class="boost"><span>Stamina</span><div class="bar"><i id="en"></i></div><span id="clock" class="clock num">3:00</span></div>
   <div class="shoutrow"><span id="shout" class="shout">Excuse me ready</span></div>
 </div>
@@ -42,6 +43,16 @@
   <div class="card">
     <div class="eyebrow">Don't touch anyone</div>
     <h1>Excuse Me</h1>
+    <div class="modes" role="group" aria-label="Game mode">
+      <button id="modeClassic" class="chip" type="button" aria-pressed="true">Classic</button>
+      <button id="modeRace" class="chip" type="button" aria-pressed="false">Race vs bots</button>
+    </div>
+    <div id="raceOpts" class="modes" role="group" aria-label="Bot difficulty" hidden>
+      <span class="modelabel">Bots</span>
+      <button class="chip" type="button" aria-pressed="false">Easy</button>
+      <button class="chip" type="button" aria-pressed="true">Medium</button>
+      <button class="chip" type="button" aria-pressed="false">Hard</button>
+    </div>
     <div class="levels" id="levels" role="group" aria-label="Choose a level"></div>
     <details>
       <summary>Install on your phone</summary>
@@ -139,6 +150,7 @@
       <div><dt>Rivals burned</dt><dd id="sRival">0</dd></div>
     </dl>
     <div class="stars" id="endStars"></div>
+    <ol id="raceBoard" class="board" hidden></ol>
     <p id="unlockNote" class="unlock" hidden></p>
     <div class="btns">
       <button id="next" class="big" type="button" hidden>Next level</button>

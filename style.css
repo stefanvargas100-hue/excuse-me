@@ -144,3 +144,18 @@ button.big:focus-visible, button.ghost:focus-visible, .toggle input:focus-visibl
 .ttext { margin: 4px 0 10px; font-family: var(--display); font-weight: 700; font-size: 25px; line-height: 1.12; text-wrap: balance; }
 #tutSkip { pointer-events: auto; background: transparent; border: 0; color: rgba(244,246,248,.7); font: 600 14px var(--body); text-decoration: underline; cursor: pointer; padding: 6px; }
 @media (prefers-reduced-motion: reduce) { #combo { transition: none; } .star.new b { animation: none; } }
+
+/* race mode */
+.track { position: relative; }
+#raceDots { position: absolute; inset: 0; }
+#raceDots i { position: absolute; top: 0; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%; border: 1px solid rgba(255,255,255,.8); box-sizing: border-box; }
+.place { align-self: flex-start; padding: 4px 10px; border-radius: 12px; background: rgba(15,27,45,.7); font-family: var(--display); font-weight: 700; font-size: 17px; letter-spacing: .03em; }
+.place.bumped { background: var(--alert); }
+.place[hidden] { display: none; }
+.modes { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 10px; }
+.modes[hidden] { display: none; }
+.modelabel { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; opacity: .75; }
+.board { margin: 0 0 14px; padding: 0; list-style: none; display: grid; gap: 6px; }
+.board li { background: rgba(255,255,255,.07); border-radius: 8px; padding: 8px 12px; font-size: 16px; font-variant-numeric: tabular-nums; }
+.board li.me { background: rgba(255,207,31,.18); font-weight: 600; }
+.board[hidden] { display: none; }

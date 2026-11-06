@@ -19,3 +19,5 @@
 - Build: Vite. The build writes the service worker's file list and a content-based cache version, so no manual cache bumping any more.
 - Deploy: Pages must be switched to "GitHub Actions" BEFORE merging phase-2 into main, or the live link breaks (main would serve unbuilt source).
 - Goal changed (Nov 2026): launch with a fuller game (race mode, online, more stages) instead of shipping minimal and adding after. Downloadable/installable goal is done.
+- Race mode (first version): A to B on any stage, 3 bots, 3-2-1-GO start. A bump = 30% speed for 1.3 s, then 1.6 s of passing through people (blinking) so one bump costs one penalty; it also breaks your chain. No time limit, no game over; the race ends when you cross the line. Bots steer with their own lane-finding, burst now and then, and miss people sometimes (Easy/Medium/Hard = pace and miss rate). Bots do not collide with you. Place and best win time are saved per stage.
+- Bots use their own random numbers so the crowd stays identical regardless of bots (needed later for fair online races).
