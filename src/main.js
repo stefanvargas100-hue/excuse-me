@@ -9,7 +9,7 @@ import { shout } from './sim/actions.js';
 import { hasPlayed, start, tick } from './sim/game.js';
 import { mk, runEvent } from './sim/people.js';
 import { racePace } from './sim/race.js';
-import { BUILDS, ITEM_STATS, effects, statsOf } from './config/stats.js';
+import { BODIES, BUILDS, ITEM_STATS, effects, statsOf } from './config/stats.js';
 import { LOOK } from './save/progress.js';
 import { S, reset, state } from './sim/state.js';
 import { buildLevels, hud, init as initMenus } from './ui/menus.js';
@@ -48,6 +48,6 @@ reset();
 
 buildLevels();
 
-window.__excuse = { tick, reset, start, setLevel, get S() { return S; }, get state() { return state; }, keys, action, onTap, render, drawPreview, LEVELS, runEvent, shout, weekKey, hasPlayed, racePace, BUILDS, ITEM_STATS, effects, statsOf, LOOK, mkPerson: (x, z) => mk(x, z, { hx: 0, hz: 1, v0: 1 }) };
+window.__excuse = { tick, reset, start, setLevel, get S() { return S; }, get state() { return state; }, keys, action, onTap, render, drawPreview, LEVELS, runEvent, shout, weekKey, hasPlayed, racePace, BODIES, BUILDS, ITEM_STATS, effects, statsOf, LOOK, mkPerson: (x, z) => mk(x, z, { hx: 0, hz: 1, v0: 1 }) };
 
 requestAnimationFrame(frame);

@@ -94,3 +94,21 @@ test('bots get a build and gear with the same stat rules', () => {
     assert.ok(b.st && b.st.speed > 0.9 && b.st.speed < 1.1);
   }
 });
+
+test('male and female have different stats and an equal trade-off', () => {
+  const { BODIES: B, statsOf } = load();
+  assert.notDeepStrictEqual(B.m, B.f);
+  assert.strictEqual(sumOf(B.m), 0); assert.strictEqual(sumOf(B.f), 0);
+  const look = { build: 'medium', shirtType: 'tee', pantsType: 'jeans', shoeType: 'sneakers', hat: 'cap', pack: 'pack' };
+  const m = statsOf({ ...look, body: 'm' }), f = statsOf({ ...look, body: 'f' });
+  assert.ok(m.speed > f.speed && f.rec > m.rec);
+  assert.strictEqual(sumOf(m), sumOf(f));
+});
+
+test('race: body changes real speed and recovery, classic ignores it', () => {
+  const m = racer({ body: 'm' }), f = racer({ body: 'f' });
+  assert.ok(m.S.race.me.speed > f.S.race.me.speed);
+  assert.ok(f.S.race.me.regen > m.S.race.me.regen);
+  const run = body => { const E = load(); E.LOOK.body = body; E.setLevel(0); E.start('classic'); runEmpty(E, 90); return [E.S.speed, E.S.pz]; };
+  assert.deepStrictEqual(run('m'), run('f'));
+});

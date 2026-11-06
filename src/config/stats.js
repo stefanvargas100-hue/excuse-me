@@ -10,6 +10,9 @@ export const BUILDS = {
   large: { h: 1.92, bulk: 1.12, ...pts(3, -4, 1) }
 };
 
+// Male leans to top speed, female to recovery. Equal trade-offs, so neither is ahead.
+export const BODIES = { m: pts(2, 0, -2), f: pts(-2, 0, 2) };
+
 export const ITEM_STATS = {
   shirtType: { tee: NONE, tank: pts(-2, 2, 0), hoodie: pts(0, -2, 2), jacket: pts(2, 0, -2) },
   pantsType: { jeans: NONE, shorts: pts(0, 2, -2), joggers: pts(2, -2, 0), cargo: pts(-2, 0, 2) },
@@ -23,7 +26,8 @@ const clampPts = v => Math.max(-CAP, Math.min(CAP, v));
 
 export function statsOf(look) {
   const b = BUILDS[look.build] || BUILDS.medium;
-  let speed = b.speed, accel = b.accel, rec = b.rec;
+  const body = BODIES[look.body] || BODIES.m;
+  let speed = b.speed + body.speed, accel = b.accel + body.accel, rec = b.rec + body.rec;
   for (const key in ITEM_STATS) {
     const it = ITEM_STATS[key][look[key]] || NONE;
     speed += it.speed; accel += it.accel; rec += it.rec;

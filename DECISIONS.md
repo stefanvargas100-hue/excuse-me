@@ -38,3 +38,4 @@
 - Races start from a standstill so acceleration counts.
 - Slipstream (race only): 1.2 s within 4 m behind someone walking your way, within 0.6 m sideways, earns +18% speed for 2.5 s. Works behind crowd walkers and racers, bots use it too, and a bump cancels it.
 - Endless difficulty: ramps to its hardest by the old goal distance and stays there. More random crowd events later is an open idea, not built.
+- Update: male and female now have stats in races. Male: +2 speed, -2 recovery. Female: -2 speed, +2 recovery (about 1.2% speed, 8% stamina refill and 5% bump time). Equal trade-off. Replaces the earlier looks-only choice.

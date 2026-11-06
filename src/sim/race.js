@@ -91,7 +91,7 @@ function makeBot(i, diff, name) {
   applyBuild(p);
   dress(p);
   Object.assign(p, {
-    st: effects(statsOf(gear)),
+    st: effects(statsOf({ ...gear, body: p.body })),
     draftC: 0, draftT: 0, speed: 0, energy: 100, chain: 0, lastPassT: -9, ahead: new WeakMap(), burstT: 0, dashT: 0, dashDir: 0, bumpT: 0, ghostT: 0, cool: 0, blockT: 0, bumps: 0, pace: diff.pace[i % diff.pace.length], diff,
     target: p.x, thinkT: 0, seed: i * 2.3, done: false, finishT: null, seen: new WeakMap(), danger: 99, clear: true
   });
