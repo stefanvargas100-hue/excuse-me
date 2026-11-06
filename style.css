@@ -29,7 +29,7 @@ body {
 
 /* ---- in-game HUD: little paper stickers on top of the scene ---- */
 #hud {
-  position: absolute; left: 0; right: 0; top: 0; pointer-events: none;
+  zoom: var(--ui, 1); position: absolute; left: 0; right: 0; top: 0; pointer-events: none;
   padding: calc(env(safe-area-inset-top, 0px) + 10px) 14px 14px;
   display: flex; flex-direction: column; gap: 8px;
 }
@@ -78,7 +78,7 @@ body {
 }
 .panel[hidden] { display: none; }
 .card {
-  margin: auto; width: 100%; max-width: 390px; box-sizing: border-box; color: var(--ink);
+  zoom: var(--ui, 1); margin: auto; width: 100%; max-width: 390px; box-sizing: border-box; color: var(--ink);
   background: var(--paper);
   border: 4px solid var(--ink); border-radius: var(--wob); padding: 18px 20px 22px;
   box-shadow: 6px 8px 0 var(--ink);

@@ -2,7 +2,7 @@ import { R_BODY, R_PLAYER } from '../config/tuning.js';
 import { TAU, clamp } from '../config/util.js';
 import { ctx } from '../dom.js';
 import { touches } from '../input/input.js';
-import { H, W } from './camera.js';
+import { H, UI, W } from './camera.js';
 import { FONT } from './draw.js';
 import { S, cues } from '../sim/state.js';
 import { TUT } from '../sim/tutorial.js';
@@ -23,7 +23,7 @@ function radarArrow(x, y, ang, size, col, edge) {
 }
 
 export function rearRadar() {
-  const RANGE = 7, r = Math.min(58, W * 0.16), cx = W - r - 14, cy = H - r - 30, sc = r / RANGE;
+  const RANGE = 7, r = Math.min(58 * UI, W * 0.16), cx = W - r - 14 * UI, cy = H - r - 30 * UI, sc = r / RANGE;
   ctx.save();
   ctx.fillStyle = 'rgba(15,27,45,0.5)'; ctx.beginPath(); ctx.arc(cx, cy, r + 3, 0, TAU); ctx.fill();
   ctx.strokeStyle = 'rgba(255,255,255,0.28)'; ctx.lineWidth = 1;
@@ -84,7 +84,7 @@ export function drawPops() {
     const q = S.pops[i], a = clamp(1.3 - q.t, 0, 1), rise = q.t * 26;
     const pop = q.t < 0.12 ? 0.7 + q.t * 2.5 : 1;
     ctx.globalAlpha = a;
-    ctx.font = '700 ' + Math.round(q.size * pop) + 'px ' + FONT;
+    ctx.font = '700 ' + Math.round(q.size * pop * UI) + 'px ' + FONT;
     ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(15,27,45,0.85)'; ctx.lineJoin = 'round';
     ctx.strokeText(q.text, W / 2, y - rise);
     ctx.fillStyle = q.color; ctx.fillText(q.text, W / 2, y - rise);

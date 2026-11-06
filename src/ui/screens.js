@@ -23,7 +23,7 @@ export function back() {
 
 // Lay out a screen again if the phone rotates or the browser bars change the height.
 export function relayoutWith(fn) { onResize = fn; }
-export function init() { window.addEventListener('resize', () => { if (onResize) onResize(); }); }
+export function init() { window.addEventListener('resize', () => { if (onResize) requestAnimationFrame(() => { if (onResize) onResize(); }); }); }   // waits a frame so the interface scale has updated first
 
 // Fills a box with as many items as fit, and splits the rest into pages with arrows. The box must already be on screen.
 export function pageInto(box, nodes, ctrl, isStart) {
