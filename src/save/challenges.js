@@ -1,0 +1,76 @@
+import { store } from './store.js';
+
+/* ---------- challenges: the only way to unlock gear. Tallies last across every run and never reset. ---------- */
+// [unlock slot, unlock value, reward name, tally, target, what to do]
+const row = (key, val, name, tally, target, text) => ({ key, val, name, tally, target, text, id: key + ':' + val });
+
+export const CHALLENGES = [
+  // headpieces
+  row('hat', 'beanie', 'Beanie', 'passes', 1000, 'Pass 1,000 people'),
+  row('hat', 'visor', 'Visor', 'juke', 100, 'Pull off 100 Jukes'),
+  row('hat', 'sweatband', '80s sweatband', 'dashes', 300, 'Dash 300 times'),
+  row('hat', 'bucket', 'Y2K bucket hat', 'snake', 75, 'Weave 75 Snakes'),
+  row('hat', 'headphones', 'Headphones', 'x8', 10, 'Reach a ×8 combo 10 times'),
+  row('hat', 'shades', 'Shades', 'razor', 100, 'Squeeze past 100 Razors'),
+  row('hat', 'fedora', 'Fedora', 'burned', 25, 'Burn 25 rivals'),
+  row('hat', 'tiara', 'Tiara', 'far_nyc', 600, 'Reach 600 m on Fifth Avenue in one classic run'),
+  row('hat', 'crown', 'Crown', 'winsMH', 10, 'Win 10 races on Medium or Hard'),
+  // shirts
+  row('shirtType', 'baby', 'Y2K baby tee', 'thread', 30, 'Thread the Needle 30 times'),
+  row('shirtType', 'velour', 'Y2K velour jacket', 'slips', 40, 'Earn 40 slipstreams in races'),
+  row('shirtType', 'wind', '80s windbreaker', 'sweep', 100, 'Land 100 Sweeps'),
+  row('shirtType', 'varsity', 'Varsity jacket', 'wins', 5, 'Win 5 races'),
+  row('shirtType', 'power', '80s power blazer', 'far_airport', 1000, 'Reach 1,000 m in Terminal B in one classic run'),
+  row('shirtType', 'puffer', 'Puffer jacket', 'weeklyRuns', 4, 'Play 4 weekly runs'),
+  row('shirtType', 'dress', 'Sundress', 'mega', 15, 'Land 15 Mega Sweeps'),
+  row('shirtType', 'suit', 'Suit jacket', 'winsHard', 3, 'Win 3 races on Hard'),
+  // pants and skirts
+  row('pantsType', 'track', '80s track pants', 'doubleSlip', 15, 'Earn 2 slipstreams within 20 seconds, 15 times'),
+  row('pantsType', 'flares', 'Y2K flares', 'close', 300, 'Make 300 close calls'),
+  row('pantsType', 'acid', '80s acid wash', 'bursts', 200, 'Burst 200 times'),
+  row('pantsType', 'parachute', 'Parachute pants', 'bullet', 40, 'Ride 40 Bullet Trains'),
+  row('pantsType', 'slacks', 'Suit trousers', 'burned', 50, 'Burn 50 rivals'),
+  row('pantsType', 'pleats', 'Pleated skirt', 'chain', 40, 'Chain 40 passes in one run'),
+  row('pantsType', 'pencil', 'Pencil skirt', 'far_shibuya', 500, 'Reach 500 m on Shibuya Crossing in one classic run'),
+  // shoes
+  row('shoeType', 'hightops', '80s high-tops', 'far_nyc', 800, 'Reach 800 m on Fifth Avenue in one classic run'),
+  row('shoeType', 'dad', 'Chunky trainers', 'passes', 2500, 'Pass 2,500 people'),
+  row('shoeType', 'platforms', 'Y2K platforms', 'passes', 5000, 'Pass 5,000 people'),
+  row('shoeType', 'heels', 'Heels', 'shouts', 200, 'Say "Excuse me" 200 times'),
+  row('shoeType', 'oxfords', 'Dress shoes', 'winsHard', 1, 'Win a race on Hard'),
+  // back
+  row('pack', 'fanny', 'Y2K belt bag', 'salmon', 40, 'Do 40 Salmon Runs'),
+  row('pack', 'messenger', 'Messenger bag', 'races', 25, 'Finish 25 races'),
+  row('pack', 'boombox', '80s boombox', 'dailyRuns', 14, 'Play 14 daily runs'),
+  row('pack', 'jet', 'Jetpack', 'slips', 150, 'Earn 150 slipstreams in races'),
+  // hair and colours: looks only
+  row('hairStyle', 'mohawk', 'Mohawk', 'far_shibuya', 600, 'Reach 600 m on Shibuya Crossing in one classic run'),
+  row('shirt', '#d4af37', 'Gold shirt', 'bestScore', 20000, 'Score 20,000 in one classic run'),
+  row('shirt', '#39ff14', 'Neon shirt', 'cleanWins', 1, 'Win a race on Medium or Hard without a single bump'),
+  row('shoe', '#d4af37', 'Gold sneakers', 'x8', 50, 'Reach a ×8 combo 50 times')
+];
+
+const byItem = new Map(CHALLENGES.map(c => [c.id, c]));
+export const challengeFor = (key, val) => byItem.get(key + ':' + val) || null;
+
+let tally = {};
+try { tally = JSON.parse(store.get('excuseme_tally', '{}')) || {}; } catch (e) {}
+
+export const tallyOf = name => tally[name] || 0;
+export const isDone = c => tallyOf(c.tally) >= c.target;
+export const isLocked = (key, val) => { const c = challengeFor(key, val); return !!c && !isDone(c); };
+export const doneCount = () => CHALLENGES.filter(isDone).length;
+
+let listener = null;
+export function setUnlockListener(fn) { listener = fn; }
+
+function setTally(name, value) {
+  const before = CHALLENGES.filter(c => c.tally === name && !isDone(c));
+  tally[name] = value;
+  store.set('excuseme_tally', JSON.stringify(tally));
+  if (listener) for (const c of before) if (isDone(c)) listener(c);
+}
+// Add to a running total, such as people passed.
+export const track = (name, n = 1) => setTally(name, tallyOf(name) + n);
+// Keep the best single result, such as distance in one run.
+export const trackMax = (name, value) => { const v = Math.floor(value); if (v > tallyOf(name)) setTally(name, v); };

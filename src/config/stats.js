@@ -14,11 +14,23 @@ export const BUILDS = {
 export const BODIES = { m: pts(2, 0, -2), f: pts(-2, 0, 2) };
 
 export const ITEM_STATS = {
-  shirtType: { tee: NONE, tank: pts(-2, 2, 0), hoodie: pts(0, -2, 2), jacket: pts(2, 0, -2) },
-  pantsType: { jeans: NONE, shorts: pts(0, 2, -2), joggers: pts(2, -2, 0), cargo: pts(-2, 0, 2) },
-  shoeType: { sneakers: NONE, runners: pts(2, 0, -2), boots: pts(0, -2, 2), slides: pts(-2, 2, 0) },
-  hat: { cap: NONE, beanie: pts(-1, 0, 1), headphones: pts(1, 0, -1), shades: pts(1, -1, 0), crown: pts(1, 1, -2) },
-  pack: { pack: NONE, sling: pts(0, 1, -1), jet: pts(0, 2, -2) }
+  shirtType: {
+    tee: NONE, tank: pts(-2, 2, 0), hoodie: pts(0, -2, 2), jacket: pts(2, 0, -2),
+    baby: pts(-1, 2, -1), velour: pts(-1, -1, 2), wind: pts(2, 1, -3), varsity: pts(1, -2, 1), power: pts(3, -2, -1), puffer: pts(-2, -1, 3), dress: pts(-1, 3, -2), suit: pts(3, -1, -2)
+  },
+  pantsType: {
+    jeans: NONE, shorts: pts(0, 2, -2), joggers: pts(2, -2, 0), cargo: pts(-2, 0, 2),
+    track: pts(2, 1, -3), flares: pts(1, -2, 1), acid: pts(-1, 2, -1), parachute: pts(-2, -1, 3), slacks: pts(3, -2, -1), pleats: pts(-2, 3, -1), pencil: pts(2, -3, 1)
+  },
+  shoeType: {
+    sneakers: NONE, runners: pts(2, 0, -2), boots: pts(0, -2, 2), slides: pts(-2, 2, 0),
+    hightops: pts(-1, -1, 2), dad: pts(-1, 2, -1), platforms: pts(2, -3, 1), heels: pts(3, -1, -2), oxfords: pts(2, 1, -3)
+  },
+  hat: {
+    cap: NONE, beanie: pts(-1, 0, 1), headphones: pts(1, 0, -1), shades: pts(1, -1, 0), crown: pts(1, 1, -2),
+    visor: pts(0, 1, -1), sweatband: pts(-1, 1, 0), bucket: pts(0, -1, 1), fedora: pts(2, -1, -1), tiara: pts(-1, 2, -1)
+  },
+  pack: { pack: NONE, sling: pts(0, 1, -1), jet: pts(0, 2, -2), fanny: pts(-1, 2, -1), messenger: pts(1, -1, 0), boombox: pts(-2, -1, 3) }
 };
 
 const CAP = 10;   // no loadout can stack a stat past this many points

@@ -1,9 +1,9 @@
-import { LEVELS } from '../config/levels.js';
 import { BODIES, BUILDS, ITEM_STATS, STAT_CAP, statHint, statPercents, statsOf } from '../config/stats.js';
 import { $, ctx, setCtx } from '../dom.js';
 import { CX, DPR, F, H, HOR, VX, VY, VZ, W, setCX, setF, setH, setHOR, setVX, setVY, setVZ, setW } from './camera.js';
 import { drawPerson } from './figures.js';
-import { LOOK, LOOK_OPTS, totalStars } from '../save/progress.js';
+import { CHALLENGES, challengeFor, doneCount, isLocked, tallyOf } from '../save/challenges.js';
+import { LOOK, LOOK_OPTS } from '../save/progress.js';
 import { store } from '../save/store.js';
 import { makeMe } from '../sim/people.js';
 import { S, setShowHB, showHB } from '../sim/state.js';
@@ -14,13 +14,25 @@ import { S, setShowHB, showHB } from '../sim/state.js';
 let PV = null;
 
 // Live bars for the three race stats. They only change with build and gear types, never with colours.
-function renderStats() {
+function renderStats(tryOn) {
   const box = $('statBars'); if (!box) return;
-  const s = statsOf(LOOK), pc = statPercents(s), row = (name, points, pct) => {
-    const sign = pct > 0 ? '+' : '', cls = points > 0 ? 'up' : points < 0 ? 'down' : '';
-    return '<div class="stat"><div class="statl"><span>' + name + '</span><span class="' + cls + '">' + sign + (Math.round(pct * 10) / 10) + '%</span></div><div class="statb"><i class="' + cls + '" style="width:' + ((points + STAT_CAP) / (2 * STAT_CAP) * 100).toFixed(0) + '%"></i></div></div>';
+  const now = statsOf(LOOK), s = tryOn ? statsOf({ ...LOOK, ...tryOn }) : now, pc = statPercents(s), was = statPercents(now);
+  const fmtPct = v => (v > 0 ? '+' : '') + (Math.round(v * 10) / 10) + '%';
+  const row = (name, key) => {
+    const points = s[key], cls = points > 0 ? 'up' : points < 0 ? 'down' : '';
+    const label = tryOn && s[key] !== now[key] ? fmtPct(was[key]) + ' to ' + fmtPct(pc[key]) : fmtPct(pc[key]);
+    return '<div class="stat"><div class="statl"><span>' + name + '</span><span class="' + cls + '">' + label + '</span></div><div class="statb"><i class="' + cls + '" style="width:' + ((points + STAT_CAP) / (2 * STAT_CAP) * 100).toFixed(0) + '%"></i></div></div>';
   };
-  box.innerHTML = '<div class="statn">Race stats</div>' + row('Top speed', s.speed, pc.speed) + row('Acceleration', s.accel, pc.accel) + row('Recovery', s.rec, pc.rec);
+  box.innerHTML = '<div class="statn">' + (tryOn ? 'If you wore it' : 'Race stats') + '</div>' + row('Top speed', 'speed') + row('Acceleration', 'accel') + row('Recovery', 'rec');
+}
+
+// Try on a locked item: the character and bars change, nothing is equipped, and the challenge for it is shown.
+function tryLocked(key, val) {
+  const saved = LOOK[key], c = challengeFor(key, val), info = $('lockInfo'), stats = ITEM_STATS[key] && ITEM_STATS[key][val];
+  LOOK[key] = val; PV = makeMe(); LOOK[key] = saved;
+  renderStats(stats ? { [key]: val } : null);
+  info.hidden = false;
+  info.textContent = c.name + ' is locked. ' + c.text + ' (' + Math.min(tallyOf(c.tally), c.target).toLocaleString('en-US') + ' / ' + c.target.toLocaleString('en-US') + ').' + (stats ? '' : ' Looks only, no stat change.');
 }
 
 function refreshLook() {
@@ -56,8 +68,7 @@ function buildLook() {
       const b = document.createElement('button'); b.type = 'button';
       const isObj = o.type === 'color' && typeof v === 'object';
       const val = o.type === 'color' ? (isObj ? v.c : v) : v[0];
-      const req = isObj ? v.req : o.type === 'chip' ? (v[2] || 0) : 0;
-      const locked = req > totalStars();
+      const locked = isLocked(o.key, val), ch = challengeFor(o.key, val);
       if (o.type === 'color') { b.className = 'sw'; b.style.background = val; b.setAttribute('aria-label', isObj ? v.name : o.label + ' ' + val); }
       else {
         b.className = 'chip'; b.textContent = v[1];
@@ -65,12 +76,14 @@ function buildLook() {
         if (stats) { const hint = document.createElement('small'); hint.textContent = statHint(stats); b.appendChild(hint); }
       }
       if (locked) {
-        b.disabled = true; b.classList.add('locked');
-        b.title = 'Unlock with ' + req + ' stars'; b.setAttribute('aria-label', (isObj ? v.name : (v[1] || val)) + ', locked, needs ' + req + ' stars');
-        b.textContent = o.type === 'color' ? req + '★' : v[1] + ' · ' + req + '★';
+        b.classList.add('locked');
+        b.setAttribute('aria-label', ch.name + ', locked. ' + ch.text);
+        if (o.type === 'color') b.textContent = '?';
       }
       b.setAttribute('aria-pressed', String(LOOK[o.key] === val));
       b.addEventListener('click', () => {
+        if (locked) { tryLocked(o.key, val); return; }
+        $('lockInfo').hidden = true;
         LOOK[o.key] = val;
         wrap.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
         refreshLook();
@@ -85,13 +98,13 @@ let lookFrom = 'start';
 
 function openLook(from) {
   lookFrom = from;
-  const t = totalStars();
-  $('starNote').textContent = '★ ' + t + ' of ' + LEVELS.length * 3 + ' stars. ' + (t < 9 ? 'Earn stars in each level to unlock more gear.' : 'Everything unlocked.');
+  $('lockInfo').hidden = true;
+  $('starNote').textContent = doneCount() + ' of ' + CHALLENGES.length + ' items unlocked. Tap a locked item to try it on and see its stats. Colours never change stats.';
   buildLook(); refreshLook(); $(from).hidden = true; $('look').hidden = false; }
 
 
 export function init() {
   $('lookBtn').addEventListener('click', () => openLook('start'));
   $('endLook').addEventListener('click', () => openLook('end'));
-  $('lookDone').addEventListener('click', () => { $('look').hidden = true; $(lookFrom).hidden = false; });
+  $('lookDone').addEventListener('click', () => { $('look').hidden = true; refreshLook(); $(lookFrom).hidden = false; });
 }

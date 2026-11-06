@@ -11,6 +11,8 @@ import { mk, runEvent } from './sim/people.js';
 import { racePace } from './sim/race.js';
 import { BODIES, BUILDS, ITEM_STATS, effects, statsOf } from './config/stats.js';
 import { LOOK } from './save/progress.js';
+import { CHALLENGES, isLocked, setUnlockListener, tallyOf, track, trackMax } from './save/challenges.js';
+import { addPop } from './sim/scoring.js';
 import { S, reset, state } from './sim/state.js';
 import { buildLevels, hud, init as initMenus } from './ui/menus.js';
 import { weekKey } from './config/util.js';
@@ -37,6 +39,9 @@ function frame(now) {
   requestAnimationFrame(frame);
 }
 
+// A challenge finished: say so on the spot, and list it on the end screen.
+setUnlockListener(c => { if (!S) return; S.unlocked.push(c.name); addPop('UNLOCKED: ' + c.name.toUpperCase(), '#ff6b9d', 26); Music.sfx('win'); });
+
 // Wire up listeners only now that every module has finished loading (keeps load order from mattering).
 initCamera();
 initInput();
@@ -48,6 +53,6 @@ reset();
 
 buildLevels();
 
-window.__excuse = { tick, reset, start, setLevel, get S() { return S; }, get state() { return state; }, keys, action, onTap, render, drawPreview, LEVELS, runEvent, shout, weekKey, hasPlayed, racePace, BODIES, BUILDS, ITEM_STATS, effects, statsOf, LOOK, mkPerson: (x, z) => mk(x, z, { hx: 0, hz: 1, v0: 1 }) };
+window.__excuse = { tick, reset, start, setLevel, get S() { return S; }, get state() { return state; }, keys, action, onTap, render, drawPreview, LEVELS, runEvent, shout, weekKey, hasPlayed, CHALLENGES, isLocked, tallyOf, track, trackMax, racePace, BODIES, BUILDS, ITEM_STATS, effects, statsOf, LOOK, mkPerson: (x, z) => mk(x, z, { hx: 0, hz: 1, v0: 1 }) };
 
 requestAnimationFrame(frame);

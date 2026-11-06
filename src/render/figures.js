@@ -87,26 +87,49 @@ function drawNear(p, s) {
     const hip = L(g.side * 0.1, 0, 0.93), kn = L(g.knee[0], g.knee[1], g.knee[2]), an = L(g.ankle[0], g.ankle[1], g.ankle[2]);
     const toe = L(g.ankle[0], g.ankle[1] + 0.13, g.ankle[2] - 0.03);
     items.push({ d: hip[2], f: () => {
-      const legW = 0.13 * sk * bulk;
-      if (p.pantsType === 'shorts') {
+      const legW = 0.13 * sk * bulk, pt = p.pantsType, line = (a, b, col, w) => { ctx.strokeStyle = col; ctx.lineWidth = Math.max(1, w * sk); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); };
+      if (pt === 'pleats' || pt === 'pencil') capsule([hip, kn, an], 0.095 * sk * bulk, p.skin, p.skinD, null);   // bare legs; the skirt is drawn with the body
+      else if (pt === 'shorts') {
         const hem = mix(hip, kn, 0.8);
         capsule([hem, kn, an], 0.1 * sk * bulk, p.skin, p.skinD, null);
         capsule([hip, hem], legW * 1.08, p.pants, p.pantsD, p.pantsL);
-      } else if (p.pantsType === 'joggers') {
-        capsule([hip, kn, an], legW * 0.92, p.pants, p.pantsD, p.pantsL);
+      } else if (pt === 'joggers' || pt === 'parachute') {
+        capsule([hip, kn, an], legW * (pt === 'parachute' ? 1.28 : 0.92), p.pants, p.pantsD, p.pantsL);
         capsule([mix(an, kn, 0.12), an], legW * 0.8, p.pantsD, p.pantsD, null);
-      } else if (p.pantsType === 'cargo') {
+      } else if (pt === 'cargo') {
         capsule([hip, kn, an], legW * 1.14, p.pants, p.pantsD, p.pantsL);
         const q = mix(hip, kn, 0.6), pw = 0.09 * sk * bulk;
         ctx.fillStyle = p.pantsD; rrect(q[0] - pw / 2, q[1] - pw * 0.6, pw, pw * 1.2, pw * 0.2); ctx.fill();
+      } else if (pt === 'flares') {
+        capsule([hip, kn, an], legW, p.pants, p.pantsD, p.pantsL);
+        capsule([mix(kn, an, 0.55), an], legW * 1.5, p.pants, p.pantsD, null);
+      } else if (pt === 'slacks') {
+        capsule([hip, kn, an], legW * 0.95, p.pants, p.pantsD, p.pantsL);
+        line(mix(hip, kn, 0.15), kn, p.pantsL, 0.018); line(kn, an, p.pantsL, 0.018);
+      } else if (pt === 'track') {
+        capsule([hip, kn, an], legW, p.pants, p.pantsD, p.pantsL);
+        line(hip, kn, '#ffffff', 0.03); line(kn, an, '#ffffff', 0.03);
+      } else if (pt === 'acid') {
+        capsule([hip, kn, an], legW, p.pantsL, p.pants, '#ffffff');
+        line(mix(hip, kn, 0.3), mix(hip, kn, 0.7), 'rgba(255,255,255,.55)', 0.05); line(mix(kn, an, 0.2), mix(kn, an, 0.6), 'rgba(255,255,255,.55)', 0.04);
       } else capsule([hip, kn, an], legW, p.pants, p.pantsD, p.pantsL);
-      if (p.shoeType === 'boots') capsule([mix(an, kn, 0.34), an, toe], 0.125 * sk, p.shoe, p.shoeD, p.shoeL);
-      else if (p.shoeType === 'slides') {
+      const st = p.shoeType;
+      if (st === 'boots' || st === 'hightops') capsule([mix(an, kn, st === 'boots' ? 0.34 : 0.17), an, toe], 0.125 * sk, p.shoe, p.shoeD, p.shoeL);
+      else if (st === 'slides') {
         capsule([an, toe], 0.07 * sk, p.skin, p.skinD, null);
         capsule([mix(an, toe, 0.3), mix(an, toe, 0.7)], 0.085 * sk, p.shoe, p.shoeD, p.shoeL);
-      } else if (p.shoeType === 'runners') {
+      } else if (st === 'runners') {
         capsule([an, toe], 0.09 * sk, p.shoe, p.shoeD, p.shoeL);
-        ctx.strokeStyle = p.shoeL; ctx.lineWidth = Math.max(1, 0.024 * sk); ctx.beginPath(); ctx.moveTo(an[0], an[1]); ctx.lineTo(toe[0], toe[1]); ctx.stroke();
+        line(an, toe, p.shoeL, 0.024);
+      } else if (st === 'platforms' || st === 'dad') {
+        capsule([an, toe], 0.125 * sk, p.shoe, p.shoeD, p.shoeL);
+        const lift = (st === 'platforms' ? 0.07 : 0.04) * sk;
+        line([an[0], an[1] + lift], [toe[0], toe[1] + lift], '#f4f6f8', st === 'platforms' ? 0.09 : 0.05);
+      } else if (st === 'oxfords') {
+        capsule([an, toe], 0.085 * sk, p.shoe, p.shoeD, p.shoeL);
+      } else if (st === 'heels') {
+        capsule([an, toe], 0.065 * sk, p.shoe, p.shoeD, p.shoeL);
+        line(an, [an[0], an[1] + 0.09 * sk], p.shoeD, 0.022);
       } else capsule([an, toe], 0.1 * sk, p.shoe, p.shoeD, p.shoeL);
     } });
   }
@@ -136,12 +159,14 @@ function drawNear(p, s) {
     items.push({ d: shp[2] + 0.001, f: () => {
       let e2 = elp, h2 = hdp;
       if (holds && handle) { h2 = handle; e2 = [(shp[0] + handle[0]) / 2 + (handle[0] - shp[0]) * 0.1, (shp[1] + handle[1]) / 2, 0]; }
-      const longSleeve = p.shirtType === 'hoodie' || p.shirtType === 'jacket';
-      if (p.shirtType === 'tank') capsule([shp, e2], 0.085 * sk * bulk, p.skin, p.skinD, null);
-      else capsule([shp, e2], 0.095 * sk * bulk, p.shirt, p.shirtD, p.shirtL);
-      if (longSleeve) capsule([e2, h2], 0.082 * sk * bulk, p.shirt, p.shirtD, p.shirtL);
+      const ty = p.shirtType, longSleeve = ['hoodie', 'jacket', 'velour', 'wind', 'varsity', 'power', 'puffer', 'suit'].includes(ty), armW = ty === 'puffer' ? 1.3 : 1;
+      const sleeve = ty === 'varsity' ? '#f4f1ea' : p.shirt, sleeveD = ty === 'varsity' ? '#c9c4b6' : p.shirtD, sleeveL = ty === 'varsity' ? '#ffffff' : p.shirtL;
+      if (ty === 'tank' || ty === 'dress') capsule([shp, e2], 0.085 * sk * bulk, p.skin, p.skinD, null);
+      else capsule([shp, e2], 0.095 * sk * bulk * armW, sleeve, sleeveD, sleeveL);
+      if (longSleeve) capsule([e2, h2], 0.082 * sk * bulk * armW, sleeve, sleeveD, sleeveL);
       else capsule([e2, h2], 0.075 * sk * bulk, p.skin, p.skinD, null);
-      if (p.shirtType === 'jacket') { ctx.strokeStyle = '#ffffff'; ctx.lineWidth = Math.max(1, 0.022 * sk); ctx.beginPath(); ctx.moveTo(shp[0], shp[1]); ctx.lineTo(e2[0], e2[1]); ctx.lineTo(h2[0], h2[1]); ctx.stroke(); }
+      if (ty === 'jacket' || ty === 'wind') { ctx.strokeStyle = '#ffffff'; ctx.lineWidth = Math.max(1, 0.022 * sk); ctx.beginPath(); ctx.moveTo(shp[0], shp[1]); ctx.lineTo(e2[0], e2[1]); ctx.lineTo(h2[0], h2[1]); ctx.stroke(); }
+      if (ty === 'power') { ctx.fillStyle = p.shirtL; ctx.beginPath(); ctx.arc(shp[0], shp[1], 0.075 * sk * bulk, 0, TAU); ctx.fill(); }
       ctx.fillStyle = p.skin; ctx.beginPath(); ctx.arc(h2[0], h2[1], 0.045 * sk, 0, TAU); ctx.fill();
       if (p.phone && side > 0) {
         ctx.fillStyle = '#111827'; ctx.fillRect(h2[0] - 0.04 * sk, h2[1] - 0.09 * sk, 0.08 * sk, 0.13 * sk);
@@ -150,7 +175,7 @@ function drawNear(p, s) {
     } });
   }
   const chest = L(0, 0, 1.38), waist = L(0, 0, 0.98), neck = L(0, 0, 1.48), pelvis = L(0, 0, 0.86);
-  const wM = (0.2 + 0.18 * across) * bulk * (fem ? 0.92 : 1);
+  const wM = (0.2 + 0.18 * across) * bulk * (fem ? 0.92 : 1) * (p.shirtType === 'power' ? 1.14 : p.shirtType === 'puffer' ? 1.16 : 1);
   items.push({ d: chest[2], f: () => {
     const sC = F / chest[2] * k, hwC = wM / 2 * sC, hwW = hwC * (fem ? 0.68 : 0.78), hipW = fem ? hwC * 0.98 : hwW * 0.95;
     const g = ctx.createLinearGradient(chest[0] - hwC, 0, chest[0] + hwC, 0);
@@ -162,13 +187,29 @@ function drawNear(p, s) {
     ctx.beginPath(); ctx.moveTo(neck[0] - hwC * 0.85, neck[1]); ctx.lineTo(neck[0] + hwC * 0.85, neck[1]);
     ctx.lineTo(chest[0] + hwC, chest[1]); ctx.lineTo(waist[0] + hwW, waist[1]); ctx.lineTo(waist[0] - hwW, waist[1]);
     ctx.lineTo(chest[0] - hwC, chest[1]); ctx.closePath(); ctx.fill(); ctx.stroke();
-    if (p.shirtType === 'hoodie') { ctx.fillStyle = p.shirtD; ctx.beginPath(); ctx.ellipse(neck[0], neck[1] + hwC * 0.12, hwC * 0.62, hwC * 0.38, 0, 0, TAU); ctx.fill(); }
-    if (p.shirtType === 'jacket') { ctx.strokeStyle = '#ffffff'; ctx.lineWidth = Math.max(1, hwC * 0.09); ctx.beginPath(); ctx.moveTo(neck[0], neck[1]); ctx.lineTo(waist[0], waist[1]); ctx.stroke(); }
+    const ty = p.shirtType, band = (a, b, col) => { ctx.strokeStyle = col; ctx.lineWidth = Math.max(1, hwC * 0.12); ctx.beginPath(); ctx.moveTo(a[0] - hwC * 0.95, a[1] + (b - a[1])); ctx.lineTo(a[0] + hwC * 0.95, a[1] + (b - a[1])); ctx.stroke(); };
+    if (ty === 'baby') { ctx.fillStyle = p.skin; const c = mix(chest, waist, 0.55); ctx.beginPath(); ctx.moveTo(c[0] - hwC * 0.88, c[1]); ctx.lineTo(c[0] + hwC * 0.88, c[1]); ctx.lineTo(waist[0] + hwW, waist[1]); ctx.lineTo(waist[0] - hwW, waist[1]); ctx.closePath(); ctx.fill(); }
+    if (ty === 'wind') { const c = mix(neck, waist, 0.42); ctx.fillStyle = '#ffffff'; ctx.fillRect(c[0] - hwC * 1.02, c[1] - hwC * 0.22, hwC * 2.04, hwC * 0.44); }
+    if (ty === 'puffer') for (const t of [0.28, 0.52, 0.76]) { const c = mix(neck, waist, t); band(c, c[1], p.shirtD); }
+    if (ty === 'velour' || ty === 'varsity') { ctx.strokeStyle = ty === 'velour' ? p.shirtL : '#ffffff'; ctx.lineWidth = Math.max(1, hwC * 0.08); ctx.beginPath(); ctx.moveTo(neck[0], neck[1]); ctx.lineTo(waist[0], waist[1]); ctx.stroke(); }
+    if ((ty === 'suit' || ty === 'power') && facing < 0) {   // shirt and tie, seen from the front
+      const v = mix(neck, waist, 0.55);
+      ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.moveTo(neck[0] - hwC * 0.42, neck[1]); ctx.lineTo(neck[0] + hwC * 0.42, neck[1]); ctx.lineTo(v[0], v[1]); ctx.closePath(); ctx.fill();
+      if (ty === 'suit') { ctx.strokeStyle = '#b3243a'; ctx.lineWidth = Math.max(1, hwC * 0.14); ctx.beginPath(); ctx.moveTo(neck[0], neck[1]); ctx.lineTo(v[0], v[1]); ctx.stroke(); }
+    }
+    // skirts hang from the waist over whatever is underneath, so a dress goes with any bottoms
+    const skirtOf = (bottom, topW, botW, col, colD) => { const b = L(0, 0, bottom); ctx.fillStyle = col; ctx.strokeStyle = colD; ctx.lineWidth = Math.max(1, hwC * 0.06); ctx.beginPath(); ctx.moveTo(waist[0] - hwC * topW, waist[1]); ctx.lineTo(waist[0] + hwC * topW, waist[1]); ctx.lineTo(b[0] + hwC * botW, b[1]); ctx.lineTo(b[0] - hwC * botW, b[1]); ctx.closePath(); ctx.fill(); ctx.stroke(); };
+    if (p.pantsType === 'pleats') { skirtOf(0.56, 0.82, 1.5, p.pants, p.pantsD); ctx.strokeStyle = p.pantsD; ctx.lineWidth = Math.max(1, hwC * 0.05); const b = L(0, 0, 0.56); for (const f of [-0.75, -0.25, 0.25, 0.75]) { ctx.beginPath(); ctx.moveTo(waist[0] + hwC * f * 0.8, waist[1]); ctx.lineTo(b[0] + hwC * f * 1.5, b[1]); ctx.stroke(); } }
+    if (p.pantsType === 'pencil') skirtOf(0.5, 0.82, 0.86, p.pants, p.pantsD);
+    if (ty === 'dress') skirtOf(0.5, 0.78, 1.6, p.shirt, p.shirtD);
+    if (ty === 'hoodie') { ctx.fillStyle = p.shirtD; ctx.beginPath(); ctx.ellipse(neck[0], neck[1] + hwC * 0.12, hwC * 0.62, hwC * 0.38, 0, 0, TAU); ctx.fill(); }
+    if (ty === 'jacket') { ctx.strokeStyle = '#ffffff'; ctx.lineWidth = Math.max(1, hwC * 0.09); ctx.beginPath(); ctx.moveTo(neck[0], neck[1]); ctx.lineTo(waist[0], waist[1]); ctx.stroke(); }
   } });
-  if (p.pack === 'pack' || p.pack === 'jet' || p.pack === 'sling') {
-    const bc = L(0, -0.19, 1.2), jet = p.pack === 'jet';
+  const packDims = { pack: [1.2, 1, 1], jet: [1.2, 1, 1], sling: [1.2, 0.62, 0.62], fanny: [0.98, 0.85, 0.36], messenger: [1.02, 1.2, 0.6], boombox: [1.3, 1.45, 0.6] }[p.pack];
+  if (packDims) {
+    const bc = L(0, -0.19, packDims[0]), jet = p.pack === 'jet';
     items.push({ d: bc[2], f: () => {
-      const sc = F / bc[2] * k, small = p.pack === 'sling' ? 0.62 : 1, w = (0.16 + 0.16 * across) * sc * small, h = 0.42 * sc * small;
+      const sc = F / bc[2] * k, w = (0.16 + 0.16 * across) * sc * packDims[1], h = 0.42 * sc * packDims[2];
       if (jet && p.isMe && S.boostV > 0.25) {   // jetpack flames while bursting
         for (const fx2 of [-0.25, 0.25]) {
           const fl = h * (0.6 + 0.5 * Math.random()) * S.boostV, x0 = bc[0] + fx2 * w;
@@ -182,6 +223,7 @@ function drawNear(p, s) {
       ctx.fillStyle = g; rrect(bc[0] - w / 2, bc[1] - h / 2, w, h, Math.min(w, h) * 0.3); ctx.fill();
       ctx.fillStyle = jet ? '#374151' : p.gearD;
       if (jet) { for (const fx2 of [-0.25, 0.25]) { rrect(bc[0] + fx2 * w - w * 0.13, bc[1] + h * 0.36, w * 0.26, h * 0.2, 2); ctx.fill(); } ctx.fillStyle = '#ff2d3a'; rrect(bc[0] - w * 0.2, bc[1] - h * 0.3, w * 0.4, h * 0.12, 2); ctx.fill(); }
+      else if (p.pack === 'boombox') { ctx.fillStyle = '#16191f'; for (const f of [-0.27, 0.27]) { ctx.beginPath(); ctx.arc(bc[0] + f * w, bc[1], h * 0.34, 0, TAU); ctx.fill(); } ctx.fillStyle = '#f4f6f8'; ctx.fillRect(bc[0] - w * 0.08, bc[1] - h * 0.2, w * 0.16, h * 0.4); }
       else { rrect(bc[0] - w * 0.36, bc[1] + h * 0.04, w * 0.72, h * 0.32, Math.min(w, h) * 0.12); ctx.fill(); }
     } });
   }
@@ -258,6 +300,24 @@ function drawNear(p, s) {
       ctx.lineTo(hx - r * 0.75, hy - r * 1.35); ctx.lineTo(hx - r * 0.38, hy - r * 1.0); ctx.lineTo(hx, hy - r * 1.45); ctx.lineTo(hx + r * 0.38, hy - r * 1.0); ctx.lineTo(hx + r * 0.75, hy - r * 1.35); ctx.lineTo(hx + r * 0.7, hy - r * 0.7);
       ctx.closePath(); ctx.fill(); ctx.stroke();
       ctx.fillStyle = '#e2574c'; ctx.beginPath(); ctx.arc(hx, hy - r * 0.86, r * 0.1, 0, TAU); ctx.fill();
+    }
+    if (p.hat === 'sweatband') { ctx.fillStyle = p.gear; ctx.fillRect(hx - r * 1.03, hy - r * 0.62, r * 2.06, r * 0.34); }
+    if (p.hat === 'tiara') {
+      ctx.fillStyle = '#e8e8f0'; ctx.strokeStyle = '#9aa0b5'; ctx.lineWidth = Math.max(1, r * 0.05);
+      ctx.beginPath(); ctx.moveTo(hx - r * 0.6, hy - r * 0.78); ctx.lineTo(hx - r * 0.3, hy - r * 1.12); ctx.lineTo(hx - r * 0.12, hy - r * 0.95); ctx.lineTo(hx, hy - r * 1.32); ctx.lineTo(hx + r * 0.12, hy - r * 0.95); ctx.lineTo(hx + r * 0.3, hy - r * 1.12); ctx.lineTo(hx + r * 0.6, hy - r * 0.78); ctx.closePath(); ctx.fill(); ctx.stroke();
+    }
+    if (p.hat === 'bucket') {
+      ctx.fillStyle = p.gearD; ctx.beginPath(); ctx.ellipse(hx, hy - r * 0.34, r * 1.42, r * 0.34, 0, 0, TAU); ctx.fill();
+      ctx.fillStyle = p.gear; ctx.beginPath(); ctx.arc(hx, hy - r * 0.34, r * 0.98, Math.PI, TAU); ctx.closePath(); ctx.fill();
+    }
+    if (p.hat === 'fedora') {
+      ctx.fillStyle = p.gearD; ctx.beginPath(); ctx.ellipse(hx, hy - r * 0.5, r * 1.55, r * 0.3, 0, 0, TAU); ctx.fill();
+      ctx.fillStyle = p.gear; rrect(hx - r * 0.82, hy - r * 1.32, r * 1.64, r * 0.86, r * 0.3); ctx.fill();
+      ctx.fillStyle = p.gearL; ctx.fillRect(hx - r * 0.82, hy - r * 0.72, r * 1.64, r * 0.2);
+    }
+    if (p.hat === 'visor') {
+      ctx.fillStyle = p.gear; ctx.fillRect(hx - r * 1.03, hy - r * 0.68, r * 2.06, r * 0.3);
+      if (facing <= 0.35) brim();
     }
     if (p.hat === 'beanie') {
       ctx.fillStyle = p.gear; ctx.beginPath(); ctx.arc(hx, hy - r * 0.12, r * 1.07, Math.PI, TAU); ctx.closePath(); ctx.fill();

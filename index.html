@@ -91,7 +91,7 @@
     </details>
     <div class="btns">
       <button id="go" class="big" type="button">Start walking</button>
-      <button id="lookBtn" class="ghost" type="button">Customize look</button>
+      <div class="btnrow"><button id="lookBtn" class="ghost" type="button">Customize</button><button id="chalBtn" class="ghost" type="button">Challenges</button></div>
     </div>
     <div class="toggles">
       <label class="toggle"><input type="checkbox" class="sndt" checked> Music &amp; sound</label>
@@ -105,12 +105,22 @@
 
 <div id="look" class="panel" hidden>
   <div class="card">
-    <div class="pv"><canvas id="preview" width="340" height="420" aria-label="Preview of your character"></canvas><div id="statBars" class="statbars" aria-live="polite"></div></div>
+    <div class="pv"><canvas id="preview" width="340" height="420" aria-label="Preview of your character"></canvas><div id="statBars" class="statbars" aria-live="polite"></div><div id="lockInfo" class="lockinfo" hidden></div></div>
     <div class="eyebrow">Your traveller</div>
     <h1 class="mid">Customize</h1>
     <p class="lead" id="starNote"></p>
     <div id="opts"></div>
     <div class="btns"><button id="lookDone" class="big" type="button">Done</button></div>
+  </div>
+</div>
+
+<div id="chal" class="panel" hidden>
+  <div class="card">
+    <div class="eyebrow">Earn new gear</div>
+    <h1 class="mid">Challenges</h1>
+    <p class="lead" id="chalNote"></p>
+    <ul id="chalList" class="chals"></ul>
+    <div class="btns"><button id="chalDone" class="big" type="button">Done</button></div>
   </div>
 </div>
 
@@ -148,7 +158,6 @@
       <div><dt>People passed</dt><dd id="sPassed">0</dd></div>
       <div><dt>Rivals burned</dt><dd id="sRival">0</dd></div>
     </dl>
-    <div class="stars" id="endStars"></div>
     <ol id="raceBoard" class="board" hidden></ol>
     <p id="unlockNote" class="unlock" hidden></p>
     <div class="btns">

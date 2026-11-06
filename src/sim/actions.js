@@ -1,6 +1,7 @@
 import { Music } from '../audio/music.js';
 import { R, pick, sgn } from '../config/util.js';
 import { BURST_T, COST_BURST, COST_DASH, DASH_T } from '../input/input.js';
+import { track } from '../save/challenges.js';
 import { buzz } from '../save/store.js';
 import { S } from './state.js';
 
@@ -10,7 +11,7 @@ const POLITE = ['Oh, sorry!', 'Go ahead.', 'My bad.', 'Sure!', 'Oops, sorry.'];
 // "Excuse me": up to four people ahead of you step aside, enough to open a gap in a big crowd. Rivals refuse; phone zombies may not hear.
 export function shout() {
   if (S.shoutCD > 0) return;
-  S.shoutCD = 5.5;
+  S.shoutCD = 5.5; track('shouts');
   S.me.react = { t: 0, text: 'Excuse me!', up: false };
   Music.sfx('shout'); buzz(8);
   const near = S.people.filter(p => !p.prop && !p.dead && p.z - S.pz > 0.2 && p.z - S.pz < 7.5 && Math.abs(p.x - S.px) < 2.0)
@@ -28,11 +29,11 @@ export function banner(text, color) { S.banner = { text, color, t: 0 }; }
 export function tryBurst() {
   if (S.burstT > 0) return;
   if (S.energy < COST_BURST) { S.flash = 0.45; return; }
-  S.energy -= COST_BURST; S.burstT = BURST_T; S.heat = Math.min(0.9, S.heat + 0.12); Music.sfx('dash');
+  S.energy -= COST_BURST; S.burstT = BURST_T; track('bursts'); S.heat = Math.min(0.9, S.heat + 0.12); Music.sfx('dash');
 }
 
 export function tryDash(dir) {
   if (S.dashT > 0 || S.dashCool > 0) return;
   if (S.energy < COST_DASH) { S.flash = 0.45; return; }
-  S.energy -= COST_DASH; S.dashT = DASH_T; S.dashDir = dir; S.dashCool = 0.45; S.lastDashT = S.time; Music.sfx('dash');
+  S.energy -= COST_DASH; S.dashT = DASH_T; track('dashes'); S.dashDir = dir; S.dashCool = 0.45; S.lastDashT = S.time; Music.sfx('dash');
 }

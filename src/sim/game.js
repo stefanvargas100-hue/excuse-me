@@ -5,7 +5,7 @@ import { R, clamp, hashStr, mulberry32, pick, rnd, setR, todayKey, weekKey } fro
 import { $ } from '../dom.js';
 import { COST_DASH, DASH_V, action, keys, pendingDash, setPendingDash, touches } from '../input/input.js';
 import { radarTop, setRadarTop } from '../render/hud.js';
-import { STAR_CHAIN, starsOf, totalStars, unlockables } from '../save/progress.js';
+import { track, trackMax } from '../save/challenges.js';
 import { buzz, store } from '../save/store.js';
 import { banner } from './actions.js';
 import { collide, updMe, updPeople } from './crowd.js';
@@ -68,6 +68,7 @@ export function tick(dt) {
   if (state === 'play') {
     if (S.race && S.race.countT > 0) { raceCountdown(dt); return; }   // 3-2-1-GO: everything holds still
     S.time += dt;
+    if (S.kind === 'classic' && S.pz > S.farMark) { S.farMark += 5; trackMax('far_' + LV.id, S.pz); }
     if (pendingDash && performance.now() >= pendingDash.at) { action(pendingDash.z); setPendingDash(null); }
     movePlayer(dt);
     S.me.x = S.px; S.me.z = S.pz;
@@ -137,22 +138,14 @@ function recordBest() {
   if (S.daily || S.weekly) {
     const k = 'excuseme_' + (S.daily ? 'daily_' : 'weekly_') + S.dailyKey, b = parseInt(store.get(k, '0'), 10) || 0;
     S.newBest = S.score > b; if (S.newBest) store.set(k, String(S.score));
-    S.newStars = 0; S.unlocked = [];
     return;
   }
   const b = bestOf(LV.id);
   S.newBest = S.score > b;
   if (S.newBest) store.set('excuseme_best_' + LV.id, String(S.score));
-  // stars: finish, score target, chain of 15
-  const before = totalStars(), old = starsOf(LV.id);
-  const mask = (S.pz >= LV.goal ? 1 : 0) | (S.score >= LV.starScore ? 2 : 0) | (S.bestChain >= STAR_CHAIN ? 4 : 0);
-  store.set('excuseme_stars_' + LV.id, String(old | mask));
-  S.newStars = mask & ~old;
-  const after = totalStars();
-  S.unlocked = unlockables().filter(u => u[2] > before && u[2] <= after).map(u => u[3]);
 }
 
-function lose(p) { setState('over'); S.live = false; p.hit = true; S.shake = 1; S.overT = 0; touches.clear(); Music.sfx('bump'); Music.stop(); Music.ambStop(); buzz([60, 40, 140]); recordBest(); }
+function lose(p) { if (S.daily) track('dailyRuns'); if (S.weekly) track('weeklyRuns'); if (S.kind === 'classic') { trackMax('far_' + LV.id, S.pz); trackMax('bestScore', S.score); } setState('over'); S.live = false; p.hit = true; S.shake = 1; S.overT = 0; touches.clear(); Music.sfx('bump'); Music.stop(); Music.ambStop(); buzz([60, 40, 140]); recordBest(); }
 
 function loseTime() {
   setState('over'); S.live = false; S.timeout = true; S.shake = 0.4; S.overT = 0; touches.clear();
@@ -195,21 +188,7 @@ function showEnd() {
   $('sClose').textContent = S.close;
   $('sPassed').textContent = S.passed;
   $('sRival').textContent = S.dodged;
-  // stars and unlocks
-  const have = seededRun ? 0 : starsOf(LV.id), sb = $('endStars');
-  sb.hidden = !!seededRun;
-  if (!seededRun) {
-    const labels = ['Reach ' + LV.goal + ' m', 'Score ' + fmt(LV.starScore), 'Chain of ' + STAR_CHAIN];
-    sb.innerHTML = '';
-    labels.forEach((t, i) => {
-      const d = document.createElement('div'); const bit = 1 << i;
-      d.className = 'star' + (have & bit ? ' on' : '') + (S.newStars & bit ? ' new' : '');
-      d.innerHTML = '<b>★</b>'; const sp = document.createElement('span'); sp.textContent = t; d.appendChild(sp);
-      sb.appendChild(d);
-    });
-  }
-  const un = $('unlockNote');
-  if (S.unlocked && S.unlocked.length) { un.hidden = false; un.textContent = 'Unlocked: ' + S.unlocked.join(', ') + '. Try it in Change look.'; } else un.hidden = true;
+  showUnlocks();
   if (S.daily) { $('endEyebrow').textContent = 'Daily run · ' + S.dailyKey + ' · ' + LV.name; }
   if (S.weekly) { $('endEyebrow').textContent = 'Weekly run · ' + S.dailyKey + ' · ' + LV.name; }
   const nx = $('next');
@@ -225,6 +204,12 @@ function resetEndLabels() {
   for (const id in END_LABELS) { const dt = $(id).previousElementSibling; if (dt) dt.textContent = END_LABELS[id]; }
   $('raceBoard').hidden = true;
   $('sScoreLabel').textContent = END_LABELS.sScore;
+}
+
+function showUnlocks() {
+  const un = $('unlockNote');
+  un.hidden = !S.unlocked.length;
+  if (S.unlocked.length) un.textContent = 'Unlocked: ' + S.unlocked.join(', ') + '. Try it in Change look.';
 }
 
 function showRaceEnd() {
@@ -246,7 +231,7 @@ function showRaceEnd() {
     li.textContent = (i + 1) + '. ' + r.name + ' · ' + gap;
     bd.appendChild(li);
   });
-  $('endStars').hidden = true; $('unlockNote').hidden = true; $('next').hidden = true; $('again').hidden = false;
+  showUnlocks(); $('next').hidden = true; $('again').hidden = false;
   $('again').textContent = 'Race again'; $('again').className = 'big';
   $('end').hidden = false;
 }

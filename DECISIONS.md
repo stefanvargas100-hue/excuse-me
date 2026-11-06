@@ -39,3 +39,7 @@
 - Slipstream (race only): 1.2 s within 4 m behind someone walking your way, within 0.6 m sideways, earns +18% speed for 2.5 s. Works behind crowd walkers and racers, bots use it too, and a bump cancels it.
 - Endless difficulty: ramps to its hardest by the old goal distance and stays there. More random crowd events later is an open idea, not built.
 - Update: male and female now have stats in races. Male: +2 speed, -2 recovery. Female: -2 speed, +2 recovery (about 1.2% speed, 8% stamina refill and 5% bump time). Equal trade-off. Replaces the earlier looks-only choice.
+- Unlocks: stars are gone. Every unlockable comes from a challenge, with tallies that carry across all runs and never reset. Mix of long grinds (pass 5,000 people) and rare one-offs (win a race on Hard, win with no bumps, reach 1,000 m). Race challenges included (crown: win 10 on Medium or Hard). Targets are first guesses until played. Items equipped from the old star system come off until earned.
+- Tapping a locked item tries it on: the character and stat bars change, nothing is equipped, and the challenge and progress show. A Challenges screen lists everything, closest to done first, with each reward's stats.
+- Clothing catalogue: 28 new unlockable pieces across Y2K, 80s, modern and formal, in tops, bottoms, shoes, headpieces and bags, all free to mix. A dress or skirt hangs over whatever is below it. All stat trade-offs add to zero.
+- Stat categories: staying at three for now. Bars with real percentages are on the customize screen.

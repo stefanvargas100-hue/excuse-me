@@ -162,6 +162,8 @@ Decided: launch with a fuller game. Candidates, to be confirmed after playtest f
 - [ ] More crowd events and rival types; unlockable looks
 - [ ] Settings screen, accessibility, polish (Phase 5)
 - [x] Race stats from build and gear, slipstream
+- [x] Challenges as the only way to unlock, with a first clothing catalogue (Y2K, 80s, modern, formal)
+- [ ] Tune challenge targets from real play
 - [ ] More random crowd events in endless runs (tour groups and the like), difficulty stays at its hardest
 - [ ] Anything the playtest shows is missing
 

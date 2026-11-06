@@ -8,6 +8,7 @@ import { effects, randomLoadout, statsOf } from '../config/stats.js';
 import { COST_DASH, DASH_T, DASH_V } from '../input/input.js';
 import { buzz, store } from '../save/store.js';
 import { banner } from './actions.js';
+import { track } from '../save/challenges.js';
 import { LOOK } from '../save/progress.js';
 import { applyBuild, dress } from './people.js';
 import { addPop } from './scoring.js';
@@ -287,7 +288,11 @@ function stepBot(b, dt) {
 export function updRace(dt) {
   const R = S.race; if (!R) return;
   R.elapsed = S.time;
-  if (stepDraft(S, S.px, S.pz, S.bumpT > 0, dt)) { addPop('SLIPSTREAM!', '#2ec4b6', 30); Music.sfx('dash'); buzz(15); }
+  if (stepDraft(S, S.px, S.pz, S.bumpT > 0, dt)) {
+    addPop('SLIPSTREAM!', '#2ec4b6', 30); Music.sfx('dash'); buzz(15);
+    track('slips');
+    if (S.time - S.lastSlip < 20) { track('doubleSlip'); S.lastSlip = -99; } else S.lastSlip = S.time;
+  }
   for (const b of R.bots) {
     if (b.done) { b.speed *= Math.max(0, 1 - dt * 4); b.vx *= Math.max(0, 1 - dt * 6); b.vz = b.speed; b.phase += dt * b.speed * 2; b.walkA += ((b.speed > 0.15 ? 1 : 0) - b.walkA) * Math.min(1, dt * 8); b.z += b.speed * dt; continue; }
     stepBot(b, dt);
@@ -303,6 +308,12 @@ export function finishRace() {
   R.newBest = R.place === 1 && (!prev || S.time < prev);
   if (R.newBest) store.set(key, S.time.toFixed(2));
   if (R.place === 1) banner('YOU WIN', '#27c27a');
+  track('races');
+  if (R.place === 1) {
+    track('wins');
+    if (R.diff.name !== 'Easy') { track('winsMH'); if (S.bumps === 0) track('cleanWins'); }
+    if (R.diff.name === 'Hard') track('winsHard');
+  }
 }
 export const raceBest = id => parseFloat(store.get('excuseme_race_best_' + id, '0')) || 0;
 export const fmtTime = t => Math.floor(t / 60) + ':' + (t % 60 < 10 ? '0' : '') + (t % 60).toFixed(1);

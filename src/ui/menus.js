@@ -3,7 +3,8 @@ import { LEVELS, LV, LVI, setLevel } from '../config/levels.js';
 import { CHAIN_WINDOW } from '../config/tuning.js';
 import { clamp, todayKey, weekKey } from '../config/util.js';
 import { $ } from '../dom.js';
-import { starsOf } from '../save/progress.js';
+import { CHALLENGES, doneCount, isDone, tallyOf } from '../save/challenges.js';
+import { ITEM_STATS, statHint } from '../config/stats.js';
 import { setVibOn, store, vibOn } from '../save/store.js';
 import { dailyLevel, fmt, hasPlayed, lastDaily, lastMode, pauseGame, resumeGame, start, startDaily, startWeekly, toMenu, weeklyLevel } from '../sim/game.js';
 import { draftCharge, draftMul, fmtTime, ordinal, raceBest, racePace, raceDifficulty, standings } from '../sim/race.js';
@@ -37,11 +38,7 @@ export function buildLevels() {
     const best = bestOf(L.id), rb = raceBest(L.id);
     x.children[0].textContent = (i + 1) + ' · ' + L.city;
     x.children[1].textContent = L.name;
-    const st = starsOf(L.id);
-    const lm = x.children[2], ss = document.createElement('span');
-    lm.textContent = ''; ss.className = 'st'; ss.textContent = [1, 2, 4].map(bit => st & bit ? '★' : '☆').join('');
-    lm.appendChild(ss); lm.appendChild(document.createElement('br'));
-    lm.appendChild(document.createTextNode(race ? L.goal + ' m' + (rb ? ' · ' + fmtTime(rb) : '') : 'Endless' + (best ? ' · best ' + fmt(best) : '')));
+    x.children[2].appendChild(document.createTextNode(race ? L.goal + ' m' + (rb ? ' · ' + fmtTime(rb) : '') : 'Endless' + (best ? ' · best ' + fmt(best) : '')));
     x.children[3].textContent = L.blurb;
     x.addEventListener('click', () => { setLevel(i); reset(); buildLevels(); });
     box.appendChild(x);
@@ -125,7 +122,27 @@ function syncMode() {
   document.querySelectorAll('#raceOpts .chip').forEach((c, i) => c.setAttribute('aria-pressed', String(i === d)));
 }
 
+// Every challenge, closest to finished first, with its reward's stats so players can pick what to chase.
+function buildChallenges() {
+  $('chalNote').textContent = doneCount() + ' of ' + CHALLENGES.length + ' unlocked. Progress carries across every run.';
+  const box = $('chalList'); box.innerHTML = '';
+  const pct = c => Math.min(1, tallyOf(c.tally) / c.target);
+  CHALLENGES.slice().sort((a, b) => (isDone(a) - isDone(b)) || (pct(b) - pct(a))).forEach(c => {
+    const li = document.createElement('li'); if (isDone(c)) li.className = 'done';
+    const name = document.createElement('b'); name.textContent = c.name + (isDone(c) ? ' · unlocked' : '');
+    const stats = ITEM_STATS[c.key] && ITEM_STATS[c.key][c.val];
+    const hint = document.createElement('small'); hint.textContent = stats ? 'Race stats: ' + statHint(stats) : 'Looks only';
+    const what = document.createElement('span'); what.textContent = c.text;
+    const bar = document.createElement('div'); bar.className = 'statb'; const fill = document.createElement('i'); fill.className = 'up'; fill.style.width = (pct(c) * 100).toFixed(0) + '%'; bar.appendChild(fill);
+    const num = document.createElement('small'); num.textContent = fmt(Math.min(tallyOf(c.tally), c.target)) + ' / ' + fmt(c.target);
+    [name, hint, what, bar, num].forEach(n => li.appendChild(n));
+    box.appendChild(li);
+  });
+}
+
 export function init() {
+  $('chalBtn').addEventListener('click', () => { buildChallenges(); $('start').hidden = true; $('chal').hidden = false; });
+  $('chalDone').addEventListener('click', () => { $('chal').hidden = true; $('start').hidden = false; });
   $('modeClassic').addEventListener('click', () => { store.set('excuse_mode', 'classic'); syncMode(); buildLevels(); });
   $('modeRace').addEventListener('click', () => { store.set('excuse_mode', 'race'); syncMode(); buildLevels(); });
   document.querySelectorAll('#raceOpts .chip').forEach((c, i) => c.addEventListener('click', () => { store.set('excuseme_botlvl', String(i)); syncMode(); }));

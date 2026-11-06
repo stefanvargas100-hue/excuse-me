@@ -3,6 +3,7 @@ import { MULT_COLS, REACT } from '../config/colour.js';
 import { LV } from '../config/levels.js';
 import { CHAIN_WINDOW, R_PLAYER } from '../config/tuning.js';
 import { R, pick, sgn } from '../config/util.js';
+import { track, trackMax } from '../save/challenges.js';
 import { buzz } from '../save/store.js';
 import { S } from './state.js';
 
@@ -13,6 +14,8 @@ export function addPop(text, color, size) {
   S.pops.push({ text, color, size, t: 0 });
   if (S.pops.length > 6) S.pops.shift();
 }
+
+const TAG_TALLY = { RAZOR: 'razor', CLOSE: 'close', 'THREAD THE NEEDLE': 'thread', SNAKE: 'snake', 'SWEEP LEFT': 'sweep', 'SWEEP RIGHT': 'sweep', 'MEGA SWEEP': 'mega', 'BULLET TRAIN': 'bullet', JUKE: 'juke', 'SALMON RUN': 'salmon', 'RIVAL BURNED': 'burned' };
 
 export function onPass(p) {
   if (p.prop) return;
@@ -27,7 +30,7 @@ export function onPass(p) {
   const mult = Math.min(8, 1 + Math.floor(S.chain / 3));
   let pts = 10, sound = null;
   const tags = [];
-  if (gap < 0.15) { pts += 50; S.close++; tags.push(['RAZOR', '#ff4d4f']); S.heat = Math.min(0.9, S.heat + 0.45); sound = 'razor'; }
+  if (gap < 0.15) { pts += 50; S.close++; track('close'); tags.push(['RAZOR', '#ff4d4f']); S.heat = Math.min(0.9, S.heat + 0.45); sound = 'razor'; }
   else if (gap < 0.4) { pts += 25; S.close++; tags.push(['CLOSE', '#ffcf1f']); S.heat = Math.min(0.9, S.heat + 0.3); sound = 'whoosh'; }
   if (prev && now - prev.t < 0.35 && prev.side !== side && Math.abs(dx) < 1.2 && prev.adx < 1.2) { pts += 150; tags.push(['THREAD THE NEEDLE', '#5ee6a8']); }
   S.snake = prev && prev.side !== side ? S.snake + 1 : 1;
@@ -46,7 +49,8 @@ export function onPass(p) {
   }
   const total = pts * mult;
   S.score += total;
-  for (const t of tags) addPop(t[0], t[1], 30);
+  track('passes'); trackMax('chain', S.bestChain);
+  for (const t of tags) { addPop(t[0], t[1], 30); const name = TAG_TALLY[t[0]]; if (name) track(name); }
   addPop('+' + total + (mult > 1 ? '  ×' + mult : ''), '#ffffff', 22);
   if (sound) Music.sfx(sound);
   else if (tags.length) Music.sfx('combo');
@@ -59,6 +63,7 @@ export function onPass(p) {
     p.react = { t: 0, text: pick(REACT[LV.id]), up: R() < 0.65 };
     if (!p.locked) p.vx += sgn(p.x - S.px) * 0.7;
   }
+  if (mult === 8 && S.multPrev < 8) track('x8');
   if (mult > S.multPrev) { addPop('×' + mult + ' MULTIPLIER', MULT_COLS[mult - 1], 26); buzz([10, 30, 10]); }
   S.multPrev = mult;
 }
