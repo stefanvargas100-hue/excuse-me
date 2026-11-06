@@ -9,7 +9,7 @@ Nobody has played most of this on a real phone yet. All balance numbers are firs
 
 ## Live 1v1 (built 2026-11-06, branch multiplayer, needs a real two-phone test)
 - [ ] Stefan + a friend: Play > Race a friend. One makes a room, the other joins with the code or the link, host presses Start. Report: do you see each other smoothly, do the countdowns line up, does the finish work?
-- [ ] Then: rematch button, handle a phone that sleeps mid-race, 4-8 players, cut-offs between racers.
+- [ ] Rematch button is in (both press it). Then: handle a phone that sleeps mid-race, 4-8 players, cut-offs between racers.
 
 ## Next steps, in order
 

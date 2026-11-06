@@ -265,7 +265,8 @@ function showRaceEnd() {
     bd.appendChild(li);
   });
   showUnlocks(); $('next').hidden = true;
-  $('again').hidden = !!S.duel; $('again').textContent = 'Race again'; $('again').className = 'big';
+  $('again').hidden = false; $('again').disabled = false; $('again').textContent = S.duel ? 'Rematch' : 'Race again'; $('again').className = 'big';
+  if (S.duel && S.duel.refresh) S.duel.refresh();
   $('end').hidden = false;
 }
 

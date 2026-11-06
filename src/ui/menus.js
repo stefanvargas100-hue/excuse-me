@@ -16,7 +16,7 @@ import { endTut } from '../sim/tutorial.js';
 import { back, go, pageInto, relayoutWith } from './screens.js';
 import { shareRun } from '../sim/replay.js';
 import { openFriend } from './friend.js';
-import { leaveRoom } from '../online/duel.js';
+import { leaveRoom, requestRematch } from '../online/duel.js';
 
 
 
@@ -244,7 +244,7 @@ export function init() {
   const vol = (id, get, set) => { const el = $(id); el.value = String(Math.round(get() * 100)); el.addEventListener('input', e => set(e.target.value / 100)); };
   vol('musicVol', () => Music.musicVol, v => Music.setMusicVol(v));
   vol('sfxVol', () => Music.sfxVol, v => Music.setSfxVol(v));
-  $('again').addEventListener('click', () => start(lastDaily, lastMode));
+  $('again').addEventListener('click', () => { if (S && S.duel) requestRematch(); else start(lastDaily, lastMode); });
   $('tutBtn').addEventListener('click', () => { store.set('excuseme_tut', '0'); start('classic'); });
   $('tutSkip').addEventListener('click', e => { e.stopPropagation(); if (S.tut) endTut(); });
   $('tutSkip').addEventListener('pointerdown', e => e.stopPropagation());

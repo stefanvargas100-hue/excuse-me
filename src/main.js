@@ -19,7 +19,7 @@ import { S, calm, reset, state } from './sim/state.js';
 import { buildLevels, hud, init as initMenus } from './ui/menus.js';
 import { init as initScreens } from './ui/screens.js';
 import { weekKey } from './config/util.js';
-import { duelReceive, startDuel } from './online/duel.js';
+import { duelReceive, hostRoom, hostStart, joinRoom, leaveRoom, rematchState, requestRematch, startDuel, useRoomFactory } from './online/duel.js';
 import { initFriend } from './ui/friend.js';
 
 
@@ -64,7 +64,7 @@ reset();
 
 buildLevels();
 
-window.__excuse = { xp: () => account.xp(), account, startDuel, duelReceive, nextGoal, rotatingList, tick, reset, start, setLevel, get S() { return S; }, get state() { return state; }, keys, action, onTap, render, drawPreview, LEVELS, runEvent, shout, weekKey, hasPlayed, pauseGame, quitRun, toMenu, CHALLENGES, isLocked, tallyOf, track, trackMax, racePace, fitOf, BODIES, BUILDS, ITEM_STATS, effects, statsOf, LOOK, mkPerson: (x, z) => mk(x, z, { hx: 0, hz: 1, v0: 1 }) };
+window.__excuse = { xp: () => account.xp(), account, startDuel, duelReceive, hostRoom, hostStart, joinRoom, leaveRoom, rematchState, requestRematch, useRoomFactory, nextGoal, rotatingList, tick, reset, start, setLevel, get S() { return S; }, get state() { return state; }, keys, action, onTap, render, drawPreview, LEVELS, runEvent, shout, weekKey, hasPlayed, pauseGame, quitRun, toMenu, CHALLENGES, isLocked, tallyOf, track, trackMax, racePace, fitOf, BODIES, BUILDS, ITEM_STATS, effects, statsOf, LOOK, mkPerson: (x, z) => mk(x, z, { hx: 0, hz: 1, v0: 1 }) };
 
 requestAnimationFrame(frame);
 

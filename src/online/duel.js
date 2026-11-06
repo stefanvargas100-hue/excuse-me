@@ -35,6 +35,7 @@ const num = (v, lim) => (typeof v === 'number' && Number.isFinite(v) && Math.abs
 
 /* ---- one race at a time ---- */
 let room = null, role = null, code = '', friend = null, levelIdx = 0, helloTimer = null, raceNo = 0;
+let wantMe = false, wantThem = false, friendGone = false;   // rematch: both have to ask
 let net = null;   // the running race's link, same object as S.duel
 const ui = { status: () => {}, ready: () => {} };
 let roomFactory = opts => createRoom({ WebSocket: window.WebSocket, url: URL, key: KEY, ...opts });
@@ -44,7 +45,7 @@ const myName = () => { try { return createBoard({ fetch: () => Promise.reject(),
 
 export function startDuel({ seed, level, friend: f, send }) {
   setLevel(level);
-  const d = { seed, name: cleanName(f.name), look: cleanLook(f.look), send, remote: createRemote(), n: 0, sendT: 0, fin: null, bye: false };
+  const d = { refresh: showRematch, seed, name: cleanName(f.name), look: cleanLook(f.look), send, remote: createRemote(), n: 0, sendT: 0, fin: null, bye: false };
   net = d;
   start('race', null, { duel: d });
   return d;
@@ -65,22 +66,29 @@ export function duelReceive(ev, data) {
 }
 
 /* ---- the room before the race ---- */
-function closeRoom() { if (helloTimer) { clearInterval(helloTimer); helloTimer = null; } if (room) { try { room.send('bye', {}); } catch (e) {} room.leave(); } room = null; friend = null; role = null; code = ''; }
+function closeRoom() {
+  wantMe = wantThem = friendGone = false;
+  if (helloTimer) { clearInterval(helloTimer); helloTimer = null; } if (room) { try { room.send('bye', {}); } catch (e) {} room.leave(); } room = null; friend = null; role = null; code = ''; }
 
 function onMessage(ev, data) {
   if (ev === 'hello') {
     const first = !friend;
     friend = { name: cleanName(data && data.name), look: cleanLook(data && data.look) };
     if (first) { sayHello(); if (role === 'host') ui.ready(friend.name); else ui.status('Connected to ' + friend.name + '. Waiting for them to start.'); }
-  } else if (ev === 'start' && role === 'guest' && friend) {
+  } else if (ev === 'rematch') { wantThem = true; maybeRematch(); showRematch();
+  } else if (ev === 'bye') { friendGone = true; wantThem = false; showRematch(); duelReceive(ev, data);
+  } else if (ev === 'start' && role === 'guest' && friend && (wantMe || !racing())) {
     if (!data || typeof data.seed !== 'string' || !Number.isInteger(data.level) || !LEVELS[data.level]) return;
     beginRace(data.level, data.seed.slice(0, 40));
   } else if (ev === 'start' && role === 'host') { /* ignore */ }
   else duelReceive(ev, data);
 }
+// a race is running right now (not finished, not in the lobby)
+const racing = () => !!(S && S.duel && S.race && !S.race.finished);
 const sayHello = () => room && room.send('hello', { name: myName(), look: LOOK });
 
 function beginRace(level, seed) {
+  wantMe = wantThem = false;
   startDuel({ seed, level, friend, send: (ev, d) => { if (room) room.send(ev, d); } });
 }
 
@@ -108,6 +116,21 @@ export async function joinRoom(c) {
   try { await connect(c, 'guest'); } catch (e) { ui.status('Could not connect. Check the code and your internet.'); return false; }
   ui.status('Joined. Waiting for your friend...');
   return true;
+}
+// After a race both players press Rematch; the host then starts a new race on the same stage.
+export const rematchState = () => (!room || !friend || friendGone ? 'gone' : wantMe && wantThem ? 'starting' : wantMe ? 'waiting' : wantThem ? 'asked' : 'idle');
+function showRematch() {
+  const b = $('again'); if (!b || !S || !S.duel) return;
+  const st = rematchState();
+  b.textContent = st === 'gone' ? 'Friend left' : st === 'waiting' ? 'Waiting for friend...' : st === 'asked' ? 'Accept rematch' : 'Rematch';
+  b.disabled = st === 'gone' || st === 'waiting' || st === 'starting';
+}
+function maybeRematch() {
+  if (role === 'host' && wantMe && wantThem && friend && !friendGone) { const seed = code + ':' + (++raceNo); room.send('start', { level: levelIdx, seed }); beginRace(levelIdx, seed); }
+}
+export function requestRematch() {
+  if (!room || !friend || friendGone || wantMe) return;
+  wantMe = true; room.send('rematch', {}); maybeRematch(); showRematch();
 }
 export function hostStart() {
   if (role !== 'host' || !friend || !room) return;
