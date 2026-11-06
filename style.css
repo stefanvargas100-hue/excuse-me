@@ -137,7 +137,7 @@ button.big:focus-visible, button.ghost:focus-visible, .toggle input:focus-visibl
 .desk { margin: 12px 0 0; font-size: 15px; opacity: .7; }
 
 .pv { position: sticky; top: -18px; z-index: 1; margin: 0 -20px 6px; padding: 8px 14px 6px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; background: var(--paper); border-bottom: 3px dashed var(--ink); }
-#preview { display: block; flex: 0 0 auto; width: 136px; height: 168px; border: 3px solid var(--ink); border-radius: var(--wob); background: radial-gradient(circle at 50% 70%, #fff3c4, #f6ecd8 70%); }
+#preview { display: block; flex: 0 0 auto; width: 158px; height: 195px; border: 3px solid var(--ink); border-radius: var(--wob); background: radial-gradient(circle at 50% 70%, #fff3c4, #f6ecd8 70%); }
 .opt { margin: 12px 0; }
 .optl { font-family: var(--display); font-size: 14px; text-transform: uppercase; margin-bottom: 6px; }
 .sws { display: flex; flex-wrap: wrap; gap: 9px; }
@@ -199,11 +199,6 @@ button.big:focus-visible, button.ghost:focus-visible, .toggle input:focus-visibl
 .statb::after { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: var(--ink); }
 .chip small { display: block; font-size: 12px; line-height: 1; padding-bottom: 3px; opacity: .8; }
 
-/* slipstream */
-.shoutrow { gap: 8px; }
-.slip { font-family: var(--display); font-size: 13px; padding: 2px 12px 3px; border: 2.5px solid var(--ink); border-radius: 999px 900px 999px 800px; background: var(--paper); box-shadow: 2px 3px 0 var(--ink); }
-.slip.on { background: var(--go); }
-.slip[hidden] { display: none; }
 
 /* challenges */
 .lockinfo { flex: 1 0 100%; box-sizing: border-box; font-size: 16px; line-height: 1.2; padding: 6px 10px; border: 2.5px solid var(--ink); border-radius: var(--wob-s); background: var(--yellow); }

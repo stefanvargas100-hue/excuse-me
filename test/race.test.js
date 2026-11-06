@@ -163,3 +163,23 @@ test('slipstream does nothing outside a race', () => {
   assert.strictEqual(E.S.draftT, 0);
   assert.ok(E.S.speed <= 3.001);
 });
+
+test('slipstream: the closer you are, the sooner it charges', () => {
+  const close = atGo(), far = atGo();
+  tail(close, 15, 0, 0.9, 3); tail(far, 15, 0, 3.8, 3);
+  assert.ok(close.S.draftC > far.S.draftC, close.S.draftC.toFixed(2) + ' vs ' + far.S.draftC.toFixed(2));
+});
+
+test('slipstream: the wind lines draw while charging and during the boost', () => {
+  const E = atGo();
+  for (let i = 0; i < 60; i++) { tail(E, 1, 0, 2.5, 3); E.render(); }
+  assert.ok(E.S.draftT > 0);
+  for (let i = 0; i < 30; i++) { tail(E, 1, 3, 2.5, 3); E.render(); }
+});
+
+test('no camera shake is left: a bump does not move the view', () => {
+  const E = atGo();
+  tail(E, 3, 0, 0.2, 0);
+  assert.ok(E.S.bumps >= 1);
+  assert.strictEqual(E.S.shake, undefined);
+});

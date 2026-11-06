@@ -22,26 +22,34 @@ const COUNTDOWN = 3;
 
 // Slipstream: walk close behind someone heading your way for a moment and you earn a burst of speed to overtake with.
 const DRAFT_LEN = 4, DRAFT_W = 0.6;   // the zone behind them, in metres
-const DRAFT_CHARGE = 1.2;             // seconds in the zone to earn it
+const DRAFT_CHARGE = 1.2;             // seconds to earn it at middling distance; closer is quicker
 const DRAFT_T = 2.5, DRAFT_BOOST = 1.18;   // how long it lasts and how much faster you go
 const DRAFT_MIN_V = 0.8;              // they have to be walking your way, not standing or coming at you
 export const draftMul = r => (r.draftT > 0 ? DRAFT_BOOST : 1);
 export const draftCharge = r => clamp(r.draftC / DRAFT_CHARGE, 0, 1);
 
-function inDraft(x, z, self) {
-  const behind = (ox, oz, ov) => ov > DRAFT_MIN_V && oz - z > 0.3 && oz - z < DRAFT_LEN && Math.abs(ox - x) < DRAFT_W;
-  for (const p of S.people) if (!p.dead && !p.prop && behind(p.x, p.z, p.vz)) return true;
-  if (self !== S && behind(S.px, S.pz, S.speed)) return true;
-  for (const b of S.race.bots) if (b !== self && !b.done && behind(b.x, b.z, b.speed)) return true;
-  return false;
+// Finds the closest person you are drafting; returns how close as 0 (edge of the zone) to 1 (right behind them), or -1.
+function inDraft(r, x, z, self) {
+  let best = -1;
+  const check = (ox, oz, ov) => {
+    if (ov <= DRAFT_MIN_V || oz - z <= 0.3 || oz - z >= DRAFT_LEN || Math.abs(ox - x) >= DRAFT_W) return;
+    const near = 1 - (oz - z - 0.3) / (DRAFT_LEN - 0.3);
+    if (near > best) { best = near; r.draftNear = near; r.draftX = ox; r.draftZ = oz; }
+  };
+  for (const p of S.people) if (!p.dead && !p.prop) check(p.x, p.z, p.vz);
+  if (self !== S) check(S.px, S.pz, S.speed);
+  for (const b of S.race.bots) if (b !== self && !b.done) check(b.x, b.z, b.speed);
+  return best;
 }
 // r is the player's state or a bot. Returns true at the moment the boost is earned.
 function stepDraft(r, x, z, slowed, dt) {
   r.draftT = Math.max(0, r.draftT - dt);
   if (r.draftT > 0) return false;
-  if (!slowed && inDraft(x, z, r)) r.draftC += dt; else r.draftC = Math.max(0, r.draftC - dt * 1.5);
+  const near = slowed ? -1 : inDraft(r, x, z, r);
+  if (near >= 0) r.draftC += dt * (0.7 + 0.8 * near);   // closer charges faster
+  else r.draftC = Math.max(0, r.draftC - dt * 1.5);
   if (r.draftC < DRAFT_CHARGE) return false;
-  r.draftC = 0; r.draftT = DRAFT_T;
+  r.draftC = 0; r.draftT = DRAFT_T; r.draftFull = DRAFT_T;
   return true;
 }
 
@@ -183,7 +191,7 @@ export function raceCollide(dt) {
     S.bumpCool = BUMP_COOL;   // staying in contact is still the same bump
     if (fresh) {
       S.bumpT = S.race.me.bumpT; S.bumps++; S.draftC = 0; S.draftT = 0;
-      S.burstT = 0; S.dashT = 0; S.shake = Math.max(S.shake, 0.5);
+      S.burstT = 0; S.dashT = 0;
       S.chain = 0; S.snake = 0; S.oncRun = 0; S.multPrev = 1;
       addPop('BUMP!', '#ff4d4f', 34); Music.sfx('bump'); buzz([40, 30, 80]);
     }
@@ -293,7 +301,7 @@ export function updRace(dt) {
   const R = S.race; if (!R) return;
   R.elapsed = S.time;
   if (stepDraft(S, S.px, S.pz, S.bumpT > 0, dt)) {
-    addPop('SLIPSTREAM!', '#2ec4b6', 30); Music.sfx('dash'); buzz(15);
+    addPop('SLIPSTREAM!', '#7fd0ff', 30); Music.sfx('dash'); buzz(15);
     track('slips');
     if (S.time - S.lastSlip < 20) { track('doubleSlip'); S.lastSlip = -99; } else S.lastSlip = S.time;
   }

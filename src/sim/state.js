@@ -19,14 +19,14 @@ export const bestOf = id => parseInt(store.get('excuseme_best_' + id, '0'), 10) 
 
 export function reset() {
   S = { px: 0, pz: 0, vx: 0, speed: BASE, energy: 100, exhausted: false, boostV: 0, step: 0, camX: 0,
-        time: 0, people: [], cars: [], carT: [0, 0.6, 1.2], xings: [], waveT: 4, nextChunk: 14, shake: 0, overT: 0, live: false, clock: 0,
+        time: 0, people: [], cars: [], carT: [0, 0.6, 1.2], xings: [], waveT: 4, nextChunk: 14, overT: 0, live: false, clock: 0,
         fastT: 2, rivalT: 7, dodged: 0, close: 0, passed: 0, heat: 0,
         score: 0, chain: 0, bestChain: 0, lastPassT: -9, lastPass: null,
         snake: 0, sweepDir: 0, sweepCount: 0, boostPasses: 0, oncRun: 0, pops: [],
         burstT: 0, dashT: 0, dashCool: 0, dashDir: 0, flash: 0, lastDashT: -9,
         meProxy: { x: 0, z: 0, vx: 0, vz: 0, prop: null },
         slow: 0, slowT: 0, breakFlash: 0, multPrev: 1, stepN: 0,
-        unlocked: [], farMark: 0, lastSlip: -99, draftC: 0, draftT: 0, bumpT: 0, ghostT: 0, bumpCool: 0, blockT: 0, bumps: 0, race: null, mode: 'classic', kind: 'classic', endless: false, seed: null, evN: 0, chunkSum: {},
+        unlocked: [], farMark: 0, lastSlip: -99, draftC: 0, draftT: 0, draftFull: 1, draftNear: 0, draftX: 0, draftZ: 0, bumpT: 0, ghostT: 0, bumpCool: 0, blockT: 0, bumps: 0, race: null, mode: 'classic', kind: 'classic', endless: false, seed: null, evN: 0, chunkSum: {},
         timeLeft: LV.limit, timeout: false, lastSec: 99, shoutCD: 0, slipT: 0, eventT: 16, rush: false, rushT: rnd(28, 40), rushSpawn: 0, banner: null };
   touches.clear(); keys.l = keys.r = false; setPendingDash(null); setLastBoth(-9999);
   S.me = makeMe();

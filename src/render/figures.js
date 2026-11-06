@@ -62,6 +62,8 @@ function drawNear(p, s) {
   const k = p.h / 1.75, fx = p.fx, fz = p.fz, rx = fz, rz = -fx;
   const sp = Math.hypot(p.vx, p.vz), wa = p.walkA === undefined ? (sp > 0.15 ? 1 : 0) : p.walkA, walk = wa * Math.min(1, 0.55 + sp * 0.15);
   const ph = p.phase, bulk = p.bulk || 1, fem = p.body === 'f';
+  const wide = p.shirtType === 'power' ? 1.14 : p.shirtType === 'puffer' ? 1.16 : 1;   // big tops push the arms out so they do not vanish behind the body
+  const armOut = bulk * (fem ? 0.9 : 1) * wide;
   const mix = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2]];
   const legs = [];
   let minA = 9;
@@ -147,14 +149,14 @@ function drawNear(p, s) {
   const lugSide = p.lug ? (Math.sign(rx * p.lug) || p.lug) : 0;
   for (const side of [-1, 1]) {
     const ap = ph + (side > 0 ? 0 : Math.PI);
-    let c = Math.sin(ap) * (p.fast ? 0.55 : 0.32) * walk, bend = p.fast ? 1.35 : 0.2 + 0.2 * walk, hx = 0.22 * bulk * (fem ? 0.9 : 1);
+    let c = Math.sin(ap) * (p.fast ? 0.55 : 0.32) * walk, bend = p.fast ? 1.35 : 0.2 + 0.2 * walk, hx = 0.22 * armOut;
     if (p.react && p.react.up && p.react.t > 0 && p.react.t < 0.9) { c = 2.45; bend = 0.55; hx = 0.36; }   // hands up
     if (p.dance) { c = 1.7 + Math.sin(ph * 1.3 + side * 1.7) * 1.0; bend = 0.9; hx = 0.38; }
     if (p.phone && side > 0) { c = 0.35; bend = 1.7; hx = 0.1; }
-    const el = [side * 0.23 * bulk * (fem ? 0.9 : 1), Math.sin(c) * 0.28, 1.42 - Math.cos(c) * 0.28];
+    const el = [side * 0.23 * armOut, Math.sin(c) * 0.28, 1.42 - Math.cos(c) * 0.28];
     const fa = c + bend;
     const hd = [side * hx, el[1] + Math.sin(fa) * 0.26, el[2] - Math.cos(fa) * 0.26];
-    const shp = L(side * 0.19 * bulk * (fem ? 0.9 : 1), 0, 1.42), elp = L(el[0], el[1], el[2]), hdp = L(hd[0], hd[1], hd[2]);
+    const shp = L(side * 0.19 * armOut, 0, 1.42), elp = L(el[0], el[1], el[2]), hdp = L(hd[0], hd[1], hd[2]);
     const holds = side === lugSide;
     items.push({ d: shp[2] + 0.001, f: () => {
       let e2 = elp, h2 = hdp;
@@ -175,7 +177,7 @@ function drawNear(p, s) {
     } });
   }
   const chest = L(0, 0, 1.38), waist = L(0, 0, 0.98), neck = L(0, 0, 1.48), pelvis = L(0, 0, 0.86);
-  const wM = (0.2 + 0.18 * across) * bulk * (fem ? 0.92 : 1) * (p.shirtType === 'power' ? 1.14 : p.shirtType === 'puffer' ? 1.16 : 1);
+  const wM = (0.2 + 0.18 * across) * bulk * (fem ? 0.92 : 1) * wide;
   items.push({ d: chest[2], f: () => {
     const sC = F / chest[2] * k, hwC = wM / 2 * sC, hwW = hwC * (fem ? 0.68 : 0.78), hipW = fem ? hwC * 0.98 : hwW * 0.95;
     const g = ctx.createLinearGradient(chest[0] - hwC, 0, chest[0] + hwC, 0);
@@ -188,7 +190,7 @@ function drawNear(p, s) {
     ctx.lineTo(chest[0] + hwC, chest[1]); ctx.lineTo(waist[0] + hwW, waist[1]); ctx.lineTo(waist[0] - hwW, waist[1]);
     ctx.lineTo(chest[0] - hwC, chest[1]); ctx.closePath(); ctx.fill(); ctx.stroke();
     const ty = p.shirtType, band = (a, b, col) => { ctx.strokeStyle = col; ctx.lineWidth = Math.max(1, hwC * 0.12); ctx.beginPath(); ctx.moveTo(a[0] - hwC * 0.95, a[1] + (b - a[1])); ctx.lineTo(a[0] + hwC * 0.95, a[1] + (b - a[1])); ctx.stroke(); };
-    if (ty === 'baby') { ctx.fillStyle = p.skin; const c = mix(chest, waist, 0.55); ctx.beginPath(); ctx.moveTo(c[0] - hwC * 0.88, c[1]); ctx.lineTo(c[0] + hwC * 0.88, c[1]); ctx.lineTo(waist[0] + hwW, waist[1]); ctx.lineTo(waist[0] - hwW, waist[1]); ctx.closePath(); ctx.fill(); }
+    if (ty === 'baby') { ctx.fillStyle = p.skin; const c = mix(chest, waist, 0.55); ctx.strokeStyle = p.skin; ctx.lineWidth = hwC * 0.4; ctx.beginPath(); ctx.moveTo(c[0] - hwC * 0.88, c[1]); ctx.lineTo(c[0] + hwC * 0.88, c[1]); ctx.lineTo(waist[0] + hwW, waist[1]); ctx.lineTo(waist[0] - hwW, waist[1]); ctx.closePath(); ctx.fill(); ctx.stroke(); }
     if (ty === 'wind') { const c = mix(neck, waist, 0.42); ctx.fillStyle = '#ffffff'; ctx.fillRect(c[0] - hwC * 1.02, c[1] - hwC * 0.22, hwC * 2.04, hwC * 0.44); }
     if (ty === 'puffer') for (const t of [0.28, 0.52, 0.76]) { const c = mix(neck, waist, t); band(c, c[1], p.shirtD); }
     if (ty === 'velour' || ty === 'varsity') { ctx.strokeStyle = ty === 'velour' ? p.shirtL : '#ffffff'; ctx.lineWidth = Math.max(1, hwC * 0.08); ctx.beginPath(); ctx.moveTo(neck[0], neck[1]); ctx.lineTo(waist[0], waist[1]); ctx.stroke(); }
@@ -198,14 +200,14 @@ function drawNear(p, s) {
       if (ty === 'suit') { ctx.strokeStyle = '#b3243a'; ctx.lineWidth = Math.max(1, hwC * 0.14); ctx.beginPath(); ctx.moveTo(neck[0], neck[1]); ctx.lineTo(v[0], v[1]); ctx.stroke(); }
     }
     // skirts hang from the waist over whatever is underneath, so a dress goes with any bottoms
-    const skirtOf = (bottom, topW, botW, col, colD) => { const b = L(0, 0, bottom); ctx.fillStyle = col; ctx.strokeStyle = colD; ctx.lineWidth = Math.max(1, hwC * 0.06); ctx.beginPath(); ctx.moveTo(waist[0] - hwC * topW, waist[1]); ctx.lineTo(waist[0] + hwC * topW, waist[1]); ctx.lineTo(b[0] + hwC * botW, b[1]); ctx.lineTo(b[0] - hwC * botW, b[1]); ctx.closePath(); ctx.fill(); ctx.stroke(); };
-    if (p.pantsType === 'pleats') { skirtOf(0.56, 0.82, 1.5, p.pants, p.pantsD); ctx.strokeStyle = p.pantsD; ctx.lineWidth = Math.max(1, hwC * 0.05); const b = L(0, 0, 0.56); for (const f of [-0.75, -0.25, 0.25, 0.75]) { ctx.beginPath(); ctx.moveTo(waist[0] + hwC * f * 0.8, waist[1]); ctx.lineTo(b[0] + hwC * f * 1.5, b[1]); ctx.stroke(); } }
-    if (p.pantsType === 'pencil') skirtOf(0.5, 0.82, 0.86, p.pants, p.pantsD);
-    if (ty === 'dress') skirtOf(0.5, 0.78, 1.6, p.shirt, p.shirtD);
+    const skirtOf = (bottom, topW, botW, col, colD) => { const b = L(0, 0, bottom); ctx.fillStyle = col; ctx.strokeStyle = colD; ctx.lineWidth = Math.max(1, hwC * 0.06); const sway = Math.sin(ph) * walk * hwC * 0.14, dip = hwC * 0.22; ctx.lineJoin = 'round'; ctx.beginPath(); ctx.moveTo(waist[0] - hwC * topW, waist[1]); ctx.lineTo(waist[0] + hwC * topW, waist[1]); ctx.quadraticCurveTo(waist[0] + hwC * (topW + botW) * 0.56, (waist[1] + b[1]) / 2, b[0] + hwC * botW + sway, b[1]); ctx.quadraticCurveTo(b[0] + sway, b[1] + dip, b[0] - hwC * botW + sway, b[1]); ctx.quadraticCurveTo(waist[0] - hwC * (topW + botW) * 0.56, (waist[1] + b[1]) / 2, waist[0] - hwC * topW, waist[1]); ctx.closePath(); ctx.fill(); ctx.stroke(); };
+    if (p.pantsType === 'pleats') { skirtOf(0.56, fem ? 0.96 : 0.82, 1.4, p.pants, p.pantsD); ctx.strokeStyle = p.pantsD; ctx.lineWidth = Math.max(1, hwC * 0.05); const b = L(0, 0, 0.56); for (const f of [-0.75, -0.25, 0.25, 0.75]) { ctx.beginPath(); ctx.moveTo(waist[0] + hwC * f * 0.8, waist[1]); ctx.lineTo(b[0] + hwC * f * 1.32, b[1]); ctx.stroke(); } }
+    if (p.pantsType === 'pencil') skirtOf(0.5, fem ? 0.96 : 0.82, 0.84, p.pants, p.pantsD);
+    if (ty === 'dress') skirtOf(0.5, fem ? 0.9 : 0.78, 1.45, p.shirt, p.shirtD);
     if (ty === 'hoodie') { ctx.fillStyle = p.shirtD; ctx.beginPath(); ctx.ellipse(neck[0], neck[1] + hwC * 0.12, hwC * 0.62, hwC * 0.38, 0, 0, TAU); ctx.fill(); }
     if (ty === 'jacket') { ctx.strokeStyle = '#ffffff'; ctx.lineWidth = Math.max(1, hwC * 0.09); ctx.beginPath(); ctx.moveTo(neck[0], neck[1]); ctx.lineTo(waist[0], waist[1]); ctx.stroke(); }
   } });
-  const packDims = { pack: [1.2, 1, 1], jet: [1.2, 1, 1], sling: [1.2, 0.62, 0.62], fanny: [0.98, 0.85, 0.36], messenger: [1.02, 1.2, 0.6], boombox: [1.3, 1.45, 0.6] }[p.pack];
+  const packDims = { pack: [1.2, 1, 1], jet: [1.2, 1, 1], sling: [1.2, 0.62, 0.62], fanny: [0.98, 0.72, 0.3], messenger: [1.02, 1.0, 0.52], boombox: [1.28, 1.05, 0.46] }[p.pack];
   if (packDims) {
     const bc = L(0, -0.19, packDims[0]), jet = p.pack === 'jet';
     items.push({ d: bc[2], f: () => {

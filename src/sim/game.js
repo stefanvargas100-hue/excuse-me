@@ -127,7 +127,6 @@ export function tick(dt) {
     updPeople(dt);
     S.people = S.people.filter(p => !p.dead);
   } else {
-    S.shake = Math.max(0, S.shake - dt * 3);
     S.overT += dt;
     if (!endShown && S.overT > (state === 'won' ? 0.5 : 0.8)) showEnd();
   }
@@ -145,10 +144,10 @@ function recordBest() {
   if (S.newBest) store.set('excuseme_best_' + LV.id, String(S.score));
 }
 
-function lose(p) { if (S.daily) track('dailyRuns'); if (S.weekly) track('weeklyRuns'); if (S.kind === 'classic') { trackMax('far_' + LV.id, S.pz); trackMax('bestScore', S.score); } setState('over'); S.live = false; p.hit = true; S.shake = 1; S.overT = 0; touches.clear(); Music.sfx('bump'); Music.stop(); Music.ambStop(); buzz([60, 40, 140]); recordBest(); }
+function lose(p) { if (S.daily) track('dailyRuns'); if (S.weekly) track('weeklyRuns'); if (S.kind === 'classic') { trackMax('far_' + LV.id, S.pz); trackMax('bestScore', S.score); } setState('over'); S.live = false; p.hit = true; S.overT = 0; touches.clear(); Music.sfx('bump'); Music.stop(); Music.ambStop(); buzz([60, 40, 140]); recordBest(); }
 
 function loseTime() {
-  setState('over'); S.live = false; S.timeout = true; S.shake = 0.4; S.overT = 0; touches.clear();
+  setState('over'); S.live = false; S.timeout = true; S.overT = 0; touches.clear();
   Music.sfx('bump'); Music.stop(); Music.ambStop(); buzz([100, 60, 100]); recordBest();
 }
 

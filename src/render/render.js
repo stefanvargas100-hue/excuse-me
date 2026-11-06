@@ -1,11 +1,12 @@
 import { MULT_COLS, hex } from '../config/colour.js';
 import { FOGCSS, LV } from '../config/levels.js';
-import { R, clamp } from '../config/util.js';
+import { clamp } from '../config/util.js';
 import { ctx } from '../dom.js';
 import { CAM_BACK, CAM_UP, CX, F, H, HOR, VX, VY, VZ, W, setCX, setF, setHOR, setVX, setVY, setVZ } from './camera.js';
 import { FONT } from './draw.js';
 import { drawPerson, rrect } from './figures.js';
 import { drawPops, radarTop, rearRadar, zoneGuide } from './hud.js';
+import { drawSlipstream } from './slipstream.js';
 import { drawCars, paintAirport, paintNYC, paintShibuya } from './world.js';
 import { S, camBob, state } from '../sim/state.js';
 
@@ -19,13 +20,13 @@ export function render() {
   setHOR(H * 0.34 + (live ? (1 - Math.cos(S.step)) * H * 0.0012 : 0));
   setCX(W / 2);
   ctx.save();
-  if (S.shake > 0) ctx.translate((R() - 0.5) * S.shake * 6, (R() - 0.5) * S.shake * 6);
   ctx.fillStyle = FOGCSS; ctx.fillRect(-W, -H, 3 * W, 3 * H);
   if (LV.id === 'airport') paintAirport(); else if (LV.id === 'nyc') paintNYC(); else paintShibuya();
   if (LV.id === 'nyc') drawCars();
   for (const p of S.people) if (p.prop === 'spill') drawPerson(p);   // puddles lie under everyone
   const list = S.people.filter(p => p.prop !== 'spill').concat([S.me], S.race ? S.race.bots : []).sort((a, b) => b.z - a.z);
   for (const p of list) drawPerson(p);
+  drawSlipstream();
   ctx.restore();
 
   if (S.boostV > 0.25) {
