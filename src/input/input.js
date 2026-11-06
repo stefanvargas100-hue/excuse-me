@@ -1,7 +1,6 @@
 import { cv } from '../dom.js';
 import { W } from '../render/camera.js';
 import { shout, tryBurst, tryDash } from '../sim/actions.js';
-import { endReplay } from '../sim/replay.js';
 import { S, state } from '../sim/state.js';
 
 
@@ -54,7 +53,6 @@ export function setPendingDash(v) { pendingDash = v; }
 
 export function init() {
   cv.addEventListener('pointerdown', e => {
-    if (S.replay) { endReplay(); return; }
     if (state !== 'play') return;
     const z = zoneOf(e.clientX);
     touches.set(e.pointerId, z);

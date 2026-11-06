@@ -154,18 +154,3 @@ test('ghost: your best classic run comes back as a see-through runner', () => {
   assert.ok(before > 0);
 });
 
-test('replay: you can rewatch how a run ended, then return to the results', () => {
-  const E = load(); E.setLevel(0); E.start('classic');
-  for (let i = 0; i < 150; i++) { clearNear(E); E.tick(DT); }
-  const p = E.S.people.find(q => !q.prop); p.x = E.S.px; p.z = E.S.pz + 0.2; p.vx = p.vz = 0;
-  for (let i = 0; i < 60; i++) E.tick(DT);
-  assert.strictEqual(E.state, 'over');
-  const endZ = E.S.pz;
-  E.startReplay();
-  assert.ok(E.S.replay, 'replay running');
-  for (let i = 0; i < 40; i++) { E.tick(DT); E.render(); }
-  assert.ok(E.S.pz < endZ, 'rewound: ' + E.S.pz.toFixed(1) + ' vs ' + endZ.toFixed(1));
-  for (let i = 0; i < 400 && E.S.replay; i++) E.tick(DT);
-  assert.strictEqual(E.S.replay, null, 'it ends by itself');
-  assert.ok(Math.abs(E.S.pz - endZ) < 1, 'back at the end');
-});

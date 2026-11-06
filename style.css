@@ -350,4 +350,3 @@ button.big.huge { min-height: 84px; font-size: 38px; margin-bottom: 18px; }
 .sethelp { margin: 0; font-size: 15px; line-height: 1.15; opacity: .85; }
 @media (max-height: 640px) { .setgrid .setrow { min-height: 36px; font-size: 15px; } .setgrid { gap: 5px; } .sethelp { font-size: 13px; } }
 
-#replayBtn[hidden] { display: none; }

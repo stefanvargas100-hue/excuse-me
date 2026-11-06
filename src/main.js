@@ -9,7 +9,6 @@ import { shout } from './sim/actions.js';
 import { hasPlayed, pauseGame, quitRun, start, tick, toMenu } from './sim/game.js';
 import { mk, runEvent } from './sim/people.js';
 import { draftCharge, racePace } from './sim/race.js';
-import { endReplay, startReplay } from './sim/replay.js';
 import { BODIES, BUILDS, ITEM_STATS, fitOf, effects, statsOf } from './config/stats.js';
 import { LOOK } from './save/progress.js';
 import { CHALLENGES, isLocked, setUnlockListener, tallyOf, track, trackMax } from './save/challenges.js';
@@ -58,6 +57,6 @@ reset();
 
 buildLevels();
 
-window.__excuse = { tick, reset, start, setLevel, get S() { return S; }, get state() { return state; }, keys, action, onTap, render, drawPreview, LEVELS, runEvent, shout, weekKey, hasPlayed, startReplay, endReplay, pauseGame, quitRun, toMenu, CHALLENGES, isLocked, tallyOf, track, trackMax, racePace, fitOf, BODIES, BUILDS, ITEM_STATS, effects, statsOf, LOOK, mkPerson: (x, z) => mk(x, z, { hx: 0, hz: 1, v0: 1 }) };
+window.__excuse = { tick, reset, start, setLevel, get S() { return S; }, get state() { return state; }, keys, action, onTap, render, drawPreview, LEVELS, runEvent, shout, weekKey, hasPlayed, pauseGame, quitRun, toMenu, CHALLENGES, isLocked, tallyOf, track, trackMax, racePace, fitOf, BODIES, BUILDS, ITEM_STATS, effects, statsOf, LOOK, mkPerson: (x, z) => mk(x, z, { hx: 0, hz: 1, v0: 1 }) };
 
 requestAnimationFrame(frame);

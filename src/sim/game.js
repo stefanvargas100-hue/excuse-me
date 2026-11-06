@@ -18,7 +18,7 @@ import { updCars } from './traffic.js';
 import { beginTut, tutTick } from './tutorial.js';
 import { buildLevels, last } from '../ui/menus.js';
 import { hideMenus } from '../ui/screens.js';
-import { canReplay, ghostSave, ghostStart, ghostStep, recordFrame, stepReplay } from './replay.js';
+import { ghostSave, ghostStart, ghostStep } from './replay.js';
 
 
 
@@ -76,7 +76,6 @@ export function tick(dt) {
     if (S.race && S.race.countT > 0) { raceCountdown(dt); return; }   // 3-2-1-GO: everything holds still
     S.time += dt;
     ghostStep(dt);
-    recordFrame();
     if (S.kind === 'classic' && !S.beatBest && S.score > bestOf(LV.id) && bestOf(LV.id) > 0) { S.beatBest = true; addPop('NEW BEST!', '#ffd166', 30); }
     if (S.kind === 'classic' && S.pz > S.farMark) { S.farMark += 5; trackMax('far_' + LV.id, S.pz); }
     if (pendingDash && performance.now() >= pendingDash.at) { action(pendingDash.z); setPendingDash(null); }
@@ -136,8 +135,6 @@ export function tick(dt) {
   } else if (state === 'ready') {
     updPeople(dt);
     S.people = S.people.filter(p => !p.dead);
-  } else if (S.replay) {
-    stepReplay(dt);
   } else {
     S.overT += dt;
     if (!endShown && S.overT > (state === 'won' ? 0.5 : 0.8)) showEnd();
@@ -200,7 +197,6 @@ function showEnd() {
   $('sPassed').textContent = S.passed;
   $('sRival').textContent = S.dodged;
   if (S.closest && S.closest.gap < 0.4) $('endLead').textContent += ' Closest call: ' + Math.max(1, Math.round(S.closest.gap * 100)) + ' cm at ' + S.closest.m + ' m.';
-  $('replayBtn').hidden = !canReplay();
   showUnlocks();
   if (S.daily) { $('endEyebrow').textContent = 'Daily run · ' + S.dailyKey + ' · ' + LV.name; }
   if (S.weekly) { $('endEyebrow').textContent = 'Weekly run · ' + S.dailyKey + ' · ' + LV.name; }
@@ -249,7 +245,6 @@ function showRaceEnd() {
     li.textContent = (i + 1) + '. ' + r.name + ' · ' + gap;
     bd.appendChild(li);
   });
-  $('replayBtn').hidden = true;
   showUnlocks(); $('next').hidden = true; $('again').hidden = false;
   $('again').textContent = 'Race again'; $('again').className = 'big';
   $('end').hidden = false;
