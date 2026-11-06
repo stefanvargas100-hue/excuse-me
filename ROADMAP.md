@@ -19,12 +19,12 @@
 
 Installable from the browser, full screen, works offline. No app store needed.
 
-- [ ] Split the single file into `index.html`, `style.css`, `game.js` (or ES modules).
-- [ ] Add `manifest.webmanifest` (name, icons 192/512, `display: fullscreen`, `orientation: portrait`, theme colour).
-- [ ] Add a service worker to cache everything for offline play.
+- [x] Split the single file into `index.html`, `style.css`, `game.js` (or ES modules).
+- [x] Add `manifest.webmanifest` (name, icons 192/512, `display: fullscreen`, `orientation: portrait`, theme colour).
+- [x] Add a service worker to cache everything for offline play.
 - [ ] Host it free (GitHub Pages, Netlify or Cloudflare Pages) on a real URL.
-- [ ] Add "Add to Home Screen" instructions on the start screen.
-- [ ] Handle safe areas (`env(safe-area-inset-*)`), `viewport-fit=cover`, and block pull-to-refresh and pinch-zoom (`touch-action: none`, `overscroll-behavior: none`).
+- [x] Add "Add to Home Screen" instructions on the start screen.
+- [x] Handle safe areas (`env(safe-area-inset-*)`), `viewport-fit=cover`, and block pull-to-refresh and pinch-zoom (`touch-action: none`, `overscroll-behavior: none`).
 - **Exit:** friends install it from a link, and it launches full screen and works in airplane mode.
 
 ## Phase 2: Set up a proper project (2–4 days)

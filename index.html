@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Excuse Me</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0f1b2d">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Excuse Me">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="game" aria-label="Third-person view of a busy walkway"></canvas>
+
+<div id="hud" hidden>
+  <div class="top">
+    <div class="score"><small>SCORE</small><b id="score">0</b></div>
+    <div class="topr">
+      <div id="combo" class="off"><b id="mult">×1</b><small id="chain">0 chain</small><div class="cbar"><i id="cbar"></i></div></div>
+      <button id="pauseBtn" type="button" aria-label="Pause"><span></span><span></span></button>
+    </div>
+  </div>
+  <div class="trackrow"><div class="track"><i id="prog"></i></div><span class="num" id="dist">0 m</span></div>
+  <div class="boost"><span>Stamina</span><div class="bar"><i id="en"></i></div><span id="clock" class="clock num">3:00</span></div>
+  <div class="shoutrow"><span id="shout" class="shout">Swipe up · Excuse me</span></div>
+</div>
+<div id="tut" hidden>
+  <div class="tstep" id="tutStep">Tutorial 1 / 6</div>
+  <div class="ttext" id="tutText"></div>
+  <button id="tutSkip" type="button">Skip tutorial</button>
+</div>
+<div id="hint" hidden>Hold the left or right side to steer. Double tap a side to dash. Double tap both sides to burst. Swipe up to say "Excuse me".</div>
+
+<div id="start" class="panel">
+  <div class="card">
+    <div class="eyebrow">Don't touch anyone</div>
+    <h1>Excuse Me</h1>
+    <div class="levels" id="levels" role="group" aria-label="Choose a level"></div>
+    <details>
+      <summary>Install on your phone</summary>
+      <ul class="rules">
+        <li><b>iPhone</b><span>Open this page in Safari, tap Share, then "Add to Home Screen".</span></li>
+        <li><b>Android</b><span>Open in Chrome, tap the menu, then "Install app" or "Add to Home screen".</span></li>
+      </ul>
+    </details>
+    <details>
+      <summary>How to play</summary>
+      <ul class="rules">
+        <li><b>1</b><span>You walk on your own. Hold the left or right side of the screen to steer, one thumb each.</span></li>
+        <li><b>2</b><span>Double tap one side to dash that way. Double tap both sides at once to burst forward. Both cost stamina.</span></li>
+        <li><b>3</b><span>Crowds flow like real ones: lanes form, people step to their keep side and brake behind slow walkers.</span></li>
+        <li><b>4</b><span>Red shirts are rivals. They spot your gap, cut across and brake. The panel up top shows who's behind you and which way they're heading.</span></li>
+        <li><b>5</b><span>Swipe up to say "Excuse me": the person ahead steps aside. Rivals won't, and people on their phones might not hear. It recharges in 6 seconds.</span></li>
+        <li><b>6</b><span>Beat the clock. Weaving hard costs you a little forward speed, so bursts help you make time.</span></li>
+        <li><b>7</b><span>Pass people for points. Touch anyone or anything and it's over.</span></li>
+      </ul>
+      <button id="tutBtn" class="ghost" type="button" style="margin-top:10px">Replay tutorial</button>
+    </details>
+    <details>
+      <summary>Combos</summary>
+      <ul class="combos">
+        <li><span>Chain</span>Pass again within 2 seconds to keep it going. Every 3 passes adds ×1, up to ×8.</li>
+        <li><span>Close / Razor</span>Pass with under 40 cm / 15 cm to spare.<em>+25 / +50</em></li>
+        <li><span>Snake</span>Pass people on alternating sides, 3 or more in a row.<em>+40 each</em></li>
+        <li><span>Sweep</span>Pass 3 people while drifting the same way, left or right. 5 is a Mega Sweep.<em>+150 / +300</em></li>
+        <li><span>Thread the Needle</span>Slip between two people side by side.<em>+150</em></li>
+        <li><span>Bullet Train</span>Pass 3 people in a single burst.<em>+120</em></li>
+        <li><span>Juke</span>Pass someone right after a dash.<em>+80</em></li>
+        <li><span>Slipstream</span>Overtake a speed walker.<em>+60</em></li>
+        <li><span>Salmon Run</span>Pass 5 oncoming people in one chain.<em>+150</em></li>
+        <li><span>Rival Burned</span>Get past a rival after they cut you off.<em>+250</em></li>
+      </ul>
+    </details>
+    <div class="btns">
+      <button id="go" class="big" type="button">Start walking</button>
+      <button id="lookBtn" class="ghost" type="button">Customize look</button>
+    </div>
+    <div class="toggles">
+      <label class="toggle"><input type="checkbox" class="sndt" checked> Music &amp; sound</label>
+      <label class="toggle"><input type="checkbox" class="vibt" checked> Vibration</label>
+      <label class="toggle"><input type="checkbox" class="bobt" checked> Camera bob</label>
+      <label class="toggle"><input type="checkbox" class="hbt"> Show hitboxes</label>
+    </div>
+    <p class="desk">On a computer: hold arrow keys or A / D to steer, press twice quickly to dash, W or Space to burst, E to say "Excuse me", P to pause.</p>
+  </div>
+</div>
+
+<div id="look" class="panel" hidden>
+  <div class="card">
+    <div class="pv"><canvas id="preview" width="340" height="420" aria-label="Preview of your character"></canvas></div>
+    <div class="eyebrow">Your traveller</div>
+    <h1 class="mid">Customize</h1>
+    <p class="lead" id="starNote"></p>
+    <div id="opts"></div>
+    <div class="btns"><button id="lookDone" class="big" type="button">Done</button></div>
+  </div>
+</div>
+
+<div id="pause" class="panel" hidden>
+  <div class="card">
+    <div class="eyebrow" id="pauseEyebrow">Paused</div>
+    <h1 class="mid">Paused</h1>
+    <div class="btns">
+      <button id="resume" class="big" type="button">Resume</button>
+      <div class="btnrow">
+        <button id="restart" class="ghost" type="button">Restart</button>
+        <button id="pmenu" class="ghost" type="button">Levels</button>
+      </div>
+    </div>
+    <div class="toggles">
+      <label class="toggle"><input type="checkbox" class="sndt" checked> Music &amp; sound</label>
+      <label class="toggle"><input type="checkbox" class="vibt" checked> Vibration</label>
+      <label class="toggle"><input type="checkbox" class="vibt" checked> Vibration</label>
+      <label class="toggle"><input type="checkbox" class="bobt" checked> Camera bob</label>
+      <label class="toggle"><input type="checkbox" class="hbt"> Show hitboxes</label>
+    </div>
+  </div>
+</div>
+
+<div id="end" class="panel" hidden>
+  <div class="card">
+    <div class="eyebrow" id="endEyebrow">Level</div>
+    <h1 id="endTitle" class="bad">Bump</h1>
+    <p class="lead" id="endLead"></p>
+    <dl class="stats">
+      <div class="wide"><dt id="sScoreLabel">Score</dt><dd id="sScore">0</dd></div>
+      <div><dt>Best score</dt><dd id="sBest">0</dd></div>
+      <div><dt>Distance</dt><dd id="sDist">0 m</dd></div>
+      <div><dt>Longest chain</dt><dd id="sChain">0</dd></div>
+      <div><dt>Close calls</dt><dd id="sClose">0</dd></div>
+      <div><dt>People passed</dt><dd id="sPassed">0</dd></div>
+      <div><dt>Rivals burned</dt><dd id="sRival">0</dd></div>
+    </dl>
+    <div class="stars" id="endStars"></div>
+    <p id="unlockNote" class="unlock" hidden></p>
+    <div class="btns">
+      <button id="next" class="big" type="button" hidden>Next level</button>
+      <button id="again" class="big" type="button">Try again</button>
+      <div class="btnrow">
+        <button id="endLook" class="ghost" type="button">Change look</button>
+        <button id="menu" class="ghost" type="button">Levels</button>
+      </div>
+    </div>
+    <div class="toggles">
+      <label class="toggle"><input type="checkbox" class="sndt" checked> Music &amp; sound</label>
+      <label class="toggle"><input type="checkbox" class="bobt" checked> Camera bob</label>
+      <label class="toggle"><input type="checkbox" class="hbt"> Show hitboxes</label>
+    </div>
+  </div>
+</div>
+
+<script src="game.js"></script>
+<script>if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));</script>
+</body>
+</html>
