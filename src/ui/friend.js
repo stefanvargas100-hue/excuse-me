@@ -1,25 +1,43 @@
 import { LEVELS } from '../config/levels.js';
 import { $ } from '../dom.js';
-import { duelUi, hostRoom, hostStart, inviteLink, joinRoom, leaveRoom, roomCode } from '../online/duel.js';
+import { MAX_PLAYERS, duelUi, hostRoom, hostStart, inviteLink, isHost, joinRoom, leaveRoom, roomCode } from '../online/duel.js';
 import { go } from './screens.js';
 
-/* ---------- Race a friend: make a room or join one, then the host starts ---------- */
+/* ---------- Race friends: make a room or join one, see who is in, then the host starts ---------- */
 let stage = 0;
-const view = id => { for (const v of ['friendHome', 'friendHost', 'friendJoin']) $(v).hidden = v !== id; };
+const view = id => { for (const v of ['friendHome', 'friendHost', 'friendGuest', 'friendJoin']) $(v).hidden = v !== id; };
 
 function reset() {
   leaveRoom(); view('friendHome'); $('friendStatus').textContent = '';
-  $('friendStart').disabled = true; $('friendShare').disabled = true; $('friendCode').textContent = '----';
+  $('friendStart').disabled = true; $('friendShare').disabled = true; $('friendCode').textContent = '----'; $('friendCodeG').textContent = '----';
+  $('friendGo').disabled = false;
   document.querySelectorAll('#friendStages .chip').forEach(c => { c.disabled = false; });
 }
 
 export function openFriend() { reset(); go('friend'); }
 
+// the list of who is in the room: four slots, empty ones dashed; the host's Start needs at least one friend
+function showRoster(players) {
+  document.querySelectorAll('.friendroster').forEach(ul => {
+    ul.textContent = '';
+    for (let i = 0; i < MAX_PLAYERS; i++) {
+      const p = players[i], li = document.createElement('li');
+      if (p) { li.textContent = (p.host ? '★ ' : '') + p.name + (p.me ? ' (you)' : ''); if (p.me) li.className = 'me'; } else { li.textContent = 'waiting...'; li.className = 'empty'; }
+      ul.appendChild(li);
+    }
+  });
+  const n = players.length;
+  $('friendStart').disabled = !(isHost() && n >= 2);
+  $('friendStart').textContent = n >= 2 ? 'Start race (' + n + ' players)' : 'Start race';
+  if (isHost() && n) $('friendStatus').textContent = n < 2 ? 'Waiting for friends to join...' : n < MAX_PLAYERS ? n + ' in the room. Start now or wait for more.' : 'Room is full. Ready when you are.';
+  if (!isHost() && n) { view('friendGuest'); $('friendCodeG').textContent = roomCode(); $('friendStatus').textContent = 'Waiting for the host to start...'; }
+}
+
 async function invite() {
   const url = inviteLink(), text = 'Race me in Excuse Me! Room ' + roomCode();
   try {
     if (navigator.share) await navigator.share({ title: 'Excuse Me', text, url });
-    else if (navigator.clipboard) { await navigator.clipboard.writeText(text + ' ' + url); $('friendStatus').textContent = 'Invite link copied. Send it to your friend.'; }
+    else if (navigator.clipboard) { await navigator.clipboard.writeText(text + ' ' + url); $('friendStatus').textContent = 'Invite link copied. Send it to your friends.'; }
   } catch (e) {}
 }
 
@@ -31,7 +49,10 @@ export function initFriend() {
     st.appendChild(c);
   });
   duelUi.status = t => { $('friendStatus').textContent = t; };
-  duelUi.ready = name => { $('friendStatus').textContent = name + ' joined. Ready when you are.'; $('friendStart').disabled = false; };
+  duelUi.roster = players => {
+    if (players.length) showRoster(players);
+    else if (!$('friendGuest').hidden) { view('friendHome'); $('friendStart').disabled = true; }   // the host closed the room on us
+  };
   $('friendBack').addEventListener('click', leaveRoom);
   $('friendMake').addEventListener('click', async () => {
     view('friendHost'); st.querySelectorAll('.chip').forEach(c => { c.disabled = true; });
@@ -39,7 +60,11 @@ export function initFriend() {
     if (code) { $('friendCode').textContent = code; $('friendShare').disabled = false; } else { view('friendHome'); st.querySelectorAll('.chip').forEach(c => { c.disabled = false; }); }
   });
   $('friendJoinBtn').addEventListener('click', () => { view('friendJoin'); $('friendStatus').textContent = ''; $('friendInput').focus(); });
-  $('friendGo').addEventListener('click', async () => { const ok = await joinRoom($('friendInput').value); if (ok) $('friendGo').disabled = true; else $('friendGo').disabled = false; });
+  $('friendGo').addEventListener('click', async () => {
+    $('friendGo').disabled = true;
+    const ok = await joinRoom($('friendInput').value);
+    if (!ok) $('friendGo').disabled = false;
+  });
   $('friendInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('friendGo').click(); });
   $('friendShare').addEventListener('click', invite);
   $('friendStart').addEventListener('click', hostStart);

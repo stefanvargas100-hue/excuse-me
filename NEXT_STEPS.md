@@ -7,7 +7,12 @@ Live game: https://stefanvargas100-hue.github.io/excuse-me/
 Built and live: endless Classic, one-try Daily and Weekly, Race vs bots, race stats, 39 unlockable items earned through challenges, Fit Check, slipstream, fast strips, the skill pack, ghost, no-scroll menus, hand-drawn Candy pop look.
 Nobody has played most of this on a real phone yet. All balance numbers are first guesses.
 
-## Live 1v1 (built 2026-11-06, branch multiplayer, needs a real two-phone test)
+## Live lobby, 2-4 players (built 2026-11-06, branch multiplayer-lobby, needs a real multi-phone test)
+- [ ] Stefan + up to 3 friends: Play > Race friends. Host makes a room, others join by code or link, host presses Start when 2-4 are in. Report: does everyone see everyone smoothly, is it OK with 4, do rematch and someone leaving mid-race behave?
+- [ ] Watch the message limit with 4 real phones (5 position reports a second each). If it stutters, lower the rate or move to a bigger Supabase plan.
+- [ ] Later: ready button, bots to fill slots (host switch), quick public matches.
+
+## Live 1v1 (built earlier, now part of the lobby)
 - [ ] Stefan + a friend: Play > Race a friend. One makes a room, the other joins with the code or the link, host presses Start. Report: do you see each other smoothly, do the countdowns line up, does the finish work?
 - [ ] Rematch button is in (both press it). Then: handle a phone that sleeps mid-race, 4-8 players, cut-offs between racers.
 

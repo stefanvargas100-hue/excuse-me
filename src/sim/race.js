@@ -142,16 +142,16 @@ export function raceCountdown(dt) {
 }
 
 /* ---------- a friend racing live: looks like a bot to the rest of the game, but their phone does the steering ---------- */
-const FRIEND_COLOR = '#ff4fa3', FRIEND_SILENT = 5;   // seconds without news before we assume they left
-export function addRemoteRacer(look, name) {
+const FRIEND_COLORS = ['#ff4fa3', '#3ec7e8', '#9b6bff'], FRIEND_SILENT = 5;   // seconds without news before we assume they left
+export function addRemoteRacer(look, name, peerId, slot = 0) {
   const R = S.race, b = makeBot(R.bots.length, R.diff, name);
   Object.assign(b, look); applyBuild(b); dress(b);
-  Object.assign(b, { remote: true, color: FRIEND_COLOR, name });
+  Object.assign(b, { remote: true, peerId, color: FRIEND_COLORS[slot % FRIEND_COLORS.length], name });
   R.bots.push(b); return b;
 }
 function stepRemote(b, dt) {
-  const D = S.duel, p = D.remote.sample(S.clock);
-  if (D.fin != null && !b.done) { b.done = true; b.finishT = D.fin; }
+  const D = S.duel, P = D.peers[b.peerId], p = P.remote.sample(S.clock);
+  if (P.fin != null && !b.done) { b.done = true; b.finishT = P.fin; }
   if (b.done) { b.z = Math.min(b.z + b.speed * dt, LV.goal + 3); b.speed *= Math.max(0, 1 - dt * 4); b.vx = 0; b.vz = b.speed; b.walkA += ((b.speed > 0.15 ? 1 : 0) - b.walkA) * Math.min(1, dt * 8); b.phase += dt * b.speed * 2; return; }
   if (!p) return;
   b.x = clamp(p.x, -(LV.half - 0.5), LV.half - 0.5); b.z = Math.min(p.z, LV.goal); b.vx = p.vx; b.speed = p.speed; b.vz = p.speed;
@@ -165,14 +165,16 @@ function stepRemote(b, dt) {
 function duelTick(dt) {
   const D = S.duel; D.sendT -= dt;
   if (D.sendT <= 0) {
-    D.sendT = 0.1;
+    D.sendT = D.sendEvery;
     const r = v => Math.round(v * 100) / 100;
     D.send('pos', { n: ++D.n, x: r(S.px), z: r(S.pz), vx: r(S.vx), s: r(S.speed) });
   }
-  const f = S.race.bots.find(b => b.remote);
-  if (f && !f.done && (D.bye || (D.remote.lastSeen() > 0 && S.clock - D.remote.lastSeen() > FRIEND_SILENT))) {
-    S.race.bots.splice(S.race.bots.indexOf(f), 1);
-    addPop(f.name.toUpperCase() + ' LEFT', '#9ca3af', 24);
+  for (const f of S.race.bots.filter(b => b.remote)) {
+    const P = D.peers[f.peerId];
+    if (!f.done && (P.bye || (P.remote.lastSeen() > 0 && S.clock - P.remote.lastSeen() > FRIEND_SILENT))) {
+      S.race.bots.splice(S.race.bots.indexOf(f), 1);
+      addPop(f.name.toUpperCase() + ' LEFT', '#9ca3af', 24);
+    }
   }
 }
 
