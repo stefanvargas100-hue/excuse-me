@@ -7,7 +7,11 @@ Live game: https://stefanvargas100-hue.github.io/excuse-me/
 Built and live: endless Classic, one-try Daily and Weekly, Race vs bots, race stats, 39 unlockable items earned through challenges, Fit Check, slipstream, fast strips, the skill pack, ghost, no-scroll menus, hand-drawn Candy pop look.
 Nobody has played most of this on a real phone yet. All balance numbers are first guesses.
 
-## Live 1v1 (built 2026-11-06, branch multiplayer, needs a real two-phone test)
+## Status 2026-11-06 (end of the multiplayer session)
+Live on main: live 1v1 racing with rematch (tested by Stefan with a friend: no lag), interface that scales with the screen, Leaderboards screen (daily, weekly, classic per stage), slipstream 25% with 3 s cooldown, airport moving walkway with glass railings (forward belt +1.2 m/s, reverse belt -0.8 m/s, people stand right and pass left), speed in mph under the combo box, small stamina bar above your head, radar removed. 166 automatic tests pass. Stefan's feedback: all of it works well.
+Not done yet: 4-8 player lobbies, bumping/cut-offs between live racers, handling a phone that sleeps mid-race, race results on the leaderboards, tuning the belt speeds from real play. Details of every choice are in DECISIONS.md.
+
+## Live 1v1 (built 2026-11-06, tested with a friend, works well)
 - [ ] Stefan + a friend: Play > Race a friend. One makes a room, the other joins with the code or the link, host presses Start. Report: do you see each other smoothly, do the countdowns line up, does the finish work?
 - [ ] Rematch button is in (both press it). Then: handle a phone that sleeps mid-race, 4-8 players, cut-offs between racers.
 
