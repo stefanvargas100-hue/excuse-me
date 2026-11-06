@@ -4,7 +4,7 @@ Written 2026-11-05 at the end of a long build session. Start here next time.
 Live game: https://stefanvargas100-hue.github.io/excuse-me/
 
 ## Where things stand
-Built and live: endless Classic, one-try Daily and Weekly, Race vs bots, race stats, 40 unlockable items earned through challenges, Fit Check, slipstream, fast strips, the skill pack, ghost and replay, no-scroll menus, hand-drawn Candy pop look.
+Built and live: endless Classic, one-try Daily and Weekly, Race vs bots, race stats, 39 unlockable items earned through challenges, Fit Check, slipstream, fast strips, the skill pack, ghost and replay, no-scroll menus, hand-drawn Candy pop look.
 Nobody has played most of this on a real phone yet. All balance numbers are first guesses.
 
 ## Next steps, in order
