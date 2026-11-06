@@ -96,6 +96,8 @@ function mixc(c, d) {
   const t = Math.min(1, Math.pow(Math.max(0, d) / 78, 0.9));
   return `rgb(${(c[0] + (FOGc[0] - c[0]) * t) | 0},${(c[1] + (FOGc[1] - c[1]) * t) | 0},${(c[2] + (FOGc[2] - c[2]) * t) | 0})`;
 }
+// Nothing is drawn past DRAW_FAR (metres from the camera) and everything fades out before it. All spawns land beyond SPAWN_FAR, so people always walk into view.
+const DRAW_FAR = 62, SPAWN_FAR = 66;
 const fogA = dz => clamp(1.25 - dz / 70, 0.15, 1);
 
 /* ---------- viewport and camera ---------- */
@@ -168,7 +170,7 @@ function reset() {
     for (let z = 90; z < LV.goal - 30; z += 90) S.xings.push({ z, sig: false, spawned: false, walk: false });
     for (let i = 0; i < 9; i++) { const L = CAR_LANES[i % 3]; spawnCar(L, rnd(-5, 85)); }
   }
-  while (S.nextChunk < S.pz + 65) { genChunk(S.nextChunk); S.nextChunk += 4; }
+  while (S.nextChunk < S.pz + SPAWN_FAR) { genChunk(S.nextChunk); S.nextChunk += 4; }
 }
 
 /* ---------- input ---------- */
@@ -285,6 +287,7 @@ function mk(x, z, o) {
   }, o);
   if (o.vx === undefined && o.vz === undefined) { p.vx = p.hx * p.v0; p.vz = p.hz * p.v0; }
   p.dirz = sgn(p.hz);
+  p.walkA = Math.hypot(p.vx, p.vz) > 0.15 ? 1 : 0;
   if (!p.circles) {
     p.circles = [{ ox: 0, oz: 0, r: R_BODY }];
     if (p.lug) p.circles.push({ ox: p.lug * 0.5, oz: 0, r: R_LUGGAGE });
@@ -397,7 +400,7 @@ function spawnFast(behind, zOverride) {
 function spawnRival() {
   const behind = R() < 0.5, side = R() < 0.5 ? -1 : 1;
   const x = clamp(S.px + side * rnd(1.8, 2.8), -LV.half + 0.6, LV.half - 0.6);
-  mk(x, behind ? S.pz - rnd(5, 8) : S.pz + rnd(7, 10), {
+  mk(x, behind ? S.pz - rnd(5, 8) : S.pz + rnd(SPAWN_FAR, SPAWN_FAR + 6), {
     rival: true, fast: true, shirt: '#c1121f', pants: '#111827', hx: 0, hz: 1, v0: behind ? rnd(4.3, 4.8) : rnd(2.3, 2.7), yieldP: 0, space: 0
   });
 }
@@ -429,7 +432,7 @@ function updXings() {
       mk(-4.05, x.z - 0.8, { prop: 'signal', xing: x, circles: [{ ox: 0, oz: 0, r: 0.14 }] });
       mk(-4.05, x.z + 12.8, { prop: 'signal', xing: x, circles: [{ ox: 0, oz: 0, r: 0.14 }] });
     }
-    if (!x.spawned && S.pz > x.z - 45) {
+    if (!x.spawned && S.pz > x.z - (SPAWN_FAR + 2)) {
       x.spawned = true;
       const n1 = 3 + ((R() * 4) | 0), n2 = 4 + ((R() * 5) | 0), n3 = 2 + ((R() * 3) | 0);
       for (let i = 0; i < n1; i++) mk(rnd(-3.0, 3.6), x.z - rnd(0.4, 2.2), { v0: 0, hx: 0, hz: 1, fx: 0, fz: 1, wait: x });
@@ -441,7 +444,7 @@ function updXings() {
 }
 // Scripted crowd moments, announced with a banner.
 function runEvent(kind) {
-  const z = S.pz + rnd(38, 48), h = LV.half;
+  const z = S.pz + rnd(SPAWN_FAR + 4, SPAWN_FAR + 14), h = LV.half;
   if (kind === 'tour') {
     const dir = R() < 0.6 ? -1 : 1, x = clamp(laneX(dir), -h + 1.8, h - 1.8), col = pick(['#ff2d3a', '#ffcf1f', '#20e3ff', '#7cff6b']);
     const L = mk(x, z, { hx: 0, hz: dir, v0: 1.0, flag: col, laneX: x, shirt: col });
@@ -452,7 +455,7 @@ function runEvent(kind) {
     }
     banner('TOUR GROUP AHEAD', '#7cc4ff');
   } else if (kind === 'arrivals') {
-    for (let i = 0; i < 13; i++) walker(S.pz + rnd(34, 62), -1, { lug: pick([-1, 1]) });
+    for (let i = 0; i < 13; i++) walker(S.pz + rnd(SPAWN_FAR, SPAWN_FAR + 28), -1, { lug: pick([-1, 1]) });
     banner('FLIGHT 212 HAS LANDED', '#ffcf1f');
   } else if (kind === 'spill') {
     const x = clamp(S.px + rnd(-1.5, 1.5), -h + 1.4, h - 1.4), sz = z - 10;
@@ -485,12 +488,12 @@ function scramble() {
   const d = clamp(S.pz / LV.goal, 0, 1), n = 12 + Math.floor(d * 10);
   for (let i = 0; i < n; i++) {
     const x = rnd(-LV.half + 0.6, LV.half - 0.6);
-    mk(x, S.pz + rnd(42, 58), { hx: 0, hz: -1, v0: walkSpeed(), laneX: null });
+    mk(x, S.pz + rnd(SPAWN_FAR, SPAWN_FAR + 16), { hx: 0, hz: -1, v0: walkSpeed(), laneX: null });
   }
   const m = 3 + ((R() * 5) | 0);
   for (let i = 0; i < m; i++) {
     const side = pick([-1, 1]);
-    mk(side * (LV.half - 0.5), S.pz + rnd(12, 40), { hx: -side * 0.6, hz: pick([1, -1]) * 0.8, v0: walkSpeed(1.4), free: true, exit: true });
+    mk(side * (LV.half - 0.5), S.pz + rnd(SPAWN_FAR, SPAWN_FAR + 20), { hx: -side * 0.6, hz: pick([1, -1]) * 0.8, v0: walkSpeed(1.4), free: true, exit: true });
   }
   if (state === 'play') { addPop('SCRAMBLE', '#20e3ff', 26); Music.chirp(); }
 }
@@ -603,6 +606,8 @@ function updPeople(dt) {
       const nn = Math.hypot(p.fx, p.fz) || 1; p.fx /= nn; p.fz /= nn;
     }
     p.phase += dt * (sp > 0.15 ? 2.2 + sp * 2.6 : 0);
+    p.walkA = (p.walkA || 0) + ((sp > 0.15 ? 1 : 0) - (p.walkA || 0)) * Math.min(1, dt * 8);
+    if (p.fadeT !== undefined) { p.fadeT += dt; if (p.fadeT >= 0.9) delete p.fadeT; }
   }
 }
 function updMe(dt) {
@@ -615,6 +620,7 @@ function updMe(dt) {
     const nn = Math.hypot(m.fx, m.fz) || 1; m.fx /= nn; m.fz /= nn;
   }
   m.phase += dt * (sp > 0.15 ? 2.2 + sp * 2.0 : 0);
+  m.walkA = (m.walkA || 0) + ((sp > 0.15 ? 1 : 0) - (m.walkA || 0)) * Math.min(1, dt * 8);
   if (m.react) { m.react.t += dt; if (m.react.t > 1.4) m.react = null; }
 }
 function collide() {
@@ -750,7 +756,7 @@ function tick(dt) {
       tutTick(dt);
       if (S.tut) { updPeople(dt); S.people = S.people.filter(p => !p.dead && p.z > S.pz - 16); return; }
     }
-    while (S.nextChunk < S.pz + 65 && S.nextChunk < LV.goal - 15) { genChunk(S.nextChunk); S.nextChunk += 4; }
+    while (S.nextChunk < S.pz + SPAWN_FAR && S.nextChunk < LV.goal - 15) { genChunk(S.nextChunk); S.nextChunk += 4; }
     const prog = clamp(S.pz / LV.goal, 0, 1);
     S.fastT -= dt;
     if (S.fastT <= 0) { spawnFast(true); if (R() < 0.3) spawnFast(true); S.fastT = rnd(LV.fastEvery[0], LV.fastEvery[1]) * (1.3 - 0.6 * prog); }
@@ -774,7 +780,7 @@ function tick(dt) {
       }
       if (S.rush) {
         S.rushSpawn -= dt; S.heat = Math.max(S.heat, 0.3);
-        if (S.rushSpawn <= 0) { S.rushSpawn = 0.45; walker(S.pz + rnd(30, 48), R() < 0.7 ? -1 : 1); }
+        if (S.rushSpawn <= 0) { S.rushSpawn = 0.45; walker(S.pz + rnd(SPAWN_FAR, SPAWN_FAR + 14), R() < 0.7 ? -1 : 1); }
       }
     }
     for (const p of S.people) if (p.prop === 'spill' && !p.slipped && Math.hypot(S.px - p.x, (S.pz - p.z) * 0.8) < 1.0) { p.slipped = true; S.slipT = 0.7; addPop('SLIPPERY!', '#c8a165', 26); buzz([10, 20, 10]); }
@@ -919,13 +925,16 @@ function tutTick(dt) {
   if (S.tut.t > 0.4 && TUT[S.tut.step].done()) {
     S.tut.step++; S.tut.t = 0; S.tutHold = 0; Music.sfx('combo'); buzz(10);
     if (S.tut.step >= TUT.length) { endTut(); return; }
-    if (S.tut.step === 4) mk(S.px, S.pz + 9, { hx: 0, hz: 1, v0: 1.0, laneX: S.px });
+    if (S.tut.step === 4) mk(S.px, S.pz + 9, { hx: 0, hz: 1, v0: 1.0, laneX: S.px, fadeT: 0 });
     tutUI();
   }
 }
 function endTut() {
   S.tut = null; store.set('excuseme_tut', '1'); $('tut').hidden = true;
   S.nextChunk = Math.ceil((S.pz + 22) / 4) * 4;
+  const before = new Set(S.people);
+  while (S.nextChunk < S.pz + SPAWN_FAR && S.nextChunk < LV.goal - 15) { genChunk(S.nextChunk); S.nextChunk += 4; }
+  for (const p of S.people) if (!before.has(p) && !p.prop && p.z - S.pz < SPAWN_FAR - 2) p.fadeT = 0;
   S.timeLeft = LV.limit; S.eventT = 16; S.rivalT = 8; S.fastT = 3; S.rushT = rnd(28, 40);
   if (LV.id === 'nyc') for (const x of S.xings) if (x.z < S.pz + 20) { x.sig = x.spawned = x.walk = true; }
 }
@@ -1191,7 +1200,7 @@ function drawDog(p, s) {
 }
 function drawNear(p, s) {
   const k = p.h / 1.75, fx = p.fx, fz = p.fz, rx = fz, rz = -fx;
-  const sp = Math.hypot(p.vx, p.vz), walk = sp > 0.15 ? Math.min(1, 0.55 + sp * 0.15) : 0;
+  const sp = Math.hypot(p.vx, p.vz), wa = p.walkA === undefined ? (sp > 0.15 ? 1 : 0) : p.walkA, walk = wa * Math.min(1, 0.55 + sp * 0.15);
   const ph = p.phase;
   const legs = [];
   let minA = 9;
@@ -1216,7 +1225,7 @@ function drawNear(p, s) {
   for (const g of legs) {
     const hip = L(g.side * 0.1, 0, 0.93), kn = L(g.knee[0], g.knee[1], g.knee[2]), an = L(g.ankle[0], g.ankle[1], g.ankle[2]);
     const toe = L(g.ankle[0], g.ankle[1] + 0.13, g.ankle[2] - 0.03);
-    items.push({ d: (hip[2] + an[2]) / 2, f: () => {
+    items.push({ d: hip[2], f: () => {
       capsule([hip, kn, an], 0.13 * sk, p.pants, p.pantsD, p.pantsL);
       capsule([an, toe], 0.1 * sk, p.shoe, p.shoeD, p.shoeL);
     } });
@@ -1244,7 +1253,7 @@ function drawNear(p, s) {
     const hd = [side * hx, el[1] + Math.sin(fa) * 0.26, el[2] - Math.cos(fa) * 0.26];
     const shp = L(side * 0.19, 0, 1.42), elp = L(el[0], el[1], el[2]), hdp = L(hd[0], hd[1], hd[2]);
     const holds = side === lugSide;
-    items.push({ d: (shp[2] + hdp[2]) / 2 + 0.001, f: () => {
+    items.push({ d: shp[2] + 0.001, f: () => {
       let e2 = elp, h2 = hdp;
       if (holds && handle) { h2 = handle; e2 = [(shp[0] + handle[0]) / 2 + (handle[0] - shp[0]) * 0.1, (shp[1] + handle[1]) / 2, 0]; }
       capsule([shp, e2], 0.095 * sk, p.shirt, p.shirtD, p.shirtL);
@@ -1447,13 +1456,13 @@ function drawProp(p, s, bx, fy) {
 }
 function drawPerson(p) {
   const dz = p.z - VZ;
-  if (dz < 0.6 || dz > 85) return;
+  if (dz < 0.6 || dz > DRAW_FAR) return;
   const s = F / dz, k = p.h / 1.75, U = s * k;
   const bx = CX + (p.x - VX) * s;
   if (bx < -s * 3 || bx > W + s * 3) return;
   const fy = HOR + VY * s;
   // fog in the distance; fade people right in front of the camera so they never block your character
-  ctx.globalAlpha = Math.min(fogA(dz), p.isMe ? 1 : clamp((dz - 0.6) / 1.6, 0.22, 1));
+  ctx.globalAlpha = Math.min(fogA(dz), p.isMe ? 1 : clamp((dz - 0.6) / 1.6, 0.22, 1), clamp((DRAW_FAR - dz) / 8, 0, 1), p.fadeT === undefined ? 1 : p.fadeT / 0.9);
   if (p.prop !== 'spill') {
     ctx.fillStyle = LV.night ? 'rgba(0,0,0,0.35)' : 'rgba(15,27,45,0.18)';
     ctx.beginPath(); ctx.ellipse(bx, fy, 0.34 * s, 0.34 * s * Math.min(0.6, VY / dz), 0, 0, TAU); ctx.fill();
@@ -1513,60 +1522,51 @@ function drawPerson(p) {
   ctx.globalAlpha = 1;
 }
 
-// Rear radar under the HUD: people beside and behind you, drawn as 3D arrows lying on the floor.
-// Left/right on the radar is left/right of you; higher up is further behind; you are the marker at the bottom.
-// Each arrow points the way that person is moving relative to you, so pointing down means they are catching up.
-let radarTop = 120;
-function arrow3D(x, y, ang, size, top, side, light) {
-  const shape = [[1, 0], [0.05, -0.8], [0.05, -0.32], [-0.95, -0.32], [-0.95, 0.32], [0.05, 0.32], [0.05, 0.8]];
-  const c = Math.cos(ang), s = Math.sin(ang), squash = 0.62;
-  const pts = shape.map(([u, v]) => [x + (u * c - v * s) * size, y + (u * s + v * c) * size * squash]);
-  const ext = size * 0.3;
-  ctx.lineJoin = 'round';
-  ctx.fillStyle = side; ctx.beginPath();
-  pts.forEach((q, i) => i ? ctx.lineTo(q[0], q[1] + ext) : ctx.moveTo(q[0], q[1] + ext)); ctx.closePath(); ctx.fill();
-  for (let i = 0; i < pts.length; i++) {
-    const a = pts[i], b = pts[(i + 1) % pts.length];
-    ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.lineTo(b[0], b[1] + ext); ctx.lineTo(a[0], a[1] + ext); ctx.closePath(); ctx.fill();
-  }
-  const g = ctx.createLinearGradient(x - size, y - size, x + size, y + size);
-  g.addColorStop(0, light); g.addColorStop(1, top);
-  ctx.fillStyle = g; ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 1.2;
-  ctx.beginPath(); pts.forEach((q, i) => i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])); ctx.closePath(); ctx.fill(); ctx.stroke();
+let radarTop = 120;   // bottom of the HUD, used to place banners
+// Circular radar, bottom right: you are the dot in the middle and up is the way you are walking, so
+// people beside and behind you sit below and to the sides. Each arrow points the way that person is moving
+// relative to you, so an arrow pointing down on the lower half means they are catching up.
+function radarArrow(x, y, ang, size, col, edge) {
+  const c = Math.cos(ang), s = Math.sin(ang), P = [[1, 0], [-0.75, -0.65], [-0.35, 0], [-0.75, 0.65]];
+  ctx.fillStyle = col; ctx.strokeStyle = edge; ctx.lineWidth = 1.2; ctx.lineJoin = 'round';
+  ctx.beginPath();
+  P.forEach(([u, v], i) => { const px = x + (u * c - v * s) * size, py = y + (u * s + v * c) * size; i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); });
+  ctx.closePath(); ctx.fill(); ctx.stroke();
 }
 function rearRadar() {
-  const RANGE_B = 8, RANGE_X = 3.5;
+  const RANGE = 7, r = Math.min(58, W * 0.16), cx = W - r - 14, cy = H - r - 112, sc = r / RANGE;
+  ctx.save();
+  ctx.fillStyle = 'rgba(15,27,45,0.5)'; ctx.beginPath(); ctx.arc(cx, cy, r + 3, 0, TAU); ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.28)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, TAU); ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx, cy, r * 0.5, 0, TAU); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx - r, cy); ctx.lineTo(cx + r, cy); ctx.moveTo(cx, cy - r); ctx.lineTo(cx, cy + r); ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, TAU); ctx.clip();
   const list = [];
   for (const p of S.people) {
     if (p.prop || p.dead) continue;
-    const dz = p.z - S.pz, dx = p.x - S.px;
-    if (dz > 1.4 || dz < -RANGE_B || Math.abs(dx) > RANGE_X) continue;
-    list.push({ p, dz, dx });
+    const dx = p.x - S.px, dz = p.z - S.pz, d = Math.hypot(dx, dz);
+    if (d < RANGE + 0.5) list.push({ p, dx, dz, d });
   }
-  if (!list.length) return;
-  const half = Math.min(W * 0.4, 180), h = 66, cx = W / 2, base = radarTop + h;
-  ctx.fillStyle = 'rgba(15,27,45,0.38)';
-  rrect(cx - half - 14, radarTop - 12, half * 2 + 28, h + 30, 12); ctx.fill();
-  ctx.font = '700 11px ' + FONT; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillStyle = 'rgba(255,255,255,0.75)';
-  ctx.fillText('BEHIND YOU', cx - half - 6, radarTop - 8);
-  ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.moveTo(cx, base + 10); ctx.lineTo(cx - 7, base - 2); ctx.lineTo(cx + 7, base - 2); ctx.closePath(); ctx.fill();
-  list.sort((a, b) => a.dz - b.dz);
+  list.sort((a, b) => b.d - a.d);
   for (const it of list) {
-    const p = it.p;
-    const x = cx + it.dx / RANGE_X * half;
-    const y = base - clamp(-it.dz, -1.4, RANGE_B) / RANGE_B * h;
+    const p = it.p, x = cx + it.dx * sc, y = cy - it.dz * sc;
     const relx = p.vx - S.vx, relz = p.vz - S.speed;
-    const ang = Math.hypot(relx, relz) > 0.2 ? Math.atan2(relz, relx) : -Math.PI / 2;
-    const dist = Math.hypot(it.dx, Math.min(it.dz, 0));
-    const near = clamp(1 - dist / RANGE_B, 0, 1);
+    const ang = Math.hypot(relx, relz) > 0.2 ? Math.atan2(-relz, relx) : -Math.PI / 2;
+    const near = clamp(1 - it.d / RANGE, 0, 1);
     const gap = Math.abs(it.dx) - (R_PLAYER + R_BODY);
-    const danger = gap < 0.6 && it.dz > -2.5;
-    ctx.globalAlpha = (0.45 + 0.55 * near) * (danger ? 0.65 + 0.35 * Math.sin(S.clock * 22) : 1);
-    if (p.rival) arrow3D(x, y, ang, 10 + 10 * near, '#ff2d3a', '#7a0d14', '#ff9aa0');
-    else if (p.fast) arrow3D(x, y, ang, 10 + 10 * near, '#22b8e8', '#0b5470', '#a8ecff');
-    else arrow3D(x, y, ang, 9 + 9 * near, '#ffcf1f', '#7a5d00', '#fff1a8');
+    const danger = gap < 0.6 && it.dz < 1.4 && it.dz > -2.5;
+    ctx.globalAlpha = (0.5 + 0.5 * near) * (danger ? 0.65 + 0.35 * Math.sin(S.clock * 22) : 1);
+    const sz = 5.5 + 3 * near;
+    if (p.rival) radarArrow(x, y, ang, sz, '#ff2d3a', '#ffffff');
+    else if (p.fast) radarArrow(x, y, ang, sz, '#22b8e8', '#ffffff');
+    else radarArrow(x, y, ang, sz, '#ffcf1f', 'rgba(255,255,255,0.85)');
   }
   ctx.globalAlpha = 1;
+  ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(cx, cy, 3.5, 0, TAU); ctx.fill();
+  ctx.restore();
+  ctx.font = '700 9px ' + FONT; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.fillStyle = 'rgba(255,255,255,0.8)';
+  ctx.fillText('RADAR', cx, cy - r - 5);
 }
 function zoneGuide() {
   const yb = H - 44, held = { L: false, R: false };
