@@ -189,3 +189,17 @@ test('a bump lands with a tiny freeze instead of a camera shake', () => {
   tail(E, 3, 0, 0.2, 0);
   assert.ok(E.S.hitStop > 0);
 });
+
+test('fast strip: quicker on it, nothing outside a race', () => {
+  const on = atGo(), off = atGo();
+  for (const E of [on, off]) { E.S.pz = 40; E.S.people.length = 0; E.S.nextChunk = 1e9; E.S.race.bots.length = 0; }
+  on.S.px = 3.9; off.S.px = 0;
+  for (let i = 0; i < 60; i++) { for (const E of [on, off]) { E.S.people.length = 0; E.tick(DT); } }
+  assert.ok(on.S.speed > off.S.speed * 1.08, on.S.speed.toFixed(2) + ' vs ' + off.S.speed.toFixed(2));
+});
+
+test('bots contest the race: Hard bots use the strips and draft people more than Easy bots', () => {
+  const run = lvl => { const E = load(); E.storage.excuseme_botlvl = String(lvl); E.setLevel(0); E.start('race'); for (let i = 0; i < 91; i++) E.tick(DT); let t = 0, n = 0, draft = 0; while (E.state === 'play' && t < 30 * 90) { for (const p of E.S.people) if (Math.abs(p.z - E.S.pz) < 1) p.dead = true; E.tick(DT); t++; for (const b of E.S.race.bots) { if (b.x > 3.2 && b.x < 4.6 && b.z > 30 && (b.z - 30) % 80 < 38) n++; if (b.draftT > 0) draft++; } } return { n, draft }; };
+  const easy = run(0), hard = run(2);
+  assert.ok(hard.n > easy.n, 'strip time ' + hard.n + ' vs ' + easy.n);
+});

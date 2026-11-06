@@ -44,6 +44,10 @@ function behaviours(p, dt) {
       if (p.rt <= 0 || Math.abs(ex) < 0.08) { p.rs = 'cruise'; p.locked = false; p.v0 = 1.0; p.hx = 0; p.hz = 1; p.cool = 1.6; p.cutDone = true; }
     }
   }
+  // tells: a person about to cut leans that way first, and a tourist lifts their phone before stopping dead
+  const wantLean = p.tele ? p.swDir * 0.07 : 0;
+  p.lean = (p.lean || 0) + (wantLean - (p.lean || 0)) * Math.min(1, dt * 7);
+  p.aim = p.photo > 0 && p.photo < 1.0;
   if (p.photo > 0 && Math.abs(p.z - S.pz) < 30) {        // tourist stops dead for a photo
     p.photo -= dt;
     if (p.photo <= 0) { p.stopT = rnd(2, 3.2); p.v0save = p.v0; p.v0 = 0; p.phone = true; p.faceTo = [1, 0]; }

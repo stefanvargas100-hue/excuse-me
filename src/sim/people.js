@@ -232,6 +232,20 @@ export function runEvent(kind) {
       mk(clamp(x + sl[0], -h + 0.5, h - 0.5), z + sl[1] * dir, { hx: 0, hz: dir, v0: 1.0, follow: L, slot: sl, hat: R() < 0.4 ? 'cap' : 'none', gear: col, pack: R() < 0.4 ? 'pack' : 'none' });
     }
     banner('TOUR GROUP AHEAD', '#7cc4ff');
+  } else if (kind === 'parade' || kind === 'queue') {
+    // A line right across the walkway with one way through. Find the gap early, or say "Excuse me".
+    const lim = LV.half - 0.5, lo = LV.id === 'nyc' ? -2.6 : -lim, gapW = 1.9, step = Math.max(0.74, 2 * lim / 16), rows = kind === 'parade' ? 2 : 1;
+    const gapX = rnd(lo + gapW / 2 + 0.2, lim - gapW / 2 - 0.2);
+    for (let r = 0; r < rows; r++) for (let x = -lim; x <= lim; x += step) {
+      if (Math.abs(x - gapX) < gapW / 2) continue;
+      if (kind === 'parade') mk(x, z + r * 1.1, { hx: 0, hz: -1, v0: 1.0, laneX: x, space: 0, yieldP: 0 });
+      else mk(x, z, { v0: 0, fx: 0, fz: 1 });
+    }
+    banner(kind === 'parade' ? 'PARADE COMING THROUGH' : 'QUEUE ACROSS THE WALKWAY', '#ff9f43');
+  } else if (kind === 'cleaners') {
+    const lim = LV.half - 0.5, gapW = 2.2, gapX = rnd(-lim + gapW / 2 + 0.2, lim - gapW / 2 - 0.2);
+    for (let x = -lim; x <= lim; x += 1.0) if (Math.abs(x - gapX) >= gapW / 2) mk(x, z, { prop: 'wetfloor', circles: [{ ox: 0, oz: 0, r: 0.28 }] });
+    banner('CLEANING CREW AHEAD', '#ffd166');
   } else if (kind === 'arrivals') {
     for (let i = 0; i < 13; i++) walker(S.pz + rnd(SPAWN_FAR, SPAWN_FAR + 28), -1, { lug: pick([-1, 1]) });
     banner('FLIGHT 212 HAS LANDED', '#ffcf1f');

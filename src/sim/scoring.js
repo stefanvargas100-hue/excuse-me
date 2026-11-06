@@ -26,6 +26,7 @@ export function onPass(p) {
   if (Math.abs(dx) > 2.6) return;            // only people you actually walked past
   let gap = Infinity;
   for (const c of p.circles) gap = Math.min(gap, Math.abs(p.x + c.ox - S.px) - R_PLAYER - c.r);
+  if (!S.closest || gap < S.closest.gap) S.closest = { gap: Math.max(0, gap), m: Math.floor(S.pz) };
   const side = dx > 0 ? 1 : -1, now = S.time;
   if (now - S.lastPassT > CHAIN_WINDOW) { S.chain = 0; S.snake = 0; S.oncRun = 0; }
   const prev = S.chain > 0 ? S.lastPass : null;

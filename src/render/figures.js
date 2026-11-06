@@ -78,7 +78,8 @@ function drawNear(p, s) {
     legs.push({ side, knee, ankle });
   }
   const drop = minA - 0.08;   // planted foot stays on the floor, so the body bobs naturally
-  const L = (lx, ly, u) => W3(p.x + (rx * lx + fx * ly) * k, (u - drop) * k, p.z + (rz * lx + fz * ly) * k);
+  const lean = p.lean || 0;   // leaning into a move, so players can read it coming
+  const L = (lx, ly, u) => W3(p.x + (rx * lx + fx * ly) * k + lean * u * k, (u - drop) * k, p.z + (rz * lx + fz * ly) * k);
   const sk = s * k;
   const vxv = p.x - VX, vzv = Math.max(0.2, p.z - VZ), vl = Math.hypot(vxv, vzv);
   const across = Math.abs(rx * (vzv / vl) - rz * (vxv / vl));   // 1 = shoulders face the camera, 0 = side-on
@@ -153,6 +154,7 @@ function drawNear(p, s) {
     if (p.react && p.react.up && p.react.t > 0 && p.react.t < 0.9) { c = 2.45; bend = 0.55; hx = 0.36; }   // hands up
     if (p.dance) { c = 1.7 + Math.sin(ph * 1.3 + side * 1.7) * 1.0; bend = 0.9; hx = 0.38; }
     if (p.phone && side > 0) { c = 0.35; bend = 1.7; hx = 0.1; }
+    if (p.aim && side > 0) { c = 1.25; bend = 1.5; hx = 0.1; }   // lifting a phone for a photo: about to stop
     const el = [side * 0.23 * armOut, Math.sin(c) * 0.28, 1.42 - Math.cos(c) * 0.28];
     const fa = c + bend;
     const hd = [side * hx, el[1] + Math.sin(fa) * 0.26, el[2] - Math.cos(fa) * 0.26];
@@ -170,7 +172,7 @@ function drawNear(p, s) {
       if (ty === 'jacket' || ty === 'wind') { ctx.strokeStyle = '#ffffff'; ctx.lineWidth = Math.max(1, 0.022 * sk); ctx.beginPath(); ctx.moveTo(shp[0], shp[1]); ctx.lineTo(e2[0], e2[1]); ctx.lineTo(h2[0], h2[1]); ctx.stroke(); }
       if (ty === 'power') { ctx.fillStyle = p.shirtL; ctx.beginPath(); ctx.arc(shp[0], shp[1], 0.075 * sk * bulk, 0, TAU); ctx.fill(); }
       ctx.fillStyle = p.skin; ctx.beginPath(); ctx.arc(h2[0], h2[1], 0.045 * sk, 0, TAU); ctx.fill();
-      if (p.phone && side > 0) {
+      if ((p.phone || p.aim) && side > 0) {
         ctx.fillStyle = '#111827'; ctx.fillRect(h2[0] - 0.04 * sk, h2[1] - 0.09 * sk, 0.08 * sk, 0.13 * sk);
         ctx.fillStyle = '#8ecbff'; ctx.fillRect(h2[0] - 0.03 * sk, h2[1] - 0.08 * sk, 0.06 * sk, 0.1 * sk);
       }
@@ -415,7 +417,7 @@ export function drawPerson(p) {
   const fy = HOR + VY * s;
   // fog in the distance; fade people right in front of the camera so they never block your character
   // racers beside and behind you go see-through: they can't touch you, and they must never block your view
-  const racerFade = p.racer ? clamp(0.3 + (p.z - S.pz + 1) * 0.35, 0.3, 1) : 1;
+  const racerFade = p.racer ? clamp(0.3 + (p.z - S.pz + 1) * 0.35, 0.3, 1) * (p.isGhost ? 0.5 : 1) : 1;
   const ghost = (p.isMe ? S.ghostT : p.ghostT) > 0 ? 0.5 + 0.25 * Math.sin(S.clock * 30) : 1;   // race mode: blink during the rare safety slip-through
   ctx.globalAlpha = Math.min(fogA(dz), p.isMe ? 1 : clamp((dz - 0.6) / 1.6, 0.22, 1), clamp((DRAW_FAR - dz) / 8, 0, 1), p.fadeT === undefined ? 1 : p.fadeT / 0.9) * ghost * racerFade;
   if (p.prop !== 'spill') {

@@ -4,6 +4,7 @@ import { BASE, BOOST, CHAIN_WINDOW, LAT_ACC, LAT_MAX, REGEN, R_PLAYER } from '..
 import { clamp, mulberry32 } from '../config/util.js';
 import { REACT } from '../config/colour.js';
 import { BOT_NAMES } from '../config/names.js';
+import { STRIP_SPEED, onStrip } from '../config/strips.js';
 import { effects, fitOf, randomLoadout, statsOf } from '../config/stats.js';
 import { COST_DASH, DASH_T, DASH_V } from '../input/input.js';
 import { buzz, store } from '../save/store.js';
@@ -31,14 +32,15 @@ export const draftCharge = r => clamp(r.draftC / DRAFT_CHARGE, 0, 1);
 // Finds the closest person you are drafting; returns how close as 0 (edge of the zone) to 1 (right behind them), or -1.
 function inDraft(r, x, z, self) {
   let best = -1;
-  const check = (ox, oz, ov) => {
+  const check = (ox, oz, ov, who) => {
     if (ov <= DRAFT_MIN_V || oz - z <= 0.3 || oz - z >= DRAFT_LEN || Math.abs(ox - x) >= DRAFT_W) return;
     const near = 1 - (oz - z - 0.3) / (DRAFT_LEN - 0.3);
-    if (near > best) { best = near; r.draftNear = near; r.draftX = ox; r.draftZ = oz; }
+    if (near > best) { best = near; r.draftNear = near; r.draftX = ox; r.draftZ = oz; r.draftWho = who; }
   };
-  for (const p of S.people) if (!p.dead && !p.prop) check(p.x, p.z, p.vz);
-  if (self !== S) check(S.px, S.pz, S.speed);
-  for (const b of S.race.bots) if (b !== self && !b.done) check(b.x, b.z, b.speed);
+  for (const p of S.people) if (!p.dead && !p.prop) check(p.x, p.z, p.vz, p);
+  if (self !== S) check(S.px, S.pz, S.speed, S);
+  for (const b of S.race.bots) if (b !== self && !b.done) check(b.x, b.z, b.speed, b);
+  if (best >= 0 && r.draftWho && r.draftWho.racer) r.draftWho.pressT = 0.4;   // a bot knows when someone is on its tail
   return best;
 }
 // r is the player's state or a bot. Returns true at the moment the boost is earned.
@@ -67,11 +69,12 @@ export const comboLevel = chain => Math.min(8, 1 + Math.floor(chain / 3));
 export const racePace = (chain, energy) => (1 + COMBO_BOOST * (comboLevel(chain) - 1)) * (1 - tiredSlow(energy));
 
 // Three tiers. Pace is walking speed relative to yours, miss is how often a bot fails to notice someone,
-// dash is how readily it dashes around trouble, burst is how often it spends stamina on a burst of speed.
+// dash is how readily it dashes around trouble, burst is how often it spends stamina on a burst of speed,
+// fight is how hard it contests the race: chasing slipstreams, shaking you off its tail, using the fast strips.
 export const DIFFICULTIES = [
-  { name: 'Easy', pace: [0.82, 0.86, 0.89], miss: 0.14, dash: 0, burst: 0.15 },
-  { name: 'Medium', pace: [0.89, 0.93, 0.97], miss: 0.06, dash: 0.5, burst: 0.3 },
-  { name: 'Hard', pace: [1.0, 1.04, 1.08], miss: 0.01, dash: 1, burst: 0.6 }
+  { name: 'Easy', pace: [0.82, 0.86, 0.89], miss: 0.14, dash: 0, burst: 0.15, fight: 0 },
+  { name: 'Medium', pace: [0.89, 0.93, 0.97], miss: 0.06, dash: 0.5, burst: 0.3, fight: 0.5 },
+  { name: 'Hard', pace: [0.98, 1.02, 1.06], miss: 0.01, dash: 1, burst: 0.6, fight: 1 }
 ];
 const BOTS = [
   { name: 'Mia', color: '#14b8a6', shirt: '#14b8a6', hair: '#3b2a1e', hairStyle: 'long', skin: '#c68863' },
@@ -237,6 +240,16 @@ function think(b) {
       }
     }
     c += Math.abs(tx - wander) * 0.07;
+    // racing: tuck in behind whoever is just ahead, shake off anyone on your own tail, take the fast strip
+    const fight = b.diff.fight;
+    if (fight) {
+      for (const o of [S.race.me && { x: S.px, z: S.pz }, ...S.race.bots].filter(Boolean)) {
+        if (o === b) continue;
+        if (o.z - b.z > 0.5 && o.z - b.z < 7 && Math.abs(tx - o.x) < 0.5) c -= 0.6 * fight;
+      }
+      if (b.pressT > 0 && Math.abs(tx - S.px) < 0.8) c += 1.6 * fight;
+      if (onStrip(LV.id, tx, b.z + 6)) c -= 1.1 * fight;
+    }
     if (c < bestC) { bestC = c; bestX = tx; }
   }
   b.target = bestX; b.danger = danger; b.clear = danger > 9 && bestC < 3;
@@ -263,8 +276,9 @@ function stepBot(b, dt) {
     b.vx += clamp(want - b.vx, -acc * dt, acc * dt);
   }
   const weave = 1 - 0.14 * Math.min(1.4, Math.abs(b.vx) / LAT_MAX);
-  stepDraft(b, b.x, b.z, b.bumpT > 0, dt);
-  const bTarget = (bursting ? BOOST : BASE) * b.pace * b.st.speed * weave * racePace(b.chain, b.energy) * draftMul(b) * (b.bumpT > 0 ? BUMP_SPEED : 1);
+  b.pressT = Math.max(0, (b.pressT || 0) - dt);
+  if (stepDraft(b, b.x, b.z, b.bumpT > 0, dt) && b.draftWho === S) addPop(b.name.toUpperCase() + ' SLIPSTREAMED YOU', b.color, 22);
+  const bTarget = (bursting ? BOOST : BASE) * b.pace * b.st.speed * weave * racePace(b.chain, b.energy) * draftMul(b) * (onStrip(LV.id, b.x, b.z) ? STRIP_SPEED : 1) * (b.bumpT > 0 ? BUMP_SPEED : 1);
   b.speed += (bTarget - b.speed) * Math.min(1, dt * (bTarget > b.speed ? b.st.accel : 5));
   b.x = clamp(b.x + b.vx * dt, -lim, lim); b.z += b.speed * dt;
   if (Math.abs(b.x) >= lim) b.vx = 0;

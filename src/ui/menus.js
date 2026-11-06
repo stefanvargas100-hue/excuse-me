@@ -11,6 +11,7 @@ import { draftMul, fmtTime, ordinal, raceBest, racePace, raceDifficulty, standin
 import { S, bestOf, calm, camBob, cues, reset, setCalm, setCamBob, setCues, setShowHB, showHB, state } from '../sim/state.js';
 import { endTut } from '../sim/tutorial.js';
 import { back, go, pageInto, relayoutWith } from './screens.js';
+import { shareRun, startReplay } from '../sim/replay.js';
 
 
 
@@ -169,6 +170,13 @@ function showHowTab(id) {
 }
 
 export function init() {
+  $('replayBtn').addEventListener('click', startReplay);
+  $('shareBtn').addEventListener('click', () => {
+    const where = LV.name, text = S.race
+      ? 'I came ' + ordinal(S.race.place) + ' on ' + where + ' in Excuse Me, finishing in ' + fmtTime(S.time) + '.'
+      : 'I walked ' + Math.floor(S.pz) + ' m through ' + where + ' in Excuse Me and scored ' + fmt(S.score) + (S.closest ? ', with a ' + Math.max(1, Math.round(S.closest.gap * 100)) + ' cm close call' : '') + '.';
+    shareRun(text);
+  });
   $('playBtn').addEventListener('click', () => { buildPlay(); go('play'); });
   $('chalBtn').addEventListener('click', () => { go('chal'); buildChallenges(); });
   $('howBtn').addEventListener('click', () => { go('howto'); showHowTab('howControls'); });

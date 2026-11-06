@@ -1,5 +1,6 @@
 import { Music } from '../audio/music.js';
 import { LEVELS, LV, LVI, SPAWN_FAR, setLevel } from '../config/levels.js';
+import { STRIP_SPEED, onStrip, stripLane } from '../config/strips.js';
 import { BASE, BOOST, CHAIN_WINDOW, LAT_ACC, LAT_MAX, REGEN } from '../config/tuning.js';
 import { R, clamp, hashStr, mulberry32, pick, rnd, setR, todayKey, weekKey } from '../config/util.js';
 import { $ } from '../dom.js';
@@ -17,6 +18,7 @@ import { updCars } from './traffic.js';
 import { beginTut, tutTick } from './tutorial.js';
 import { buildLevels, last } from '../ui/menus.js';
 import { hideMenus } from '../ui/screens.js';
+import { canReplay, ghostSave, ghostStart, ghostStep, recordFrame, stepReplay } from './replay.js';
 
 
 
@@ -39,7 +41,10 @@ function movePlayer(dt) {
   if (S.boostV < 0.2) S.boostPasses = 0;
   const weave = 1 - 0.14 * Math.min(1.4, Math.abs(S.vx) / LAT_MAX);   // weaving costs a little forward speed
   S.perfectT = Math.max(0, S.perfectT - dt);
-  const pace = (S.race ? racePace(S.chain, S.energy) * draftMul(S) : 1) * (S.perfectT > 0 ? PERFECT_SPEED : 1);   // race mode: combo speeds you up, low stamina slows you down
+  const strip = S.race && onStrip(LV.id, S.px, S.pz);
+  if (strip && !S.onStrip) addPop('FAST STRIP', stripLane(LV.id).col, 22);
+  S.onStrip = strip;
+  const pace = (S.race ? racePace(S.chain, S.energy) * draftMul(S) * (strip ? STRIP_SPEED : 1) : 1) * (S.perfectT > 0 ? PERFECT_SPEED : 1);   // race mode: combo speeds you up, low stamina slows you down
   const target = (bursting ? BOOST : BASE) * weave * pace * (st ? st.speed : 1) * (S.bumpT > 0 ? BUMP_SPEED : 1);
   S.speed += (target - S.speed) * Math.min(1, dt * (st && target > S.speed ? st.accel : 5));
   if (S.dashT > 0) S.vx = S.dashDir * DASH_V;
@@ -70,6 +75,9 @@ export function tick(dt) {
   if (state === 'play') {
     if (S.race && S.race.countT > 0) { raceCountdown(dt); return; }   // 3-2-1-GO: everything holds still
     S.time += dt;
+    ghostStep(dt);
+    recordFrame();
+    if (S.kind === 'classic' && !S.beatBest && S.score > bestOf(LV.id) && bestOf(LV.id) > 0) { S.beatBest = true; addPop('NEW BEST!', '#ffd166', 30); }
     if (S.kind === 'classic' && S.pz > S.farMark) { S.farMark += 5; trackMax('far_' + LV.id, S.pz); }
     if (pendingDash && performance.now() >= pendingDash.at) { action(pendingDash.z); setPendingDash(null); }
     movePlayer(dt);
@@ -92,7 +100,7 @@ export function tick(dt) {
     if (S.timeLeft <= 0 && !S.race) { loseTime(); return; }
     // scripted crowd moments
     S.eventT -= dt;
-    if (S.eventT <= 0 && S.pz < goalOf() - 60) { seeded(':e' + (S.evN++), () => runEvent(pick(LV.events))); S.eventT = rnd(16, 24); }
+    if (S.eventT <= 0 && S.pz < goalOf() - 60) { seeded(':e' + (S.evN++), () => runEvent(pick(LV.events))); S.eventT = S.endless && S.pz > LV.goal ? rnd(11, 17) : rnd(16, 24); }   // past the old finish line, surprises come more often
     // rush hour surges
     if (S.pz < goalOf() - 50) {
       S.rushT -= dt;
@@ -128,6 +136,8 @@ export function tick(dt) {
   } else if (state === 'ready') {
     updPeople(dt);
     S.people = S.people.filter(p => !p.dead);
+  } else if (S.replay) {
+    stepReplay(dt);
   } else {
     S.overT += dt;
     if (!endShown && S.overT > (state === 'won' ? 0.5 : 0.8)) showEnd();
@@ -143,7 +153,7 @@ function recordBest() {
   }
   const b = bestOf(LV.id);
   S.newBest = S.score > b;
-  if (S.newBest) store.set('excuseme_best_' + LV.id, String(S.score));
+  if (S.newBest) { store.set('excuseme_best_' + LV.id, String(S.score)); ghostSave(); }
 }
 
 function lose(p) { if (S.daily) track('dailyRuns'); if (S.weekly) track('weeklyRuns'); if (S.kind === 'classic') { trackMax('far_' + LV.id, S.pz); trackMax('bestScore', S.score); } setState('over'); S.live = false; p.hit = true; S.hitStop = 0.1; S.overT = 0; touches.clear(); Music.sfx('bump'); Music.stop(); Music.ambStop(); buzz([60, 40, 140]); recordBest(); }
@@ -189,6 +199,8 @@ function showEnd() {
   $('sClose').textContent = S.close;
   $('sPassed').textContent = S.passed;
   $('sRival').textContent = S.dodged;
+  if (S.closest) $('endLead').textContent += ' Closest call: ' + Math.max(1, Math.round(S.closest.gap * 100)) + ' cm at ' + S.closest.m + ' m.';
+  $('replayBtn').hidden = !canReplay();
   showUnlocks();
   if (S.daily) { $('endEyebrow').textContent = 'Daily run · ' + S.dailyKey + ' · ' + LV.name; }
   if (S.weekly) { $('endEyebrow').textContent = 'Weekly run · ' + S.dailyKey + ' · ' + LV.name; }
@@ -237,6 +249,7 @@ function showRaceEnd() {
     li.textContent = (i + 1) + '. ' + r.name + ' · ' + gap;
     bd.appendChild(li);
   });
+  $('replayBtn').hidden = true;
   showUnlocks(); $('next').hidden = true; $('again').hidden = false;
   $('again').textContent = 'Race again'; $('again').className = 'big';
   $('end').hidden = false;
@@ -263,6 +276,7 @@ export function start(a, b) {
   reset();
   S.mode = mode; S.kind = mode; S.endless = mode !== 'race'; S.seed = key;
   if (S.endless) S.timeLeft = Infinity;
+  ghostStart();
   if (mode === 'race') initRace(3);
   S.daily = daily; S.weekly = weekly; S.dailyKey = key; for (const k in last) last[k] = k === 'low' ? null : -1; S.live = true; setState('play'); setEndShown(false);
   hideMenus(); $('hud').hidden = false;

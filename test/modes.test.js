@@ -121,3 +121,51 @@ test('a well-timed Excuse me moves more people and recharges sooner', () => {
   assert.ok(timed.moved > early.moved, timed.moved + ' vs ' + early.moved);
   assert.ok(timed.cd < early.cd);
 });
+
+for (const lv of [0, 1, 2]) for (const kind of ['parade', 'queue']) {
+  test('stage ' + lv + ': a ' + kind + ' always leaves a way through', () => {
+    for (let k = 0; k < 8; k++) {
+      const E = load(); E.setLevel(lv); E.start('classic'); E.tick(DT);
+      E.S.people.length = 0;
+      E.runEvent(kind);
+      const near = E.S.people.filter(p => !p.prop), lim = E.LEVELS[lv].half - 0.5, xs = near.map(p => p.x).concat([-lim, lim]).sort((a, b) => a - b);
+      assert.ok(xs.length > 4, 'a real line of people');
+      let gap = 0; for (let i = 1; i < xs.length; i++) gap = Math.max(gap, xs[i] - xs[i - 1]);
+      assert.ok(gap >= 1.2, 'gap wide enough to walk through: ' + gap.toFixed(2));
+      for (let i = 0; i < 60; i++) { E.tick(DT); E.render(); }
+      assert.ok(E.S.people.every(p => Number.isFinite(p.x) && Number.isFinite(p.z)));
+    }
+  });
+}
+
+test('ghost: your best classic run comes back as a see-through runner', () => {
+  const E = load(); E.setLevel(0); E.start('classic');
+  assert.strictEqual(E.S.ghost, null, 'no ghost before a first run');
+  for (let i = 0; i < 300; i++) { clearNear(E); E.tick(DT); }
+  const z = E.S.pz;
+  E.pauseGame(); E.quitRun(); E.toMenu();
+  E.start('classic');
+  assert.ok(E.S.ghost, 'ghost is back');
+  for (let i = 0; i < 150; i++) { clearNear(E); E.tick(DT); }
+  assert.ok(E.S.ghost.z > 5 && E.S.ghost.z < z, 'moving along the old run: ' + E.S.ghost.z.toFixed(1));
+  E.render();
+  const before = E.S.ghost.z; E.start('daily');
+  assert.strictEqual(E.S.ghost, null, 'no ghost in a daily run');
+  assert.ok(before > 0);
+});
+
+test('replay: you can rewatch how a run ended, then return to the results', () => {
+  const E = load(); E.setLevel(0); E.start('classic');
+  for (let i = 0; i < 150; i++) { clearNear(E); E.tick(DT); }
+  const p = E.S.people.find(q => !q.prop); p.x = E.S.px; p.z = E.S.pz + 0.2; p.vx = p.vz = 0;
+  for (let i = 0; i < 60; i++) E.tick(DT);
+  assert.strictEqual(E.state, 'over');
+  const endZ = E.S.pz;
+  E.startReplay();
+  assert.ok(E.S.replay, 'replay running');
+  for (let i = 0; i < 40; i++) { E.tick(DT); E.render(); }
+  assert.ok(E.S.pz < endZ, 'rewound: ' + E.S.pz.toFixed(1) + ' vs ' + endZ.toFixed(1));
+  for (let i = 0; i < 400 && E.S.replay; i++) E.tick(DT);
+  assert.strictEqual(E.S.replay, null, 'it ends by itself');
+  assert.ok(Math.abs(E.S.pz - endZ) < 1, 'back at the end');
+});
