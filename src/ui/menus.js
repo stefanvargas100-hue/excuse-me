@@ -174,7 +174,7 @@ export function init() {
   $('shareBtn').addEventListener('click', () => {
     const where = LV.name, text = S.race
       ? 'I came ' + ordinal(S.race.place) + ' on ' + where + ' in Excuse Me, finishing in ' + fmtTime(S.time) + '.'
-      : 'I walked ' + Math.floor(S.pz) + ' m through ' + where + ' in Excuse Me and scored ' + fmt(S.score) + (S.closest ? ', with a ' + Math.max(1, Math.round(S.closest.gap * 100)) + ' cm close call' : '') + '.';
+      : 'I walked ' + Math.floor(S.pz) + ' m through ' + where + ' in Excuse Me and scored ' + fmt(S.score) + (S.closest && S.closest.gap < 0.4 ? ', with a ' + Math.max(1, Math.round(S.closest.gap * 100)) + ' cm close call' : '') + '.';
     shareRun(text);
   });
   $('playBtn').addEventListener('click', () => { buildPlay(); go('play'); });

@@ -9,6 +9,9 @@ import { S, cues, showHB } from '../sim/state.js';
 
 
 /* ---------- people rendering: a projected 3D skeleton with shaded, rounded limbs ---------- */
+// Hand-drawn look: everything near the camera gets an ink outline, in the same ink as the menus.
+const LINE = '#3a2a4d';
+
 function capsule(pts, w, base, dark, light) {
   const run = (ox, oy) => {
     ctx.beginPath(); ctx.moveTo(pts[0][0] + ox, pts[0][1] + oy);
@@ -16,6 +19,7 @@ function capsule(pts, w, base, dark, light) {
     ctx.stroke();
   };
   ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  if (w > 3.5) { ctx.strokeStyle = LINE; ctx.lineWidth = w + Math.max(1.2, w * 0.26); run(0, 0); }
   ctx.strokeStyle = dark; ctx.lineWidth = w; run(0, 0);
   ctx.strokeStyle = base; ctx.lineWidth = w * 0.7; run(-w * 0.09, -w * 0.07);
   if (light && w > 6) { ctx.strokeStyle = light; ctx.lineWidth = w * 0.22; run(-w * 0.2, -w * 0.16); }
@@ -181,16 +185,17 @@ function drawNear(p, s) {
   const chest = L(0, 0, 1.38), waist = L(0, 0, 0.98), neck = L(0, 0, 1.48), pelvis = L(0, 0, 0.86);
   const wM = (0.2 + 0.18 * across) * bulk * (fem ? 0.92 : 1) * wide;
   items.push({ d: chest[2], f: () => {
+    const inkIt = lw => { if (hwC > 2) { const keep = ctx.strokeStyle; ctx.strokeStyle = LINE; ctx.lineWidth = lw + Math.max(1.2, hwC * 0.16); ctx.stroke(); ctx.strokeStyle = keep; ctx.lineWidth = lw; } };
     const sC = F / chest[2] * k, hwC = wM / 2 * sC, hwW = hwC * (fem ? 0.68 : 0.78), hipW = fem ? hwC * 0.98 : hwW * 0.95;
     const g = ctx.createLinearGradient(chest[0] - hwC, 0, chest[0] + hwC, 0);
     g.addColorStop(0, p.shirtL); g.addColorStop(0.5, p.shirt); g.addColorStop(1, p.shirtD);
     ctx.fillStyle = p.pants; ctx.strokeStyle = p.pants; ctx.lineWidth = hwC * 0.3; ctx.lineJoin = 'round';
     ctx.beginPath(); ctx.moveTo(waist[0] - hwW, waist[1]); ctx.lineTo(waist[0] + hwW, waist[1]);
-    ctx.lineTo(pelvis[0] + hipW, pelvis[1]); ctx.lineTo(pelvis[0] - hipW, pelvis[1]); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.lineTo(pelvis[0] + hipW, pelvis[1]); ctx.lineTo(pelvis[0] - hipW, pelvis[1]); ctx.closePath(); inkIt(hwC * 0.3); ctx.fill(); ctx.stroke();
     ctx.fillStyle = g; ctx.strokeStyle = g; ctx.lineWidth = hwC * 0.4;
     ctx.beginPath(); ctx.moveTo(neck[0] - hwC * 0.85, neck[1]); ctx.lineTo(neck[0] + hwC * 0.85, neck[1]);
     ctx.lineTo(chest[0] + hwC, chest[1]); ctx.lineTo(waist[0] + hwW, waist[1]); ctx.lineTo(waist[0] - hwW, waist[1]);
-    ctx.lineTo(chest[0] - hwC, chest[1]); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.lineTo(chest[0] - hwC, chest[1]); ctx.closePath(); inkIt(hwC * 0.4); ctx.fill(); ctx.stroke();
     const ty = p.shirtType, band = (a, b, col) => { ctx.strokeStyle = col; ctx.lineWidth = Math.max(1, hwC * 0.12); ctx.beginPath(); ctx.moveTo(a[0] - hwC * 0.95, a[1] + (b - a[1])); ctx.lineTo(a[0] + hwC * 0.95, a[1] + (b - a[1])); ctx.stroke(); };
     if (ty === 'baby') { ctx.fillStyle = p.skin; const c = mix(chest, waist, 0.55); ctx.strokeStyle = p.skin; ctx.lineWidth = hwC * 0.4; ctx.beginPath(); ctx.moveTo(c[0] - hwC * 0.88, c[1]); ctx.lineTo(c[0] + hwC * 0.88, c[1]); ctx.lineTo(waist[0] + hwW, waist[1]); ctx.lineTo(waist[0] - hwW, waist[1]); ctx.closePath(); ctx.fill(); ctx.stroke(); }
     if (ty === 'wind') { const c = mix(neck, waist, 0.42); ctx.fillStyle = '#ffffff'; ctx.fillRect(c[0] - hwC * 1.02, c[1] - hwC * 0.22, hwC * 2.04, hwC * 0.44); }
@@ -202,7 +207,7 @@ function drawNear(p, s) {
       if (ty === 'suit') { ctx.strokeStyle = '#b3243a'; ctx.lineWidth = Math.max(1, hwC * 0.14); ctx.beginPath(); ctx.moveTo(neck[0], neck[1]); ctx.lineTo(v[0], v[1]); ctx.stroke(); }
     }
     // skirts hang from the waist over whatever is underneath, so a dress goes with any bottoms
-    const skirtOf = (bottom, topW, botW, col, colD) => { const b = L(0, 0, bottom); ctx.fillStyle = col; ctx.strokeStyle = colD; ctx.lineWidth = Math.max(1, hwC * 0.06); const sway = Math.sin(ph) * walk * hwC * 0.14, dip = hwC * 0.22; ctx.lineJoin = 'round'; ctx.beginPath(); ctx.moveTo(waist[0] - hwC * topW, waist[1]); ctx.lineTo(waist[0] + hwC * topW, waist[1]); ctx.quadraticCurveTo(waist[0] + hwC * (topW + botW) * 0.56, (waist[1] + b[1]) / 2, b[0] + hwC * botW + sway, b[1]); ctx.quadraticCurveTo(b[0] + sway, b[1] + dip, b[0] - hwC * botW + sway, b[1]); ctx.quadraticCurveTo(waist[0] - hwC * (topW + botW) * 0.56, (waist[1] + b[1]) / 2, waist[0] - hwC * topW, waist[1]); ctx.closePath(); ctx.fill(); ctx.stroke(); };
+    const skirtOf = (bottom, topW, botW, col, colD) => { const b = L(0, 0, bottom); ctx.fillStyle = col; ctx.strokeStyle = LINE; ctx.lineWidth = Math.max(1.2, hwC * 0.12); const sway = Math.sin(ph) * walk * hwC * 0.14, dip = hwC * 0.22; ctx.lineJoin = 'round'; ctx.beginPath(); ctx.moveTo(waist[0] - hwC * topW, waist[1]); ctx.lineTo(waist[0] + hwC * topW, waist[1]); ctx.quadraticCurveTo(waist[0] + hwC * (topW + botW) * 0.56, (waist[1] + b[1]) / 2, b[0] + hwC * botW + sway, b[1]); ctx.quadraticCurveTo(b[0] + sway, b[1] + dip, b[0] - hwC * botW + sway, b[1]); ctx.quadraticCurveTo(waist[0] - hwC * (topW + botW) * 0.56, (waist[1] + b[1]) / 2, waist[0] - hwC * topW, waist[1]); ctx.closePath(); ctx.fill(); ctx.stroke(); };
     if (p.pantsType === 'pleats') { skirtOf(0.56, fem ? 0.96 : 0.82, 1.4, p.pants, p.pantsD); ctx.strokeStyle = p.pantsD; ctx.lineWidth = Math.max(1, hwC * 0.05); const b = L(0, 0, 0.56); for (const f of [-0.75, -0.25, 0.25, 0.75]) { ctx.beginPath(); ctx.moveTo(waist[0] + hwC * f * 0.8, waist[1]); ctx.lineTo(b[0] + hwC * f * 1.32, b[1]); ctx.stroke(); } }
     if (p.pantsType === 'pencil') skirtOf(0.5, fem ? 0.96 : 0.82, 0.84, p.pants, p.pantsD);
     if (ty === 'dress') skirtOf(0.5, fem ? 0.9 : 0.78, 1.45, p.shirt, p.shirtD);
@@ -225,6 +230,7 @@ function drawNear(p, s) {
       const g = ctx.createLinearGradient(bc[0] - w / 2, 0, bc[0] + w / 2, 0);
       g.addColorStop(0, jet ? '#f3f4f6' : p.gearL); g.addColorStop(1, jet ? '#6b7280' : p.gearD);
       ctx.fillStyle = g; rrect(bc[0] - w / 2, bc[1] - h / 2, w, h, Math.min(w, h) * 0.3); ctx.fill();
+      if (w > 4) { ctx.strokeStyle = LINE; ctx.lineWidth = Math.max(1.2, w * 0.05); ctx.stroke(); }
       ctx.fillStyle = jet ? '#374151' : p.gearD;
       if (jet) { for (const fx2 of [-0.25, 0.25]) { rrect(bc[0] + fx2 * w - w * 0.13, bc[1] + h * 0.36, w * 0.26, h * 0.2, 2); ctx.fill(); } ctx.fillStyle = '#ff2d3a'; rrect(bc[0] - w * 0.2, bc[1] - h * 0.3, w * 0.4, h * 0.12, 2); ctx.fill(); }
       else if (p.pack === 'boombox') { ctx.fillStyle = '#16191f'; for (const f of [-0.27, 0.27]) { ctx.beginPath(); ctx.arc(bc[0] + f * w, bc[1], h * 0.34, 0, TAU); ctx.fill(); } ctx.fillStyle = '#f4f6f8'; ctx.fillRect(bc[0] - w * 0.08, bc[1] - h * 0.2, w * 0.16, h * 0.4); }
@@ -245,6 +251,7 @@ function drawNear(p, s) {
     if (longHair && facing <= 0.35) { ctx.fillStyle = p.hair; ctx.beginPath(); ctx.ellipse(hx - (facing > -0.35 ? sideDir * r * 0.25 : 0), hy + r * 0.55, r * 1.05, r * 1.15, 0, 0, TAU); ctx.fill(); }
     if (p.hat === 'cap' && facing > 0.35) brim();
     ball(hx, hy, r, p.skin, p.skinL, p.skinD);
+    if (r > 3) { ctx.strokeStyle = LINE; ctx.lineWidth = Math.max(1.2, r * 0.13); ctx.beginPath(); ctx.arc(hx, hy, r, 0, TAU); ctx.stroke(); }
     ctx.fillStyle = p.hair;
     if (facing > 0.35) {
       if (!p.bald) {

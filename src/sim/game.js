@@ -199,7 +199,7 @@ function showEnd() {
   $('sClose').textContent = S.close;
   $('sPassed').textContent = S.passed;
   $('sRival').textContent = S.dodged;
-  if (S.closest) $('endLead').textContent += ' Closest call: ' + Math.max(1, Math.round(S.closest.gap * 100)) + ' cm at ' + S.closest.m + ' m.';
+  if (S.closest && S.closest.gap < 0.4) $('endLead').textContent += ' Closest call: ' + Math.max(1, Math.round(S.closest.gap * 100)) + ' cm at ' + S.closest.m + ' m.';
   $('replayBtn').hidden = !canReplay();
   showUnlocks();
   if (S.daily) { $('endEyebrow').textContent = 'Daily run · ' + S.dailyKey + ' · ' + LV.name; }

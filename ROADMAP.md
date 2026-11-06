@@ -164,7 +164,9 @@ Decided: launch with a fuller game. Candidates, to be confirmed after playtest f
 - [x] Race stats from build and gear, slipstream
 - [x] Challenges as the only way to unlock, with a first clothing catalogue (Y2K, 80s, modern, formal)
 - [ ] Tune challenge targets from real play
-- [ ] More random crowd events in endless runs (tour groups and the like), difficulty stays at its hardest
+- [x] More random crowd events in endless runs, difficulty stays at its hardest
+- [x] Skill pack, fast strips, contested drafting, ghost, replay, share, no-scroll menus
+- [ ] Tune all of this from real phone play
 - [ ] Anything the playtest shows is missing
 
 Rule: one feature at a time, each playtested before the next. Cut anything that does not clear a "is this fun?" bar rather than shipping it.

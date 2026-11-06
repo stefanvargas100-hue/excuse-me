@@ -51,3 +51,4 @@
 - Crowd tells: people about to cut lean that way first; tourists lift a phone before stopping. New events: parade and queue (a line across with one gap) and cleaning crew, more often past the old goal distance in endless runs.
 - Race: bots chase slipstreams, shake you off their tail, and show their own wind. Fast strips on each stage (+12% speed, narrow, risky): moving walkway, curb run, centre line. Hard bot pace trimmed to stay near the playtested times.
 - Ghost of your best classic run per stage; replay of a run's last 6 s at 60% speed; closest call on the results; Share button (phone share sheet or copy). Leaderboard ghosts wait for a server.
+- Character look: ink outlines on near figures in the menu ink colour, matching the hand-drawn UI. Still built from simple shapes; hand-painted art would be the next step up.
