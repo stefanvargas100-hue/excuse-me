@@ -1,4 +1,5 @@
 import { store } from './store.js';
+import { gainXp, XP_DAILY, XP_UNLOCK, XP_WEEKLY } from './level.js';
 import { createRotating, liveKeys, rotateAdd, setRotating } from './rotating.js';
 
 /* ---------- challenges: the only way to unlock gear. Tallies last across every run and never reset. ---------- */
@@ -78,7 +79,7 @@ function setTally(name, value) {
   const before = CHALLENGES.filter(c => c.tally === name && !isDone(c));
   tally[name] = value;
   store.set('excuseme_tally', JSON.stringify(tally));
-  if (listener) for (const c of before) if (isDone(c)) listener(c);
+  for (const c of before) if (isDone(c)) { gainXp(XP_UNLOCK); if (listener) listener(c); }
 }
 // Add to a running total, such as people passed.
 export const track = (name, n = 1) => { setTally(name, tallyOf(name) + n); rotateAdd(name, n); };
@@ -86,6 +87,6 @@ export const track = (name, n = 1) => { setTally(name, tallyOf(name) + n); rotat
 // Today's and this week's rotating challenges count the same events.
 let rotListener = null;
 export function setRotatingListener(fn) { rotListener = fn; }
-setRotating(createRotating({ store, keys: liveKeys, onComplete: c => { if (rotListener) rotListener(c); } }));
+setRotating(createRotating({ store, keys: liveKeys, onComplete: c => { gainXp(c.period === 'daily' ? XP_DAILY : XP_WEEKLY); if (rotListener) rotListener(c); } }));
 // Keep the best single result, such as distance in one run.
 export const trackMax = (name, value) => { const v = Math.floor(value); if (v > tallyOf(name)) setTally(name, v); };

@@ -5,6 +5,8 @@ import { clamp, todayKey, weekKey } from '../config/util.js';
 import { $ } from '../dom.js';
 import { CHALLENGES, doneCount, isDone, tallyOf } from '../save/challenges.js';
 import { rotatingList, rotatingTotal } from '../save/rotating.js';
+import { account, TITLES, PICS } from '../save/level.js';
+import { myName } from '../online/online.js';
 import { ITEM_STATS, statHint } from '../config/stats.js';
 import { setVibOn, store, vibOn } from '../save/store.js';
 import { dailyLevel, fmt, hasPlayed, lastDaily, lastMode, pauseGame, quitRun, resumeGame, start, startDaily, startWeekly, toMenu, weeklyLevel } from '../sim/game.js';
@@ -73,7 +75,7 @@ function syncBots() {
   document.querySelectorAll('#raceOpts .chip').forEach((c, i) => c.setAttribute('aria-pressed', String(i === d)));
 }
 
-export function buildLevels() { buildPlay(); buildStages(); }
+export function buildLevels() { buildPlay(); buildStages(); refreshProfile(); }
 
 
 export const last = { dist: -1, en: -1, low: null, score: -1, chain: -1, tl: -1, cd: -1 };
@@ -175,6 +177,42 @@ function buildChallenges() {
   relayoutWith(draw);
 }
 
+// ---- profile: level, title and picture ----
+export function refreshProfile() {
+  const p = account.progress(), t = account.title(), pic = account.pic();
+  const set = (id, v) => { const e = $(id); if (e) e.textContent = v; };
+  set('profName', myName()); set('profLine', 'Level ' + p.level + ' · ' + t.name); set('profPic', pic.glyph);
+  $('profPic').style.background = pic.bg; $('profBar').style.width = (p.pct * 100).toFixed(0) + '%';
+}
+function buildProfile() {
+  const p = account.progress(), pic = account.pic();
+  $('pcPic').textContent = pic.glyph; $('pcPic').style.background = pic.bg;
+  $('pcName').textContent = myName(); $('pcTitle').textContent = account.title().name; $('pcLevel').textContent = 'Level ' + p.level;
+  $('pcBar').style.width = (p.pct * 100).toFixed(0) + '%';
+  $('pcXp').textContent = fmt(p.into) + ' / ' + fmt(p.need) + ' XP to level ' + (p.level + 1);
+  const nextT = TITLES.find(x => x.level > p.level), nextP = PICS.find(x => x.level > p.level);
+  const nl = Math.min(nextT ? nextT.level : 999, nextP ? nextP.level : 999);
+  $('pcNext').textContent = nl < 999 ? 'Next reward at level ' + nl + ': ' + [nextT && nextT.level === nl ? 'title ' + nextT.name : '', nextP && nextP.level === nl ? 'picture ' + nextP.glyph : ''].filter(Boolean).join(' and ') + '.' : 'Every reward unlocked.';
+  refreshProfile();
+}
+// Cycle through every title or picture; unlocked ones are chosen as you land on them, locked ones show their level.
+function cycler(list, get, set, nameEl, label) {
+  let i = Math.max(0, list.findIndex(x => x.id === get().id));
+  const show = () => { const x = list[i], ok = x.level <= account.level(); nameEl.textContent = label(x) + (ok ? '' : '  🔒 level ' + x.level); if (ok) { set(x.id); buildProfile(); } };
+  return d => { i = (i + d + list.length) % list.length; show(); };
+}
+function initProfile() {
+  $('profBtn').addEventListener('click', () => {
+    go('profile'); buildProfile();
+    const tc = cycler(TITLES, account.title, id => account.setTitle(id), $('titName'), x => x.name);
+    const pc = cycler(PICS, account.pic, id => account.setPic(id), $('picName'), x => x.glyph);
+    $('titName').textContent = account.title().name; $('picName').textContent = account.pic().glyph;
+    $('titPrev').onclick = () => tc(-1); $('titNext').onclick = () => tc(1);
+    $('picPrev').onclick = () => pc(-1); $('picNext').onclick = () => pc(1);
+  });
+  refreshProfile();
+}
+
 function showHowTab(id) {
   document.querySelectorAll('#howTabs .chip').forEach(c => c.setAttribute('aria-pressed', String(c.dataset.tab === id)));
   const src = $(id), list = $('howList');
@@ -192,6 +230,7 @@ export function init() {
     shareRun(text);
   });
   $('playBtn').addEventListener('click', () => { buildPlay(); go('play'); });
+  initProfile();
   $('chalBtn').addEventListener('click', () => { go('chal'); buildChallenges(); });
   $('howBtn').addEventListener('click', () => { go('howto'); showHowTab('howControls'); });
   $('setBtn').addEventListener('click', () => go('settings'));

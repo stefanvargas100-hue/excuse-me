@@ -365,3 +365,27 @@ button:disabled.big, button:disabled.ghost { opacity: .5; cursor: default; }
 #friend [hidden] { display: none !important; }
 #friend .btns { margin-top: 0; }
 #friendStages { flex-wrap: nowrap; } #friendStages .chip { flex: 1 1 0; padding: 0 4px; min-width: 0; }
+/* ---- profile chip, profile screen ---- */
+.profchip { position: relative; display: flex; align-items: center; gap: 10px; width: 100%; margin-top: 12px; padding: 6px 10px 12px; border: 3px solid var(--ink); border-radius: var(--wob-s); background: var(--paper); color: var(--ink); box-shadow: 3px 4px 0 var(--ink); cursor: pointer; text-align: left; }
+.profchip .pinfo { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.profchip b, .pcard b { font-family: var(--display); font-weight: 400; font-size: 17px; line-height: 1.1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.profchip small { font-size: 15px; opacity: .8; }
+.profchip .pbar { position: absolute; left: 10px; right: 10px; bottom: 4px; height: 5px; border: 2px solid var(--ink); border-radius: 4px; background: var(--paper2); overflow: hidden; box-sizing: content-box; }
+.pbar i, .xpbar i { display: block; height: 100%; width: 0; background: var(--go); }
+.pic { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 3px solid var(--ink); border-radius: 50%; font-size: 22px; background: var(--haze); flex: 0 0 auto; }
+.pic.big { width: 72px; height: 72px; font-size: 40px; }
+.pcard { display: flex; align-items: center; gap: 14px; margin: 4px 0 10px; }
+.pcard .pinfo { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pcard b { font-size: 22px; white-space: normal; overflow: visible; }
+.pcard small { font-size: 16px; opacity: .8; }
+.xpbar { height: 14px; border: 3px solid var(--ink); border-radius: 8px; background: var(--paper2); overflow: hidden; margin-bottom: 6px; }
+.cycler { display: flex; align-items: center; gap: 8px; margin: 8px 0; }
+.cycler > span { flex: 0 0 62px; font-family: var(--display); font-size: 14px; text-transform: uppercase; }
+.cycler > b { flex: 1; text-align: center; font-family: var(--display); font-weight: 400; font-size: 17px; line-height: 1.15; }
+
+/* results screen: keep it on one screen at 320x568 */
+#end .btnrow { gap: 8px; }
+#end .btnrow > * { padding-left: 6px; padding-right: 6px; font-size: 15px; }
+#end .nextgoal { margin: 0 0 4px; font-size: 14px; line-height: 1.2; }
+#dayBoard { grid-template-columns: 1fr; gap: 3px; margin-bottom: 6px; }
+#dayBoard li { padding: 1px 8px; font-size: 14px; line-height: 1.25; }

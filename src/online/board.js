@@ -6,7 +6,7 @@
 const ADJ = ['Brisk', 'Sneaky', 'Zippy', 'Polite', 'Swift', 'Nimble', 'Sunny', 'Cosmic', 'Mellow', 'Bouncy', 'Plucky', 'Speedy', 'Jolly', 'Clever', 'Breezy', 'Lucky'];
 const NOUN = ['Pigeon', 'Commuter', 'Tourist', 'Courier', 'Walker', 'Sprinter', 'Dodger', 'Weaver', 'Wanderer', 'Rambler', 'Skater', 'Jogger', 'Drifter', 'Hopper', 'Strider', 'Racer'];
 
-export function createBoard({ fetch, url, key, store }) {
+export function createBoard({ fetch, url, key, store, profile }) {
   const KEY_SESSION = 'excuseme_online_session', KEY_NAME = 'excuseme_online_name', KEY_QUEUE = 'excuseme_online_queue';
   const read = (k, fb) => { try { const v = store.get(k, null); return v == null ? fb : JSON.parse(v); } catch (e) { return fb; } };
   const write = (k, v) => { try { store.set(k, JSON.stringify(v)); } catch (e) {} };
@@ -38,11 +38,15 @@ export function createBoard({ fetch, url, key, store }) {
   async function send(item) {
     const s = await session();
     // "best" boards (classic stages) keep one row per player and the server only ever raises it; one-try boards refuse a second row
-    const r = await fetch(url + '/rest/v1/scores' + (item.best ? '?on_conflict=user_id,board' : ''), {
+    const post = extra => fetch(url + '/rest/v1/scores' + (item.best ? '?on_conflict=user_id,board' : ''), {
       method: 'POST',
       headers: { ...base, Authorization: 'Bearer ' + s.access_token, Prefer: item.best ? 'resolution=merge-duplicates,return=minimal' : 'return=minimal' },
-      body: JSON.stringify({ user_id: s.user_id, board: item.board, score: item.score, name: item.name })
+      body: JSON.stringify({ user_id: s.user_id, board: item.board, score: item.score, name: item.name, ...extra })
     });
+    // level, title and picture are shown next to your score; if the database does not have those columns yet, send the score without them
+    const extra = profile ? profile() : null;
+    let r = await post(extra);
+    if (r.status === 400 && extra) r = await post(null);
     if (r.status === 409) return 'duplicate';   // this player already has a score on this board: the first try stands
     if (!r.ok) throw new Error('send failed ' + r.status);
     return 'sent';
@@ -81,10 +85,12 @@ export function createBoard({ fetch, url, key, store }) {
   async function top(board, limit) {
     try {
       const me = read(KEY_SESSION, null);
-      const r = await fetch(url + '/rest/v1/scores?select=user_id,name,score&board=eq.' + encodeURIComponent(board) + '&order=score.desc&limit=' + (limit || 10), { headers: { ...base, Authorization: 'Bearer ' + key } });
+      const get = cols => fetch(url + '/rest/v1/scores?select=' + cols + '&board=eq.' + encodeURIComponent(board) + '&order=score.desc&limit=' + (limit || 10), { headers: { ...base, Authorization: 'Bearer ' + key } });
+      let r = await get('user_id,name,score,level,title,pic');
+      if (!r.ok) r = await get('user_id,name,score');   // older database without the profile columns
       if (!r.ok) return [];
       const rows = await r.json();
-      return rows.map(x => ({ name: x.name, score: x.score, you: !!me && x.user_id === me.user_id }));
+      return rows.map(x => ({ name: x.name, score: x.score, level: x.level || 1, title: x.title || '', pic: x.pic || '', you: !!me && x.user_id === me.user_id }));
     } catch (e) { return []; }
   }
 

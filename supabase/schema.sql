@@ -39,3 +39,9 @@ end $$;
 
 drop trigger if exists keep_best on public.scores;
 create trigger keep_best before update on public.scores for each row execute function public.keep_best_score();
+
+-- ---- Player level, title and picture shown next to scores (run this part too; safe to run again) ----
+-- These are reported by the phone, like the score. The game still works if this part has not been run yet.
+alter table public.scores add column if not exists level integer not null default 1 check (level between 1 and 999);
+alter table public.scores add column if not exists title text check (char_length(title) <= 30);
+alter table public.scores add column if not exists pic   text check (char_length(pic) <= 8);

@@ -12,6 +12,7 @@ import { draftCharge, racePace } from './sim/race.js';
 import { BODIES, BUILDS, ITEM_STATS, fitOf, effects, statsOf } from './config/stats.js';
 import { LOOK } from './save/progress.js';
 import { rotatingList } from './save/rotating.js';
+import { account, setLevelUpListener } from './save/level.js';
 import { CHALLENGES, isLocked, nextGoal, setRotatingListener, setUnlockListener, tallyOf, track, trackMax } from './save/challenges.js';
 import { addPop } from './sim/scoring.js';
 import { S, calm, reset, state } from './sim/state.js';
@@ -47,6 +48,7 @@ function frame(now) {
 
 // A challenge finished: say so on the spot, and list it on the end screen.
 setRotatingListener(c => { if (!S) return; addPop('CHALLENGE DONE: ' + c.text.toUpperCase(), '#2ec4b6', 22); Music.sfx('win'); });
+setLevelUpListener((l, rewards) => { if (!S) return; addPop('LEVEL UP! ' + l, '#ffd166', 30); for (const r of rewards) addPop('NEW ' + r.kind.toUpperCase() + ': ' + (r.name || r.glyph), '#ffd166', 20); Music.sfx('win'); });
 setUnlockListener(c => { if (!S) return; S.unlocked.push(c.name); addPop('UNLOCKED: ' + c.name.toUpperCase(), '#ff6b9d', 26); Music.sfx('win'); });
 
 // Wire up listeners only now that every module has finished loading (keeps load order from mattering).
@@ -62,7 +64,7 @@ reset();
 
 buildLevels();
 
-window.__excuse = { startDuel, duelReceive, nextGoal, rotatingList, tick, reset, start, setLevel, get S() { return S; }, get state() { return state; }, keys, action, onTap, render, drawPreview, LEVELS, runEvent, shout, weekKey, hasPlayed, pauseGame, quitRun, toMenu, CHALLENGES, isLocked, tallyOf, track, trackMax, racePace, fitOf, BODIES, BUILDS, ITEM_STATS, effects, statsOf, LOOK, mkPerson: (x, z) => mk(x, z, { hx: 0, hz: 1, v0: 1 }) };
+window.__excuse = { xp: () => account.xp(), account, startDuel, duelReceive, nextGoal, rotatingList, tick, reset, start, setLevel, get S() { return S; }, get state() { return state; }, keys, action, onTap, render, drawPreview, LEVELS, runEvent, shout, weekKey, hasPlayed, pauseGame, quitRun, toMenu, CHALLENGES, isLocked, tallyOf, track, trackMax, racePace, fitOf, BODIES, BUILDS, ITEM_STATS, effects, statsOf, LOOK, mkPerson: (x, z) => mk(x, z, { hx: 0, hz: 1, v0: 1 }) };
 
 requestAnimationFrame(frame);
 

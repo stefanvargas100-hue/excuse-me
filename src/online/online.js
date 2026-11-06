@@ -1,12 +1,13 @@
 // Wires the leaderboard client into the game. Public values only: the "publishable" key is safe to ship in a web page.
 import { $ } from '../dom.js';
 import { store } from '../save/store.js';
+import { account } from '../save/level.js';
 import { createBoard } from './board.js';
 
 const URL = 'https://hrsbzntphratlnkrevet.supabase.co';
 const KEY = 'sb_publishable_FoFHiii4XagCq3-oi3ygQg_UcyZNoJn';
 
-const net = typeof fetch === 'function' ? createBoard({ fetch: (...a) => fetch(...a), url: URL, key: KEY, store }) : null;
+const net = typeof fetch === 'function' ? createBoard({ fetch: (...a) => fetch(...a), url: URL, key: KEY, store, profile: () => ({ level: account.level(), title: account.title().name, pic: account.pic().glyph }) }) : null;
 
 export const boardId = (mode, key) => mode + ':' + key;
 
@@ -31,13 +32,15 @@ export async function showRunBoard(mode, key) { await sending; return showTop(bo
 
 export async function showTop(id) {
   const bd = $('dayBoard'); if (!net || !bd) return;
-  const rows = await net.top(id, 5);
+  const rows = await net.top(id, 3);
   bd.innerHTML = '';
   if (!rows.length) { bd.hidden = true; return; }
   rows.forEach((r, i) => {
     const li = document.createElement('li'); if (r.you) li.className = 'me';
-    li.textContent = (i + 1) + '. ' + r.name + ' · ' + r.score.toLocaleString('en-US') + (r.you ? ' (you)' : '');
+    li.textContent = (i + 1) + '. ' + (r.pic ? r.pic + ' ' : '') + r.name + ' · Lv ' + r.level + ' · ' + r.score.toLocaleString('en-US');
     bd.appendChild(li);
   });
   bd.hidden = false;
 }
+
+export const myName = () => (net ? net.playerName() : 'Player');

@@ -13,13 +13,15 @@ const { createBoard } = loadBoard();
 // A pretend Supabase: records every request and answers like the real one.
 function fakeServer(opts = {}) {
   const calls = [], rows = [];
-  let signups = 0, down = !!opts.down;
+  let signups = 0, down = !!opts.down; const oldSchema = !!opts.oldSchema;
   const json = (status, body) => ({ ok: status < 300, status, json: async () => body, text: async () => JSON.stringify(body) });
   const fetch = async (url, init = {}) => {
     if (down) throw new Error('offline');
     const body = init.body ? JSON.parse(init.body) : null;
     calls.push({ url, method: init.method || 'GET', headers: init.headers || {}, body });
     if (url.includes('/auth/v1/signup')) { signups++; return json(200, { access_token: 'tok' + signups, refresh_token: 'ref' + signups, expires_in: 3600, user: { id: 'user' + signups } }); }
+    if (oldSchema && init.method === 'POST' && body && ('level' in body || 'title' in body || 'pic' in body)) return json(400, { code: 'PGRST204' });
+    if (oldSchema && (init.method || 'GET') === 'GET' && /select=[^&]*(level|title|pic)/.test(url)) return json(400, { code: '42703' });
     if (url.includes('/rest/v1/scores') && init.method === 'POST' && url.includes('on_conflict=user_id,board')) {   // upsert: keep the higher score
       const old = rows.find(r => r.user_id === body.user_id && r.board === body.board);
       if (old) old.score = Math.max(old.score, body.score); else rows.push({ ...body });
@@ -117,4 +119,32 @@ test('one-try boards still refuse a second score after best-score boards exist',
   const srv = fakeServer(), b = make(srv);
   await b.submit('daily:2026-11-06', 100);
   assert.strictEqual(await b.submit('daily:2026-11-06', 5000), 'duplicate');
+});
+
+// ---- level, title and picture on boards ----
+const PROFILE = () => ({ level: 7, title: 'Commuter', pic: '🎒' });
+const makeP = (srv, st) => createBoard({ fetch: srv.fetch, url: 'https://x.supabase.co', key: 'pk', store: st || memStore(), profile: PROFILE });
+
+test('scores carry the player level, title and picture', async () => {
+  const srv = fakeServer(), b = makeP(srv);
+  await b.submit('daily:2026-11-06', 100);
+  assert.strictEqual(srv.rows[0].level, 7);
+  assert.strictEqual(srv.rows[0].title, 'Commuter');
+  assert.strictEqual(srv.rows[0].pic, '🎒');
+});
+
+test('top rows return level, title and picture', async () => {
+  const srv = fakeServer(), b = makeP(srv);
+  await b.submit('daily:2026-11-06', 100);
+  const top = await b.top('daily:2026-11-06', 3);
+  assert.strictEqual(top[0].level, 7); assert.strictEqual(top[0].title, 'Commuter'); assert.strictEqual(top[0].pic, '🎒');
+});
+
+test('before the database has the new columns, scores still go through without them', async () => {
+  const srv = fakeServer({ oldSchema: true }), b = makeP(srv);
+  assert.strictEqual(await b.submit('daily:2026-11-06', 100), 'sent');
+  assert.strictEqual(srv.rows.length, 1);
+  assert.strictEqual(srv.rows[0].level, undefined);
+  const top = await b.top('daily:2026-11-06', 3);
+  assert.strictEqual(top.length, 1, 'the board still reads');
 });

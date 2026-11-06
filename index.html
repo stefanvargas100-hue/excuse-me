@@ -50,6 +50,27 @@
       <button id="howBtn" class="tile" type="button">How to play</button>
       <button id="setBtn" class="tile" type="button">Settings</button>
     </div>
+    <button id="profBtn" class="profchip" type="button" aria-label="Your profile">
+      <span id="profPic" class="pic">🚶</span>
+      <span class="pinfo"><b id="profName">Player</b><small id="profLine">Level 1</small></span>
+      <span class="pbar"><i id="profBar"></i></span>
+    </button>
+  </div>
+</div>
+
+<div id="profile" class="panel" hidden>
+  <div class="card full">
+    <div class="topbar"><button class="backbtn" data-back type="button" aria-label="Back">‹</button><h2>Profile</h2></div>
+    <div class="pcard">
+      <span id="pcPic" class="pic big">🚶</span>
+      <div class="pinfo"><b id="pcName">Player</b><span id="pcTitle">Newcomer</span><small id="pcLevel">Level 1</small></div>
+    </div>
+    <div class="xpbar"><i id="pcBar"></i></div>
+    <p id="pcXp" class="lockinfo"></p>
+    <div class="cycler"><span>Title</span><button id="titPrev" class="pagebtn" type="button" aria-label="Previous title">‹</button><b id="titName">Newcomer</b><button id="titNext" class="pagebtn" type="button" aria-label="Next title">›</button></div>
+    <div class="cycler"><span>Picture</span><button id="picPrev" class="pagebtn" type="button" aria-label="Previous picture">‹</button><b id="picName">🚶</b><button id="picNext" class="pagebtn" type="button" aria-label="Next picture">›</button></div>
+    <p id="pcNext" class="nextgoal"></p>
+    <p class="lockinfo">XP comes from every run, and from daily, weekly and unlock challenges. A race against bots pays the least.</p>
   </div>
 </div>
 
@@ -220,15 +241,14 @@
     <ol id="dayBoard" class="board" hidden></ol>
     <p id="unlockNote" class="unlock" hidden></p>
     <p id="nextNote" class="nextgoal" hidden></p>
+    <p id="xpNote" class="nextgoal" hidden></p>
     <div class="btns">
       <button id="next" class="big" type="button" hidden>Next level</button>
       <button id="again" class="big" type="button">Try again</button>
       <div class="btnrow">
         <button id="endLook" class="ghost" type="button">Customize</button>
-        <button id="menu" class="ghost" type="button">Main menu</button>
-      </div>
-      <div class="btnrow">
         <button id="shareBtn" class="ghost" type="button">Share</button>
+        <button id="menu" class="ghost" type="button">Menu</button>
       </div>
     </div>
   </div>

@@ -7,6 +7,7 @@ import { $ } from '../dom.js';
 import { COST_DASH, DASH_V, action, keys, pendingDash, setPendingDash, touches } from '../input/input.js';
 import { radarTop, setRadarTop } from '../render/hud.js';
 import { nextGoal, track, trackMax } from '../save/challenges.js';
+import { account, gainXp, runXp } from '../save/level.js';
 import { buzz, store } from '../save/store.js';
 import { PERFECT_SPEED, banner } from './actions.js';
 import { collide, updMe, updPeople } from './crowd.js';
@@ -155,11 +156,20 @@ function recordBest() {
   if (S.newBest) { store.set('excuseme_best_' + LV.id, String(S.score)); ghostSave(); if (S.kind === 'classic') submitBestRun(LV.id, S.score); }
 }
 
-function lose(p) { if (S.daily) track('dailyRuns'); if (S.weekly) track('weeklyRuns'); if (S.kind === 'classic') { trackMax('far_' + LV.id, S.pz); trackMax('bestScore', S.score); } setState('over'); S.live = false; p.hit = true; S.hitStop = 0.1; S.overT = 0; touches.clear(); Music.sfx('bump'); Music.stop(); Music.ambStop(); buzz([60, 40, 140]); recordBest(); }
+// Every finished run pays XP, once: in any mode, even when you quit. A race against bots pays less.
+const paid = new WeakSet();
+function payRun() {
+  if (!S || paid.has(S)) return;
+  paid.add(S);
+  const R = S.race, xp = runXp({ mode: S.mode, score: S.score, won: !!(R && R.place === 1), bots: !!(R && !S.duel) });
+  S.xpGained = xp; gainXp(xp);
+}
+
+function lose(p) { if (S.daily) track('dailyRuns'); if (S.weekly) track('weeklyRuns'); if (S.kind === 'classic') { trackMax('far_' + LV.id, S.pz); trackMax('bestScore', S.score); } setState('over'); S.live = false; p.hit = true; S.hitStop = 0.1; S.overT = 0; touches.clear(); Music.sfx('bump'); Music.stop(); Music.ambStop(); buzz([60, 40, 140]); recordBest(); payRun(); }
 
 function loseTime() {
   setState('over'); S.live = false; S.timeout = true; S.overT = 0; touches.clear();
-  Music.sfx('bump'); Music.stop(); Music.ambStop(); buzz([100, 60, 100]); recordBest();
+  Music.sfx('bump'); Music.stop(); Music.ambStop(); buzz([100, 60, 100]); recordBest(); payRun();
 }
 
 function win() {
@@ -167,12 +177,12 @@ function win() {
   S.timeBonus = Math.max(0, Math.round(S.timeLeft * 15));
   S.score += 1000 + S.timeBonus;
   Music.sfx('win'); Music.stop(); Music.ambStop(); buzz([20, 60, 20, 60, 80]);
-  recordBest();
+  recordBest(); payRun();
 }
 
 function winRace() {
   setState('won'); S.live = false; S.overT = 0; S.pz = LV.goal; touches.clear();
-  finishRace();
+  finishRace(); payRun();
   Music.sfx('win'); Music.stop(); Music.ambStop(); buzz([20, 60, 20, 60, 80]);
 }
 
@@ -226,9 +236,11 @@ function showUnlocks() {
   const un = $('unlockNote');
   un.hidden = !S.unlocked.length;
   if (S.unlocked.length) un.textContent = 'Unlocked: ' + S.unlocked.join(', ') + '. Try it in Change look.';
+  const xn = $('xpNote');
+  if (S.xpGained) { const pg = account.progress(); xn.hidden = false; xn.textContent = '+' + S.xpGained + ' XP · Level ' + pg.level + ' (' + fmt(pg.into) + ' / ' + fmt(pg.need) + ')'; } else xn.hidden = true;
   const ng = nextGoal(), nn = $('nextNote');
   nn.hidden = !ng;
-  if (ng) nn.textContent = 'Next unlock: ' + ng.name + '. ' + fmt(ng.remaining) + ' to go: ' + ng.text + '.';
+  if (ng) nn.textContent = 'Next unlock: ' + ng.name + ', ' + fmt(ng.remaining) + ' to go';
 }
 
 function showRaceEnd() {
@@ -308,7 +320,7 @@ export function quitRun() {
   if (S.daily) track('dailyRuns');
   if (S.weekly) track('weeklyRuns');
   if (S.kind === 'classic') { trackMax('far_' + LV.id, S.pz); trackMax('bestScore', S.score); }
-  recordBest();
+  recordBest(); payRun();
 }
 
 export function toMenu() {
