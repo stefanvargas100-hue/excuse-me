@@ -19,7 +19,7 @@ import { beginTut, tutTick } from './tutorial.js';
 import { buildLevels, last } from '../ui/menus.js';
 import { hideMenus } from '../ui/screens.js';
 import { ghostSave, ghostStart, ghostStep } from './replay.js';
-import { flushScores, showRunBoard, submitRun } from '../online/online.js';
+import { flushScores, showRunBoard, submitBestRun, submitRun } from '../online/online.js';
 
 
 
@@ -152,7 +152,7 @@ function recordBest() {
   }
   const b = bestOf(LV.id);
   S.newBest = S.score > b;
-  if (S.newBest) { store.set('excuseme_best_' + LV.id, String(S.score)); ghostSave(); }
+  if (S.newBest) { store.set('excuseme_best_' + LV.id, String(S.score)); ghostSave(); if (S.kind === 'classic') submitBestRun(LV.id, S.score); }
 }
 
 function lose(p) { if (S.daily) track('dailyRuns'); if (S.weekly) track('weeklyRuns'); if (S.kind === 'classic') { trackMax('far_' + LV.id, S.pz); trackMax('bestScore', S.score); } setState('over'); S.live = false; p.hit = true; S.hitStop = 0.1; S.overT = 0; touches.clear(); Music.sfx('bump'); Music.stop(); Music.ambStop(); buzz([60, 40, 140]); recordBest(); }
@@ -203,6 +203,7 @@ function showEnd() {
   if (S.daily) { $('endEyebrow').textContent = 'Daily run · ' + S.dailyKey + ' · ' + LV.name; }
   if (S.weekly) { $('endEyebrow').textContent = 'Weekly run · ' + S.dailyKey + ' · ' + LV.name; }
   if (seededRun) showRunBoard(S.daily ? 'daily' : 'weekly', S.dailyKey);
+  else if (S.kind === 'classic') showRunBoard('classic', LV.id);
   const nx = $('next');
   nx.hidden = true;
   $('again').hidden = !!seededRun;   // daily and weekly runs are one try only

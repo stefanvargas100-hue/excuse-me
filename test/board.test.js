@@ -20,6 +20,11 @@ function fakeServer(opts = {}) {
     const body = init.body ? JSON.parse(init.body) : null;
     calls.push({ url, method: init.method || 'GET', headers: init.headers || {}, body });
     if (url.includes('/auth/v1/signup')) { signups++; return json(200, { access_token: 'tok' + signups, refresh_token: 'ref' + signups, expires_in: 3600, user: { id: 'user' + signups } }); }
+    if (url.includes('/rest/v1/scores') && init.method === 'POST' && url.includes('on_conflict=user_id,board')) {   // upsert: keep the higher score
+      const old = rows.find(r => r.user_id === body.user_id && r.board === body.board);
+      if (old) old.score = Math.max(old.score, body.score); else rows.push({ ...body });
+      return json(201, null);
+    }
     if (url.includes('/rest/v1/scores') && init.method === 'POST') {
       if (rows.some(r => r.user_id === body.user_id && r.board === body.board)) return json(409, { code: '23505' });
       rows.push(body); return json(201, null);
@@ -87,4 +92,29 @@ test('top scores come back highest first, limited, and flag which row is you', a
 test('top scores fail quietly to an empty list when offline', async () => {
   const srv = fakeServer({ down: true }), b = make(srv);
   assert.deepStrictEqual(await b.top('daily:2026-11-06', 5), []);
+});
+
+test('best-score boards: a better score replaces the old one, a worse one never lowers it', async () => {
+  const srv = fakeServer(), b = make(srv);
+  assert.strictEqual(await b.submitBest('classic:airport', 800), 'sent');
+  assert.strictEqual(await b.submitBest('classic:airport', 1200), 'sent');
+  assert.strictEqual(srv.rows.length, 1, 'still one row for this player and stage');
+  assert.strictEqual(srv.rows[0].score, 1200);
+  await b.submitBest('classic:airport', 300);
+  assert.strictEqual(srv.rows[0].score, 1200);
+});
+
+test('best-score boards: offline queue keeps only the highest waiting score per stage', async () => {
+  const srv = fakeServer({ down: true }), b = make(srv);
+  assert.strictEqual(await b.submitBest('classic:nyc', 400), 'queued');
+  await b.submitBest('classic:nyc', 900); await b.submitBest('classic:nyc', 600);
+  srv.setDown(false); await b.flush();
+  assert.strictEqual(srv.rows.length, 1);
+  assert.strictEqual(srv.rows[0].score, 900);
+});
+
+test('one-try boards still refuse a second score after best-score boards exist', async () => {
+  const srv = fakeServer(), b = make(srv);
+  await b.submit('daily:2026-11-06', 100);
+  assert.strictEqual(await b.submit('daily:2026-11-06', 5000), 'duplicate');
 });

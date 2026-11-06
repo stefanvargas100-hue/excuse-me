@@ -20,6 +20,12 @@ export function submitRun(mode, key, score) {
   sending = net.submit(boardId(mode, key), score).catch(() => {});
 }
 
+// After a new classic best: keep your best score per stage on the server.
+export function submitBestRun(stageId, score) {
+  if (!net) return;
+  sending = net.submitBest(boardId('classic', stageId), score).catch(() => {});
+}
+
 // On the results screen: once the score is sent, show the top of that board.
 export async function showRunBoard(mode, key) { await sending; return showTop(boardId(mode, key)); }
 

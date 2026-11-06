@@ -37,9 +37,10 @@ export function createBoard({ fetch, url, key, store }) {
 
   async function send(item) {
     const s = await session();
-    const r = await fetch(url + '/rest/v1/scores', {
+    // "best" boards (classic stages) keep one row per player and the server only ever raises it; one-try boards refuse a second row
+    const r = await fetch(url + '/rest/v1/scores' + (item.best ? '?on_conflict=user_id,board' : ''), {
       method: 'POST',
-      headers: { ...base, Authorization: 'Bearer ' + s.access_token, Prefer: 'return=minimal' },
+      headers: { ...base, Authorization: 'Bearer ' + s.access_token, Prefer: item.best ? 'resolution=merge-duplicates,return=minimal' : 'return=minimal' },
       body: JSON.stringify({ user_id: s.user_id, board: item.board, score: item.score, name: item.name })
     });
     if (r.status === 409) return 'duplicate';   // this player already has a score on this board: the first try stands
@@ -54,6 +55,18 @@ export function createBoard({ fetch, url, key, store }) {
     catch (e) {
       const q = read(KEY_QUEUE, []);
       if (!q.some(x => x.board === board)) { q.push(item); write(KEY_QUEUE, q); }
+      return 'queued';
+    }
+  }
+
+  // Classic stages: your best score so far. While offline, only the highest waiting score per stage is kept.
+  async function submitBest(board, score) {
+    const item = { board, score: Math.max(0, Math.floor(score)), name: playerName(), best: true };
+    try { return await send(item); }
+    catch (e) {
+      const q = read(KEY_QUEUE, []), old = q.find(x => x.board === board);
+      if (old) old.score = Math.max(old.score, item.score); else q.push(item);
+      write(KEY_QUEUE, q);
       return 'queued';
     }
   }
@@ -75,5 +88,5 @@ export function createBoard({ fetch, url, key, store }) {
     } catch (e) { return []; }
   }
 
-  return { submit, flush, top, playerName };
+  return { submit, submitBest, flush, top, playerName };
 }

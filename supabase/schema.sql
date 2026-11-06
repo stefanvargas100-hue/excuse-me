@@ -22,3 +22,20 @@ drop policy if exists "add own score" on public.scores;
 create policy "add own score" on public.scores for insert to authenticated with check (user_id = auth.uid());
 
 create index if not exists scores_board_score on public.scores (board, score desc);
+
+-- ---- Classic stage boards (board names start with "classic:"): a player's best score per stage, raised only. ----
+-- Run this part too (it is safe to run again). Daily and weekly boards stay one-try: they cannot be updated.
+drop policy if exists "raise own classic score" on public.scores;
+create policy "raise own classic score" on public.scores for update to authenticated
+  using (user_id = auth.uid() and board like 'classic:%')
+  with check (user_id = auth.uid() and board like 'classic:%');
+
+create or replace function public.keep_best_score() returns trigger language plpgsql as $$
+begin
+  new.score := greatest(old.score, new.score);   -- a lower score can never replace a higher one
+  new.user_id := old.user_id; new.board := old.board;
+  return new;
+end $$;
+
+drop trigger if exists keep_best on public.scores;
+create trigger keep_best before update on public.scores for each row execute function public.keep_best_score();
