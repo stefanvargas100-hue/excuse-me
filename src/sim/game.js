@@ -19,6 +19,7 @@ import { beginTut, tutTick } from './tutorial.js';
 import { buildLevels, last } from '../ui/menus.js';
 import { hideMenus } from '../ui/screens.js';
 import { ghostSave, ghostStart, ghostStep } from './replay.js';
+import { flushScores, showRunBoard, submitRun } from '../online/online.js';
 
 
 
@@ -146,6 +147,7 @@ function recordBest() {
   if (S.daily || S.weekly) {
     const k = 'excuseme_' + (S.daily ? 'daily_' : 'weekly_') + S.dailyKey, b = parseInt(store.get(k, '0'), 10) || 0;
     S.newBest = S.score > b; if (S.newBest) store.set(k, String(S.score));
+    submitRun(S.daily ? 'daily' : 'weekly', S.dailyKey, S.score);   // online board; the server keeps only the first try
     return;
   }
   const b = bestOf(LV.id);
@@ -200,6 +202,7 @@ function showEnd() {
   showUnlocks();
   if (S.daily) { $('endEyebrow').textContent = 'Daily run · ' + S.dailyKey + ' · ' + LV.name; }
   if (S.weekly) { $('endEyebrow').textContent = 'Weekly run · ' + S.dailyKey + ' · ' + LV.name; }
+  if (seededRun) showRunBoard(S.daily ? 'daily' : 'weekly', S.dailyKey);
   const nx = $('next');
   nx.hidden = true;
   $('again').hidden = !!seededRun;   // daily and weekly runs are one try only
@@ -214,7 +217,7 @@ function resetEndLabels() {
   setExtraStats(true);
   $('endLead').hidden = false;
   for (const id in END_LABELS) { const dt = $(id).previousElementSibling; if (dt) dt.textContent = END_LABELS[id]; }
-  $('raceBoard').hidden = true;
+  $('raceBoard').hidden = true; $('dayBoard').hidden = true;
   $('sScoreLabel').textContent = END_LABELS.sScore;
 }
 
@@ -265,6 +268,7 @@ export function startWeekly() { if (hasPlayed('weekly')) return; setLevel(weekly
 export function start(a, b) {
   const mode = a === true ? 'daily' : typeof a === 'string' ? a : (b || lastMode);
   const daily = mode === 'daily', weekly = mode === 'weekly', key = daily || weekly ? periodKey(mode) : null;
+  flushScores();   // send any score that could not go out earlier
   if (key) { if (hasPlayed(mode)) return; store.set('excuseme_played_' + mode, key); }
   lastDaily = daily; lastMode = mode;
   setR(key ? mulberry32(hashStr(key)) : Math.random);
