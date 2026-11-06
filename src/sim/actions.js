@@ -7,19 +7,19 @@ import { S } from './state.js';
 
 const POLITE = ['Oh, sorry!', 'Go ahead.', 'My bad.', 'Sure!', 'Oops, sorry.'];
 
-// "Excuse me": up to two people just ahead of you step aside. Rivals refuse; phone zombies may not hear.
+// "Excuse me": up to four people ahead of you step aside, enough to open a gap in a big crowd. Rivals refuse; phone zombies may not hear.
 export function shout() {
   if (S.shoutCD > 0) return;
-  S.shoutCD = 6;
+  S.shoutCD = 5.5;
   S.me.react = { t: 0, text: 'Excuse me!', up: false };
   Music.sfx('shout'); buzz(8);
-  const near = S.people.filter(p => !p.prop && !p.dead && p.z - S.pz > 0.2 && p.z - S.pz < 6 && Math.abs(p.x - S.px) < 1.6)
-    .sort((a, b) => a.z - b.z).slice(0, 2);
+  const near = S.people.filter(p => !p.prop && !p.dead && p.z - S.pz > 0.2 && p.z - S.pz < 7.5 && Math.abs(p.x - S.px) < 2.0)
+    .sort((a, b) => a.z - b.z).slice(0, 4);
   for (const p of near) {
     if (p.rival) { p.react = { t: 0, text: pick(['No.', 'Nope.', 'Wait your turn.']), up: false }; continue; }
     if (p.phone && R() < 0.5) { p.react = { t: 0, text: '…', up: false }; continue; }
     p.react = { t: 0, text: pick(POLITE), up: false };
-    p.aside = 1.0; p.asideDir = Math.abs(p.x - S.px) > 0.15 ? sgn(p.x - S.px) : pick([-1, 1]);
+    p.aside = 1.3; p.asideDir = Math.abs(p.x - S.px) > 0.15 ? sgn(p.x - S.px) : pick([-1, 1]);
   }
 }
 

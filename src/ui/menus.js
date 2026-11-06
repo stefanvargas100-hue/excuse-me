@@ -67,7 +67,7 @@ export function hud() {
   if (en !== last.en) { last.en = en; $('en').style.width = en + '%'; }
   if (S.exhausted !== last.low) { last.low = S.exhausted; $('en').classList.toggle('low', S.exhausted); }
   // colour shifts as stamina drops; in a race, say out loud how much speed it is costing you
-  const lvl = en < 34 ? 2 : en < 67 ? 1 : 0;
+  const lvl = en < 10 ? 2 : en < 40 ? 1 : 0;   // green: no penalty, yellow: a little, orange: you are out
   if (lvl !== last.lvl) { last.lvl = lvl; $('en').classList.toggle('mid', lvl === 1); $('en').classList.toggle('empty', lvl === 2); }
   const cost = S.race ? Math.round((1 - racePace(0, S.energy)) * 100) : 0;
   if (cost !== last.cost) { last.cost = cost; const t = $('slowTag'); t.hidden = cost < 2; t.textContent = '-' + cost + '% speed'; }

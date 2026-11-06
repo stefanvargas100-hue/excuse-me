@@ -102,3 +102,24 @@ test('the HUD slot shows pace, not score, in a race', () => {
   for (let i = 0; i < 120; i++) E.tick(DT);
   assert.ok(E.S.race);
 });
+
+test('stamina only slows you when it is really low, and hard when you are out', () => {
+  const E = race(0);
+  const pace = e => E.racePace(0, e);
+  assert.strictEqual(pace(100), 1);
+  assert.strictEqual(pace(45), 1, 'no penalty above 40');
+  assert.ok(pace(25) >= 0.959, 'a little tired costs under 4%: ' + pace(25).toFixed(3));
+  assert.ok(pace(10) > 0.91, 'low but not empty costs about 8%: ' + pace(10).toFixed(3));
+  assert.ok(pace(0) <= 0.66, 'completely out is a harsh slowdown: ' + pace(0).toFixed(3));
+});
+
+test('"Excuse me" clears a row of people ahead, not just two', () => {
+  const E = race(1);
+  for (let i = 0; i < 120; i++) E.tick(DT);
+  E.S.people.length = 0;
+  const lane = [];
+  for (let i = 0; i < 6; i++) { const p = E.mkPerson(E.S.px, E.S.pz + 2 + i * 1.1); lane.push(p); }
+  E.shout();
+  const stepped = lane.filter(p => p.aside > 0).length;
+  assert.ok(stepped >= 4, 'at least four step aside: ' + stepped);
+});

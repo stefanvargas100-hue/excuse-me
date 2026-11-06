@@ -7,7 +7,8 @@ import { drawPreview, init as initPreview } from './render/preview.js';
 import { render } from './render/render.js';
 import { shout } from './sim/actions.js';
 import { hasPlayed, start, tick } from './sim/game.js';
-import { runEvent } from './sim/people.js';
+import { mk, runEvent } from './sim/people.js';
+import { racePace } from './sim/race.js';
 import { S, reset, state } from './sim/state.js';
 import { buildLevels, hud, init as initMenus } from './ui/menus.js';
 import { weekKey } from './config/util.js';
@@ -45,6 +46,6 @@ reset();
 
 buildLevels();
 
-window.__excuse = { tick, reset, start, setLevel, get S() { return S; }, get state() { return state; }, keys, action, onTap, render, drawPreview, LEVELS, runEvent, shout, weekKey, hasPlayed };
+window.__excuse = { tick, reset, start, setLevel, get S() { return S; }, get state() { return state; }, keys, action, onTap, render, drawPreview, LEVELS, runEvent, shout, weekKey, hasPlayed, racePace, mkPerson: (x, z) => mk(x, z, { hx: 0, hz: 1, v0: 1 }) };
 
 requestAnimationFrame(frame);

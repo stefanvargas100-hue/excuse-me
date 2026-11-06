@@ -19,18 +19,24 @@ const STUCK_T = 1.8, STUCK_GHOST = 0.8;   // safety net: pinned for this long, y
 const COUNTDOWN = 3;
 
 // Race pace: a combo makes you walk faster, and running low on stamina makes you walk slower, so dashes and bursts
-// have to be spent wisely. Used for the player and the bots alike.
+// have to be spent wisely, but ordinary use of them costs next to nothing. Used for the player and the bots alike.
 const COMBO_BOOST = 0.025;   // extra speed per combo level (x2 is +2.5%, the x8 cap is +17.5%)
-const TIRED_SLOW = 0.2;      // walking speed lost at zero stamina
+// Stamina only slows you once it is genuinely low: nothing above 40, a mild 8% by 10, then steeply to 35% when you are out.
+const tiredSlow = energy => {
+  const e = clamp(energy, 0, 100);
+  if (e >= 40) return 0;
+  if (e >= 10) return 0.08 * (40 - e) / 30;
+  return 0.08 + 0.27 * (10 - e) / 10;
+};
 export const comboLevel = chain => Math.min(8, 1 + Math.floor(chain / 3));
-export const racePace = (chain, energy) => (1 + COMBO_BOOST * (comboLevel(chain) - 1)) * (1 - TIRED_SLOW * (1 - clamp(energy / 100, 0, 1)));
+export const racePace = (chain, energy) => (1 + COMBO_BOOST * (comboLevel(chain) - 1)) * (1 - tiredSlow(energy));
 
 // Three tiers. Pace is walking speed relative to yours, miss is how often a bot fails to notice someone,
 // dash is how readily it dashes around trouble, burst is how often it spends stamina on a burst of speed.
 export const DIFFICULTIES = [
-  { name: 'Easy', pace: [0.84, 0.88, 0.91], miss: 0.14, dash: 0, burst: 0.15 },
-  { name: 'Medium', pace: [0.91, 0.95, 0.99], miss: 0.06, dash: 0.5, burst: 0.3 },
-  { name: 'Hard', pace: [1.04, 1.08, 1.12], miss: 0.01, dash: 1, burst: 0.6 }
+  { name: 'Easy', pace: [0.82, 0.86, 0.89], miss: 0.14, dash: 0, burst: 0.15 },
+  { name: 'Medium', pace: [0.89, 0.93, 0.97], miss: 0.06, dash: 0.5, burst: 0.3 },
+  { name: 'Hard', pace: [1.0, 1.04, 1.08], miss: 0.01, dash: 1, burst: 0.6 }
 ];
 const BOTS = [
   { name: 'Mia', color: '#14b8a6', shirt: '#14b8a6', hair: '#3b2a1e', hairStyle: 'long', skin: '#c68863' },
