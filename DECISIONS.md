@@ -10,3 +10,4 @@
 - Radar: circular, bottom right, 7 m range, forward is up; replaces the "behind you" strip.
 - Limb glitch fix: arms/legs now sort by shoulder/hip depth (not the swinging hand/foot) and walk amount eases in/out instead of snapping.
 - Spawning: nothing is drawn past 62 m and every spawn lands beyond 66 m, so people always walk in. Rivals spawn behind or far ahead. Tutorial-end crowd fades in.
+- Removed the on-screen control tips (hint box and HOLD/DASH labels); the tutorial and the start-screen How to play now teach controls. Radar moved to the bottom corner.

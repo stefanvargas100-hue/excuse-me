@@ -893,7 +893,6 @@ function start(daily) {
   $('start').hidden = true; $('end').hidden = true; $('look').hidden = true; $('pause').hidden = true; $('hud').hidden = false;
   const hb = $('hud').getBoundingClientRect ? $('hud').getBoundingClientRect() : null;
   radarTop = hb && hb.bottom ? hb.bottom + 6 : 120;
-  const h = $('hint'); h.hidden = false; h.classList.remove('fade');
   if (LV.id === 'shibuya') { S.waveT = 1.5; }
   if (!daily && store.get('excuseme_tut', '0') !== '1') beginTut();
   Music.start(LV.music); Music.ambStart(LV.id);
@@ -917,7 +916,7 @@ const TUT = [
 function beginTut() {
   S.tut = { step: 0, t: 0 }; S.tutHold = 0;
   S.people = S.people.filter(p => p.prop);
-  $('hint').hidden = true; $('tut').hidden = false; tutUI();
+  $('tut').hidden = false; tutUI();
 }
 function tutUI() { $('tutStep').textContent = 'Tutorial ' + (S.tut.step + 1) + ' / ' + TUT.length; $('tutText').textContent = TUT[S.tut.step].text; }
 function tutTick(dt) {
@@ -941,7 +940,7 @@ function endTut() {
 function toMenu() {
   R = Math.random; $('tut').hidden = true;
   $('pause').hidden = true;
-  state = 'ready'; reset(); $('end').hidden = true; $('hud').hidden = true; $('hint').hidden = true; $('start').hidden = false; buildLevels();
+  state = 'ready'; reset(); $('end').hidden = true; $('hud').hidden = true; $('start').hidden = false; buildLevels();
 }
 
 /* ---------- world rendering ---------- */
@@ -1534,7 +1533,7 @@ function radarArrow(x, y, ang, size, col, edge) {
   ctx.closePath(); ctx.fill(); ctx.stroke();
 }
 function rearRadar() {
-  const RANGE = 7, r = Math.min(58, W * 0.16), cx = W - r - 14, cy = H - r - 112, sc = r / RANGE;
+  const RANGE = 7, r = Math.min(58, W * 0.16), cx = W - r - 14, cy = H - r - 30, sc = r / RANGE;
   ctx.save();
   ctx.fillStyle = 'rgba(15,27,45,0.5)'; ctx.beginPath(); ctx.arc(cx, cy, r + 3, 0, TAU); ctx.fill();
   ctx.strokeStyle = 'rgba(255,255,255,0.28)'; ctx.lineWidth = 1;
@@ -1569,7 +1568,7 @@ function rearRadar() {
   ctx.fillText('RADAR', cx, cy - r - 5);
 }
 function zoneGuide() {
-  const yb = H - 44, held = { L: false, R: false };
+  const held = { L: false, R: false };
   for (const z of touches.values()) held[z] = true;
   for (const z of ['L', 'R']) {
     const w = W * 0.35, x0 = z === 'L' ? 0 : W - w;
@@ -1580,15 +1579,6 @@ function zoneGuide() {
     g.addColorStop(0, (held[z] || want) ? 'rgba(255,207,31,' + al.toFixed(2) + ')' : 'rgba(255,255,255,0.10)'); g.addColorStop(1, 'rgba(255,255,255,0)');
     ctx.fillStyle = g; ctx.fillRect(x0, H * 0.45, w, H * 0.55);
   }
-  const ink = LV.night ? 'rgba(255,255,255,0.6)' : 'rgba(15,27,45,0.55)';
-  ctx.font = '700 15px ' + FONT; ctx.textBaseline = 'middle'; ctx.fillStyle = ink;
-  ctx.textAlign = 'left'; ctx.fillText('◀  HOLD', 16, yb);
-  ctx.textAlign = 'right'; ctx.fillText('HOLD  ▶', W - 16, yb);
-  ctx.textAlign = 'center'; ctx.fillText('▲', W / 2, yb);
-  ctx.font = '600 11px ' + FONT;
-  ctx.textAlign = 'left'; ctx.fillText('2× TAP = DASH', 16, yb + 16);
-  ctx.textAlign = 'right'; ctx.fillText('2× TAP = DASH', W - 16, yb + 16);
-  ctx.textAlign = 'center'; ctx.fillText('2× TAP BOTH = BURST', W / 2, yb + 32);
 }
 function drawPops() {
   let y = H * 0.86;
@@ -1942,10 +1932,8 @@ function hud() {
   if (cd !== last.cd) {
     last.cd = cd; const sh = $('shout');
     sh.classList.toggle('ready', cd === 0);
-    sh.textContent = cd === 0 ? 'Swipe up · Excuse me' : 'Excuse me in ' + cd;
+    sh.textContent = cd === 0 ? 'Excuse me ready' : 'Excuse me in ' + cd;
   }
-  const h = $('hint');
-  if (!h.hidden && !h.classList.contains('fade') && S.time > 6) { h.classList.add('fade'); setTimeout(() => { h.hidden = true; }, 600); }
 }
 
 let lastT = performance.now();
