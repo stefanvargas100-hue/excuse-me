@@ -43,4 +43,7 @@ export async function showTop(id) {
   bd.hidden = false;
 }
 
+// Top scores of any board, for the leaderboard screen.
+export async function loadBoard(id, limit) { return net ? net.top(id, limit || 20) : []; }
+
 export const myName = () => (net ? net.playerName() : 'Player');

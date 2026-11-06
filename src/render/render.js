@@ -5,8 +5,8 @@ import { ctx } from '../dom.js';
 import { CAM_BACK, CAM_UP, CX, F, H, HOR, VX, VY, VZ, W, setCX, setF, setHOR, setVX, setVY, setVZ } from './camera.js';
 import { FONT } from './draw.js';
 import { drawPerson, rrect } from './figures.js';
-import { drawPops, radarTop, rearRadar, zoneGuide } from './hud.js';
-import { drawSlipstream, drawStrips } from './slipstream.js';
+import { drawPops, radarTop, zoneGuide } from './hud.js';
+import { drawBelts, drawSlipstream, drawStrips } from './slipstream.js';
 import { drawCars, paintAirport, paintNYC, paintShibuya } from './world.js';
 import { S, calm, camBob, state } from '../sim/state.js';
 
@@ -23,6 +23,7 @@ export function render() {
   ctx.fillStyle = FOGCSS; ctx.fillRect(-W, -H, 3 * W, 3 * H);
   if (LV.id === 'airport') paintAirport(); else if (LV.id === 'nyc') paintNYC(); else paintShibuya();
   if (LV.id === 'nyc') drawCars();
+  drawBelts();
   drawStrips();
   for (const p of S.people) if (p.prop === 'spill') drawPerson(p);   // puddles lie under everyone
   const list = S.people.filter(p => p.prop !== 'spill').concat([S.me], S.race ? S.race.bots : [], S.ghost ? [S.ghost] : []).sort((a, b) => b.z - a.z);
@@ -54,7 +55,7 @@ export function render() {
     const a = clamp(0.35 - S.overT * 0.5, 0, 0.35);
     if (a > 0) { ctx.fillStyle = 'rgba(255,77,79,' + a.toFixed(2) + ')'; ctx.fillRect(0, 0, W, H); }
   }
-  if (state === 'play') { zoneGuide(); rearRadar(); }
+  if (state === 'play') { zoneGuide(); }
   if (state !== 'ready') drawPops();
   if (S.banner && state === 'play') {
     const b = S.banner, a = b.t < 0.2 ? b.t / 0.2 : b.t > 2.0 ? (2.4 - b.t) / 0.4 : 1, y = radarTop + 112;

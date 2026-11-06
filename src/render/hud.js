@@ -11,57 +11,7 @@ import { TUT } from '../sim/tutorial.js';
 
 export let radarTop = 120;
    // bottom of the HUD, used to place banners
-// Circular radar, bottom right: you are the dot in the middle and up is the way you are walking, so
-// people beside and behind you sit below and to the sides. Each arrow points the way that person is moving
-// relative to you, so an arrow pointing down on the lower half means they are catching up.
-function radarArrow(x, y, ang, size, col, edge) {
-  const c = Math.cos(ang), s = Math.sin(ang), P = [[1, 0], [-0.75, -0.65], [-0.35, 0], [-0.75, 0.65]];
-  ctx.fillStyle = col; ctx.strokeStyle = edge; ctx.lineWidth = 1.2; ctx.lineJoin = 'round';
-  ctx.beginPath();
-  P.forEach(([u, v], i) => { const px = x + (u * c - v * s) * size, py = y + (u * s + v * c) * size; i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); });
-  ctx.closePath(); ctx.fill(); ctx.stroke();
-}
-
-export function rearRadar() {
-  const RANGE = 7, r = Math.min(58 * UI, W * 0.16), cx = W - r - 14 * UI, cy = H - r - 30 * UI, sc = r / RANGE;
-  ctx.save();
-  ctx.fillStyle = 'rgba(15,27,45,0.5)'; ctx.beginPath(); ctx.arc(cx, cy, r + 3, 0, TAU); ctx.fill();
-  ctx.strokeStyle = 'rgba(255,255,255,0.28)'; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.arc(cx, cy, r, 0, TAU); ctx.stroke();
-  ctx.beginPath(); ctx.arc(cx, cy, r * 0.5, 0, TAU); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(cx - r, cy); ctx.lineTo(cx + r, cy); ctx.moveTo(cx, cy - r); ctx.lineTo(cx, cy + r); ctx.stroke();
-  ctx.beginPath(); ctx.arc(cx, cy, r, 0, TAU); ctx.clip();
-  const list = [];
-  for (const p of S.people) {
-    if (p.prop || p.dead) continue;
-    const dx = p.x - S.px, dz = p.z - S.pz, d = Math.hypot(dx, dz);
-    if (d < RANGE + 0.5) list.push({ p, dx, dz, d });
-  }
-  list.sort((a, b) => b.d - a.d);
-  for (const it of list) {
-    const p = it.p, x = cx + it.dx * sc, y = cy - it.dz * sc;
-    const relx = p.vx - S.vx, relz = p.vz - S.speed;
-    const ang = Math.hypot(relx, relz) > 0.2 ? Math.atan2(-relz, relx) : -Math.PI / 2;
-    const near = clamp(1 - it.d / RANGE, 0, 1);
-    const gap = Math.abs(it.dx) - (R_PLAYER + R_BODY);
-    const danger = gap < 0.6 && it.dz < 1.4 && it.dz > -2.5;
-    ctx.globalAlpha = (0.5 + 0.5 * near) * (danger ? 0.65 + 0.35 * Math.sin(S.clock * 22) : 1);
-    const sz = 5.5 + 3 * near;
-    if (cues && (p.rival || p.fast)) { ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.4; if (p.rival) ctx.strokeRect(x - sz, y - sz, sz * 2, sz * 2); else { ctx.beginPath(); ctx.arc(x, y, sz, 0, TAU); ctx.stroke(); } }
-    if (p.rival) radarArrow(x, y, ang, sz, '#ff2d3a', '#ffffff');
-    else if (p.fast) radarArrow(x, y, ang, sz, '#22b8e8', '#ffffff');
-    else radarArrow(x, y, ang, sz, '#ffcf1f', 'rgba(255,255,255,0.85)');
-  }
-  if (S.race) for (const b of S.race.bots) {   // racers show as larger arrows in their own colour
-    const dx = b.x - S.px, dz = b.z - S.pz; if (Math.hypot(dx, dz) > RANGE + 0.5) continue;
-    ctx.globalAlpha = 1; radarArrow(cx + dx * sc, cy - dz * sc, Math.atan2(-(b.vz - S.speed), b.vx - S.vx), 8.5, b.color, '#ffffff');
-  }
-  ctx.globalAlpha = 1;
-  ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(cx, cy, 3.5, 0, TAU); ctx.fill();
-  ctx.restore();
-  ctx.font = '700 9px ' + FONT; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.fillStyle = 'rgba(255,255,255,0.8)';
-  ctx.fillText('RADAR', cx, cy - r - 5);
-}
+// (the rear radar was removed 2026-11-06: not useful any more)
 
 export function zoneGuide() {
   const held = { L: false, R: false };

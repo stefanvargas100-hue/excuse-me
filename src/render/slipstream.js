@@ -1,9 +1,9 @@
 import { LV } from '../config/levels.js';
-import { stripHasZ, stripLane } from '../config/strips.js';
+import { BELT_SPEED, beltInfo, stripHasZ, stripLane } from '../config/strips.js';
 import { clamp } from '../config/util.js';
 import { ctx } from '../dom.js';
 import { F, VZ } from './camera.js';
-import { W3 } from './draw.js';
+import { W3, fq } from './draw.js';
 import { draftCharge } from '../sim/race.js';
 import { S, state } from '../sim/state.js';
 
@@ -64,4 +64,43 @@ export function drawStrips() {
     ctx.beginPath(); p.forEach((q, i) => (i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]))); ctx.closePath(); ctx.fill();
   }
   ctx.globalAlpha = 1;
+}
+
+/* ---------- airport moving walkway: two belts side by side, drawn flat on the floor under the people ---------- */
+const VIEW = 46;
+export function drawBelts() {
+  const B = S.race ? beltInfo(LV.id) : null;
+  if (!B) return;
+  const k0 = Math.max(0, Math.floor((VZ - B.start - B.len) / B.every));
+  for (let k = k0; B.start + k * B.every < VZ + VIEW; k++) {
+    const s0 = B.start + k * B.every, s1 = s0 + B.len, a = Math.max(s0, VZ + 0.4), b = Math.min(s1, VZ + VIEW);
+    if (b <= a) continue;
+    belt(B.fwd, 1, a, b); belt(B.rev, -1, a, b);
+    // handrails along both outer edges and the divider
+    for (const x of [B.rev[0], B.fwd[0], B.fwd[1]]) { ctx.globalAlpha = 1; fq(x - 0.07, x + 0.07, 0.03, a - VZ, b - VZ, '#aab3bf'); }
+    // yellow comb plates where you step on and off
+    for (const [z0, z1] of [[s0 - 0.5, s0], [s1, s1 + 0.5]]) { const za = Math.max(z0, VZ + 0.4), zb = Math.min(z1, VZ + VIEW); if (zb > za) { ctx.globalAlpha = 1; fq(B.rev[0], B.fwd[1], 0.025, za - VZ, zb - VZ, '#e8b931'); } }
+  }
+  ctx.globalAlpha = 1;
+}
+
+function belt(range, dir, a, b) {
+  const x0 = range[0], x1 = range[1], mid = (x0 + x1) / 2, fade = z => clamp((VZ + VIEW - z) / 14, 0, 1);
+  // rubber, in slices so the far end fades into the haze
+  for (let z = a; z < b; z += 3) { const e = Math.min(b, z + 3); ctx.globalAlpha = fade((z + e) / 2); fq(x0, x1, 0.015, z - VZ, e - VZ, dir > 0 ? '#323a46' : '#413b48'); }
+  // grooves that slide along the belt's way
+  const off = ((S.clock * BELT_SPEED * dir) % 0.6 + 0.6) % 0.6;
+  ctx.fillStyle = 'rgba(255,255,255,0.12)';
+  for (let z = Math.ceil((a - off) / 0.6) * 0.6 + off; z < b - 0.07; z += 0.6) { if (z < a) continue; ctx.globalAlpha = fade(z); fq(x0 + 0.05, x1 - 0.05, 0.017, z - VZ, z + 0.07 - VZ, 'rgba(255,255,255,0.13)'); }
+  // arrows showing which way it goes: teal for yours, orange for the one coming back
+  ctx.fillStyle = dir > 0 ? '#2ec4b6' : '#ff8a5c';
+  const step = 3, aoff = ((S.clock * BELT_SPEED * dir) % step + step) % step, xi0 = x0 + 0.3, xi1 = x1 - 0.3, xm = mid;
+  for (let z = Math.ceil((a - aoff) / step) * step + aoff; z < b - 0.9; z += step) {
+    if (z < a) continue;
+    ctx.globalAlpha = fade(z) * 0.8;
+    const p = dir > 0
+      ? [W3(xi0, 0.02, z), W3(xm, 0.02, z + 0.6), W3(xi1, 0.02, z), W3(xi1, 0.02, z + 0.3), W3(xm, 0.02, z + 0.9), W3(xi0, 0.02, z + 0.3)]
+      : [W3(xi0, 0.02, z + 0.9), W3(xm, 0.02, z + 0.3), W3(xi1, 0.02, z + 0.9), W3(xi1, 0.02, z + 0.6), W3(xm, 0.02, z), W3(xi0, 0.02, z + 0.6)];
+    ctx.beginPath(); p.forEach((q, i) => (i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]))); ctx.closePath(); ctx.fill();
+  }
 }

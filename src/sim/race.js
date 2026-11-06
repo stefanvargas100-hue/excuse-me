@@ -4,7 +4,7 @@ import { BASE, BOOST, CHAIN_WINDOW, LAT_ACC, LAT_MAX, REGEN, R_PLAYER } from '..
 import { clamp, mulberry32 } from '../config/util.js';
 import { REACT } from '../config/colour.js';
 import { BOT_NAMES } from '../config/names.js';
-import { STRIP_SPEED, onStrip } from '../config/strips.js';
+import { BELT_SPEED, STRIP_SPEED, beltAt, onStrip } from '../config/strips.js';
 import { effects, fitOf, randomLoadout, statsOf } from '../config/stats.js';
 import { COST_DASH, DASH_T, DASH_V } from '../input/input.js';
 import { buzz, store } from '../save/store.js';
@@ -24,7 +24,8 @@ const COUNTDOWN = 3;
 // Slipstream: walk close behind someone heading your way for a moment and you earn a burst of speed to overtake with.
 const DRAFT_LEN = 4, DRAFT_W = 0.6;   // the zone behind them, in metres
 const DRAFT_CHARGE = 1.2;             // seconds to earn it at middling distance; closer is quicker
-const DRAFT_T = 2.5, DRAFT_BOOST = 1.18;   // how long it lasts and how much faster you go
+const DRAFT_T = 2.5, DRAFT_BOOST = 1.25;   // how long it lasts and how much faster you go
+const DRAFT_COOL = 3;                 // after a boost runs out, no new slipstream for this long, so they cannot be chained
 const DRAFT_MIN_V = 0.8;              // they have to be walking your way, not standing or coming at you
 export const draftMul = r => (r.draftT > 0 ? DRAFT_BOOST : 1);
 export const draftCharge = r => clamp(r.draftC / DRAFT_CHARGE, 0, 1);
@@ -45,8 +46,12 @@ function inDraft(r, x, z, self) {
 }
 // r is the player's state or a bot. Returns true at the moment the boost is earned.
 function stepDraft(r, x, z, slowed, dt) {
+  const was = r.draftT > 0;
   r.draftT = Math.max(0, r.draftT - dt);
+  if (was && r.draftT <= 0) r.draftCool = DRAFT_COOL;   // the boost ran its course (a bump cancelling it does not count)
+  r.draftCool = Math.max(0, (r.draftCool || 0) - dt);
   if (r.draftT > 0) return false;
+  if (r.draftCool > 0) { r.draftC = 0; return false; }
   const near = slowed ? -1 : inDraft(r, x, z, r);
   if (near >= 0) r.draftC += dt * (0.7 + 0.8 * near);   // closer charges faster
   else r.draftC = Math.max(0, r.draftC - dt * 1.5);
@@ -284,6 +289,9 @@ function think(b) {
       }
       if (b.pressT > 0 && Math.abs(tx - S.px) < 0.8) c += 1.6 * fight;
       if (onStrip(LV.id, tx, b.z + 6)) c -= 1.1 * fight;
+      const bd = beltAt(LV.id, tx, b.z + 6);   // airport walkway: ride the belt that goes our way, on its passing side; keep off the other
+      if (bd > 0) c -= (tx < 2.9 ? 1.0 : 0.3) * fight;
+      else if (bd < 0) c += 0.8 + 1.6 * fight;
     }
     if (c < bestC) { bestC = c; bestX = tx; }
   }
@@ -316,6 +324,7 @@ function stepBot(b, dt) {
   const bTarget = (bursting ? BOOST : BASE) * b.pace * b.st.speed * weave * racePace(b.chain, b.energy) * draftMul(b) * (onStrip(LV.id, b.x, b.z) ? STRIP_SPEED : 1) * (b.bumpT > 0 ? BUMP_SPEED : 1);
   b.speed += (bTarget - b.speed) * Math.min(1, dt * (bTarget > b.speed ? b.st.accel : 5));
   b.x = clamp(b.x + b.vx * dt, -lim, lim); b.z += b.speed * dt;
+  b.belt = BELT_SPEED * beltAt(LV.id, b.x, b.z); b.z += b.belt * dt;   // the walkway carries bots too
   if (Math.abs(b.x) >= lim) b.vx = 0;
   // solid people
   if (b.ghostT <= 0) {

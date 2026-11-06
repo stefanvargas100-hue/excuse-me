@@ -3,6 +3,7 @@ import { DOGS, FASTSHIRTS, GEARS, HAIRS, LUGS, PANTS, SHIRTS, SHOES, SKINS, shad
 import { randomFace } from '../config/faces.js';
 import { LV, SPAWN_FAR } from '../config/levels.js';
 import { BUILDS } from '../config/stats.js';
+import { BELT_SPEED, beltHasZ, beltInfo } from '../config/strips.js';
 import { R_BODY, R_LUGGAGE, R_PLAYER, walkSpeed } from '../config/tuning.js';
 import { R, TAU, clamp, hashStr, mulberry32, pick, randn, rnd, setR, sgn } from '../config/util.js';
 import { ctx } from '../dom.js';
@@ -11,7 +12,7 @@ import { W3 } from '../render/draw.js';
 import { LOOK } from '../save/progress.js';
 import { banner } from './actions.js';
 import { addPop } from './scoring.js';
-import { S, goalOf, state } from './state.js';
+import { S, goalOf, raceBuild, state } from './state.js';
 
 
 
@@ -303,8 +304,22 @@ export function seeded(tag, fn) {
   try { return fn(); } finally { setR(prev); }
 }
 
+// Airport races: people ride the moving walkway the way they do in a real terminal. On each belt they stand on the right of the
+// direction it goes and keep the left clear for walkers. Called last for a chunk so the rest of the crowd is unchanged.
+function beltRiders(z0) {
+  const B = beltInfo(LV.id);
+  if (!raceBuild || !B || !beltHasZ(B, z0 + 0.1) || !beltHasZ(B, z0 + 3.9)) return;
+  const fm = (B.fwd[0] + B.fwd[1]) / 2, rm = (B.rev[0] + B.rev[1]) / 2;
+  // the belt that goes your way: standers on the right (high x), walkers on the left, walking on
+  if (R() < 0.5) mk(rnd(fm + 0.4, B.fwd[1] - 0.3), z0 + rnd(0.2, 3.8), { belt: 1, v0: 0, hx: 0, hz: 1, fx: 0, fz: 1, yieldP: 0.6 });
+  if (R() < 0.3) { const x = rnd(B.fwd[0] + 0.35, fm - 0.15); mk(x, z0 + rnd(0.2, 3.8), { belt: 1, hx: 0, hz: 1, v0: walkSpeed(), laneX: x }); }
+  // the belt that comes toward you: for them the right is your left, so they stand on the low-x edge and walk near the divider
+  if (R() < 0.5) mk(rnd(B.rev[0] + 0.3, rm - 0.4), z0 + rnd(0.2, 3.8), { belt: -1, v0: 0, hx: 0, hz: -1, fx: 0, fz: -1, yieldP: 0.6 });
+  if (R() < 0.3) { const x = rnd(rm + 0.15, B.rev[1] - 0.35); mk(x, z0 + rnd(0.2, 3.8), { belt: -1, hx: 0, hz: -1, v0: walkSpeed(), laneX: x }); }
+}
+
 export function genChunk(z0) {
   const n0 = S.people.length;
-  seeded(':c' + z0, () => genChunkInner(z0));
+  seeded(':c' + z0, () => { genChunkInner(z0); beltRiders(z0); });
   if (S.seed) { let sum = 0; for (let i = n0; i < S.people.length; i++) { const q = S.people[i]; sum += q.x * 7 + q.z; } S.chunkSum[z0] = Math.round(sum * 100); }
 }

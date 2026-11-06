@@ -1,4 +1,5 @@
 import { RIVAL_LINES } from '../config/colour.js';
+import { BELT_SPEED, beltAt } from '../config/strips.js';
 import { LV } from '../config/levels.js';
 import { R_PLAYER, walkSpeed } from '../config/tuning.js';
 import { R, clamp, pick, rnd, sgn } from '../config/util.js';
@@ -107,6 +108,7 @@ export function updPeople(dt) {
     }
     if (p.aside > 0) p.aside -= dt;
     p.x += p.vx * dt; p.z += p.vz * dt;
+    if (S.race && LV.id === 'airport') p.z += BELT_SPEED * beltAt(LV.id, p.x, p.z) * dt;   // moving walkway carries everyone on it
     if (!p.free && Math.abs(p.x) > lim) { p.x = clamp(p.x, -lim, lim); if (p.locked) p.vx = 0; }
     if (p.exit && Math.abs(p.x) > (LV.id === 'shibuya' ? 14.5 : LV.half + 0.2)) p.dead = true;
     if (p.z > goalOf() - 1.5 && p.hz > 0) { p.hz = -p.hz; p.dirz = -1; }

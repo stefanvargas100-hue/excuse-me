@@ -17,6 +17,10 @@ export function setCues(v) { cues = v; }
 // Endless modes (classic, daily, weekly) have no finish line; only a race ends at the stage goal.
 export const goalOf = () => (S && S.endless ? Infinity : LV.goal);
 
+// True while a race is being set up, so the crowd generator knows to add race-only things (the airport belt riders).
+export let raceBuild = false;
+export function setRaceBuild(v) { raceBuild = v; }
+
 export const bestOf = id => parseInt(store.get('excuseme_best_' + id, '0'), 10) || 0;
 
 

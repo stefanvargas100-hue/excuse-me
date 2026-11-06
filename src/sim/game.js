@@ -1,6 +1,6 @@
 import { Music } from '../audio/music.js';
 import { LEVELS, LV, LVI, SPAWN_FAR, setLevel } from '../config/levels.js';
-import { STRIP_SPEED, onStrip, stripLane } from '../config/strips.js';
+import { BELT_SPEED, STRIP_SPEED, beltAt, onStrip, stripLane } from '../config/strips.js';
 import { BASE, BOOST, CHAIN_WINDOW, LAT_ACC, LAT_MAX, REGEN } from '../config/tuning.js';
 import { R, clamp, hashStr, mulberry32, pick, rnd, setR, todayKey, weekKey } from '../config/util.js';
 import { $ } from '../dom.js';
@@ -13,7 +13,7 @@ import { PERFECT_SPEED, banner } from './actions.js';
 import { collide, updMe, updPeople } from './crowd.js';
 import { genChunk, runEvent, scramble, seeded, spawnFast, spawnRival, updXings, walker } from './people.js';
 import { addPop, onPass } from './scoring.js';
-import { S, bestOf, endShown, goalOf, reset, setEndShown, setState, state } from './state.js';
+import { S, bestOf, endShown, goalOf, reset, setEndShown, setRaceBuild, setState, state } from './state.js';
 import { BUMP_SPEED, addRemoteRacer, draftMul, finishRace, fmtTime, initRace, leadZ, ordinal, raceBest, raceCollide, raceCountdown, racePace, rearZ, updRace } from './race.js';
 import { updCars } from './traffic.js';
 import { beginTut, tutTick } from './tutorial.js';
@@ -60,6 +60,10 @@ function movePlayer(dt) {
   const lim = LV.half - 0.5;
   if (Math.abs(S.px) > lim) { S.px = clamp(S.px, -lim, lim); S.vx = 0; }
   S.pz += S.speed * dt;
+  // moving walkway (airport races): the belt carries you along, or back
+  const bd = S.race ? beltAt(LV.id, S.px, S.pz) : 0;
+  S.belt = bd * BELT_SPEED; S.pz += S.belt * dt;
+  if (bd !== (S.beltOn || 0)) { S.beltOn = bd; if (bd > 0) addPop('WALKWAY', '#2ec4b6', 24); else if (bd < 0) addPop('WRONG WAY', '#ff8a5c', 24); }
   const sn = Math.floor(S.step / Math.PI);
   if (sn !== S.stepN) { S.stepN = sn; Music.sfx('step'); }
   S.score += S.speed * dt;   // 1 point per metre walked
@@ -289,6 +293,7 @@ export function start(a, b, opts) {
   flushScores();   // send any score that could not go out earlier
   if (key) { if (hasPlayed(mode)) return; store.set('excuseme_played_' + mode, key); }
   lastDaily = daily; lastMode = mode;
+  setRaceBuild(mode === 'race');   // the crowd generator adds belt riders in races only
   setR(key ? mulberry32(hashStr(key)) : duel ? mulberry32(hashStr(duel.seed)) : Math.random);
   reset();
   S.mode = mode; S.kind = mode; S.endless = mode !== 'race'; S.seed = key || (duel ? duel.seed : null); S.duel = duel;

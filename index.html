@@ -24,13 +24,13 @@
   <div class="top">
     <div class="score"><small>SCORE</small><b id="score">0</b></div>
     <div class="topr">
-      <div id="combo" class="off"><b id="mult">×1</b><small id="chain">0 chain</small><div class="cbar"><i id="cbar"></i></div></div>
+      <div class="ccol"><div id="combo" class="off"><b id="mult">×1</b><small id="chain">0 chain</small><div class="cbar"><i id="cbar"></i></div></div><div id="mph" class="mph"><b id="mphv">0</b><small>MPH</small></div></div>
       <button id="pauseBtn" type="button" aria-label="Pause"><span></span><span></span></button>
     </div>
   </div>
   <div class="trackrow"><div class="track"><i id="prog"></i><span id="raceDots"></span></div><span class="num" id="dist">0 m</span></div>
   <div id="place" class="place" hidden></div>
-  <div class="boost"><span>Stamina</span><div class="bar"><i id="en"></i></div><span id="slowTag" class="slowtag" hidden></span><span id="clock" class="clock num">3:00</span></div>
+  <div class="boost"><span id="clock" class="clock num">3:00</span></div>
   <div class="shoutrow"><span id="shout" class="shout">Excuse me ready</span></div>
 </div>
 <div id="tut" hidden>
@@ -49,6 +49,7 @@
       <button id="chalBtn" class="tile" type="button">Challenges</button>
       <button id="howBtn" class="tile" type="button">How to play</button>
       <button id="setBtn" class="tile" type="button">Settings</button>
+      <button id="boardsBtn" class="tile wide" type="button">Leaderboards</button>
     </div>
     <button id="profBtn" class="profchip" type="button" aria-label="Your profile">
       <span id="profPic" class="pic">🚶</span>
@@ -91,6 +92,21 @@
       <button class="chip" type="button" aria-pressed="false">Hard</button>
     </div>
     <div id="levels" class="stack" role="group" aria-label="Choose a stage"></div>
+  </div>
+</div>
+
+<div id="boards" class="panel" hidden>
+  <div class="card full">
+    <div class="topbar"><button class="backbtn" data-back type="button" aria-label="Back">‹</button><h2>Leaderboards</h2></div>
+    <div id="boardTabs" class="modes" role="group" aria-label="Board">
+      <button class="chip" type="button" data-tab="daily" aria-pressed="true">Daily</button>
+      <button class="chip" type="button" data-tab="weekly" aria-pressed="false">Weekly</button>
+      <button class="chip" type="button" data-tab="classic" aria-pressed="false">Classic</button>
+    </div>
+    <div id="boardStages" class="modes" role="group" aria-label="Stage" hidden></div>
+    <p id="boardTitle" class="boardtitle"></p>
+    <ol id="boardList" class="paged"></ol>
+    <div id="boardPager" class="pager"></div>
   </div>
 </div>
 
@@ -151,11 +167,12 @@
       </ul>
       <ul id="howRace">
         <li><b>1</b><span>First to the finish wins. People are solid: a bump stops you and slows you, but the race goes on.</span></li>
-        <li><b>2</b><span>Slipstream: stay close behind someone walking your way. Wind builds around you, then you get a burst of speed.</span></li>
-        <li><b>3</b><span>Combos make you walk faster. Running out of stamina makes you walk much slower.</span></li>
-        <li><b>4</b><span>Fast strips: painted chevrons on the floor. Quicker ground, but narrow and in harm's way. Bots want them too, and they will try to draft you.</span></li>
-        <li><b>5</b><span>Your build and gear set your top speed, acceleration and recovery. Only races use them.</span></li>
-        <li><b>6</b><span>Fit check: match 3 or more pieces of one style, or stack one stat, for a bonus to every stat.</span></li>
+        <li><b>2</b><span>Slipstream: stay close behind someone walking your way. Wind builds around you, then you get a big burst of speed. After it ends you need a few seconds before the next one.</span></li>
+        <li><b>3</b><span>Combos make you walk faster. Running out of stamina makes you walk much slower. Your stamina is the small bar above your head.</span></li>
+        <li><b>4</b><span>Fast strips: painted chevrons on the floor in New York and Tokyo. Quicker ground, but narrow and in harm's way. Bots want them too, and they will try to draft you.</span></li>
+        <li><b>5</b><span>Airport walkway: two moving belts side by side. The teal one carries you forward, the orange one carries you back. People stand on the right and walk on the left, so pass on the left.</span></li>
+        <li><b>6</b><span>Your build and gear set your top speed, acceleration and recovery. Only races use them.</span></li>
+        <li><b>7</b><span>Fit check: match 3 or more pieces of one style, or stack one stat, for a bonus to every stat.</span></li>
       </ul>
       <ul id="howInstall">
         <li><b>1</b><span>iPhone: open this page in Safari, tap Share, then "Add to Home Screen".</span></li>

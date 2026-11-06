@@ -566,6 +566,15 @@ export function drawPerson(p) {
     ctx.beginPath(); ctx.moveTo(hx, ay); ctx.lineTo(hx - aw, ay - aw * 1.3); ctx.lineTo(hx + aw, ay - aw * 1.3); ctx.closePath(); ctx.fill(); ctx.stroke();
     if (U > 40) { ctx.font = '700 ' + clamp(Math.round(0.2 * U), 11, 16) + 'px ' + FONT; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.lineWidth = 3; ctx.strokeText(p.name, hx, ay - aw * 1.5); ctx.fillStyle = '#ffffff'; ctx.fillText(p.name, hx, ay - aw * 1.5); }
   }
+  if (p.isMe && S.live && S.energy !== undefined) {   // a small stamina bar floating above your head
+    const e = clamp(S.energy / 100, 0, 1), bw = clamp(0.5 * U, 20, 54), bh = clamp(0.06 * U, 3, 6), by = hy - 0.28 * U - bh;
+    const col = S.energy < 10 ? '#ff4d4f' : S.energy < 40 ? '#ffb02e' : '#2ec4b6';   // green: no penalty, amber: a little, red: you are out
+    ctx.save(); ctx.globalAlpha = e > 0.995 ? 0.4 : 0.95;
+    ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.fillRect(hx - bw / 2, by, bw, bh);
+    ctx.fillStyle = col; ctx.fillRect(hx - bw / 2, by, bw * e, bh);
+    ctx.strokeStyle = INK; ctx.lineWidth = Math.max(1.5, 0.025 * U); ctx.strokeRect(hx - bw / 2, by, bw, bh);
+    ctx.restore();
+  }
   if (cues && (p.rival || p.fast) && !p.isMe && !p.racer) {
     const fs = clamp(Math.round(0.34 * U), 12, 30);
     ctx.font = '700 ' + fs + 'px ' + FONT; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.lineWidth = 3; ctx.strokeStyle = INK; ctx.fillStyle = '#ffffff';

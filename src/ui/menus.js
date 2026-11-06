@@ -16,6 +16,8 @@ import { endTut } from '../sim/tutorial.js';
 import { back, go, pageInto, relayoutWith } from './screens.js';
 import { shareRun } from '../sim/replay.js';
 import { openFriend } from './friend.js';
+import { BOARD_TABS, boardIdFor, boardTitle } from '../online/boards.js';
+import { loadBoard } from '../online/online.js';
 import { leaveRoom, requestRematch } from '../online/duel.js';
 
 
@@ -78,6 +80,7 @@ function syncBots() {
 export function buildLevels() { buildPlay(); buildStages(); refreshProfile(); }
 
 
+const MPH = 2.23694;   // metres per second to miles per hour
 export const last = { dist: -1, en: -1, low: null, score: -1, chain: -1, tl: -1, cd: -1 };
 
 export function hud() {
@@ -85,21 +88,15 @@ export function hud() {
   raceHud();
   const dm = Math.floor(S.pz);
   if (dm !== last.dist) { last.dist = dm; $('dist').textContent = S.endless ? dm + ' m' + (dm < LV.goal ? ' / ' + LV.goal + ' m' : '') : dm + ' / ' + LV.goal + ' m'; $('prog').style.width = (clamp(S.pz / LV.goal, 0, 1) * 100).toFixed(1) + '%'; }
-  // race mode shows your pace instead of a score: combo adds speed, low stamina takes it away
-  const sc = S.race ? Math.round(racePace(S.chain, S.energy) * draftMul(S) * 100) : Math.floor(S.score);
+  // speed over the ground in mph (belts included); a race has no score, only time and place
+  const sc = Math.floor(S.score);
   if (sc !== last.score || last.race !== !!S.race) {
     last.score = sc; last.race = !!S.race;
-    $('score').textContent = S.race ? sc + '%' : fmt(sc);
-    const lab = $('score').previousElementSibling; if (lab) lab.textContent = S.race ? 'PACE' : 'SCORE';
+    $('score').textContent = fmt(sc);
+    $('score').parentElement.hidden = !!S.race;
   }
-  const en = Math.round(S.energy);
-  if (en !== last.en) { last.en = en; $('en').style.width = en + '%'; }
-  if (S.exhausted !== last.low) { last.low = S.exhausted; $('en').classList.toggle('low', S.exhausted); }
-  // colour shifts as stamina drops; in a race, say out loud how much speed it is costing you
-  const lvl = en < 10 ? 2 : en < 40 ? 1 : 0;   // green: no penalty, yellow: a little, orange: you are out
-  if (lvl !== last.lvl) { last.lvl = lvl; $('en').classList.toggle('mid', lvl === 1); $('en').classList.toggle('empty', lvl === 2); }
-  const cost = S.race ? Math.round((1 - racePace(0, S.energy)) * 100) : 0;
-  if (cost !== last.cost) { last.cost = cost; const t = $('slowTag'); t.hidden = cost < 2; t.textContent = '-' + cost + '% speed'; }
+  const mph = Math.max(0, Math.round((S.speed + (S.belt || 0)) * MPH));
+  if (mph !== last.mph) { last.mph = mph; $('mphv').textContent = String(mph); }
   if (S.chain !== last.chain) {
     last.chain = S.chain;
     $('combo').classList.toggle('off', S.chain === 0);
@@ -140,6 +137,44 @@ function raceHud() {
   const box = $('raceDots');
   if (dotsKey.n !== n) { dotsKey.n = n; box.innerHTML = ''; for (let i = 0; i < n - 1; i++) { const d = document.createElement('i'); d.style.background = S.race.bots[i].color; box.appendChild(d); } }
   S.race.bots.forEach((b, i) => { const d = box.children[i]; if (d) d.style.left = (clamp(b.z / LV.goal, 0, 1) * 100).toFixed(1) + '%'; });
+}
+
+/* ---------- leaderboards: daily, weekly and each classic stage ---------- */
+let boardTab = 'daily', boardStage = 0, boardAsk = 0;
+
+function openBoards() {
+  const st = $('boardStages');
+  if (!st.children.length) {
+    LEVELS.forEach((L, i) => {
+      const c = document.createElement('button'); c.type = 'button'; c.className = 'chip'; c.textContent = L.city;
+      c.addEventListener('click', () => { boardStage = i; showBoard(); });
+      st.appendChild(c);
+    });
+  }
+  go('boards'); showBoard();
+}
+
+async function showBoard() {
+  document.querySelectorAll('#boardTabs .chip').forEach(c => c.setAttribute('aria-pressed', String(c.dataset.tab === boardTab)));
+  $('boardStages').hidden = boardTab !== 'classic';
+  Array.from($('boardStages').children).forEach((c, i) => c.setAttribute('aria-pressed', String(i === boardStage)));
+  $('boardTitle').textContent = boardTitle(boardTab, boardStage);
+  const msg = text => { const li = document.createElement('li'); li.className = 'msg'; li.textContent = text; return li; };
+  const draw = rows => { pageInto($('boardList'), rows, $('boardPager')); };
+  const ask = ++boardAsk;   // a slow answer for an old tab must not overwrite the one now showing
+  draw([msg('Loading...')]);
+  const rows = await loadBoard(boardIdFor(boardTab, boardStage), 30);
+  if (ask !== boardAsk) return;
+  const nodes = rows.length ? rows.map((r, i) => {
+    const li = document.createElement('li'); if (r.you) li.className = 'me';
+    const rk = document.createElement('span'); rk.className = 'rk'; rk.textContent = String(i + 1);
+    const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = (r.pic ? r.pic + ' ' : '') + r.name + (r.you ? ' (you)' : '');
+    const lv = document.createElement('span'); lv.className = 'lv'; lv.textContent = 'Lv ' + r.level;
+    const sc = document.createElement('span'); sc.className = 'sc'; sc.textContent = r.score.toLocaleString('en-US');
+    [rk, nm, lv, sc].forEach(n => li.appendChild(n)); return li;
+  }) : [msg('No scores yet. Be the first!')];
+  draw(nodes);
+  relayoutWith(() => draw(nodes));
 }
 
 // Every challenge, closest to finished first, with its reward's stats so players can pick what to chase.
@@ -232,6 +267,8 @@ export function init() {
   $('playBtn').addEventListener('click', () => { buildPlay(); go('play'); });
   initProfile();
   $('chalBtn').addEventListener('click', () => { go('chal'); buildChallenges(); });
+  $('boardsBtn').addEventListener('click', openBoards);
+  document.querySelectorAll('#boardTabs .chip').forEach(c => c.addEventListener('click', () => { boardTab = c.dataset.tab; showBoard(); }));
   $('howBtn').addEventListener('click', () => { go('howto'); showHowTab('howControls'); });
   $('setBtn').addEventListener('click', () => go('settings'));
   $('pauseSet').addEventListener('click', () => go('settings'));
