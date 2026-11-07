@@ -8,6 +8,7 @@ import { drawPerson, rrect } from './figures.js';
 import { pruneFlows, drawPops, radarTop, zoneGuide } from './hud.js';
 import { drawBelts, drawGlass, drawPowerups, drawSlipstream, drawStrips, glassPanels } from './slipstream.js';
 import { nycSteam } from './nycdetail.js';
+import { weatherGrade } from './weather.js';
 import { drawCars, paintAirport, paintNYC, paintShibuya } from './world.js';
 import { S, calm, camBob, state } from '../sim/state.js';
 import { visibleGhosts } from '../sim/replay.js';
@@ -32,6 +33,7 @@ export function render() {
   const list = S.people.filter(p => p.prop !== 'spill').concat([S.me], S.race ? S.race.bots : [], visibleGhosts(), glassPanels()).sort((a, b) => b.z - a.z);
   for (const p of list) { if (p.glass) drawGlass(p); else drawPerson(p); }
   drawSlipstream();
+  weatherGrade();
   ctx.restore();
 
   if (S.boostV > 0.25 && !calm) {

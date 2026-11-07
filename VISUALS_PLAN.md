@@ -40,3 +40,8 @@ Design notes so new maps fit it later:
 - First new map: **Central Park** — tree-lined paths, lamp posts, benches, joggers and dog walkers, a pond or bridge, horse-carriage cameo, autumn leaves. Fits the weather/variant system from Batch 3.
 - Candidate follow-ups (NYC): Times Square, Brooklyn Bridge promenade, Grand Central concourse, High Line, Wall Street / Fifth Avenue (exists).
 - Open question: Fifth Avenue is already NYC, so the cup would be Fifth Avenue + the new ones; Airport and Shibuya stay as standalone maps.
+
+## Progress
+- Batch 1 (characters): done, commit 0084a33.
+- Batch 2 (crowd and racers): done, commit da97b95.
+- Batch 3 (weather / time of day): done. Variants: airport day / sunrise / night, Fifth Avenue day / golden hour, Shibuya night / rain. `src/render/weather.js`; `?variant=rain` forces one; `setVariant()` is the hook a cup will use per round.

@@ -42,3 +42,28 @@ test('a race (belts, bots) draws the airport scenery too', () => {
   for (let i = 0; i < 120; i++) E.tick(DT);
   assert.doesNotThrow(() => E.render());
 });
+
+// Time of day and weather (render/weather.js): every variant draws on its stage, picking is stable for a seed, and drawing never changes the run.
+test('every weather variant draws without errors on its stage', () => {
+  const E = load(undefined, { seed: 5 });
+  for (const [lv, id] of [[0, 'airport'], [1, 'nyc'], [2, 'shibuya']]) {
+    E.setLevel(lv); E.start('classic');
+    for (const [v] of E.VARIANTS[id]) { E.setVariant(v); for (let i = 0; i < 3; i++) E.tick(DT); assert.doesNotThrow(() => E.render(), id + ' ' + v); }
+  }
+});
+
+test('the weather for a daily seed is the same every time and is always one of the stage\'s variants', () => {
+  const E = load(undefined, { seed: 5 });
+  for (const id of ['airport', 'nyc', 'shibuya']) {
+    const names = E.VARIANTS[id].map(e => e[0]);
+    for (const seed of ['2026-11-07', '2026-11-08', '2026-W45']) {
+      const a = E.pickVariant(id, seed, Math.random), b = E.pickVariant(id, seed, Math.random);
+      assert.strictEqual(a, b); assert.ok(names.includes(a));
+    }
+  }
+});
+
+test('weather does not change the simulation', () => {
+  const go = (v) => { const E = load(undefined, { seed: 2024 }); E.setLevel(2); E.start('classic'); E.setVariant(v); for (let i = 0; i < 600; i++) { E.tick(DT); if (i % 3 === 0) E.render(); } const S = E.S; return [S.pz, S.px, S.score, S.people.length].join(','); };
+  assert.strictEqual(go('rain'), go('night'));
+});
