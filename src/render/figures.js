@@ -577,14 +577,14 @@ export function drawPerson(p) {
     if (U > 40) { ctx.font = '700 ' + clamp(Math.round(0.2 * U), 11, 16) + 'px ' + FONT; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.lineWidth = 3; ctx.strokeText(p.name, hx, ay - aw * 1.5); ctx.fillStyle = '#ffffff'; ctx.fillText(p.name, hx, ay - aw * 1.5); }
   }
   if (p.isMe && S.live && S.energy !== undefined) {   // a small stamina bar floating above your head
-    const e = clamp(S.energy / 100, 0, 1), bw = clamp(0.85 * U, 34, 110), bh = clamp(0.13 * U, 7, 16), by = hy - 0.3 * U - bh;
+    const e = clamp(S.energy / 100, 0, 1), bw = clamp(0.85 * U, 34, 110), bh = clamp(0.13 * U, 7, 16), by = fy + Math.max(3, 0.06 * U);   // under the feet
     const col = S.energy < 10 ? '#ff4d4f' : S.energy < 40 ? '#ffb02e' : '#2ec4b6';   // green: no penalty, amber: a little, red: you are out
     ctx.save(); ctx.globalAlpha = e > 0.995 ? 0.55 : 1;
     ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.fillRect(hx - bw / 2, by, bw, bh);
     ctx.fillStyle = col; ctx.fillRect(hx - bw / 2, by, bw * e, bh);
     ctx.strokeStyle = INK; ctx.lineWidth = Math.max(1.5, 0.02 * U); ctx.strokeRect(hx - bw / 2, by, bw, bh);
     // "Excuse me" recharge: a thinner pink bar just above the stamina bar. Full and solid means ready.
-    const sr = clamp(1 - S.shoutCD / 5.5, 0, 1), sh2 = Math.max(4, bh * 0.6), sy = by - sh2 - Math.max(2, 0.03 * U);
+    const sr = clamp(1 - S.shoutCD / 5.5, 0, 1), sh2 = Math.max(4, bh * 0.6), sy = by + bh + Math.max(2, 0.03 * U);
     ctx.globalAlpha = sr >= 1 ? 1 : 0.8;
     ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.fillRect(hx - bw / 2, sy, bw, sh2);
     ctx.fillStyle = sr >= 1 ? '#ff6b9d' : '#f3a6c0'; ctx.fillRect(hx - bw / 2, sy, bw * sr, sh2);

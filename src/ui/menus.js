@@ -99,7 +99,8 @@ export function hud() {
     $('score').parentElement.hidden = !!S.race;
   }
   const mph = Math.max(0, Math.round((S.speed + (S.belt || 0)) * MPH));
-  if (mph !== last.mph) { last.mph = mph; $('mphv').textContent = String(mph); }
+  if (mph !== last.mph) { last.mph = mph; $('mphv').textContent = String(mph); $('rmphv').textContent = String(mph); }
+  $('hud').classList.toggle('race', !!S.race);   // a race moves the whole HUD to the bottom of the screen
   if (S.chain !== last.chain) {
     last.chain = S.chain;
     $('combo').classList.toggle('off', S.chain === 0);

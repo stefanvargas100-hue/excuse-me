@@ -44,8 +44,9 @@ body {
 #pauseBtn:active { transform: translate(2px, 3px); box-shadow: 1px 1px 0 var(--ink); }
 #pauseBtn:focus-visible { outline: 3px dashed var(--ink); outline-offset: 3px; }
 #combo { min-width: 78px; text-align: center; background: var(--sign); border: var(--line); border-radius: var(--wob2); padding: 3px 10px 6px; box-shadow: 3px 4px 0 var(--ink); transform: rotate(1.5deg); transition: opacity .2s; }
+#combo { opacity: .72; min-width: 60px; padding: 2px 8px 4px; box-shadow: 2px 3px 0 rgba(43,42,51,.6); }
 #combo.off { opacity: 0; }
-#combo b { display: block; font-family: var(--display); font-weight: 400; font-size: 28px; line-height: 1.05; font-variant-numeric: tabular-nums; }
+#combo b { display: block; font-family: var(--display); font-weight: 400; font-size: 20px; line-height: 1.05; font-variant-numeric: tabular-nums; }
 #combo small { display: block; font-size: 14px; margin: 0 0 3px; }
 #combo .cbar { height: 7px; border: 2px solid var(--ink); border-radius: 5px; background: var(--paper); overflow: hidden; }
 #combo .cbar i { display: block; height: 100%; width: 0; background: var(--btn); }
@@ -160,8 +161,14 @@ button.big:focus-visible, button.ghost:focus-visible, .toggle input:focus-visibl
 .sw.locked { font: 400 10px var(--display); color: var(--ink); }
 #tut { position: absolute; left: 16px; right: 16px; top: 25%; pointer-events: none; text-align: center; padding: 12px 16px 10px; border: 4px solid var(--ink); border-radius: var(--wob); background: var(--paper); box-shadow: 5px 6px 0 var(--ink); transform: rotate(-.6deg); }
 #tut[hidden] { display: none; }
-#tut.coach { left: 34%; padding: 8px 12px 6px; }   /* race tips leave your place in the race visible on the left */
-#tut.coach .ttext { font-size: 18px; margin-bottom: 4px; }
+#tut:not(.coach) { top: 14%; left: 30px; right: 30px; padding: 6px 12px 4px; border-width: 3px; box-shadow: 3px 4px 0 rgba(43,42,51,.6); background: rgba(255,244,236,.6); }
+#tut:not(.coach) .ttext { font-size: 16px; margin-bottom: 2px; }
+#tut:not(.coach) .tstep { font-size: 12px; }
+#tut:not(.coach) #tutSkip { font-size: 13px; padding: 2px; }
+#tut.coach { left: 34%; padding: 6px 10px 4px; top: 16%; border-width: 3px; box-shadow: 3px 4px 0 rgba(43,42,51,.6); background: rgba(255,244,236,.6); }   /* race tips leave your place in the race visible on the left */
+#tut.coach .ttext { font-size: 15px; margin-bottom: 2px; }
+#tut.coach .tstep { font-size: 11px; }
+#tut.coach #tutSkip { font-size: 13px; padding: 2px; }
 .tstep { font-size: 16px; color: var(--btn); }
 .ttext { margin: 2px 0 8px; font-family: var(--display); font-size: 22px; line-height: 1.2; text-wrap: balance; }
 #tutSkip { pointer-events: auto; background: transparent; border: 0; color: var(--ink); font: 400 16px var(--body); text-decoration: underline wavy; cursor: pointer; padding: 6px; }
@@ -415,3 +422,15 @@ button:disabled.big, button:disabled.ghost { opacity: .5; cursor: default; }
 .track.race::after { content: '🏁'; position: absolute; right: -10px; top: 50%; transform: translateY(-62%); font-size: 20px; line-height: 1; }
 #raceDots i.me { width: 20px; height: 20px; margin-left: -10px; background: var(--btn); z-index: 2; }
 .track.race #raceDots i { top: auto; bottom: 100%; margin-top: 0; }   /* dots ride on top of the line, not through it */
+
+/* ---- race HUD lives at the bottom: full-width line, then place, speed and time underneath ---- */
+.rmph { display: none; font-family: var(--display); font-size: 15px; background: var(--paper); border: 2.5px solid var(--ink); border-radius: var(--wob-s); padding: 1px 10px; box-shadow: 2px 3px 0 var(--ink); }
+#hud.race { bottom: 0; padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); }
+#hud.race .trackrow { margin: auto -14px 0; gap: 0; }
+#hud.race .trackrow .num { display: none; }
+#hud.race .track.race { margin: 0 26px 0 16px; }
+#hud.race .boost { gap: 8px; }
+#hud.race .boost .place { align-self: center; }
+#hud.race .rmph { display: block; margin-left: auto; }
+#hud.race .clock { margin-left: 0; }
+#hud.race #mph { display: none; }
