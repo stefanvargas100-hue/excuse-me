@@ -89,8 +89,9 @@ export function hud() {
   if (state === 'ready') return;
   raceHud();
   const dm = Math.floor(S.pz);
-  if (dm !== last.dist) { last.dist = dm; $('dist').textContent = S.endless ? dm + ' m' + (dm < LV.goal ? ' / ' + LV.goal + ' m' : '') : dm + ' / ' + LV.goal + ' m'; $('prog').style.width = (clamp(S.pz / LV.goal, 0, 1) * 100).toFixed(1) + '%'; }
+  if (dm !== last.dist) { last.dist = dm; $('dist').textContent = S.endless ? dm + ' m' : dm + ' / ' + LV.goal + ' m'; $('prog').style.width = (clamp(S.pz / LV.goal, 0, 1) * 100).toFixed(1) + '%'; }
   // speed over the ground in mph (belts included); a race has no score, only time and place
+  $('prog').parentElement.hidden = !!S.endless;   // endless runs have no finish line: just score and distance travelled
   const sc = Math.floor(S.score);
   if (sc !== last.score || last.race !== !!S.race) {
     last.score = sc; last.race = !!S.race;

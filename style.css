@@ -59,6 +59,7 @@ body {
 .clock small { font-family: var(--body); font-size: 13px; margin-right: 6px; }
 .clock.low { background: var(--alert); color: var(--paper); }
 .shoutrow { display: flex; }
+.shoutrow[hidden], .track[hidden] { display: none; }
 .shout { font-family: var(--display); font-size: 13px; padding: 2px 12px 3px; border: 2.5px solid var(--ink); border-radius: 999px 900px 999px 800px; background: var(--paper2); color: rgba(43,42,51,.65); box-shadow: 2px 3px 0 var(--ink); }
 .shout.ready { background: var(--sign); color: var(--ink); }
 
