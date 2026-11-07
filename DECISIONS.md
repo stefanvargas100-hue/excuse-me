@@ -80,3 +80,9 @@
 - 2026-11-06: Ghost runs: your best classic run and your best race (vs bots) come back as a see-through runner, but only when you are within 60 m of where that record ended (message CLOSE TO YOUR BEST). Race ghost saved on a new best win. Friends' ghosts need server storage: waiting on Stefan's OK.
 - 2026-11-06: Friends' and top-3 ghosts. Rule (Stefan): ghosts are stored only for friends and the top 3 of a classic stage. Friends = phones that raced in the same room: they swap their best classic and race ghosts for the stage when the race starts (thinned to 1 point per 2 s, checked on arrival, kept only on the friend's phone, 4 per stage). Top 3: the server table 'ghosts' (supabase/schema.sql, last section, must be run once) accepts a ghost only while the player's score is top 3 and deletes it when they drop out. Each ghost shows only within 60 m of its record. The SQL is untested against a real Supabase.
 - 2026-11-07: Pale-strip hunt: three height fixes failed on the phone, so a diagnostic was added instead: Settings > Show screen info (also ?debug) shows the sizes the phone reports plus red/blue edge markers. No game behaviour changed. Remove once the strip is understood.
+
+## Race power-ups (branch race-powerups)
+- Three pickups, applied the moment you touch one (no button): Boost (+35% speed, 3 s), Stamina full, Clear path (walk through people, 2.2 s). Chosen because each reuses an existing mechanic and none needs new controls.
+- Placed by a fixed seed per stage (every ~70 m, none in the first 60 m or last 45 m), so every race on a stage has the same layout. One shared pickup: whoever gets there first takes it, bots included (hard bots steer toward them).
+- Races against bots only. Live friend races have none for now, because pickups are not synced between phones yet.
+- Tuning numbers (3 s, x1.35, 2.2 s, spacing) are first guesses in src/sim/powerups.js.

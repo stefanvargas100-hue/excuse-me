@@ -16,6 +16,7 @@ import { applyBuild, dress } from './people.js';
 import { CLOSE_STAMINA, RAZOR_STAMINA, addPop, nearBoost, nearMul } from './scoring.js';
 import { S } from './state.js';
 import { ghostSave } from './replay.js';
+import { collectPowerups, placePowerups, powerMul, stepPowerups } from './powerups.js';
 
 /* ---------- race mode: A to B against bots; a bump slows you down instead of ending the run ---------- */
 export const BUMP_SPEED = 0.3;    // fraction of normal speed while slowed
@@ -123,6 +124,8 @@ export function initRace(botCount) {
   S.race = { diff, bots: [], countT: COUNTDOWN, countLast: 99, rng: mulberry32(0x5eed + n), finished: false, place: 0, board: [], elapsed: 0 };
   const pool = BOT_NAMES.slice();   // each race draws its racers' names at random, no repeats within a race
   for (let i = 0; i < n; i++) S.race.bots.push(makeBot(i, diff, pool.splice((Math.random() * pool.length) | 0, 1)[0]));
+  S.race.pickups = n > 0 ? placePowerups(LV.goal) : [];   // live races against friends have none: pickups are not shared between phones yet
+  S.puZ0 = 0;
   S.race.me = effects(statsOf(LOOK));   // your build and gear, race mode only
   S.speed = 0;          // everyone starts from a standstill, so acceleration counts
   S.timeLeft = 99999;   // no clock in a race
@@ -293,6 +296,7 @@ function think(b) {
         if (o.z - b.z > 0.5 && o.z - b.z < 7 && Math.abs(tx - o.x) < 0.5) c -= 0.6 * fight;
       }
       if (b.pressT > 0 && Math.abs(tx - S.px) < 0.8) c += 1.6 * fight;
+      for (const pk of S.race.pickups || []) if (!pk.taken && pk.z - b.z > 0.5 && pk.z - b.z < 12 && Math.abs(tx - pk.x) < 0.5) c -= 0.9 * fight;   // go for a pickup
       if (onStrip(LV.id, tx, b.z + 6)) c -= 1.1 * fight;
       const bd = beltAt(LV.id, tx, b.z + 10);   // airport walkway: plan the approach early (the glass is shut once you are alongside), aim for the middle of the passing lane
       if (bd > 0) c -= (tx >= 2.25 && tx < 2.9 ? 2.2 : tx >= 2.9 ? 0.8 : 0) * fight;   // never aim at the glass line itself: stopping a hair short of it leaves you outside
@@ -308,7 +312,7 @@ function stepBot(b, dt) {
   b.thinkT -= dt;
   if (b.thinkT <= 0) { think(b); b.thinkT = 0.1 + R.rng() * 0.18; }   // people do not react instantly
   b.nearT = Math.max(0, b.nearT - dt); b.bumpT = Math.max(0, b.bumpT - dt); b.ghostT = Math.max(0, b.ghostT - dt); b.cool = Math.max(0, b.cool - dt);
-  b.burstT -= dt; b.dashT -= dt;
+  b.burstT -= dt; b.dashT -= dt; stepPowerups(b, dt);
   b.energy = Math.min(100, b.energy + REGEN * b.st.regen * dt);
   if (b.chain > 0 && S.time - b.lastPassT > CHAIN_WINDOW) b.chain = 0;
   // a good player dashes round a person who is about to be hit, and bursts when the way is clear
@@ -326,9 +330,9 @@ function stepBot(b, dt) {
   const weave = 1 - 0.14 * Math.min(1.4, Math.abs(b.vx) / LAT_MAX);
   b.pressT = Math.max(0, (b.pressT || 0) - dt);
   if (stepDraft(b, b.x, b.z, b.bumpT > 0, dt) && b.draftWho === S) addPop(b.name.toUpperCase() + ' SLIPSTREAMED YOU', b.color, 22);
-  const bTarget = (bursting ? BOOST : BASE) * b.pace * b.st.speed * weave * racePace(b.chain, b.energy) * draftMul(b) * nearMul(b) * (onStrip(LV.id, b.x, b.z) ? STRIP_SPEED : 1) * (b.bumpT > 0 ? BUMP_SPEED : 1);
+  const bTarget = (bursting ? BOOST : BASE) * b.pace * b.st.speed * weave * racePace(b.chain, b.energy) * draftMul(b) * powerMul(b) * nearMul(b) * (onStrip(LV.id, b.x, b.z) ? STRIP_SPEED : 1) * (b.bumpT > 0 ? BUMP_SPEED : 1);
   b.speed += (bTarget - b.speed) * Math.min(1, dt * (bTarget > b.speed ? b.st.accel : 5));
-  const bx0 = b.x;
+  const bx0 = b.x, bz0 = b.z;
   b.x = clamp(b.x + b.vx * dt, -lim, lim); b.z += b.speed * dt;
   { const cx = contain(LV.id, bx0, b.x, b.z); if (cx !== b.x) { b.x = cx; b.vx = 0; } }   // glass railings lock bots on the walkway too
   b.belt = beltFor(LV.id, b.x, b.z, b.speed); b.z += b.belt * dt;   // the walkway carries bots too
@@ -346,6 +350,7 @@ function stepBot(b, dt) {
     } else b.blockT = Math.max(0, b.blockT - dt * 2);
   }
   b.vz = b.speed;
+  collectPowerups(b, b.x, b.z, bz0, false);
   // passing people builds the bot's combo, like yours
   for (const p of S.people) {
     if (p.dead || p.prop || Math.abs(p.z - b.z) > 3) continue;
@@ -380,6 +385,8 @@ export function updRace(dt) {
     if (b.done) { b.speed *= Math.max(0, 1 - dt * 4); b.vx *= Math.max(0, 1 - dt * 6); b.vz = b.speed; b.phase += dt * b.speed * 2; b.walkA += ((b.speed > 0.15 ? 1 : 0) - b.walkA) * Math.min(1, dt * 8); b.z += b.speed * dt; continue; }
     stepBot(b, dt);
   }
+  stepPowerups(S, dt);
+  collectPowerups(S, S.px, S.pz, S.puZ0, true); S.puZ0 = S.pz;
   if (S.duel) duelTick(dt);
   for (const p of S.people) if (p.hitT !== undefined) { p.hitT -= dt; if (p.hitT <= 0) { p.hit = false; delete p.hitT; } }
 }

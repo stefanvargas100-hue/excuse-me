@@ -5,6 +5,7 @@ import { ctx } from '../dom.js';
 import { F, VZ } from './camera.js';
 import { W3, fq, wq } from './draw.js';
 import { draftCharge } from '../sim/race.js';
+import { PU_TYPES } from '../sim/powerups.js';
 import { S, state } from '../sim/state.js';
 
 /* ---------- slipstream: wind lines that build around you while you draft, like Mario Kart ---------- */
@@ -131,4 +132,23 @@ export function drawGlass(w) {
   wq(w.x, 1.05, 1.13, a, b, '#6b7683');                  // handrail
   if (w.z0 - VZ >= 0.25) wq(w.x, 0, 1.13, a, a + 0.07, '#6b7683');   // post
   ctx.restore();
+}
+
+// Race power-ups: a bobbing hand-drawn token floating over the floor. Taken ones are gone for everyone.
+const GLYPH = { boost: '»', refill: '+', clear: '✦' };
+export function drawPowerups() {
+  if (!S.race || !S.race.pickups || state !== 'play') return;
+  for (const pk of S.race.pickups) {
+    if (pk.taken || pk.z - VZ < 1.4 || pk.z - VZ > 45) continue;
+    const bob = 0.75 + 0.12 * Math.sin(S.clock * 3 + pk.z), c = W3(pk.x, bob, pk.z), s = F / c[2], r = 0.34 * s;
+    const col = PU_TYPES[pk.type].col, fade = clamp((pk.z - VZ - 1.4) / 1.5, 0, 1);
+    ctx.globalAlpha = fade;
+    const g = W3(pk.x, 0, pk.z);   // soft shadow on the floor
+    ctx.fillStyle = 'rgba(0,0,0,0.18)'; ctx.beginPath(); ctx.ellipse(g[0], g[1], r * 0.8, r * 0.28, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = col; ctx.strokeStyle = '#2b2118'; ctx.lineWidth = Math.max(1.5, r * 0.16);
+    ctx.beginPath(); ctx.arc(c[0], c[1], r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#fffbea'; ctx.font = '700 ' + Math.round(r * 1.3) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(GLYPH[pk.type], c[0], c[1] + r * 0.05);
+  }
+  ctx.globalAlpha = 1;
 }
