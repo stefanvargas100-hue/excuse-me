@@ -46,16 +46,7 @@ test('everyone in the room sees the same list of players, host first', async () 
   assert.strictEqual(ids(games[1]), ids(games[0])); assert.strictEqual(ids(games[3]), ids(games[0]));
 });
 
-test('a full room refuses the fifth player', async () => {
-  const H = hub(), games = [];
-  for (let i = 0; i < 5; i++) { const g = load(); g.useRoomFactory(H); games.push(g); }
-  const code = await games[0].hostRoom(1);
-  for (let i = 1; i < 4; i++) { await games[i].joinRoom(code); await settle(); }
-  const ok = await games[4].joinRoom(code); await settle(); await settle();
-  assert.strictEqual(games[4].lobbyPlayers().length, 0, 'the fifth is not in the list');
-  assert.strictEqual(games[0].lobbyPlayers().length, 4);
-  assert.strictEqual(ok, false);
-});
+// (the room size limit moved from 4 to 8: "a room holds 8 players and refuses the ninth" is in lobby8.test.js)
 
 test('the host cannot start alone, and starting puts everyone on the same race', async () => {
   const solo = await lobby(1);

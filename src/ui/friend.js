@@ -16,7 +16,7 @@ function reset() {
 
 export function openFriend() { reset(); go('friend'); }
 
-// the list of who is in the room: four slots, empty ones dashed; the host's Start needs at least one friend
+// the list of who is in the room: eight slots in two columns, empty ones dashed; the host's Start needs at least one friend
 function showRoster(players) {
   document.querySelectorAll('.friendroster').forEach(ul => {
     ul.textContent = '';

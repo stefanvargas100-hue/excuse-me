@@ -14,6 +14,7 @@ import { collide, updMe, updPeople } from './crowd.js';
 import { genChunk, runEvent, scramble, seeded, spawnFast, spawnRival, updXings, walker } from './people.js';
 import { STREAK_SPEED, addPop, nearMul, onPass } from './scoring.js';
 import { S, bestOf, endShown, goalOf, reset, setEndShown, setRaceBuild, setState, state } from './state.js';
+import { startSlot } from './startgrid.js';
 import { BUMP_SPEED, addRemoteRacer, draftMul, finishRace, fmtTime, initRace, leadZ, ordinal, raceBest, raceCollide, raceCountdown, racePace, rearZ, updRace } from './race.js';
 import { updCars } from './traffic.js';
 import { beginTut, tutTick } from './tutorial.js';
@@ -312,7 +313,14 @@ export function start(a, b, opts) {
   S.mode = mode; S.kind = mode; S.endless = mode !== 'race'; S.seed = key || (duel ? duel.seed : null); S.duel = duel;
   if (S.endless) S.timeLeft = Infinity;
   ghostStart();
-  if (mode === 'race') { initRace(duel ? 0 : 3); if (duel) duel.order.forEach((id, i) => addRemoteRacer(duel.peers[id].look, duel.peers[id].name, id, i)); }
+  if (mode === 'race') {
+    initRace(duel ? 0 : 3);
+    if (duel) {
+      const spot = k => startSlot(duel.slotOf[k], duel.count, LV.half);   // everyone on one line, in the order of the room list
+      duel.order.forEach((id, i) => { const b = addRemoteRacer(duel.peers[id].look, duel.peers[id].name, id, i), at = spot(id); b.x = at.x; b.z = at.z; });
+      const me = spot('me'); S.px = me.x; S.pz = me.z; S.me.x = me.x; S.me.z = me.z;
+    }
+  }
   S.daily = daily; S.weekly = weekly; S.dailyKey = key; for (const k in last) last[k] = k === 'low' ? null : -1; S.live = true; setState('play'); setEndShown(false);
   hideMenus(); $('hud').hidden = false;
   if (S.mod) banner(MOD_NAMES[S.mod].toUpperCase(), '#ff9f43');

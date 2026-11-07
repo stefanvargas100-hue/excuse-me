@@ -39,7 +39,7 @@ function buildPlay() {
   };
   mode('lvl', 'Single player', 'Classic', 'Endless', 'Pick a stage and go until you bump into someone.', () => openStages('classic'));
   mode('lvl', 'Competitive', 'Race vs bots', '4 racers', 'First to the finish. Your build and gear matter here.', () => openStages('race'));
-  mode('lvl', 'Competitive', 'Race friends', 'Live, 2-4 players', 'Make a room, send the code, and race up to 3 friends on the same crowd, live.', openFriend);
+  mode('lvl', 'Competitive', 'Race friends', 'Live, 2-8 players', 'Make a room, send the code, and race up to 7 friends on the same crowd, live.', openFriend);
   // Daily and weekly runs: endless, one try each, the same crowd for everyone.
   const periodic = (kind, title, lvl, key, startFn, blurb) => {
     const done = hasPlayed(kind), best = parseInt(store.get('excuseme_' + kind + '_' + key, '0'), 10) || 0;

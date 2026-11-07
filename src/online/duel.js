@@ -1,4 +1,4 @@
-/* ---------- live race with 1 to 3 friends (a room of up to 4 phones) ----------
+/* ---------- live race with 1 to 7 friends (a room of up to 8 phones) ----------
    The host makes a room code, friends join with the code or a link, the host presses Start. All phones then build the same
    seeded crowd and send each other their position several times a second. Nothing is stored; the room disappears when everyone leaves.
    Every message carries the sender's id. Only the host's roster and start messages count, and anything from an unknown id is ignored. */
@@ -37,7 +37,7 @@ const newId = () => { let s = ''; while (s.length < 8) s += Math.random().toStri
 const num = (v, lim) => (typeof v === 'number' && Number.isFinite(v) && Math.abs(v) <= lim ? v : null);
 
 /* ---- room state ---- */
-export const MAX_PLAYERS = 4;
+export const MAX_PLAYERS = 8;
 // Phones slow a page's timers right down when you switch apps (say, to copy the code), so "silent" has to mean a long time.
 const KEEPALIVE_MS = 2000, STALE_MS = 30000, JOIN_WAIT_MS = 6000;
 
@@ -69,14 +69,17 @@ function receiveGhost(from, data) {
 }
 
 /* ---- one race at a time ---- */
-export function startDuel({ seed, level, friends, friend, send }) {
+export function startDuel({ seed, level, friends, friend, send, roster: ids, meId }) {
   setLevel(level);
   const list = friends || (friend ? [{ id: 'friend', ...friend }] : []);
   const peers = {}, order = [];
   for (const f of list) { peers[f.id] = { name: cleanName(f.name), look: cleanLook(f.look), remote: createRemote(), fin: null, bye: false }; order.push(f.id); }
   const names = order.map(i => peers[i].name);
-  // ten reports a second for one friend; five with more, so a full room stays inside the connection's message limits
-  const d = { refresh: showRematch, seed, peers, order, title: names.length === 1 ? names[0] : names.length + ' friends', send, n: 0, sendT: 0, sendEvery: order.length > 1 ? 0.2 : 0.1 };
+  // start line: the room list says who stands where (me first when no list is given)
+  const lineUp = ids && ids.length ? ids : ['me', ...order], slotOf = {};
+  lineUp.forEach((id, i) => { slotOf[id === meId ? 'me' : id] = i; });
+  // ten reports a second for one friend; five with more (measured 2026-11-07: a full room of 8 at 5 a second lost nothing on the free plan)
+  const d = { refresh: showRematch, seed, peers, order, slotOf, count: lineUp.length, title: names.length === 1 ? names[0] : names.length + ' friends', send, n: 0, sendT: 0, sendEvery: order.length > 1 ? 0.2 : 0.1 };
   start('race', null, { duel: d });
   return d;
 }
@@ -133,7 +136,7 @@ function onMessage(ev, data) {
   } else if (ev === 'full') {
     if (role === 'guest' && !inRoster && data.to === myId && joinWaiter) {
       const w = joinWaiter; joinWaiter = null;
-      say(data.why === 'started' ? 'That room already started a race. Ask the host for a new room.' : 'That room is full (4 players).'); w(false);
+      say(data.why === 'started' ? 'That room already started a race. Ask the host for a new room.' : 'That room is full (' + MAX_PLAYERS + ' players).'); w(false);
     }
   } else if (ev === 'rematch') {
     if (!from || !roster.some(p => p.id === from)) return;
@@ -160,7 +163,7 @@ export const injectRoomMessage = onMessage;
 function beginRace(level, seed) {
   wantMe = false; wants.clear(); raced = true;
   const id = myId;
-  startDuel({ seed, level, friends: others(), send: (ev, d) => { if (room) room.send(ev, { id, ...d }); } });
+  startDuel({ seed, level, friends: others(), roster: roster.map(p => p.id), meId: id, send: (ev, d) => { if (room) room.send(ev, { id, ...d }); } });
   sendMyGhosts(level);
   changed();
 }

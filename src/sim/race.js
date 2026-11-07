@@ -147,7 +147,7 @@ export function raceCountdown(dt) {
 }
 
 /* ---------- a friend racing live: looks like a bot to the rest of the game, but their phone does the steering ---------- */
-const FRIEND_COLORS = ['#ff4fa3', '#3ec7e8', '#9b6bff'], FRIEND_SILENT = 5;   // seconds without news before we assume they left
+const FRIEND_COLORS = ['#ff4fa3', '#3ec7e8', '#9b6bff', '#ff8a3d', '#3ddc84', '#e8394d', '#4f6bff'], FRIEND_SILENT = 5;   // seven friends at most, none like your own yellow   // seconds without news before we assume they left
 export function addRemoteRacer(look, name, peerId, slot = 0) {
   const R = S.race, b = makeBot(R.bots.length, R.diff, name);
   Object.assign(b, look); applyBuild(b); dress(b);
@@ -165,6 +165,18 @@ function stepRemote(b, dt) {
   const nn = Math.hypot(b.fx, b.fz) || 1; b.fx /= nn; b.fz /= nn;
   b.phase += dt * (2.2 + sp * 2.0);
   b.walkA += (1 - b.walkA) * Math.min(1, dt * 8);
+}
+// Racers can walk straight through each other: nobody is slowed or bumped. While you overlap, both of you are drawn see-through
+// (0 = apart, 1 = right on top of each other), so it is clear you are passing through and not glitching.
+const OVERLAP_R = 1.0;
+export const overlapAmount = d => clamp((OVERLAP_R - d) / (OVERLAP_R * 0.6), 0, 1);
+function updOverlap() {
+  S.overlapAmt = 0;
+  for (const b of S.race.bots) {
+    if (!b.remote) continue;
+    b.overlap = b.done ? 0 : overlapAmount(Math.hypot(b.x - S.px, b.z - S.pz));
+    if (b.overlap > S.overlapAmt) S.overlapAmt = b.overlap;
+  }
 }
 // Sends our position ten times a second; drops the friend if they go quiet or say goodbye.
 function duelTick(dt) {
@@ -387,7 +399,7 @@ export function updRace(dt) {
   }
   stepPowerups(S, dt);
   collectPowerups(S, S.px, S.pz, S.puZ0, true); S.puZ0 = S.pz;
-  if (S.duel) duelTick(dt);
+  if (S.duel) { duelTick(dt); updOverlap(); }
   for (const p of S.people) if (p.hitT !== undefined) { p.hitT -= dt; if (p.hitT <= 0) { p.hit = false; delete p.hitT; } }
 }
 

@@ -679,7 +679,7 @@ export function drawPerson(p) {
   const fy = HOR + VY * s;
   // fog in the distance; fade people right in front of the camera so they never block your character
   // racers beside and behind you go see-through: they can't touch you, and they must never block your view
-  const racerFade = p.racer ? clamp(0.3 + (p.z - S.pz + 1) * 0.35, 0.3, 1) * (p.isGhost ? 0.5 : 1) : 1;
+  const racerFade = (p.racer ? clamp(0.3 + (p.z - S.pz + 1) * 0.35, 0.3, 1) * (p.isGhost ? 0.5 : 1) : 1) * (1 - 0.5 * (p.isMe ? S.overlapAmt || 0 : p.overlap || 0));   // overlapping another live racer: see-through
   const ghost = (p.isMe ? S.ghostT : p.ghostT) > 0 ? 0.5 + 0.25 * Math.sin(S.clock * 30) : 1;   // race mode: blink during the rare safety slip-through
   ctx.globalAlpha = Math.min(fogA(dz), p.isMe ? 1 : clamp((dz - 0.6) / 1.6, 0.22, 1), clamp((DRAW_FAR - dz) / 8, 0, 1), p.fadeT === undefined ? 1 : p.fadeT / 0.9) * ghost * racerFade;
   if (p.prop !== 'spill') {
