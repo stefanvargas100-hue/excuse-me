@@ -556,6 +556,61 @@ function drawProp(p, s, bx, fy) {
       const q = W3(x, 0.62, z - 0.46); label('CHECK-IN', q[0], q[1], Math.round(0.2 * F / q[2]), '#ffffff');
       break;
     }
+    case 'barrier': {
+      for (const dx of [-0.7, 0.7]) box3D(x + dx - 0.05, x + dx + 0.05, 0, 0.6, z - 0.1, z + 0.1, hex('#6b7280'));
+      box3D(x - 0.95, x + 0.95, 0.6, 1.0, z - 0.06, z + 0.06, hex('#f2994a'));
+      box3D(x - 0.35, x + 0.0, 0.6, 1.0, z - 0.07, z + 0.07, hex('#f4f1ea'));
+      break;
+    }
+    case 'newsstand': {
+      box3D(x - 0.9, x + 0.9, 0, 1.7, z - 0.55, z + 0.55, hex('#2f5d3a'));
+      box3D(x - 1.0, x + 1.0, 1.7, 1.85, z - 0.65, z + 0.65, hex('#1f3d2b'));
+      const q = W3(x, 1.2, z - 0.56); label('NEWS', q[0], q[1], Math.round(0.26 * F / q[2]), '#ffffff');
+      break;
+    }
+    case 'bikes': {
+      for (const dx of [-0.6, 0, 0.6]) {
+        box3D(x + dx - 0.04, x + dx + 0.04, 0.05, 0.62, z - 0.45, z + 0.45, hex(dx < 0 ? '#c0392b' : dx > 0 ? '#2f80ed' : '#2aa56a'));
+        box3D(x + dx - 0.04, x + dx + 0.04, 0.62, 0.7, z - 0.25, z + 0.1, hex('#1f2937'));
+      }
+      break;
+    }
+    case 'bench': {
+      box3D(x - 0.7, x + 0.7, 0.05, 0.4, z - 0.25, z + 0.25, hex('#6b4a2b'));
+      box3D(x - 0.7, x + 0.7, 0.4, 0.85, z + 0.18, z + 0.26, hex('#9a6b43'));
+      break;
+    }
+    case 'shelter': {
+      for (const dz of [-1.4, 1.4]) box3D(x - 0.35, x - 0.27, 0, 2.3, z + dz - 0.05, z + dz + 0.05, hex('#374151'));
+      box3D(x - 0.5, x + 0.5, 2.3, 2.42, z - 1.5, z + 1.5, hex('#1f2937'));
+      box3D(x - 0.35, x - 0.3, 0.6, 2.2, z - 1.4, z + 1.4, hex('#9fc7e6'));
+      break;
+    }
+    case 'trashbags': {
+      for (const [dx, dz, r] of [[0, 0, 0.36], [0.3, 0.1, 0.28], [-0.25, 0.15, 0.3]]) { const c = W3(x + dx, r, z + dz); ball(c[0], c[1], r * F / c[2], '#1f2937', '#4b5563', '#0f172a'); }
+      break;
+    }
+    case 'vending': {
+      box3D(x - 0.4, x + 0.4, 0, 1.8, z - 0.35, z + 0.35, hex('#c0392b'));
+      box3D(x - 0.32, x + 0.32, 0.5, 1.5, z - 0.37, z - 0.34, hex('#fff1bf'));
+      break;
+    }
+    case 'asign': {
+      box3D(x - 0.3, x + 0.3, 0, 0.95, z - 0.05, z + 0.05, hex('#f4f1ea'));
+      const q = W3(x, 0.6, z - 0.06); label('SALE', q[0], q[1], Math.round(0.16 * F / q[2]), '#c0392b');
+      break;
+    }
+    case 'van': case 'taxi': {
+      const dir = p.dirx || 1, L = p.prop === 'van' ? 4.6 : 4.4, a = x - dir * L, x0 = Math.min(x, a), x1 = Math.max(x, a), blink = p.driving && Math.floor(S.clock * 5) % 2 === 0;
+      const body = p.prop === 'van' ? hex('#f4f6f8') : hex('#f2c200'), cab = p.prop === 'van' ? hex('#2f80ed') : hex('#2a3644');
+      box3D(x0, x1, 0.2, 1.1, z - 0.7, z + 0.7, body);
+      const cx0 = dir > 0 ? x - 1.5 : x, cx1 = dir > 0 ? x : x + 1.5;
+      box3D(cx0, cx1, 1.1, 1.75, z - 0.6, z + 0.6, cab);
+      if (p.prop === 'van') box3D(Math.min(x, a + dir * 1.6), Math.max(x, a + dir * 1.6), 1.1, 2.0, z - 0.68, z + 0.68, hex('#e5e7eb'));
+      else box3D(x0 + L / 2 - 0.3, x0 + L / 2 + 0.3, 1.75, 1.95, z - 0.15, z + 0.15, hex('#f4f1ea'));
+      const l = W3(x - dir * 0.1, 1.2, z - 0.72); ball(l[0], l[1], 0.12 * F / l[2], blink ? '#fff3b0' : '#b45309', '#ffffff', '#92400e');
+      break;
+    }
     case 'gatedesk': {
       box3D(x - 0.5, x + 0.5, 0, 1.05, z - 1.35, z + 1.35, hex('#4c6a8a'));
       box3D(x - 0.55, x + 0.55, 1.05, 1.12, z - 1.4, z + 1.4, hex('#e8edf4'));

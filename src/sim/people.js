@@ -198,6 +198,36 @@ function nycProps(z0) {
   }
 }
 
+// Fifth Avenue obstacles in the walkway itself: an island every 36 m (barrier, newsstand, bike rack, bench in turn), plus a bus shelter
+// and bags of rubbish at the curb now and then. Islands leave plenty of sidewalk open on one side.
+const NYC_ISLANDS = ['barrier', 'newsstand', 'bikes', 'bench'];
+function nycStreet(z0) {
+  const n = Math.floor(z0 / 4);
+  if (z0 < 24 || inXing(z0 - 4) || inXing(z0) || inXing(z0 + 4) || inXing(z0 + 8)) return;
+  const row = (k, x, z, os, r) => mk(x, z, { prop: k, circles: os.map(ox => ({ ox, oz: 0, r })) });
+  if (n % 9 === 4) {
+    const kind = NYC_ISLANDS[Math.floor(n / 9) % NYC_ISLANDS.length], x = rnd(-2.2, 2.4), z = z0 + 2;
+    if (kind === 'barrier') row(kind, x, z, [-0.6, 0, 0.6], 0.3);
+    else if (kind === 'newsstand') row(kind, x, z, [-0.4, 0.4], 0.55);
+    else if (kind === 'bikes') row(kind, x, z, [-0.6, 0, 0.6], 0.28);
+    else row(kind, x, z, [-0.6, -0.2, 0.2, 0.6], 0.3);
+  } else if (n % 27 === 20) mk(-3.5, z0 + 2, { prop: 'shelter', circles: [-1.2, -0.4, 0.4, 1.2].map(oz => ({ ox: 0, oz, r: 0.45 })) });
+  else if (n % 11 === 7) mk(-3.75, z0 + 1, { prop: 'trashbags', circles: [{ ox: 0, oz: 0, r: 0.45 }] });
+}
+
+// Shibuya: vending machines at the edges, and an island every 44 m in the crossing (A-frame sign, bike rack, crowd barrier in turn).
+const TOKYO_ISLANDS = ['asign', 'bikes', 'barrier'];
+function tokyoStreet(z0) {
+  const n = Math.floor(z0 / 4);
+  if (z0 < 24) return;
+  if (n % 6 === 1) mk((n % 12 === 1 ? -1 : 1) * 10.0, z0 + 1, { prop: 'vending', circles: [{ ox: 0, oz: 0, r: 0.4 }] });
+  if (n % 11 === 5) {
+    const kind = TOKYO_ISLANDS[Math.floor(n / 11) % TOKYO_ISLANDS.length], x = rnd(-7.5, 7.5), z = z0 + 2;
+    const os = kind === 'asign' ? [0] : kind === 'bikes' ? [-1.0, -0.5, 0, 0.5, 1.0] : [-0.9, -0.3, 0.3, 0.9];
+    mk(x, z, { prop: kind, circles: os.map(ox => ({ ox, oz: 0, r: kind === 'asign' ? 0.3 : 0.28 })) });
+  }
+}
+
 // Terminal furniture you have to weave around: an island every 32 m (info desk, benches, bin, plant, trolleys in turn) and a bin or
 // plant by a wall now and then. Islands leave the walkway open on at least one side, and in a race they keep off the moving walkway.
 const AIRPORT_KINDS = ['desk', 'chairs', 'bin', 'plant', 'trolleys'];
@@ -227,8 +257,9 @@ function airportProps(z0) {
 
 function genChunkInner(z0) {
   const d = clamp(z0 / LV.goal, 0, 1);
-  if (LV.id === 'nyc') nycProps(z0);
+  if (LV.id === 'nyc') { nycProps(z0); nycStreet(z0); }
   if (LV.id === 'airport') airportProps(z0);
+  if (LV.id === 'shibuya') tokyoStreet(z0);
   if (inXing(z0 + 2)) return;   // the crosswalk crowds come from the signal waves instead
   const k = LV.base + (R() < 0.4 + 0.4 * d ? 1 : 0) + (d > 0.25 && R() < 0.55 ? 1 : 0) + (d > 0.6 && R() < 0.6 ? 1 : 0);
   for (let i = 0; i < k; i++) spawnUnit(z0 + R() * 4, d);
@@ -308,7 +339,7 @@ export function runEvent(kind) {
   } else if (kind === 'weave') {
     // Rows of oncoming people, each row with a gap, and the gap snakes left and right down the hall. The gaps are marked on the floor,
     // so you can see the pattern coming and plan a line through it.
-    const race = raceBuild && beltInfo(LV.id), lo = -5.6, hi = race ? 1.4 : 5.6, mid = (lo + hi) / 2, amp = Math.min((hi - lo) / 2 - 1.0, 3.2), ph = rnd(0, TAU);
+    const race = raceBuild && beltInfo(LV.id), lo = LV.id === 'nyc' ? -2.8 : LV.id === 'shibuya' ? -9.5 : -5.6, hi = LV.id === 'nyc' ? 3.0 : LV.id === 'shibuya' ? 9.5 : race ? 1.4 : 5.6, mid = (lo + hi) / 2, amp = Math.min((hi - lo) / 2 - 1.0, 3.2), ph = rnd(0, TAU);
     const rows = [];
     for (let i = 0; i < 6; i++) {
       const gx = mid + amp * Math.sin(ph + i * 0.65), rz = z + i * 8;
@@ -321,12 +352,13 @@ export function runEvent(kind) {
     }
     S.flows.push({ kind: 'weave', rows });
     banner('WEAVE AHEAD: FOLLOW THE GAPS', '#5ee6a8');
-  } else if (kind === 'cart') {
-    // A baggage cart crosses the hall from one wall to the other, beeping as it starts. Beat it across or wait for it to pass.
-    const dir = pick([-1, 1]), x0 = -dir * (h + 2.5), cz = z - 4;
-    const cart = mk(x0, cz, { prop: 'cart2', drive: dir * 2.6, driveAt: 24, circles: [0, 1, 2].map(i => ({ ox: -dir * i * 1.25, oz: 0, r: 0.5 })) });
-    cart.rad = 3.4; cart.dirx = dir;
-    banner('BAGGAGE CART CROSSING', '#ffd166');
+  } else if (kind === 'cart' || kind === 'van' || kind === 'taxi') {
+    // A vehicle crosses the walkway from one side to the other, beeping as it starts. Beat it across or wait for it to pass.
+    const dir = kind === 'van' ? 1 : pick([-1, 1]), x0 = -dir * (h + 3), cz = z - 4;
+    const spec = { cart: ['cart2', 2.6, 24, 3, 1.25, 0.5, 'BAGGAGE CART CROSSING', '#ffd166'], van: ['van', 3.2, 24, 3, 1.5, 0.7, 'DELIVERY VAN CUTTING ACROSS', '#c8a165'], taxi: ['taxi', 4.0, 30, 3, 1.4, 0.7, 'TAXI CUTTING THROUGH', '#ffcf1f'] }[kind];
+    const v = mk(x0, cz, { prop: spec[0], drive: dir * spec[1], driveAt: spec[2], circles: [...Array(spec[3]).keys()].map(i => ({ ox: -dir * i * spec[4], oz: 0, r: spec[5] })) });
+    v.rad = 3.4; v.dirx = dir;
+    banner(spec[6], spec[7]);
   } else if (kind === 'selfie') {
     const cx0 = rnd(-6, 6), n = 4 + ((R() * 3) | 0);
     for (let i = 0; i < n; i++) { const a = i / n * TAU; mk(cx0 + Math.cos(a) * 0.55, z + Math.sin(a) * 0.55, { v0: 0, fx: Math.cos(a), fz: Math.sin(a), phone: true }); }
