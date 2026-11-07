@@ -17,6 +17,7 @@ import { S, bestOf, endShown, goalOf, reset, setEndShown, setRaceBuild, setState
 import { BUMP_SPEED, addRemoteRacer, draftMul, finishRace, fmtTime, initRace, leadZ, ordinal, raceBest, raceCollide, raceCountdown, racePace, rearZ, updRace } from './race.js';
 import { updCars } from './traffic.js';
 import { beginTut, tutTick } from './tutorial.js';
+import { beginCoach, coachTick } from './racecoach.js';
 import { buildLevels, last } from '../ui/menus.js';
 import { hideMenus } from '../ui/screens.js';
 import { ghostSave, ghostStart, ghostStep } from './replay.js';
@@ -89,6 +90,7 @@ export function tick(dt) {
     if (pendingDash && performance.now() >= pendingDash.at) { action(pendingDash.z); setPendingDash(null); }
     movePlayer(dt);
     S.me.x = S.px; S.me.z = S.pz;
+    if (S.coach) coachTick(dt);
     if (S.tut) {
       tutTick(dt);
       if (S.tut) { updPeople(dt); S.people = S.people.filter(p => !p.dead && p.z > S.pz - 16); return; }
@@ -308,6 +310,7 @@ export function start(a, b, opts) {
   setRadarTop(hb && hb.bottom ? hb.bottom + 6 : 120);
   if (LV.id === 'shibuya') { S.waveT = 1.5; }
   if (mode === 'classic' && store.get('excuseme_tut', '0') !== '1') beginTut();
+  beginCoach(mode);
   Music.start(LV.music); Music.ambStart(LV.id);
 }
 

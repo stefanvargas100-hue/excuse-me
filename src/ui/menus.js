@@ -13,6 +13,7 @@ import { dailyLevel, fmt, hasPlayed, lastDaily, lastMode, pauseGame, quitRun, re
 import { draftMul, fmtTime, ordinal, raceBest, racePace, raceDifficulty, standings } from '../sim/race.js';
 import { S, bestOf, calm, camBob, cues, reset, setCalm, setCamBob, setCues, setShowHB, showHB, state } from '../sim/state.js';
 import { endTut } from '../sim/tutorial.js';
+import { endCoach, syncCoach } from '../sim/racecoach.js';
 import { back, go, pageInto, relayoutWith } from './screens.js';
 import { shareRun } from '../sim/replay.js';
 import { openFriend } from './friend.js';
@@ -124,6 +125,7 @@ export function hud() {
 // Race mode: your place, the gap to the next racer, and a dot for each racer on the progress bar.
 const dotsKey = { n: -1 };
 function raceHud() {
+  syncCoach();
   const pl = $('place');
   if (!S.race) { if (!pl.hidden) pl.hidden = true; if (dotsKey.n !== 0) { dotsKey.n = 0; $('raceDots').innerHTML = ''; } return; }
   pl.hidden = false;
@@ -283,7 +285,7 @@ export function init() {
   vol('sfxVol', () => Music.sfxVol, v => Music.setSfxVol(v));
   $('again').addEventListener('click', () => { if (S && S.duel) requestRematch(); else start(lastDaily, lastMode); });
   $('tutBtn').addEventListener('click', () => { store.set('excuseme_tut', '0'); start('classic'); });
-  $('tutSkip').addEventListener('click', e => { e.stopPropagation(); if (S.tut) endTut(); });
+  $('tutSkip').addEventListener('click', e => { e.stopPropagation(); if (S.tut) endTut(); else endCoach(); });
   $('tutSkip').addEventListener('pointerdown', e => e.stopPropagation());
   $('next').addEventListener('click', () => { setLevel(Math.min(LEVELS.length - 1, LVI + 1)); start(false); });
   $('menu').addEventListener('click', () => { Music.ambStop(); leaveRoom(); toMenu(); });

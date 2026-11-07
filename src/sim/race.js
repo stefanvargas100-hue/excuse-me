@@ -9,6 +9,7 @@ import { effects, fitOf, randomLoadout, statsOf } from '../config/stats.js';
 import { COST_DASH, DASH_T, DASH_V } from '../input/input.js';
 import { buzz, store } from '../save/store.js';
 import { banner } from './actions.js';
+import { endCoach } from './racecoach.js';
 import { track } from '../save/challenges.js';
 import { LOOK } from '../save/progress.js';
 import { applyBuild, dress } from './people.js';
@@ -385,6 +386,7 @@ export function updRace(dt) {
 // The player crossed the line.
 export function finishRace() {
   const R = S.race;
+  endCoach();
   R.finished = true; R.board = standings(); R.place = R.board.findIndex(r => r.me) + 1;
   const key = 'excuseme_race_best_' + LV.id, prev = parseFloat(store.get(key, '0')) || 0;
   R.newBest = !S.duel && R.place === 1 && (!prev || S.time < prev);

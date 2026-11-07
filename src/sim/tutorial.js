@@ -22,7 +22,7 @@ export const TUT = [
 export function beginTut() {
   S.tut = { step: 0, t: 0 }; S.tutHold = 0; S.tutPerfectShout = false;
   S.people = S.people.filter(p => p.prop);
-  $('tut').hidden = false; tutUI();
+  $('tut').classList.remove('coach'); $('tut').hidden = false; tutUI();
 }
 
 function tutUI() { $('tutStep').textContent = 'Tutorial ' + (S.tut.step + 1) + ' / ' + TUT.length; $('tutText').textContent = TUT[S.tut.step].text; }
