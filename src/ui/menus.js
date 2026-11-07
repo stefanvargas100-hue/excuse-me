@@ -293,6 +293,7 @@ export function init() {
   vol('musicVol', () => Music.musicVol, v => Music.setMusicVol(v));
   vol('sfxVol', () => Music.sfxVol, v => Music.setSfxVol(v));
   $('again').addEventListener('click', () => { if (S && S.duel) requestRematch(); else start(lastDaily, lastMode); });
+  $('dbgBtn').addEventListener('click', () => { if (!window.__dbgOn) { window.__dbgOn = true; import('../dev/debugview.js').then(m => m.openDebug()); } });   // temporary: shows the sizes the phone reports
   $('tutBtn').addEventListener('click', () => { store.set('excuseme_tut', '0'); start('classic'); });
   $('tutSkip').addEventListener('click', e => { e.stopPropagation(); if (S.tut) endTut(); else endCoach(); });
   $('tutSkip').addEventListener('pointerdown', e => e.stopPropagation());

@@ -72,4 +72,5 @@ window.__excuse = { setTopGhostFetcher, visibleGhosts, visibleGhost, genChunk, t
 requestAnimationFrame(frame);
 
 // Review tool: add ?lineup to the address to see every body and clothing item side by side.
+if (typeof location !== 'undefined' && location.search.includes('debug')) import('./dev/debugview.js').then(m => m.openDebug());
 if (typeof location !== 'undefined' && location.search.includes('lineup')) import('./dev/lineup.js').then(m => m.openLineup());
