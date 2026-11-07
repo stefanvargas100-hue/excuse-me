@@ -37,7 +37,8 @@ const num = (v, lim) => (typeof v === 'number' && Number.isFinite(v) && Math.abs
 
 /* ---- room state ---- */
 export const MAX_PLAYERS = 4;
-const KEEPALIVE_MS = 2000, STALE_MS = 10000, JOIN_WAIT_MS = 6000;
+// Phones slow a page's timers right down when you switch apps (say, to copy the code), so "silent" has to mean a long time.
+const KEEPALIVE_MS = 2000, STALE_MS = 30000, JOIN_WAIT_MS = 6000;
 
 let room = null, role = null, code = '', levelIdx = 0, tick = null, raceNo = 0;
 let myId = '', hostId = '', roster = [];        // roster: [{ id, name, look }], the host first, me included
@@ -176,7 +177,7 @@ async function connect(c, r) {
 export async function hostRoom(level) {
   levelIdx = level;
   say('Making a room...');
-  try { await connect(makeCode(), 'host'); } catch (e) { say('Could not connect. Check your internet and try again.'); return null; }
+  try { await connect(makeCode(), 'host'); } catch (e) { closeRoom(); say('Could not connect. Check your internet and try again.'); return null; }
   roster = [{ id: myId, name: myName(), look: LOOK }]; hostId = myId; inRoster = true;
   say('Waiting for friends to join...'); changed();
   return code;
@@ -184,15 +185,14 @@ export async function hostRoom(level) {
 export async function joinRoom(c) {
   c = cleanCode(c); if (c.length !== 4) { say('Type the 4 letter code.'); return false; }
   say('Joining ' + c + '...');
-  try { await connect(c, 'guest'); } catch (e) { say('Could not connect. Check the code and your internet.'); return false; }
+  try { await connect(c, 'guest'); } catch (e) { closeRoom(); say('Could not connect. Check the code and your internet.'); return false; }
   const ok = await new Promise(resolve => {
     joinWaiter = resolve;
     const t = setTimeout(() => { if (joinWaiter === resolve) { joinWaiter = null; say('Nobody answered. Check the code and try again.'); resolve(false); } }, JOIN_WAIT_MS);
     if (t && t.unref) t.unref();
   });
   if (!ok) { const keep = lastStatus; closeRoom(); say(keep); return false; }
-  say('Joined. Waiting for the host to start...');
-  return true;
+  return true;   // the roster screen shows the stage and who is in
 }
 
 export const lobbyPlayers = () => (room && inRoster ? roster.map(p => ({ id: p.id, name: p.name, look: p.look, me: p.id === myId, host: p.id === hostId })) : []);
