@@ -17,8 +17,8 @@ Lobby for 2-4 players is now built (see below). Not done yet: bigger lobbies, bu
 - [ ] Later: ready button, bots to fill slots (host switch), quick public matches.
 
 ## Bigger lobbies, 2-8 players (built 2026-11-07, branch lobby-8-cutoffs, NOT merged to main yet, needs a real phone test)
-- [ ] Stefan + friends: Play > Race friends, up to 8 phones. Report: smooth with 5+ people? Does everyone start in a neat line? Does passing through someone feel right (both of you go see-through, nobody slows)? Does the room list and the results list fit your phone?
-- Decision (Stefan): no cut-off penalty between live racers. They phase through each other.
+- [ ] Stefan + friends: Play > Race friends, up to 8 phones. Report: smooth with 5+ people? Does everyone start in a neat line? Do racers feel solid but fair when they meet (you cannot walk through them, nobody gets a bump penalty, the one behind slides round or follows)? Does the room list and the results list fit your phone?
+- Decision (Stefan): live racers are solid with no penalty; the racer behind gives way.
 - Measured: 8 fake players sending 5 and even 15 reports a second lost nothing on Supabase (tools/loadtest.mjs). Not yet tried with several rooms at once.
 
 ## Live 1v1 (built earlier, now part of the lobby)

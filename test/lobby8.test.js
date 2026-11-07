@@ -116,24 +116,70 @@ test('rematch with 8 players needs all eight, then everyone is on race two', asy
   for (const g of games) { assert.strictEqual(g.S.seed, code + ':2'); assert.strictEqual(g.state, 'play'); assert.strictEqual(botsOf(g).length, 7); }
 });
 
-test('walking through another live racer costs nothing, and both of you look see-through while you overlap', async () => {
-  const { games } = await lobby(3);
-  const [a, b] = games; a.hostStart(); await settle();
-  const bId = myId(b);
-  tickAll([a], 30 * 4);   // past the countdown
-  a.S.people.length = 0; a.S.nextChunk = 1e9;   // an empty street, so the only thing to touch is the other racer
-  const bumps = a.S.bumps;
-  for (let i = 1; i <= 40; i++) {
-    a.duelReceive('pos', { id: bId, n: i, x: a.S.px, z: a.S.pz, vx: 0, s: a.S.speed });   // b stands exactly where a is
+const emptyStreet = g => { g.S.people.length = 0; g.S.nextChunk = 1e9; };   // nothing but the other racer to touch
+const R2 = 0.5;   // two runners touch when their centres are this close (twice the body radius)
+
+test('a live racer is solid: you cannot walk through someone standing in front of you, and it costs no bump', async () => {
+  const { games } = await lobby(2);
+  const [a, b] = games, bId = myId(b);
+  a.hostStart(); await settle(); tickAll([a], 30 * 4);
+  emptyStreet(a);
+  const x0 = a.S.px, z0 = a.S.pz, ahead = z0 + 6, bumps = a.S.bumps;
+  let closest = 99, slowed = 0;
+  for (let i = 1; i <= 240; i++) {
+    a.duelReceive('pos', { id: bId, n: i, x: x0, z: ahead, vx: 0, s: 0 });   // b stands still in a's lane
     a.tick(DT);
+    closest = Math.min(closest, Math.hypot(a.S.px - x0, a.S.pz - ahead));
+    slowed = Math.max(slowed, a.S.bumpT);
   }
-  const bb = botsOf(a).find(x => x.peerId === bId);
-  assert.strictEqual(a.S.bumps, bumps, 'no bump');
-  assert.strictEqual(a.S.bumpT, 0, 'no slowdown');
-  assert.ok(a.S.speed > 1.5, 'still walking at pace: ' + a.S.speed);
-  assert.ok(bb.overlap > 0.5, 'they look see-through to you: ' + bb.overlap);
-  assert.ok(a.S.overlapAmt > 0.5, 'and you look see-through: ' + a.S.overlapAmt);
-  for (let i = 41; i <= 80; i++) { a.duelReceive('pos', { id: bId, n: i, x: a.S.px, z: a.S.pz + 30, vx: 0, s: 3 }); a.tick(DT); }
-  assert.strictEqual(bb.overlap, 0, 'solid again once they are far away');
-  assert.strictEqual(a.S.overlapAmt, 0);
+  assert.ok(closest >= R2 - 0.03, 'never inside them: ' + closest);
+  assert.ok(a.S.pz > ahead - 1, 'it did walk up to them: ' + a.S.pz);
+  assert.strictEqual(a.S.bumps, bumps, 'not counted as a bump');
+  assert.strictEqual(slowed, 0, 'no bump slowdown');
+});
+
+test('walking behind a live racer who is moving: you follow at their pace, you are not stopped dead', async () => {
+  const { games } = await lobby(2);
+  const [a, b] = games, bId = myId(b);
+  a.hostStart(); await settle(); tickAll([a], 30 * 4);
+  emptyStreet(a);
+  const x0 = a.S.px, bz0 = a.S.pz + 3, pace = 2.0;
+  let closest = 99;
+  for (let i = 1; i <= 300; i++) {
+    const bz = bz0 + pace * i * DT;
+    a.duelReceive('pos', { id: bId, n: i, x: x0, z: bz, vx: 0, s: pace });
+    a.tick(DT);
+    if (i > 15) closest = Math.min(closest, Math.hypot(a.S.px - x0, a.S.pz - bz));
+  }
+  assert.ok(closest >= R2 - 0.1, 'never inside them: ' + closest);
+  assert.ok(a.S.pz > 15, 'still got somewhere: ' + a.S.pz);
+  assert.ok(a.S.speed < pace + 0.6 && a.S.speed > pace - 0.8, 'about their pace: ' + a.S.speed);
+});
+
+test('two racers side by side: only one phone gives way (the same one on both screens), so nobody is thrown apart twice', async () => {
+  const { games } = await lobby(2);
+  const [a, b] = games, aId = myId(a), bId = myId(b);
+  a.hostStart(); await settle(); tickAll([a, b], 30 * 4);
+  emptyStreet(a); emptyStreet(b);
+  let moveA = 0, moveB = 0;
+  for (let i = 1; i <= 6; i++) {
+    a.S.px = 0; a.S.pz = 10; a.S.vx = 0; b.S.px = 0.15; b.S.pz = 10; b.S.vx = 0;   // 15 cm apart
+    a.duelReceive('pos', { id: bId, n: i, x: 0.15, z: 10, vx: 0, s: 0 }); b.duelReceive('pos', { id: aId, n: i, x: 0, z: 10, vx: 0, s: 0 });
+    a.tick(DT); b.tick(DT);
+    moveA = Math.max(moveA, Math.abs(a.S.px - 0)); moveB = Math.max(moveB, Math.abs(b.S.px - 0.15));
+  }
+  const aGivesWay = aId < bId;
+  assert.ok((aGivesWay ? moveA : moveB) > 0.2, 'the one who gives way steps clear: ' + moveA + ' / ' + moveB);
+  assert.ok((aGivesWay ? moveB : moveA) < 0.03, 'the other stays put: ' + moveA + ' / ' + moveB);
+});
+
+test('a racer who has finished no longer blocks anyone', async () => {
+  const { games } = await lobby(2);
+  const [a, b] = games, bId = myId(b);
+  a.hostStart(); await settle(); tickAll([a], 30 * 4);
+  emptyStreet(a);
+  a.duelReceive('fin', { id: bId, ft: 5 }); tickAll([a], 3);
+  const bb = botsOf(a).find(x => x.peerId === bId); bb.x = a.S.px; bb.z = a.S.pz + 0.2;
+  const z = a.S.pz; tickAll([a], 10);
+  assert.ok(a.S.pz > z + 0.3, 'walked straight on: ' + (a.S.pz - z));
 });

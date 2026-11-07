@@ -166,18 +166,6 @@ function stepRemote(b, dt) {
   b.phase += dt * (2.2 + sp * 2.0);
   b.walkA += (1 - b.walkA) * Math.min(1, dt * 8);
 }
-// Racers can walk straight through each other: nobody is slowed or bumped. While you overlap, both of you are drawn see-through
-// (0 = apart, 1 = right on top of each other), so it is clear you are passing through and not glitching.
-const OVERLAP_R = 1.0;
-export const overlapAmount = d => clamp((OVERLAP_R - d) / (OVERLAP_R * 0.6), 0, 1);
-function updOverlap() {
-  S.overlapAmt = 0;
-  for (const b of S.race.bots) {
-    if (!b.remote) continue;
-    b.overlap = b.done ? 0 : overlapAmount(Math.hypot(b.x - S.px, b.z - S.pz));
-    if (b.overlap > S.overlapAmt) S.overlapAmt = b.overlap;
-  }
-}
 // Sends our position ten times a second; drops the friend if they go quiet or say goodbye.
 function duelTick(dt) {
   const D = S.duel; D.sendT -= dt;
@@ -238,12 +226,44 @@ function shove(p, fromX) {
   }
 }
 
+// Live racers are solid too, but with no penalty: you simply cannot walk through each other. No bump, no freeze, no slowdown
+// beyond not being able to go through. Only the racer behind gives way, so two phones never both push; side by side (within
+// 35 cm front to back) the player with the lower id gives way, which both phones work out the same way.
+const RACER_GAP = 2 * R_PLAYER, SIDE_BY_SIDE = 0.35;
+function givesWayTo(b) {
+  const dz = b.z - S.pz;
+  return Math.abs(dz) > SIDE_BY_SIDE ? dz > 0 : S.duel.meId < b.peerId;
+}
+function resolveRacers(t) {
+  if (!S.duel) return;
+  const lim = LV.half - 0.5;
+  for (let iter = 0; iter < 3; iter++) {
+    let moved = false;
+    for (const b of S.race.bots) {
+      if (!b.remote || b.done || !givesWayTo(b)) continue;
+      const dx = t.x - b.x, dz = t.z - b.z, d2 = dx * dx + dz * dz;
+      if (d2 >= RACER_GAP * RACER_GAP) continue;
+      const d = Math.sqrt(d2);
+      let nx, nz;
+      if (d < 1e-3) { nx = S.duel.meId < b.peerId ? -1 : 1; nz = 0; } else { nx = dx / d; nz = dz / d; }
+      const push = RACER_GAP - d;
+      t.x += nx * push; t.z += nz * push;
+      const vn = (t.vx - b.vx) * nx + (t.speed - b.speed) * nz;   // closing speed on them; the part going into them is cancelled
+      if (vn < 0) { t.vx -= vn * nx; t.speed -= vn * nz; }
+      moved = true;
+    }
+    t.x = clamp(t.x, -lim, lim);
+    if (!moved) break;
+  }
+}
+
 // The player's collisions for one step.
 export function raceCollide(dt) {
   if (S.ghostT > 0) return;
   S.bumpCool = Math.max(0, S.bumpCool - dt);
   const t = { x: S.px, z: S.pz, vx: S.vx, speed: S.speed };
   const hit = resolve(t);
+  resolveRacers(t);
   S.px = t.x; S.pz = t.z; S.vx = t.vx; S.speed = Math.max(0, t.speed);
   S.me.x = S.px; S.me.z = S.pz;
   if (hit) {
@@ -399,7 +419,7 @@ export function updRace(dt) {
   }
   stepPowerups(S, dt);
   collectPowerups(S, S.px, S.pz, S.puZ0, true); S.puZ0 = S.pz;
-  if (S.duel) { duelTick(dt); updOverlap(); }
+  if (S.duel) duelTick(dt);
   for (const p of S.people) if (p.hitT !== undefined) { p.hitT -= dt; if (p.hitT <= 0) { p.hit = false; delete p.hitT; } }
 }
 

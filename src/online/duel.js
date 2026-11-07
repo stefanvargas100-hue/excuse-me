@@ -79,7 +79,7 @@ export function startDuel({ seed, level, friends, friend, send, roster: ids, meI
   const lineUp = ids && ids.length ? ids : ['me', ...order], slotOf = {};
   lineUp.forEach((id, i) => { slotOf[id === meId ? 'me' : id] = i; });
   // ten reports a second for one friend; five with more (measured 2026-11-07: a full room of 8 at 5 a second lost nothing on the free plan)
-  const d = { refresh: showRematch, seed, peers, order, slotOf, count: lineUp.length, title: names.length === 1 ? names[0] : names.length + ' friends', send, n: 0, sendT: 0, sendEvery: order.length > 1 ? 0.2 : 0.1 };
+  const d = { refresh: showRematch, seed, peers, order, slotOf, meId: meId || 'me', count: lineUp.length, title: names.length === 1 ? names[0] : names.length + ' friends', send, n: 0, sendT: 0, sendEvery: order.length > 1 ? 0.2 : 0.1 };
   start('race', null, { duel: d });
   return d;
 }
