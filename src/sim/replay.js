@@ -5,6 +5,7 @@ import { friendGhosts, cleanGhost, OWN_STEP } from './ghostshare.js';
 import { makeMe } from './people.js';
 import { addPop } from './scoring.js';
 import { S } from './state.js';
+import { recordKey } from './runopts.js';
 
 /* ---------- ghosts: your best run, friends' best runs, the top 3 of a classic stage; and sharing a run ----------
    Each ghost only shows up when you are close to its record: within GHOST_CLOSE_M of where that run ended.
@@ -13,9 +14,9 @@ import { S } from './state.js';
 const GHOST_MAX = 1500;   // up to 10 minutes of your own samples
 export const GHOST_CLOSE_M = 60;
 const FRIEND_COLORS = ['#8be9fd', '#ff9f43', '#c792ff', '#7ee081'], LEADER_COLORS = ['#ff6b9d', '#ffb3d1', '#ff8fb8'];
-const ghostKey = () => (S.kind === 'race' ? 'excuseme_ghost_race_' : 'excuseme_ghost_') + LV.id;
+const ghostKey = () => recordKey((S.kind === 'race' ? 'excuseme_ghost_race_' : 'excuseme_ghost_') + LV.id, S.run);
 const raceKind = () => S.kind === 'race' && !S.duel;
-const wantsGhost = () => (S.kind === 'classic' || raceKind()) && !S.tut;
+const wantsGhost = () => (S.kind === 'classic' || raceKind()) && !S.tut && S.run.policy.ghosts;
 export const visibleGhost = () => (S.ghost && !S.ghost.hidden ? S.ghost : null);
 export const visibleGhosts = () => [S.ghost, ...(S.otherGhosts || [])].filter(g => g && !g.hidden);
 
@@ -28,7 +29,7 @@ function makeGhost(pts, step, name, color) {
 
 export function ghostStart() {
   S.ghostRec = []; S.ghostNext = 0; S.ghost = null; S.ghostPts = null; S.closest = null; S.otherGhosts = [];
-  if (S.kind !== 'classic' && !raceKind()) return;
+  if ((S.kind !== 'classic' && !raceKind()) || !S.run.policy.ghosts) return;
   try {
     const pts = JSON.parse(store.get(ghostKey(), 'null'));
     if (Array.isArray(pts) && pts.length >= 4) { S.ghostPts = pts; S.ghost = makeGhost(pts, OWN_STEP, 'Your best', '#ffd166'); }
@@ -70,7 +71,7 @@ export function ghostStep(dt) {
 }
 
 export function ghostSave() {
-  if ((S.kind === 'classic' || raceKind()) && S.ghostRec.length >= 4) store.set(ghostKey(), JSON.stringify(S.ghostRec));
+  if ((S.kind === 'classic' || raceKind()) && S.run.policy.ghosts && S.ghostRec.length >= 4) store.set(ghostKey(), JSON.stringify(S.ghostRec));
 }
 
 // A line to share a run, using the phone's share sheet where it exists.

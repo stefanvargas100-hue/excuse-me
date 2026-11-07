@@ -3,6 +3,8 @@ import { BASE } from '../config/tuning.js';
 import { rnd } from '../config/util.js';
 import { keys, lastBoth, pendingDash, setLastBoth, setPendingDash, touches } from '../input/input.js';
 import { store } from '../save/store.js';
+import { setCounting } from '../save/challenges.js';
+import { makeRun } from './runopts.js';
 import { genChunk, makeMe } from './people.js';
 import { CAR_LANES, spawnCar } from './traffic.js';
 
@@ -24,8 +26,14 @@ export function setRaceBuild(v) { raceBuild = v; }
 export const bestOf = id => parseInt(store.get('excuseme_best_' + id, '0'), 10) || 0;
 
 
+// start() hands the next run's options over here, so even the first player model is built with them.
+let nextRun = null;
+export function setNextRun(r) { nextRun = r; }
+
 export function reset() {
-  S = { px: 0, pz: 0, vx: 0, speed: BASE, energy: 100, exhausted: false, boostV: 0, step: 0, camX: 0,
+  const run = nextRun || makeRun(); nextRun = null;
+  setCounting(run.policy.progress);
+  S = { run, px: 0, pz: 0, vx: 0, speed: BASE, energy: 100, exhausted: false, boostV: 0, step: 0, camX: 0,
         time: 0, people: [], cars: [], carT: [0, 0.6, 1.2], xings: [], flows: [], waveT: 4, nextChunk: 14, overT: 0, live: false, clock: 0,
         fastT: 2, rivalT: 7, dodged: 0, close: 0, passed: 0, heat: 0,
         score: 0, chain: 0, bestChain: 0, lastPassT: -9, lastPass: null,

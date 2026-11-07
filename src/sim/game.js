@@ -15,7 +15,7 @@ import { PERFECT_SPEED, banner } from './actions.js';
 import { collide, updMe, updPeople } from './crowd.js';
 import { genChunk, runEvent, scramble, seeded, spawnFast, spawnRival, updXings, walker } from './people.js';
 import { STREAK_SPEED, addPop, nearMul, onPass } from './scoring.js';
-import { S, bestOf, endShown, goalOf, reset, setEndShown, setRaceBuild, setState, state } from './state.js';
+import { S, bestOf, endShown, goalOf, reset, setEndShown, setNextRun, setRaceBuild, setState, state } from './state.js';
 import { startSlot } from './startgrid.js';
 import { BUMP_SPEED, addRemoteRacer, draftMul, finishRace, fmtTime, initRace, leadZ, ordinal, raceBest, raceCollide, raceCountdown, racePace, rearZ, standings, updRace } from './race.js';
 import { updCars } from './traffic.js';
@@ -27,6 +27,7 @@ const MOD_NAMES = Object.fromEntries(MODS.map(m => [m.id, m.name]));
 import { buildLevels, last } from '../ui/menus.js';
 import { hideMenus } from '../ui/screens.js';
 import { ghostSave, ghostStart, ghostStep } from './replay.js';
+import { makeRun, recordKey } from './runopts.js';
 import { flushScores, showRunBoard, submitBestRun, submitRun } from '../online/online.js';
 
 
@@ -92,7 +93,7 @@ export function tick(dt) {
     if (S.race && S.race.countT > 0) { raceCountdown(dt); return; }   // 3-2-1-GO: everything holds still
     S.time += dt;
     ghostStep(dt);
-    if (S.kind === 'classic' && !S.beatBest && S.score > bestOf(LV.id) && bestOf(LV.id) > 0) { S.beatBest = true; addPop('NEW BEST!', '#ffd166', 30); }
+    if (S.kind === 'classic' && S.run.policy.records && !S.beatBest && S.score > bestOf(LV.id) && bestOf(LV.id) > 0) { S.beatBest = true; addPop('NEW BEST!', '#ffd166', 30); }
     if (S.kind === 'classic' && S.pz > S.farMark) { S.farMark += 5; trackMax('far_' + LV.id, S.pz); }
     if (pendingDash && performance.now() >= pendingDash.at) { action(pendingDash.z); setPendingDash(null); }
     holdTick(dt);
@@ -163,15 +164,16 @@ export function tick(dt) {
 
 function recordBest() {
   S.score = Math.floor(S.score);
+  if (!S.run.policy.records) { S.newBest = false; return; }   // practice and special runs leave no record
   if (S.daily || S.weekly) {
     const k = 'excuseme_' + (S.daily ? 'daily_' : 'weekly_') + S.dailyKey, b = parseInt(store.get(k, '0'), 10) || 0;
     S.newBest = S.score > b; if (S.newBest) store.set(k, String(S.score));
-    submitRun(S.daily ? 'daily' : 'weekly', S.dailyKey, S.score);   // online board; the server keeps only the first try
+    if (S.run.policy.scores) submitRun(S.daily ? 'daily' : 'weekly', S.dailyKey, S.score);   // online board; the server keeps only the first try
     return;
   }
   const b = bestOf(LV.id);
   S.newBest = S.score > b;
-  if (S.newBest) { store.set('excuseme_best_' + LV.id, String(S.score)); ghostSave(); if (S.kind === 'classic') submitBestRun(LV.id, S.score, S.ghostRec); }
+  if (S.newBest) { store.set('excuseme_best_' + LV.id, String(S.score)); ghostSave(); if (S.kind === 'classic' && S.run.policy.scores) submitBestRun(LV.id, S.score, S.ghostRec); }
 }
 
 // Every finished run pays XP, once: in any mode, even when you quit. A race against bots pays less.
@@ -179,6 +181,7 @@ const paid = new WeakSet();
 function payRun() {
   if (!S || paid.has(S)) return;
   paid.add(S);
+  if (!S.run.policy.xp) return;
   const R = S.race, xp = runXp({ mode: S.mode, score: S.score, won: !!(R && R.place === 1), bots: !!(R && !S.duel) });
   S.xpGained = xp; gainXp(xp);
 }
@@ -284,7 +287,7 @@ function showRaceEnd() {
   $('endLead').textContent = place === 1 ? 'First to ' + LV.goalText + '. Bumps cost you time, so a clean run wins.' : 'Not first this time. Every bump costs about a second and a half, so stay clean and look for gaps.';
   $('sScoreLabel').textContent = 'Finish time'; $('sScore').textContent = fmtTime(S.time);
   if (S.duel && S.duel.dnf) $('sScore').textContent = 'DNF';
-  const best = raceBest(LV.id);
+  const best = raceBest(LV.id, S.run);
   setStat('sBest', R.newBest ? 'Best time · new best' : 'Best win time', best ? fmtTime(best) : '-');
   setStat('sDist', 'Place', ordinal(place) + ' of ' + n);
   setStat('sChain', 'Bumps', String(S.bumps));
@@ -325,11 +328,13 @@ export function start(a, b, opts) {
   lastDaily = daily; lastMode = mode;
   setMod(opts && opts.mod !== undefined ? opts.mod : daily ? modOf(key).id : null);
   setRaceBuild(mode === 'race');   // the crowd generator adds belt riders in races only
-  setR(key ? mulberry32(hashStr(key)) : duel ? mulberry32(hashStr(duel.seed)) : Math.random);
+  const run = makeRun(key || duel ? null : opts && opts.run);   // daily, weekly and friend races are always standard runs
+  setR(key ? mulberry32(hashStr(key)) : duel ? mulberry32(hashStr(duel.seed)) : run.seed ? mulberry32(hashStr(run.seed)) : Math.random);
+  setNextRun(run);
   reset();
   S.tallyStart = tallySnapshot();
   S.mod = activeMod;
-  S.mode = mode; S.kind = mode; S.endless = mode !== 'race'; S.seed = key || (duel ? duel.seed : null); S.duel = duel;
+  S.mode = mode; S.kind = mode; S.endless = mode !== 'race'; S.seed = key || (duel ? duel.seed : run.seed); S.duel = duel;
   if (S.endless) S.timeLeft = Infinity;
   ghostStart();
   if (mode === 'race') {

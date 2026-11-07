@@ -18,6 +18,7 @@ import { applyBuild, dress } from './people.js';
 import { CLOSE_STAMINA, RAZOR_STAMINA, addPop, nearBoost, nearMul } from './scoring.js';
 import { S } from './state.js';
 import { ghostSave } from './replay.js';
+import { recordKey } from './runopts.js';
 import { collectPowerups, placePowerups, powerMul, stepPowerups } from './powerups.js';
 
 /* ---------- race mode: A to B against bots; a bump slows you down instead of ending the run ---------- */
@@ -32,6 +33,8 @@ const DRAFT_CHARGE = 1.2;             // seconds to earn it at middling distance
 const DRAFT_T = 2.5, DRAFT_BOOST = 1.25;   // how long it lasts and how much faster you go
 const DRAFT_COOL = 3;                 // after a boost runs out, no new slipstream for this long, so they cannot be chained
 const DRAFT_MIN_V = 0.8;              // they have to be walking your way, not standing or coming at you
+// The outfit this run uses: your saved one, or the one the run supplies. Never written back to the save.
+export const lookOf = () => (S.run && S.run.outfit ? { ...LOOK, ...S.run.outfit } : LOOK);
 export const draftMul = r => (r.draftT > 0 ? DRAFT_BOOST : 1);
 export const draftCharge = r => clamp(r.draftC / DRAFT_CHARGE, 0, 1);
 
@@ -127,7 +130,7 @@ export function initRace(botCount) {
   for (let i = 0; i < n; i++) S.race.bots.push(makeBot(i, diff, pool.splice((Math.random() * pool.length) | 0, 1)[0]));
   S.race.pickups = n > 0 ? placePowerups(LV.goal) : [];   // live races against friends have none: pickups are not shared between phones yet
   S.puZ0 = 0;
-  S.race.me = effects(statsOf(LOOK));   // your build and gear, race mode only
+  S.race.me = effects(statsOf(lookOf()));   // your build and gear, race mode only
   S.speed = 0;          // everyone starts from a standstill, so acceleration counts
   S.timeLeft = 99999;   // no clock in a race
 }
@@ -141,7 +144,7 @@ export function raceCountdown(dt) {
     if (sec > 0) { addPop(String(sec), '#ffffff', 56); Music.sfx('tick'); }
     else {
       addPop('GO!', '#27c27a', 60); Music.sfx('combo'); buzz(20);
-      const fit = fitOf(LOOK).boost;
+      const fit = fitOf(lookOf()).boost;
       if (fit) addPop('FIT CHECK +' + fit, '#ff6b9d', 30);
     }
   }
@@ -440,9 +443,10 @@ export function finishRace() {
   const R = S.race;
   endCoach();
   R.finished = true; R.board = standings(); R.place = R.board.findIndex(r => r.me) + 1;
-  const key = 'excuseme_race_best_' + LV.id, prev = parseFloat(store.get(key, '0')) || 0;
-  R.newBest = !S.duel && R.place === 1 && (!prev || S.time < prev);
+  const key = recordKey('excuseme_race_best_' + LV.id, S.run), prev = parseFloat(store.get(key, '0')) || 0;
+  R.newBest = !S.duel && S.run.policy.records && R.place === 1 && (!prev || S.time < prev);
   if (R.newBest) { store.set(key, S.time.toFixed(2)); ghostSave(); }
+  if (!S.run.policy.progress) return;   // practice and other special runs end here: no tallies, no unlock progress
   if (R.place === 1) banner('YOU WIN', '#27c27a');
   if (S.duel) { S.duel.send('fin', { ft: S.time }); S.duel.send('fin', { ft: S.time }); return; }   // races against friends do not count toward unlocks
   track('races');
@@ -452,5 +456,5 @@ export function finishRace() {
     if (R.diff.name === 'Hard') track('winsHard');
   }
 }
-export const raceBest = id => parseFloat(store.get('excuseme_race_best_' + id, '0')) || 0;
+export const raceBest = (id, run) => parseFloat(store.get(recordKey('excuseme_race_best_' + id, run), '0')) || 0;
 export const fmtTime = t => Math.floor(t / 60) + ':' + (t % 60 < 10 ? '0' : '') + (t % 60).toFixed(1);
