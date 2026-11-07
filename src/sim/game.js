@@ -28,6 +28,7 @@ import { buildLevels, last } from '../ui/menus.js';
 import { hideMenus } from '../ui/screens.js';
 import { ghostSave, ghostStart, ghostStep } from './replay.js';
 import { makeRun, recordKey } from './runopts.js';
+import { cleanBonusFor, cleanMedal } from './clean.js';
 import { flushScores, showRunBoard, submitBestRun, submitRun } from '../online/online.js';
 
 
@@ -182,7 +183,7 @@ function payRun() {
   if (!S || paid.has(S)) return;
   paid.add(S);
   if (!S.run.policy.xp) return;
-  const R = S.race, xp = runXp({ mode: S.mode, score: S.score, won: !!(R && R.place === 1), bots: !!(R && !S.duel) });
+  const R = S.race, xp = runXp({ mode: S.mode, score: S.score, won: !!(R && R.place === 1), bots: !!(R && !S.duel), bonus: cleanBonusFor(S) });
   S.xpGained = xp; gainXp(xp);
 }
 
@@ -212,7 +213,7 @@ export const fmt = n => Math.floor(n).toLocaleString('en-US');
 function showEnd() {
   setEndShown(true);
   if (S.race) { showRaceEnd(); return; }
-  resetEndLabels();
+  resetEndLabels(); $('cleanNote').hidden = true;
   const won = state === 'won';
   const seededRun = S.daily || S.weekly;
   $('endEyebrow').textContent = LV.city + ' · ' + LV.name;
@@ -251,6 +252,15 @@ function resetEndLabels() {
   for (const id in END_LABELS) { const dt = $(id).previousElementSibling; if (dt) dt.textContent = END_LABELS[id]; }
   $('raceBoard').hidden = true; $('dayBoard').hidden = true;
   $('sScoreLabel').textContent = END_LABELS.sScore;
+}
+
+// Clean-race line on the race results: segments walked without a bump, the medal, and the XP they paid (bot races only).
+function showCleanNote() {
+  const n = $('cleanNote'), C = S.clean;
+  if (!C || (!C.segs && !cleanMedal(S))) { n.hidden = true; return; }
+  const bonus = cleanBonusFor(S);
+  n.hidden = false;
+  n.textContent = (cleanMedal(S) ? 'Clean race medal · no bumps · ' : '') + C.segs + ' clean segment' + (C.segs === 1 ? '' : 's') + (bonus ? ' · +' + bonus + ' XP bonus' : '');
 }
 
 function showUnlocks() {
@@ -301,7 +311,7 @@ function showRaceEnd() {
     li.textContent = (i + 1) + '. ' + r.name + ' · ' + gap;
     bd.appendChild(li);
   });
-  showUnlocks(); $('next').hidden = true;
+  showUnlocks(); showCleanNote(); $('next').hidden = true;
   $('again').hidden = false; $('again').disabled = false; $('again').textContent = S.duel ? 'Rematch' : 'Race again'; $('again').className = 'big';
   if (S.duel && S.duel.refresh) S.duel.refresh();
   $('end').hidden = false;

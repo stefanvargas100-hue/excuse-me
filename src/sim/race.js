@@ -19,6 +19,7 @@ import { CLOSE_STAMINA, RAZOR_STAMINA, addPop, nearBoost, nearMul } from './scor
 import { S } from './state.js';
 import { ghostSave } from './replay.js';
 import { recordKey } from './runopts.js';
+import { breakClean, stepClean } from './clean.js';
 import { collectPowerups, placePowerups, powerMul, stepPowerups } from './powerups.js';
 
 /* ---------- race mode: A to B against bots; a bump slows you down instead of ending the run ---------- */
@@ -279,7 +280,7 @@ export function raceCollide(dt) {
     if (fresh) {
       S.bumpT = S.race.me.bumpT; S.nearT = 0; S.bumps++; S.draftC = 0; S.draftT = 0;
       S.burstT = 0; S.dashT = 0; S.breakFlash = 0.3; S.hitStop = 0.07;
-      S.chain = 0; S.snake = 0; S.oncRun = 0; S.multPrev = 1;
+      S.chain = 0; S.snake = 0; S.oncRun = 0; S.multPrev = 1; breakClean();
       addPop('BUMP!', '#ff4d4f', 34); Music.sfx('oof'); buzz([40, 30, 80]);
     }
     if (S.blockT > STUCK_T) { S.ghostT = STUCK_GHOST; S.blockT = 0; }   // never let anyone stay pinned
@@ -422,6 +423,7 @@ function stepBot(b, dt) {
 export function updRace(dt) {
   const R = S.race; if (!R) return;
   R.elapsed = S.time;
+  if (!R.finished) stepClean(S.speed * dt);
   if (stepDraft(S, S.px, S.pz, S.bumpT > 0, dt)) {
     addPop('SLIPSTREAM!', '#7fd0ff', 30); Music.sfx('dash'); buzz(15);
     track('slips');

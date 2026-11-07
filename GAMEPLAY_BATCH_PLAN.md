@@ -14,7 +14,7 @@ Make clean driving, crowd management, learning, route selection and different ra
 | Batch | Deliverable | Depends on | Initial scope | Status |
 |---|---|---|---|---|
 | B0 | Mode boundaries and reproducible run setup | Existing release | Small supporting changes only | Validated (headless) |
-| B1 | Clean-race rewards | B0 | Bot races; private-race summary | Planned |
+| B1 | Clean-race rewards | B0 | Bot races; private-race summary | Validated (headless + browser) |
 | B2 | Bots use Excuse me | B0, B1 validation | Bot races | Planned |
 | B3 | Replayable practice course | B0, B1, B2 | Four short local lessons | Planned |
 | B4 | Stage-specific route choices | B0-B3 | Airport pilot, then NYC and Tokyo | Planned |
@@ -276,3 +276,12 @@ Later expansion ideas, not required for this queue: public matchmaking, bots fil
 - Known limitations: determinism-with-rendering-off is not separately tested yet (first needed in B4); bots' loadouts still use `Math.random`.
 - Not published.
 - Next: B1 clean-race rewards.
+
+### B1 - Validated, 2026-11-07
+- Playable behaviour: every 100 m walked without a bump is a clean segment (popup "CLEAN xN +M XP"); a bump restarts distance and tier, keeps earned segments; bot races pay +2/+4/+6/+8/+10 per segment, capped at +50, added to the race XP once on finishing. Results show "N clean segments · +X XP bonus" plus "Clean race medal · no bumps" (medal = zero bumps). Friend rooms show segments and the medal but pay no XP.
+- Tuning: src/config/clean.js (CLEAN_SEGMENT_M, CLEAN_XP, CLEAN_XP_CAP). Distance counted is `speed * dt` while the race clock runs (never the countdown, a pause, or belt carry).
+- Regression reproduced first: 7 of 9 new tests in test/clean.test.js failed before implementation.
+- Tests: clean 9/9, full suite 341/341, production build succeeds.
+- Browser: Orca browser, dev server; results screen with the new line at 390x844 and 320x568, no overflow. The in-play "CLEAN" popup was not looked at visually. Simulated viewport only; no physical phone.
+- Known limitations / playtest: Easy vs Hard reward totals not compared yet; the cap (+50 = 500 clean m) is untested by feel. Standing still cannot be produced by the headless walker, so the "stationary earns nothing" case is covered by the speed*dt rule and a no-op test, not by a pinned-player scenario.
+- Not published. Next: B2.
