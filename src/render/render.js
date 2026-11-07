@@ -5,7 +5,7 @@ import { ctx } from '../dom.js';
 import { CAM_BACK, CAM_UP, CX, F, H, HOR, VX, VY, VZ, W, setCX, setF, setHOR, setVX, setVY, setVZ } from './camera.js';
 import { FONT } from './draw.js';
 import { drawPerson, rrect } from './figures.js';
-import { drawFlows, drawPops, radarTop, zoneGuide } from './hud.js';
+import { pruneFlows, drawPops, radarTop, zoneGuide } from './hud.js';
 import { drawBelts, drawGlass, drawPowerups, drawSlipstream, drawStrips, glassPanels } from './slipstream.js';
 import { drawCars, paintAirport, paintNYC, paintShibuya } from './world.js';
 import { S, calm, camBob, state } from '../sim/state.js';
@@ -57,7 +57,7 @@ export function render() {
     const a = clamp(0.35 - S.overT * 0.5, 0, 0.35);
     if (a > 0) { ctx.fillStyle = 'rgba(255,77,79,' + a.toFixed(2) + ')'; ctx.fillRect(0, 0, W, H); }
   }
-  if (state === 'play') { zoneGuide(); drawFlows(); }
+  if (state === 'play') { zoneGuide(); pruneFlows(); }
   if (state !== 'ready') drawPops();
   if (S.banner && state === 'play') {
     const b = S.banner, a = b.t < 0.2 ? b.t / 0.2 : b.t > 2.0 ? (2.4 - b.t) / 0.4 : 1, y = radarTop + 112;

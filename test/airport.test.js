@@ -1,4 +1,4 @@
-// Airport stage: scenery you have to weave around, a readable "weave" crowd with marked gaps, and a baggage cart crossing. node --test
+// Airport stage: scenery you have to weave around, a readable "weave" crowd with open gaps, and a baggage cart crossing. node --test
 const test = require('node:test');
 const assert = require('node:assert');
 const { load } = require('./harness.js');
@@ -57,7 +57,7 @@ test('the airport scenery is the same for everyone on a daily run', () => {
   assert.strictEqual(sig(a), sig(b));
 });
 
-test('a weave is rows of oncoming people whose gap snakes left and right, with the gaps marked', () => {
+test('a weave is rows of oncoming people whose gap snakes left and right, with clear gaps', () => {
   const E = airport();
   E.runEvent('weave');
   const fl = E.S.flows; assert.ok(fl && fl.length === 1, 'one flow registered');
