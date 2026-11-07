@@ -22,9 +22,9 @@ function hub() {
 }
 
 // n games in one room; the first is the host. Returns them with the room code.
-async function lobby(n) {
+async function lobby(n, options) {
   const H = hub(), games = [];
-  for (let i = 0; i < n; i++) { const g = load(); g.useRoomFactory(H); games.push(g); }
+  for (let i = 0; i < n; i++) { const g = load(null, options); g.useRoomFactory(H); games.push(g); }
   const code = await games[0].hostRoom(1);
   for (let i = 1; i < n; i++) { assert.strictEqual(await games[i].joinRoom(code), true, 'player ' + (i + 1) + ' joined'); await settle(); }
   await settle();
@@ -122,12 +122,12 @@ test('one player quitting mid-race drops only their runner', async () => {
   for (const g of games.slice(0, 3)) { assert.strictEqual(botsOf(g).length, 2); assert.strictEqual(g.state, 'play'); }
 });
 
-test('a silent player is dropped after a few seconds, the rest keep racing', async () => {
-  const { games } = await lobby(3);
+test('a silent player is dropped after the wall-clock grace period, the rest keep racing', async () => {
+  const { games } = await lobby(3, { clock: true });
   games[0].hostStart(); await settle(); tickAll(games, 30 * 4);
   const [a, b, c] = games, bId = b.lobbyPlayers().find(p => p.me).id, cId = c.lobbyPlayers().find(p => p.me).id;
   for (let i = 0; i < 40; i++) { a.duelReceive('pos', { id: bId, n: i + 1, x: 0, z: i * 0.2, vx: 0, s: 5 }); a.duelReceive('pos', { id: cId, n: i + 1, x: 0, z: i * 0.2, vx: 0, s: 5 }); a.tick(DT); }
-  for (let i = 0; i < 30 * 7; i++) { a.duelReceive('pos', { id: cId, n: 100 + i, x: 0, z: 10 + i * 0.1, vx: 0, s: 5 }); a.tick(DT); }
+  for (let i = 0; i < 16; i++) { a.advance(2000); a.injectRoomMessage('pos', { id: cId, race: a.S.seed, n: 100 + i, x: 0, z: 10 + i * 0.1, vx: 0, s: 5 }); a.tick(DT); }
   assert.strictEqual(botsOf(a).map(x => x.peerId).join(), cId, 'b dropped, c stays; b=' + bId + ' c=' + cId);
 });
 

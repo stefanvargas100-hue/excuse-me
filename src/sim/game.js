@@ -17,7 +17,7 @@ import { genChunk, runEvent, scramble, seeded, spawnFast, spawnRival, updXings, 
 import { STREAK_SPEED, addPop, nearMul, onPass } from './scoring.js';
 import { S, bestOf, endShown, goalOf, reset, setEndShown, setRaceBuild, setState, state } from './state.js';
 import { startSlot } from './startgrid.js';
-import { BUMP_SPEED, addRemoteRacer, draftMul, finishRace, fmtTime, initRace, leadZ, ordinal, raceBest, raceCollide, raceCountdown, racePace, rearZ, updRace } from './race.js';
+import { BUMP_SPEED, addRemoteRacer, draftMul, finishRace, fmtTime, initRace, leadZ, ordinal, raceBest, raceCollide, raceCountdown, racePace, rearZ, standings, updRace } from './race.js';
 import { updCars } from './traffic.js';
 import { beginTut, tutTick } from './tutorial.js';
 import { powerMul } from './powerups.js';
@@ -261,13 +261,29 @@ function showUnlocks() {
   if (ng) nn.textContent = 'Next unlock: ' + ng.name + ' · ' + fmt(ng.done) + ' of ' + fmt(ng.target) + (ng.gained ? ' (+' + fmt(ng.gained) + ' this run)' : '');
 }
 
+export function refreshDuelResults() {
+  if (!S || !S.duel || !S.race) return;
+  S.race.board = standings(); S.race.place = S.race.board.findIndex(r => r.me) + 1;
+  if (endShown) showRaceEnd();
+}
+
+export function forfeitDuel() {
+  if (!S || !S.duel || S.race.finished) return;
+  S.duel.dnf = true; S.race.finished = true;
+  setState('lost'); S.live = false; S.overT = 0; touches.clear();
+  refreshDuelResults();
+}
+
 function showRaceEnd() {
   const R = S.race, n = R.board.length, place = R.place;
   $('endEyebrow').textContent = 'Race · ' + LV.city + ' · ' + LV.name + ' · ' + (S.duel ? 'live vs ' + S.duel.title : R.diff.name + ' bots');
   const t = $('endTitle'); t.textContent = place === 1 ? 'You win!' : ordinal(place) + ' of ' + n; t.className = place === 1 ? 'good' : 'bad';
+  if (S.duel && S.duel.dnf) { t.textContent = 'Did not finish'; t.className = 'bad'; }
+  else if (S.duel && R.board.some(r => !r.done && !r.dnf)) t.textContent = 'Finished · waiting for racers';
   $('endLead').hidden = true;   // the standings say it all
   $('endLead').textContent = place === 1 ? 'First to ' + LV.goalText + '. Bumps cost you time, so a clean run wins.' : 'Not first this time. Every bump costs about a second and a half, so stay clean and look for gaps.';
   $('sScoreLabel').textContent = 'Finish time'; $('sScore').textContent = fmtTime(S.time);
+  if (S.duel && S.duel.dnf) $('sScore').textContent = 'DNF';
   const best = raceBest(LV.id);
   setStat('sBest', R.newBest ? 'Best time · new best' : 'Best win time', best ? fmtTime(best) : '-');
   setStat('sDist', 'Place', ordinal(place) + ' of ' + n);
@@ -278,7 +294,7 @@ function showRaceEnd() {
   const lead = R.board[0];
   R.board.forEach((r, i) => {
     const li = document.createElement('li'); if (r.me) li.className = 'me';
-    const gap = r.done ? (i === 0 ? fmtTime(r.finishT) : '+' + (r.finishT - lead.finishT).toFixed(1) + ' s') : Math.max(1, Math.round(LV.goal - r.z)) + ' m to go';
+    const gap = r.dnf ? 'DNF · left / lost connection' : r.done ? (i === 0 ? fmtTime(r.finishT) : '+' + (r.finishT - lead.finishT).toFixed(1) + ' s') : Math.max(1, Math.round(LV.goal - r.z)) + ' m to go';
     li.textContent = (i + 1) + '. ' + r.name + ' · ' + gap;
     bd.appendChild(li);
   });
