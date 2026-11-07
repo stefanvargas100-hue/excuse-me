@@ -102,3 +102,17 @@ Lobby for 2-4 players is now built (see below). Not done yet: bigger lobbies, bu
 
 ## Gameplay plan (Stefan, 2026-11-06)
 Done: hold-both-thumbs Excuse Me, near-miss streak, airport rebuild (scenery, weave, baggage cart). Next: check airport feel on phone, then copy the approach to New York (cars crossing side to side, street trash cans, more scenery) and Tokyo; then ghosts only when near your/friend's record; then rare race power-ups.
+
+## When Stefan starts again (written 2026-11-06, end of day)
+**Needs Stefan**
+1. Run the last section of supabase/schema.sql (Ghosts of the top 3) in the Supabase SQL Editor. Until then top-3 ghosts do not appear. The SQL was never run against a real Supabase.
+2. Phone test (iPhone 14 Pro Max, home-screen app): the pale bottom strip fix (plain 100vh in standalone, WebKit bug 254868); hold both thumbs for Excuse Me (0.25 s, does it feel right?); weave markers (too easy?); crossing vehicles (enough time to react?); bottom HUD.
+3. If the strip is still there: stop, do not try a third height trick. Options: revert, different approach, drop.
+
+**Next in the gameplay plan**
+- Race power-ups (rare pickups: short boost, stamina refill, clear path), placed on the new stage layouts.
+- Cars crossing the street side to side on New York (more than the van), more scenery out of the windows in Tokyo/NYC (skyline, signs).
+- Check ghost feel: label colours, 60 m distance, friends' ghosts in a real room.
+- Tune: Excuse Me bar and stamina bar size; plane colours through the airport windows look washed out.
+
+**Older ideas still open**: practice stage, weekly modifiers for races, 4-8 player lobbies, race boards.
