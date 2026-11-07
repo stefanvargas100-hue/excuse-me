@@ -20,7 +20,7 @@ export const LOOK_OPTS = [
   { key: 'eyes', label: 'Eyes', type: 'chip', vals: FACE_PARTS.eyes },
   { key: 'nose', label: 'Nose', type: 'chip', vals: FACE_PARTS.nose },
   { key: 'mouth', label: 'Mouth', type: 'chip', vals: FACE_PARTS.mouth },
-  { key: 'hairStyle', label: 'Hair style', type: 'chip', vals: [['short', 'Short'], ['long', 'Long'], ['bald', 'Bald'], ['mohawk', 'Mohawk']] },
+  { key: 'hairStyle', label: 'Hair style', type: 'chip', vals: [['short', 'Short'], ['medium', 'Medium'], ['long', 'Long'], ['bald', 'Bald'], ['mohawk', 'Mohawk']] },
   { key: 'hat', label: 'Headpiece', type: 'chip', vals: [['cap', 'Cap'], ['beanie', 'Beanie'], ['visor', 'Visor'], ['sweatband', '80s sweatband'], ['bucket', 'Y2K bucket hat'], ['headphones', 'Headphones'], ['shades', 'Shades'], ['beret', 'Beret'], ['fedora', 'Fedora'], ['tiara', 'Tiara'], ['crown', 'Crown']] },
   { key: 'showHead', label: 'Show headpiece (stats stay either way)', type: 'chip', vals: [['1', 'Show'], ['0', 'Hide']] },
   { key: 'pack', label: 'Back', type: 'chip', vals: [['pack', 'Backpack'], ['sling', 'Sling bag'], ['fanny', 'Y2K belt bag'], ['messenger', 'Messenger bag'], ['boombox', '80s boombox'], ['jet', 'Jetpack']] },
