@@ -4,7 +4,7 @@ const assert = require('node:assert');
 const { load } = require('./harness.js');
 const DT = 1 / 30;
 
-function going(kind) { const E = load(); E.setLevel(0); E.start(kind || 'classic'); for (let i = 0; i < 100; i++) E.tick(DT); E.S.people.length = 0; E.S.nextChunk = 1e9; return E; }
+function going(kind) { const E = load(); E.setLevel(0); E.start(kind || 'classic'); for (let i = 0; i < 100; i++) E.tick(DT); E.S.people.length = 0; E.S.nextChunk = 1e9; E.S.nearHits = 0; E.S.streakT = 0; E.S.nearHitT = -99; return E; }   // the first 3 s may hold real close calls: start every test from nothing
 const passBy = (E, dx) => { const p = E.mkPerson(E.S.px + dx, E.S.pz - 0.1); E.onPass(p); return p; };
 
 test('holding both thumbs down for a moment says "Excuse me" once', () => {
