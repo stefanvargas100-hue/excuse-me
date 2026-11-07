@@ -99,3 +99,6 @@ Lobby for 2-4 players is now built (see below). Not done yet: bigger lobbies, bu
 1. Teach the new skills (1, 2), because the depth you asked for is invisible without it.
 2. Rotating challenges plus progress on the results screen (11, 12), which gives a reason to play one more run.
 3. Daily modifiers (7), the cheapest way to keep the daily fresh.
+
+## Gameplay plan (Stefan, 2026-11-06)
+Done: hold-both-thumbs Excuse Me, near-miss streak, airport rebuild (scenery, weave, baggage cart). Next: check airport feel on phone, then copy the approach to New York (cars crossing side to side, street trash cans, more scenery) and Tokyo; then ghosts only when near your/friend's record; then rare race power-ups.

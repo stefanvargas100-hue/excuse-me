@@ -198,9 +198,26 @@ function nycProps(z0) {
   }
 }
 
+// Terminal furniture you have to weave around: an island every 32 m (info desk, benches, bin, plant, trolleys in turn) and a bin or
+// plant by a wall now and then. Islands leave the walkway open on at least one side, and in a race they keep off the moving walkway.
+const AIRPORT_KINDS = ['desk', 'chairs', 'bin', 'plant', 'trolleys'];
+function airportProps(z0) {
+  const n = Math.floor(z0 / 4);
+  if (z0 < 24) return;
+  const race = raceBuild && beltInfo(LV.id);
+  const shape = (kind, x, z) => {
+    const cs = o => o.map(ox => ({ ox, oz: 0, r: kind === 'desk' ? 0.45 : kind === 'chairs' ? 0.28 : kind === 'trolleys' ? 0.3 : kind === 'plant' ? 0.38 : 0.3 }));
+    const circles = kind === 'desk' ? cs([-0.9, -0.3, 0.3, 0.9]) : kind === 'chairs' ? cs([-0.75, -0.25, 0.25, 0.75]) : kind === 'trolleys' ? cs([-0.5, 0, 0.5]) : cs([0]);
+    mk(x, z, { prop: kind, circles });
+  };
+  if (n % 8 === 5) shape(AIRPORT_KINDS[Math.floor(n / 8) % AIRPORT_KINDS.length], rnd(-4.2, race ? 0.3 : 4.2), z0 + 2);
+  else if (n % 5 === 2) { const side = race ? -1 : pick([-1, 1]); shape(n % 2 ? 'bin' : 'plant', side * 6.1, z0 + 1); }
+}
+
 function genChunkInner(z0) {
   const d = clamp(z0 / LV.goal, 0, 1);
   if (LV.id === 'nyc') nycProps(z0);
+  if (LV.id === 'airport') airportProps(z0);
   if (inXing(z0 + 2)) return;   // the crosswalk crowds come from the signal waves instead
   const k = LV.base + (R() < 0.4 + 0.4 * d ? 1 : 0) + (d > 0.25 && R() < 0.55 ? 1 : 0) + (d > 0.6 && R() < 0.6 ? 1 : 0);
   for (let i = 0; i < k; i++) spawnUnit(z0 + R() * 4, d);
@@ -277,6 +294,28 @@ export function runEvent(kind) {
   } else if (kind === 'delivery') {
     walker(z, -1, { v0: 1.1, boxes: true, yieldP: 0.15, circles: [{ ox: 0, oz: 0, r: R_BODY }, { ox: 0, oz: -0.6, r: 0.32 }] });
     banner('DELIVERY COMING THROUGH', '#c8a165');
+  } else if (kind === 'weave') {
+    // Rows of oncoming people, each row with a gap, and the gap snakes left and right down the hall. The gaps are marked on the floor,
+    // so you can see the pattern coming and plan a line through it.
+    const race = raceBuild && beltInfo(LV.id), lo = -5.6, hi = race ? 1.4 : 5.6, mid = (lo + hi) / 2, amp = Math.min((hi - lo) / 2 - 1.0, 3.2), ph = rnd(0, TAU);
+    const rows = [];
+    for (let i = 0; i < 6; i++) {
+      const gx = mid + amp * Math.sin(ph + i * 0.65), rz = z + i * 8;
+      let ref = null;
+      for (let x = lo; x <= hi; x += 0.85) {
+        if (Math.abs(x - gx) < 1.0) continue;
+        const q = mk(x, rz, { hx: 0, hz: -1, v0: 1.2, laneX: x, space: 0, yieldP: 0.2 }); ref = ref || q;
+      }
+      rows.push({ z: rz, gx, ref });
+    }
+    S.flows.push({ kind: 'weave', rows });
+    banner('WEAVE AHEAD: FOLLOW THE GAPS', '#5ee6a8');
+  } else if (kind === 'cart') {
+    // A baggage cart crosses the hall from one wall to the other, beeping as it starts. Beat it across or wait for it to pass.
+    const dir = pick([-1, 1]), x0 = -dir * (h + 2.5), cz = z - 4;
+    const cart = mk(x0, cz, { prop: 'cart2', drive: dir * 2.6, driveAt: 24, circles: [0, 1, 2].map(i => ({ ox: -dir * i * 1.25, oz: 0, r: 0.5 })) });
+    cart.rad = 3.4; cart.dirx = dir;
+    banner('BAGGAGE CART CROSSING', '#ffd166');
   } else if (kind === 'selfie') {
     const cx0 = rnd(-6, 6), n = 4 + ((R() * 3) | 0);
     for (let i = 0; i < n; i++) { const a = i / n * TAU; mk(cx0 + Math.cos(a) * 0.55, z + Math.sin(a) * 0.55, { v0: 0, fx: Math.cos(a), fz: Math.sin(a), phone: true }); }

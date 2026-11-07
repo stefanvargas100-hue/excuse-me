@@ -549,6 +549,56 @@ function drawProp(p, s, bx, fy) {
       break;
     }
     case 'board': box3D(x - 0.3, x + 0.3, 0, 0.95, z - 0.12, z + 0.12, hex('#1f2937')); { const q = W3(x, 0.6, z - 0.13); label('SALE', q[0], q[1], Math.round(0.18 * F / q[2]), '#f4f6f8'); } break;
+    case 'desk': {
+      box3D(x - 1.35, x + 1.35, 0, 1.05, z - 0.45, z + 0.45, hex('#5b6b86'));
+      box3D(x - 1.42, x + 1.42, 1.05, 1.13, z - 0.52, z + 0.52, hex('#e8edf4'));
+      box3D(x - 0.9, x - 0.4, 1.13, 1.45, z - 0.1, z + 0.1, hex('#1f2937'));
+      const q = W3(x, 0.62, z - 0.46); label('CHECK-IN', q[0], q[1], Math.round(0.2 * F / q[2]), '#ffffff');
+      break;
+    }
+    case 'chairs': {
+      box3D(x - 1.0, x + 1.0, 0.1, 0.28, z - 0.3, z + 0.3, hex('#4b5563'));
+      box3D(x - 1.0, x + 1.0, 0.28, 0.46, z - 0.3, z + 0.3, hex('#2f5fa0'));
+      box3D(x - 1.0, x + 1.0, 0.46, 0.95, z + 0.18, z + 0.3, hex('#2f5fa0'));
+      break;
+    }
+    case 'bin': {
+      box3D(x - 0.27, x + 0.27, 0, 0.85, z - 0.27, z + 0.27, hex('#4b5563'));
+      box3D(x - 0.3, x + 0.3, 0.85, 0.92, z - 0.3, z + 0.3, hex('#1f2937'));
+      const q = W3(x, 0.5, z - 0.28); label('♻', q[0], q[1], Math.round(0.26 * F / q[2]), '#7ed957');
+      break;
+    }
+    case 'plant': {
+      box3D(x - 0.32, x + 0.32, 0, 0.5, z - 0.32, z + 0.32, hex('#9a6b43'));
+      const c1 = W3(x, 1.0, z), c2 = W3(x + 0.25, 1.3, z + 0.1), c3 = W3(x - 0.25, 1.25, z - 0.1);
+      ball(c1[0], c1[1], 0.5 * F / c1[2], '#3f7d3a', '#6fae5a', '#24502a');
+      ball(c2[0], c2[1], 0.36 * F / c2[2], '#4a8c42', '#7fc068', '#2a5c2f');
+      ball(c3[0], c3[1], 0.34 * F / c3[2], '#4a8c42', '#7fc068', '#2a5c2f');
+      break;
+    }
+    case 'trolleys': {
+      for (const dx of [-0.5, 0, 0.5]) {
+        box3D(x + dx - 0.24, x + dx + 0.24, 0.1, 0.16, z - 0.3, z + 0.3, hex('#6b7280'));
+        box3D(x + dx - 0.24, x + dx + 0.24, 0.16, 0.9, z - 0.3, z - 0.26, hex('#b8c0cc'));
+        box3D(x + dx - 0.24, x + dx + 0.24, 0.85, 0.95, z - 0.3, z + 0.3, hex('#3b82f6'));
+      }
+      break;
+    }
+    case 'cart2': {
+      const dir = p.dirx || 1, driving = p.driving && Math.floor(S.clock * 5) % 2 === 0;
+      for (let i = 0; i < 3; i++) {
+        const cx = x - dir * i * 1.25;
+        if (i === 0) {
+          box3D(cx - 0.55, cx + 0.55, 0.15, 0.75, z - 0.5, z + 0.5, hex('#f2994a'));
+          box3D(cx - 0.3, cx + 0.3, 0.75, 1.3, z - 0.4, z + 0.4, hex('#e07a1f'));
+          const l = W3(cx, 1.42, z); ball(l[0], l[1], 0.1 * F / l[2], driving ? '#fff3b0' : '#b45309', '#ffffff', '#92400e');
+        } else {
+          box3D(cx - 0.55, cx + 0.55, 0.15, 0.5, z - 0.5, z + 0.5, hex('#9aa3af'));
+          box3D(cx - 0.4, cx + 0.4, 0.5, 0.95, z - 0.35, z + 0.35, hex(i === 1 ? '#c0392b' : '#2f80ed'));
+        }
+      }
+      break;
+    }
     case 'wetfloor': box3D(x - 0.25, x + 0.25, 0, 0.62, z - 0.12, z + 0.12, hex('#ffcf1f')); { const q = W3(x, 0.4, z - 0.13); label('WET', q[0], q[1], Math.round(0.14 * F / q[2]), INK); } break;
   }
 }

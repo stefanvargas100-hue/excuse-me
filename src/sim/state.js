@@ -26,7 +26,7 @@ export const bestOf = id => parseInt(store.get('excuseme_best_' + id, '0'), 10) 
 
 export function reset() {
   S = { px: 0, pz: 0, vx: 0, speed: BASE, energy: 100, exhausted: false, boostV: 0, step: 0, camX: 0,
-        time: 0, people: [], cars: [], carT: [0, 0.6, 1.2], xings: [], waveT: 4, nextChunk: 14, overT: 0, live: false, clock: 0,
+        time: 0, people: [], cars: [], carT: [0, 0.6, 1.2], xings: [], flows: [], waveT: 4, nextChunk: 14, overT: 0, live: false, clock: 0,
         fastT: 2, rivalT: 7, dodged: 0, close: 0, passed: 0, heat: 0,
         score: 0, chain: 0, bestChain: 0, lastPassT: -9, lastPass: null,
         snake: 0, sweepDir: 0, sweepCount: 0, boostPasses: 0, oncRun: 0, pops: [],

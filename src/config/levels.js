@@ -7,7 +7,7 @@ import { clamp } from './util.js';
 export const LEVELS = [
   { id: 'airport', city: 'Airport', name: 'Terminal B', goal: 500, goalText: 'GATE B17', half: 7, keep: 1, fog: '#dde5ec',
     lane: 0.25, fastEvery: [2, 4.5], rivalEvery: [9, 15], base: 2,
-    starScore: 15000, timerLabel: 'Boarding closes', timeFail: 'The gate closed before you got there.', events: ['tour', 'arrivals', 'spill', 'queue', 'cleaners', 'parade'],
+    starScore: 15000, timerLabel: 'Boarding closes', timeFail: 'The gate closed before you got there.', events: ['tour', 'arrivals', 'spill', 'queue', 'cleaners', 'parade', 'weave', 'cart'],
     blurb: 'Rolling suitcases, people heading for gates, and a fast lane on the right.',
     music: { bpm: 148, prog: [[57, 60, 64], [53, 57, 60], [48, 52, 55], [55, 59, 62]] } },
   { id: 'nyc', city: 'New York', name: 'Fifth Avenue', goal: 600, goalText: '42 ST · SUBWAY', half: 4.5, keep: 1, fog: '#dfe6ec',

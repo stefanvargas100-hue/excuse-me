@@ -74,3 +74,4 @@
 - 2026-11-06: Race line finish is a flag pole at 88% of the line; finished racers' dots carry on past it.
 - 2026-11-06: Classic HUD matches race: pause and combo at top; score, distance, speed (and clock) in one bottom row. Excuse-me bar says EXCUSE ME; stamina bar has a notch at 40% where low stamina starts slowing you.
 - 2026-11-06: Excuse Me is now activated by holding both thumbs down for 0.25 s (swipe up kept as a backup). Three close calls within 5 s give +10% speed for 2.5 s in every mode.
+- 2026-11-06: Airport rebuild (stage 1): scenery islands every 32 m (info desk, benches, bin, plant, trolleys; clear of the moving walkway in races), wall bins and plants, new events 'weave' (rows of oncoming people whose gap snakes left and right, gaps and path marked green on the floor) and 'cart' (baggage cart crosses the hall, beeps as it starts). NYC and Tokyo are next, with cars and street furniture.

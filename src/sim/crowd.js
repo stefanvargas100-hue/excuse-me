@@ -3,6 +3,7 @@ import { beltAt, beltHasZ, beltInfo, beltSpeedAt, contain } from '../config/stri
 import { LV } from '../config/levels.js';
 import { R_PLAYER, walkSpeed } from '../config/tuning.js';
 import { R, clamp, pick, rnd, sgn } from '../config/util.js';
+import { addPop } from './scoring.js';
 import { S, goalOf, state } from './state.js';
 
 
@@ -64,6 +65,11 @@ export function updPeople(dt) {
   const lim = LV.half - 0.35, wallLim = LV.half - 0.75;
   for (let i = 0; i < n; i++) {
     const p = ppl[i];
+    if (p.drive && !p.dead) {   // a baggage cart: waits at the wall, then drives across once you are close, and is gone on the far side
+      if (!p.driving && p.z - S.pz < p.driveAt) { p.driving = true; if (state === 'play') addPop('BEEP BEEP', '#ffcf1f', 24); }
+      if (p.driving) { p.vx = p.drive; p.x += p.drive * dt; if (Math.abs(p.x) > LV.half + 4) p.dead = true; }
+      continue;
+    }
     if (p.prop || p.dead) continue;
     p.t += dt;
     behaviours(p, dt);
