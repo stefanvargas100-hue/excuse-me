@@ -14,6 +14,7 @@ import { draftMul, fmtTime, ordinal, raceBest, racePace, raceDifficulty, standin
 import { S, bestOf, calm, camBob, cues, reset, setCalm, setCamBob, setCues, setShowHB, showHB, state } from '../sim/state.js';
 import { endTut } from '../sim/tutorial.js';
 import { endCoach, syncCoach } from '../sim/racecoach.js';
+import { modOf } from '../sim/modifiers.js';
 import { back, go, pageInto, relayoutWith } from './screens.js';
 import { shareRun } from '../sim/replay.js';
 import { openFriend } from './friend.js';
@@ -46,7 +47,7 @@ function buildPlay() {
       done ? (kind === 'daily' ? 'Played today. A new crowd arrives tomorrow.' : 'Played this week. A new crowd arrives on Monday.') : blurb, startFn);
     if (done) { x.setAttribute('aria-disabled', 'true'); x.classList.add('done'); }
   };
-  periodic('daily', 'Daily run', dailyLevel(), todayKey(), startDaily, 'Go as far as you can. Same crowd for everyone today.');
+  periodic('daily', 'Daily run', dailyLevel(), todayKey(), startDaily, 'Today: ' + modOf(todayKey()).name + '. ' + modOf(todayKey()).text);
   periodic('weekly', 'Weekly run', weeklyLevel(), weekKey(), startWeekly, 'Go as far as you can. Same crowd for everyone this week.');
 }
 

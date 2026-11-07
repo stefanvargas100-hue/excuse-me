@@ -71,7 +71,7 @@ Lobby for 2-4 players is now built (see below). Not done yet: bigger lobbies, bu
 4. **Bots use "Excuse me".** They are the only racers who never do, and it is now a key skill.
 5. **Reward clean streaks.** A growing bonus for each 100 m without a bump in races, so clean driving and aggression both pay.
 6. **Comeback pressure with no rubber-banding.** Last place gets stronger slipstreams from the pack, which is earned, not handed out.
-7. **Daily modifiers.** Rush hour only, no stamina regen, everyone on phones. This keeps dailies fresh with no new art.
+7. **Daily modifiers: DONE 2026-11-06 (3 so far; more ideas welcome).** Rush hour only, no stamina regen, everyone on phones. This keeps dailies fresh with no new art.
 8. **Race types.** Elimination (last place out every 100 m) and time attack use the same stages.
 9. **More stages.** Subway platform, music festival, Black Friday mall and train station from the roadmap, each with its own crowd behaviour.
 10. **Crowd personalities per stage.** Festival crowds that surge, commuters who hold their lane.

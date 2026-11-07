@@ -18,6 +18,8 @@ import { BUMP_SPEED, addRemoteRacer, draftMul, finishRace, fmtTime, initRace, le
 import { updCars } from './traffic.js';
 import { beginTut, tutTick } from './tutorial.js';
 import { beginCoach, coachTick } from './racecoach.js';
+import { MODS, TIRED_REGEN, activeMod, modOf, setMod } from './modifiers.js';
+const MOD_NAMES = Object.fromEntries(MODS.map(m => [m.id, m.name]));
 import { buildLevels, last } from '../ui/menus.js';
 import { hideMenus } from '../ui/screens.js';
 import { ghostSave, ghostStart, ghostStep } from './replay.js';
@@ -38,7 +40,7 @@ function movePlayer(dt) {
   S.nearT = Math.max(0, S.nearT - dt); S.bumpT = Math.max(0, S.bumpT - dt); S.ghostT = Math.max(0, S.ghostT - dt);   // race mode only: a bump leaves you slow for a moment
   const bursting = S.burstT > 0 && S.bumpT <= 0;
   const st = S.race ? S.race.me : null;   // stats only ever apply in a race
-  if (!bursting && S.dashT <= 0) S.energy = Math.min(100, S.energy + REGEN * (st ? st.regen : 1) * dt);
+  if (!bursting && S.dashT <= 0) S.energy = Math.min(100, S.energy + REGEN * (st ? st.regen : 1) * (S.mod === 'tired' ? TIRED_REGEN : 1) * dt);
   S.exhausted = S.energy < COST_DASH || S.flash > 0;
   S.boostV += ((bursting || S.draftT > 0 ? 1 : 0) - S.boostV) * Math.min(1, dt * 8);
   if (S.boostV < 0.2) S.boostPasses = 0;
@@ -115,8 +117,10 @@ export function tick(dt) {
       S.rushT -= dt;
       if (S.rushT <= 0) {
         if (!S.rush) { S.rush = true; S.rushT = 10; banner('RUSH HOUR', '#ff9f43'); Music.sfx('combo'); }
+        else if (S.mod === 'rush') S.rushT = 10;   // rush hour all day: it never thins out
         else { S.rush = false; S.rushT = rnd(28, 40); banner('CROWD THINNING', '#5ee6a8'); }
       }
+      if (S.mod === 'rush' && !S.rush) { S.rush = true; S.rushT = 10; }
       if (S.rush) {
         S.rushSpawn -= dt; S.heat = Math.max(S.heat, 0.3);
         if (S.rushSpawn <= 0) { S.rushSpawn = 0.45; walker(S.pz + rnd(SPAWN_FAR, SPAWN_FAR + 14), R() < 0.7 ? -1 : 1); }
@@ -218,7 +222,7 @@ function showEnd() {
   $('sRival').textContent = S.dodged;
   if (S.closest && S.closest.gap < 0.4) $('endLead').textContent += ' Closest call: ' + Math.max(1, Math.round(S.closest.gap * 100)) + ' cm at ' + S.closest.m + ' m.';
   showUnlocks();
-  if (S.daily) { $('endEyebrow').textContent = 'Daily run · ' + S.dailyKey + ' · ' + LV.name; }
+  if (S.daily) { $('endEyebrow').textContent = 'Daily run · ' + S.dailyKey + ' · ' + LV.name + (S.mod ? ' · ' + MOD_NAMES[S.mod] : ''); }
   if (S.weekly) { $('endEyebrow').textContent = 'Weekly run · ' + S.dailyKey + ' · ' + LV.name; }
   if (seededRun) showRunBoard(S.daily ? 'daily' : 'weekly', S.dailyKey);
   else if (S.kind === 'classic') showRunBoard('classic', LV.id);
@@ -297,16 +301,19 @@ export function start(a, b, opts) {
   flushScores();   // send any score that could not go out earlier
   if (key) { if (hasPlayed(mode)) return; store.set('excuseme_played_' + mode, key); }
   lastDaily = daily; lastMode = mode;
+  setMod(opts && opts.mod !== undefined ? opts.mod : daily ? modOf(key).id : null);
   setRaceBuild(mode === 'race');   // the crowd generator adds belt riders in races only
   setR(key ? mulberry32(hashStr(key)) : duel ? mulberry32(hashStr(duel.seed)) : Math.random);
   reset();
   S.tallyStart = tallySnapshot();
+  S.mod = activeMod;
   S.mode = mode; S.kind = mode; S.endless = mode !== 'race'; S.seed = key || (duel ? duel.seed : null); S.duel = duel;
   if (S.endless) S.timeLeft = Infinity;
   ghostStart();
   if (mode === 'race') { initRace(duel ? 0 : 3); if (duel) duel.order.forEach((id, i) => addRemoteRacer(duel.peers[id].look, duel.peers[id].name, id, i)); }
   S.daily = daily; S.weekly = weekly; S.dailyKey = key; for (const k in last) last[k] = k === 'low' ? null : -1; S.live = true; setState('play'); setEndShown(false);
   hideMenus(); $('hud').hidden = false;
+  if (S.mod) banner(MOD_NAMES[S.mod].toUpperCase(), '#ff9f43');
   const hb = $('hud').getBoundingClientRect ? $('hud').getBoundingClientRect() : null;
   setRadarTop(hb && hb.bottom ? hb.bottom + 6 : 120);
   if (LV.id === 'shibuya') { S.waveT = 1.5; }

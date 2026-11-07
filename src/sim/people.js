@@ -12,6 +12,7 @@ import { W3 } from '../render/draw.js';
 import { LOOK } from '../save/progress.js';
 import { banner } from './actions.js';
 import { addPop } from './scoring.js';
+import { PHONE_SHARE, activeMod } from './modifiers.js';
 import { S, goalOf, raceBuild, state } from './state.js';
 
 
@@ -43,6 +44,8 @@ export function mk(x, z, o) {
   }, o);
   // a face for every crowd person, derived from their own phase so it never disturbs the seeded crowd (daily and race layouts stay the same)
   { const rf = randomFace(mulberry32(Math.floor(p.phase * 1e6) >>> 0)); for (const k in rf) if (o[k] === undefined) p[k] = rf[k]; }
+  // Heads down day: decided from the person's own phase, so the seeded crowd layout is untouched
+  if (activeMod === 'phones' && !p.prop && !p.rival && o.phone === undefined && (p.phase * 1e6 % 1000) / 1000 < PHONE_SHARE) { p.phone = true; if (!p.wave) p.wave = 0.3; }
   if (o.vx === undefined && o.vz === undefined) { p.vx = p.hx * p.v0; p.vz = p.hz * p.v0; }
   p.dirz = sgn(p.hz);
   p.walkA = Math.hypot(p.vx, p.vz) > 0.15 ? 1 : 0;
