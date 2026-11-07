@@ -65,10 +65,20 @@ export const tallyOf = name => tally[name] || 0;
 export const isDone = c => tallyOf(c.tally) >= c.target;
 export const isLocked = (key, val) => { const c = challengeFor(key, val); return !!c && !isDone(c); };
 // The unfinished challenge you are closest to (and have started), for the results screen.
-export function nextGoal() {
-  let best = null, bp = 0;
-  for (const c of CHALLENGES) { if (isDone(c)) continue; const p = tallyOf(c.tally) / c.target; if (p > bp) { bp = p; best = c; } }
-  return best ? { name: best.name, text: best.text, remaining: best.target - tallyOf(best.tally), c: best } : null;
+export const tallySnapshot = () => ({ ...tally });
+// The unfinished challenge to show on the results screen. `before` is tallySnapshot() from the start of the run:
+// goals this run moved come first (closest to done wins), otherwise the closest one you have started.
+export function nextGoal(before) {
+  let best = null, bp = 0, moved = false;
+  for (const c of CHALLENGES) {
+    if (isDone(c)) continue;
+    const gained = tallyOf(c.tally) - ((before && before[c.tally]) || 0), p = tallyOf(c.tally) / c.target;
+    if (gained > 0 !== moved) { if (gained > 0) { moved = true; bp = 0; best = null; } else continue; }
+    if (p > bp) { bp = p; best = c; }
+  }
+  if (!best) return null;
+  const done = tallyOf(best.tally);
+  return { name: best.name, text: best.text, remaining: best.target - done, done, target: best.target, gained: Math.max(0, done - ((before && before[best.tally]) || 0)), c: best };
 }
 export const doneCount = () => CHALLENGES.filter(isDone).length;
 

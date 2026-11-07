@@ -13,7 +13,7 @@ import { BODIES, BUILDS, ITEM_STATS, fitOf, effects, statsOf } from './config/st
 import { LOOK } from './save/progress.js';
 import { rotatingList } from './save/rotating.js';
 import { account, setLevelUpListener } from './save/level.js';
-import { CHALLENGES, isLocked, nextGoal, setRotatingListener, setUnlockListener, tallyOf, track, trackMax } from './save/challenges.js';
+import { CHALLENGES, isLocked, nextGoal, tallySnapshot, setRotatingListener, setUnlockListener, tallyOf, track, trackMax } from './save/challenges.js';
 import { addPop, nearMul, onPass } from './sim/scoring.js';
 import { S, calm, reset, state } from './sim/state.js';
 import { buildLevels, hud, init as initMenus } from './ui/menus.js';
@@ -64,7 +64,7 @@ reset();
 
 buildLevels();
 
-window.__excuse = { onPass, nearMul, roomLevel, setRoomLevel, get LV() { return LV; }, injectRoomMessage, lobbyPlayers, lobbyStatus, draftMul, xp: () => account.xp(), account, startDuel, duelReceive, hostRoom, hostStart, joinRoom, leaveRoom, rematchState, requestRematch, useRoomFactory, nextGoal, rotatingList, tick, reset, start, setLevel, get S() { return S; }, get state() { return state; }, keys, action, onTap, render, drawPreview, LEVELS, runEvent, shout, weekKey, hasPlayed, pauseGame, quitRun, toMenu, CHALLENGES, isLocked, tallyOf, track, trackMax, racePace, fitOf, BODIES, BUILDS, ITEM_STATS, effects, statsOf, LOOK, mkPerson: (x, z) => mk(x, z, { hx: 0, hz: 1, v0: 1 }) };
+window.__excuse = { onPass, nearMul, roomLevel, setRoomLevel, get LV() { return LV; }, injectRoomMessage, lobbyPlayers, lobbyStatus, draftMul, xp: () => account.xp(), account, startDuel, duelReceive, hostRoom, hostStart, joinRoom, leaveRoom, rematchState, requestRematch, useRoomFactory, nextGoal, tallySnapshot, rotatingList, tick, reset, start, setLevel, get S() { return S; }, get state() { return state; }, keys, action, onTap, render, drawPreview, LEVELS, runEvent, shout, weekKey, hasPlayed, pauseGame, quitRun, toMenu, CHALLENGES, isLocked, tallyOf, track, trackMax, racePace, fitOf, BODIES, BUILDS, ITEM_STATS, effects, statsOf, LOOK, mkPerson: (x, z) => mk(x, z, { hx: 0, hz: 1, v0: 1 }) };
 
 requestAnimationFrame(frame);
 

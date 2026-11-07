@@ -78,3 +78,18 @@ test('rotating challenges count real play through track()', () => {
   E.track(c.tally, 2);
   assert.strictEqual(E.rotatingList().find(x => x.id === c.id).progress, 2);
 });
+
+test('next goal prefers what this run moved, and says how far it moved', () => {
+  const E = loadGame();
+  E.track('razor', 90);                  // Shades 90/100, but not touched this run
+  const before = E.tallySnapshot();
+  E.track('passes', 200);                // Beanie 200/1000, moved this run
+  const g = E.nextGoal(before);
+  assert.notStrictEqual(g.name, 'Shades', 'a goal you moved this run comes first');
+  assert.strictEqual(g.gained, 200);
+  assert.strictEqual(g.done, 200);
+  assert.strictEqual(g.target, 1000);
+  const none = E.nextGoal(E.tallySnapshot());   // nothing moved: falls back to the closest
+  assert.strictEqual(none.name, 'Shades');
+  assert.strictEqual(none.gained, 0);
+});

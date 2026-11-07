@@ -6,7 +6,7 @@ import { R, clamp, hashStr, mulberry32, pick, rnd, setR, todayKey, weekKey } fro
 import { $ } from '../dom.js';
 import { COST_DASH, DASH_V, action, keys, pendingDash, setPendingDash, touches } from '../input/input.js';
 import { radarTop, setRadarTop } from '../render/hud.js';
-import { nextGoal, track, trackMax } from '../save/challenges.js';
+import { nextGoal, tallySnapshot, track, trackMax } from '../save/challenges.js';
 import { account, gainXp, runXp } from '../save/level.js';
 import { buzz, store } from '../save/store.js';
 import { PERFECT_SPEED, banner } from './actions.js';
@@ -246,9 +246,9 @@ function showUnlocks() {
   if (S.unlocked.length) un.textContent = 'Unlocked: ' + S.unlocked.join(', ') + '. Try it in Change look.';
   const xn = $('xpNote');
   if (S.xpGained) { const pg = account.progress(); xn.hidden = false; xn.textContent = '+' + S.xpGained + ' XP · Level ' + pg.level + ' (' + fmt(pg.into) + ' / ' + fmt(pg.need) + ')'; } else xn.hidden = true;
-  const ng = nextGoal(), nn = $('nextNote');
+  const ng = nextGoal(S.tallyStart), nn = $('nextNote');
   nn.hidden = !ng;
-  if (ng) nn.textContent = 'Next unlock: ' + ng.name + ', ' + fmt(ng.remaining) + ' to go';
+  if (ng) nn.textContent = 'Next unlock: ' + ng.name + ' · ' + fmt(ng.done) + ' of ' + fmt(ng.target) + (ng.gained ? ' (+' + fmt(ng.gained) + ' this run)' : '');
 }
 
 function showRaceEnd() {
@@ -300,6 +300,7 @@ export function start(a, b, opts) {
   setRaceBuild(mode === 'race');   // the crowd generator adds belt riders in races only
   setR(key ? mulberry32(hashStr(key)) : duel ? mulberry32(hashStr(duel.seed)) : Math.random);
   reset();
+  S.tallyStart = tallySnapshot();
   S.mode = mode; S.kind = mode; S.endless = mode !== 'race'; S.seed = key || (duel ? duel.seed : null); S.duel = duel;
   if (S.endless) S.timeLeft = Infinity;
   ghostStart();
