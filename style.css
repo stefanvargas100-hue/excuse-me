@@ -430,12 +430,21 @@ button:disabled.big, button:disabled.ghost { opacity: .5; cursor: default; }
 
 /* ---- race HUD lives at the bottom: full-width line, then place, speed and time underneath ---- */
 .rmph { display: none; font-family: var(--display); font-size: 15px; background: var(--paper); border: 2.5px solid var(--ink); border-radius: var(--wob-s); padding: 1px 10px; box-shadow: 2px 3px 0 var(--ink); }
-#hud.race { bottom: 0; padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); }
-#hud.race .trackrow { margin: auto -14px 0; gap: 0; }
-#hud.race .trackrow .num { display: none; }
-#hud.race .track.race { margin: 0 26px 0 16px; }
-#hud.race .boost { gap: 8px; }
-#hud.race .boost .place { align-self: center; }
-#hud.race .rmph { display: block; margin-left: auto; }
-#hud.race .clock { margin-left: 0; }
-#hud.race #mph { display: none; }
+/* every mode: pause and combo at the top, everything else in one row at the bottom */
+#hud { top: 0; bottom: 0; padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); }
+.top { flex: 1; justify-content: flex-end; }
+.trackrow { margin: 0 -14px; gap: 0; }
+.trackrow .track:not(.race) { margin: 0 14px; }
+#hud.race .trackrow .track.race { margin: 0 26px 0 16px; }
+.trackrow:has(.track[hidden]) { display: none; }
+.boost { gap: 6px; align-items: center; }
+.boost .score { transform: none; padding: 1px 10px 2px; border-width: 2.5px; box-shadow: 2px 3px 0 var(--ink); border-radius: var(--wob-s); display: flex; align-items: baseline; gap: 5px; }
+.boost .score small { font-size: 11px; }
+.boost .score b { font-size: 21px; line-height: 1.1; }
+.boost .score[hidden] { display: none; }
+.hchip { font-family: var(--display); font-size: 15px; background: var(--paper); border: 2.5px solid var(--ink); border-radius: var(--wob-s); padding: 1px 9px; box-shadow: 2px 3px 0 var(--ink); white-space: nowrap; }
+.rmph { display: block; margin-left: auto; white-space: nowrap; }
+.boost .place { align-self: center; white-space: nowrap; }
+.clock { margin-left: 0; }
+#mph { display: none; }
+#hud.race .hchip { display: none; }

@@ -108,7 +108,7 @@ export function hud() {
     $('chain').textContent = S.chain + ' chain';
   }
   if (S.chain > 0) $('cbar').style.width = (clamp(1 - (S.time - S.lastPassT) / CHAIN_WINDOW, 0, 1) * 100).toFixed(0) + '%';
-  $('clock').style.visibility = S.endless ? 'hidden' : '';   // endless runs have no clock
+  $('clock').style.display = S.endless ? 'none' : '';   // endless runs have no clock
   const tl = S.race ? Math.floor(S.time) : S.endless ? 0 : Math.max(0, Math.ceil(S.timeLeft));
   if (tl !== last.tl) {
     last.tl = tl;
