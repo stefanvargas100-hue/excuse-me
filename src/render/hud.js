@@ -30,7 +30,7 @@ export function zoneGuide() {
 }
 
 export function drawPops() {
-  let y = H * 0.86;
+  let y = H * 0.8;   // above the bottom HUD row, which would otherwise sit on the countdown and the pop-ups
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   for (let i = S.pops.length - 1; i >= 0; i--) {
     const q = S.pops[i], a = clamp(1.3 - q.t, 0, 1), rise = q.t * 26;

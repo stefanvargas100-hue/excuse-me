@@ -86,3 +86,4 @@
 - Placed by a fixed seed per stage (every ~70 m, none in the first 60 m or last 45 m), so every race on a stage has the same layout. One shared pickup: whoever gets there first takes it, bots included (hard bots steer toward them).
 - Races against bots only. Live friend races have none for now, because pickups are not synced between phones yet.
 - Tuning numbers (3 s, x1.35, 2.2 s, spacing) are first guesses in src/sim/powerups.js.
+- 2026-11-07: Pale strip found: html clientHeight on the phone is 873 while the screen is 932; menus, HUD and tips were position:absolute so they were sized against the 873 box (menu shading and HUD stopped 59 px short). They are now position:fixed (sized against the real screen). Pop-ups and the race countdown moved up (0.8 of height) so the bottom HUD never covers them; HUD bottom padding reduced. Screen info panel stays until Stefan confirms.
