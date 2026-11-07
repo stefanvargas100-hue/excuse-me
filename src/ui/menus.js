@@ -91,7 +91,7 @@ export function hud() {
   const dm = Math.floor(S.pz);
   if (dm !== last.dist) { last.dist = dm; $('dist').textContent = S.endless ? dm + ' m' : dm + ' / ' + LV.goal + ' m'; $('prog').style.width = (clamp(S.pz / LV.goal, 0, 1) * 100).toFixed(1) + '%'; }
   // speed over the ground in mph (belts included); a race has no score, only time and place
-  $('prog').parentElement.hidden = !!S.endless;   // endless runs have no finish line: just score and distance travelled
+  $('prog').parentElement.hidden = !!S.endless; $('prog').parentElement.classList.toggle('race', !!S.race);   // endless runs have no finish line: just score and distance travelled
   const sc = Math.floor(S.score);
   if (sc !== last.score || last.race !== !!S.race) {
     last.score = sc; last.race = !!S.race;
@@ -125,11 +125,11 @@ export function hud() {
 
 
 // Race mode: your place, the gap to the next racer, and a dot for each racer on the progress bar.
-const dotsKey = { n: -1 };
+const dotsKey = { n: -1, k: '' };
 function raceHud() {
   syncCoach();
   const pl = $('place');
-  if (!S.race) { if (!pl.hidden) pl.hidden = true; if (dotsKey.n !== 0) { dotsKey.n = 0; $('raceDots').innerHTML = ''; } return; }
+  if (!S.race) { if (!pl.hidden) pl.hidden = true; if (dotsKey.n !== 0) { dotsKey.n = 0; dotsKey.k = ''; $('raceDots').innerHTML = ''; } return; }
   pl.hidden = false;
   const rows = standings(), me = rows.findIndex(r => r.me), n = rows.length;
   let gap = '';
@@ -138,9 +138,15 @@ function raceHud() {
   else gap = Math.max(1, Math.round(S.pz - rows[1].z)) + ' m ahead';
   const txt = ordinal(me + 1) + ' of ' + n + ' · ' + gap + (S.bumpT > 0 ? ' · BUMPED' : '');
   if (pl.textContent !== txt) { pl.textContent = txt; pl.classList.toggle('bumped', S.bumpT > 0); }
-  const box = $('raceDots');
-  if (dotsKey.n !== n) { dotsKey.n = n; box.innerHTML = ''; for (let i = 0; i < n - 1; i++) { const d = document.createElement('i'); d.style.background = S.race.bots[i].color; box.appendChild(d); } }
-  S.race.bots.forEach((b, i) => { const d = box.children[i]; if (d) d.style.left = (clamp(b.z / LV.goal, 0, 1) * 100).toFixed(1) + '%'; });
+  const box = $('raceDots'), bots = S.race.bots, key = bots.map(r => r.color).join();
+  if (dotsKey.k !== key) {   // one dot per racer, you last so your dot is drawn on top
+    dotsKey.k = key; dotsKey.n = n; box.innerHTML = '';
+    for (const r of bots) { const d = document.createElement('i'); d.style.background = r.color; box.appendChild(d); }
+    const d = document.createElement('i'); d.className = 'me'; box.appendChild(d);
+  }
+  const at = z => (clamp(z / LV.goal, 0, 1) * 100).toFixed(1) + '%';
+  bots.forEach((b, i) => { const d = box.children[i]; if (d) d.style.left = at(b.z); });
+  const md = box.children[bots.length]; if (md) md.style.left = at(S.pz);
 }
 
 /* ---------- leaderboards: daily, weekly and each classic stage ---------- */

@@ -171,7 +171,7 @@ button.big:focus-visible, button.ghost:focus-visible, .toggle input:focus-visibl
 .track { position: relative; overflow: visible; }
 .track i#prog { border-radius: 5px 8px 5px 8px; }
 #raceDots { position: absolute; inset: 0; }
-#raceDots i { position: absolute; top: -3px; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; border: 2.5px solid var(--ink); box-sizing: border-box; }
+#raceDots i { position: absolute; top: 50%; margin-top: -7px; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; border: 2.5px solid var(--ink); box-sizing: border-box; }
 .place { align-self: flex-start; padding: 2px 12px 3px; border: 3px solid var(--ink); border-radius: var(--wob-s); background: var(--paper); box-shadow: 3px 3px 0 var(--ink); font-family: var(--display); font-size: 15px; transform: rotate(-.8deg); }
 .place.bumped { background: var(--alert); color: var(--paper); }
 .place[hidden] { display: none; }
@@ -408,3 +408,9 @@ button:disabled.big, button:disabled.ghost { opacity: .5; cursor: default; }
 #boardList li .sc { font-family: var(--display); font-variant-numeric: tabular-nums; }
 #boardList li.msg { justify-content: center; background: transparent; border-style: dashed; }
 #boardStages, #boardTabs { flex-wrap: nowrap; } #boardStages .chip, #boardTabs .chip { flex: 1 1 0; min-width: 0; padding: 0 4px; }
+
+/* Race: the progress bar becomes a thin line with a finish flag; a dot for every racer rides on top of it, yours biggest */
+.track.race { height: 4px; border: 0; border-radius: 2px; background: var(--ink); box-shadow: none; margin: 0 16px 0 4px; }
+.track.race #prog { display: none; }
+.track.race::after { content: '🏁'; position: absolute; right: -10px; top: 50%; transform: translateY(-62%); font-size: 20px; line-height: 1; }
+#raceDots i.me { width: 20px; height: 20px; margin-top: -10px; margin-left: -10px; background: var(--btn); z-index: 2; }
