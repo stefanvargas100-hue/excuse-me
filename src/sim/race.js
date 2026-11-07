@@ -1,10 +1,12 @@
+import { COMBO_SPEED_PER, comboLevel } from '../config/combo.js';
+export { comboLevel } from '../config/combo.js';
 import { Music } from '../audio/music.js';
 import { LV } from '../config/levels.js';
 import { BASE, BOOST, CHAIN_WINDOW, LAT_ACC, LAT_MAX, REGEN, R_PLAYER } from '../config/tuning.js';
 import { clamp, mulberry32 } from '../config/util.js';
 import { REACT } from '../config/colour.js';
 import { BOT_NAMES } from '../config/names.js';
-import { STRIP_SPEED, beltAt, beltFor, contain, onStrip } from '../config/strips.js';
+import { STRIP_SPEED, beltAt, beltFor, contain, glassBetween, onStrip } from '../config/strips.js';
 import { effects, fitOf, randomLoadout, statsOf } from '../config/stats.js';
 import { COST_DASH, DASH_T, DASH_V } from '../input/input.js';
 import { buzz, store } from '../save/store.js';
@@ -65,7 +67,7 @@ function stepDraft(r, x, z, slowed, dt) {
 
 // Race pace: a combo makes you walk faster, and running low on stamina makes you walk slower, so dashes and bursts
 // have to be spent wisely, but ordinary use of them costs next to nothing. Used for the player and the bots alike.
-const COMBO_BOOST = 0.04;   // extra speed per combo level (x2 is +4%, the x8 cap is +28%): a long chain is worth a slipstream
+// Each level adds 4% speed, up to +60% at x16.
 // Stamina only slows you once it is genuinely low: nothing above 40, a mild 8% by 10, then steeply to 35% when you are out.
 const tiredSlow = energy => {
   const e = clamp(energy, 0, 100);
@@ -73,8 +75,7 @@ const tiredSlow = energy => {
   if (e >= 10) return 0.08 * (40 - e) / 30;
   return 0.08 + 0.27 * (10 - e) / 10;
 };
-export const comboLevel = chain => Math.min(8, 1 + Math.floor(chain / 3));
-export const racePace = (chain, energy) => (1 + COMBO_BOOST * (comboLevel(chain) - 1)) * (1 - tiredSlow(energy));
+export const racePace = (chain, energy) => (1 + COMBO_SPEED_PER * (comboLevel(chain) - 1)) * (1 - tiredSlow(energy));
 
 // Three tiers. Pace is walking speed relative to yours, miss is how often a bot fails to notice someone,
 // dash is how readily it dashes around trouble, burst is how often it spends stamina on a burst of speed,
@@ -196,7 +197,7 @@ function resolve(t) {
   for (let iter = 0; iter < 3; iter++) {
     let moved = false;
     for (const p of S.people) {
-      if (p.dead || p.prop === 'spill' || Math.abs(p.z - t.z) > 3) continue;
+      if (p.dead || p.prop === 'spill' || Math.abs(p.z - t.z) > 3 || glassBetween(LV.id, t.x, t.z, p.x, p.z)) continue;
       for (const c of p.circles) {
         const dx = t.x - (p.x + c.ox), dz = t.z - (p.z + (c.oz || 0)), rr = R_PLAYER + c.r, d2 = dx * dx + dz * dz;
         if (d2 >= rr * rr) continue;
@@ -240,7 +241,7 @@ function resolveRacers(t) {
   for (let iter = 0; iter < 3; iter++) {
     let moved = false;
     for (const b of S.race.bots) {
-      if (!b.remote || b.done || !givesWayTo(b)) continue;
+      if (!b.remote || b.done || !givesWayTo(b) || glassBetween(LV.id, t.x, t.z, b.x, b.z)) continue;
       const dx = t.x - b.x, dz = t.z - b.z, d2 = dx * dx + dz * dz;
       if (d2 >= RACER_GAP * RACER_GAP) continue;
       const d = Math.sqrt(d2);

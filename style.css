@@ -455,3 +455,5 @@ button:disabled.big, button:disabled.ghost { opacity: .5; cursor: default; }
 .clock { margin-left: 0; }
 #mph { display: none; }
 #hud.race .hchip { display: none; }
+
+.stathelp { font-size: 11px; line-height: 1.15; opacity: .8; margin-top: 2px; }

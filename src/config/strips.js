@@ -42,3 +42,14 @@ export function contain(id, prevX, x, z, m = 0.22) {
 export const stripLane = id => LANES[id] || null;
 export const stripHasZ = (L, z) => z > START && (z - START) % L.every < L.len;
 export const onStrip = (id, x, z) => { const L = LANES[id]; return !!L && x >= L.x0 && x <= L.x1 && stripHasZ(L, z); };
+
+// A shoulder or suitcase can overlap the railing visually, but cannot collide through it.
+// Check the segment between the two owners, so the open ends still allow contact.
+export function glassBetween(id, x, z, ox, oz) {
+  const B = BELTS[id]; if (!B || x === ox) return false;
+  for (const wall of [B.fwd[0], B.rev[1]]) {
+    const t = (wall - x) / (ox - x);
+    if (t > 0 && t < 1 && beltHasZ(B, z + (oz - z) * t)) return true;
+  }
+  return false;
+}

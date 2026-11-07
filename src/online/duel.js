@@ -6,8 +6,8 @@ import { LEVELS, LV, setLevel } from '../config/levels.js';
 import { $ } from '../dom.js';
 import { LOOK, LOOK_OPTS } from '../save/progress.js';
 import { store } from '../save/store.js';
-import { start } from '../sim/game.js';
-import { S } from '../sim/state.js';
+import { start, syncDuelPause } from '../sim/game.js';
+import { S, state } from '../sim/state.js';
 import { packGhost, saveFriendGhost } from '../sim/ghostshare.js';
 import { createRoom, cleanCode, makeCode } from './room.js';
 import { createRemote } from './remote.js';
@@ -79,7 +79,7 @@ export function startDuel({ seed, level, friends, friend, send, roster: ids, meI
   const lineUp = ids && ids.length ? ids : ['me', ...order], slotOf = {};
   lineUp.forEach((id, i) => { slotOf[id === meId ? 'me' : id] = i; });
   // ten reports a second for one friend; five with more (measured 2026-11-07: a full room of 8 at 5 a second lost nothing on the free plan)
-  const d = { refresh: showRematch, seed, peers, order, slotOf, meId: meId || 'me', count: lineUp.length, title: names.length === 1 ? names[0] : names.length + ' friends', send, n: 0, sendT: 0, sendEvery: order.length > 1 ? 0.2 : 0.1 };
+  const d = { pausers: new Set(), pauseSeq: 0, refresh: showRematch, seed, peers, order, slotOf, meId: meId || 'me', count: lineUp.length, title: names.length === 1 ? names[0] : names.length + ' friends', send, n: 0, sendT: 0, sendEvery: order.length > 1 ? 0.2 : 0.1 };
   start('race', null, { duel: d });
   return d;
 }
@@ -89,14 +89,19 @@ export function duelReceive(ev, data) {
   const d = S && S.duel; if (!d || !data || typeof data !== 'object') return;
   const id = cleanId(data.id) || (d.order.length === 1 ? d.order[0] : null), P = id && d.peers[id];
   if (!P) return;
-  if (ev === 'pos') {
+  if (ev === 'pause') {
+    if (data.seed !== d.seed || !Number.isInteger(data.n) || data.n < 0 || data.n <= (P.pauseSeq ?? -1) || typeof data.paused !== 'boolean' || P.bye) return;
+    P.pauseSeq = data.n;
+    if (data.paused) d.pausers.add(id); else d.pausers.delete(id);
+    syncDuelPause();
+  } else if (ev === 'pos') {
     const n = num(data.n, 1e9), x = num(data.x, 20), z = num(data.z, LV.goal + 20), vx = num(data.vx, 20), s = num(data.s, 20);
     if ([n, x, z, vx, s].some(v => v === null)) return;
     P.remote.push({ n, x, z, vx, s: Math.max(0, s) }, S.clock);
   } else if (ev === 'fin') {
     const ft = num(data.ft, 3600);
     if (ft !== null && ft > 0) P.fin = ft;
-  } else if (ev === 'bye') P.bye = true;
+  } else if (ev === 'bye') { P.bye = true; d.pausers.delete(id); syncDuelPause(); }
 }
 
 /* ---- the room before the race ---- */
@@ -128,6 +133,7 @@ function onMessage(ev, data) {
       .map(p => ({ id: cleanId(p && p.id), name: cleanName(p && p.name), look: cleanLook(p && p.look) })).filter(p => p.id);
     if (!players.length || players[0].id !== from) return;
     if (!players.some(p => p.id === myId)) { if (inRoster) { closeRoom(); say('You were removed from the room.'); } return; }
+    if (raced) for (const p of roster) if (!players.some(next => next.id === p.id)) duelReceive('bye', { id: p.id });
     hostId = from; roster = players; inRoster = true; hostGone = false;
     if (Number.isInteger(data.level) && LEVELS[data.level]) levelIdx = data.level;
     for (const id of [...wants]) if (!roster.some(p => p.id === id)) wants.delete(id);
@@ -172,14 +178,16 @@ function beginRace(level, seed) {
 function heartbeat() {
   if (!room) return;
   const now = Date.now();
+  // Repeat each racer's own pause vote with its sequence number, so one lost message cannot leave the room running or stuck.
+  if (raced && S?.duel && (state === 'play' || state === 'paused')) room.send('pause', { id: myId, seed: S.duel.seed, n: S.duel.pauseSeq, paused: S.duel.pausers.has(myId) });
   if (role === 'guest') {
     room.send('hello', { id: myId, name: myName(), look: LOOK });
     if (inRoster && !hostGone && seenAt[hostId] && now - seenAt[hostId] > STALE_MS) {
-      if (!raced) { closeRoom(); say('Lost contact with the host.'); } else { hostGone = true; changed(); }
+      if (!raced) { closeRoom(); say('Lost contact with the host.'); } else { hostGone = true; duelReceive('bye', { id: hostId }); changed(); }
     }
   } else if (role === 'host') {
     const gone = others().filter(p => seenAt[p.id] && now - seenAt[p.id] > STALE_MS);
-    if (gone.length) { roster = roster.filter(p => !gone.includes(p)); for (const p of gone) wants.delete(p.id); maybeRematch(); changed(); }
+    if (gone.length) { for (const p of gone) duelReceive('bye', { id: p.id }); roster = roster.filter(p => !gone.includes(p)); for (const p of gone) wants.delete(p.id); maybeRematch(); changed(); }
     if (roster.length > 1) sendRoster();
   }
 }
@@ -188,7 +196,7 @@ async function connect(c, r) {
   closeRoom();
   room = roomFactory(); role = r; code = c; myId = newId();
   room.onMessage(onMessage);
-  room.onClose(() => { if (!room) return; say('Connection lost.'); if (S && S.duel) for (const k of S.duel.order) S.duel.peers[k].bye = true; });
+  room.onClose(() => { if (!room) return; say('Connection lost.'); if (S && S.duel) for (const k of S.duel.order) duelReceive('bye', { id: k }); });
   await room.join(c);
   tick = setInterval(heartbeat, KEEPALIVE_MS); if (tick && tick.unref) tick.unref();
   if (r === 'guest') room.send('hello', { id: myId, name: myName(), look: LOOK });

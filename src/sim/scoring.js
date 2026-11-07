@@ -1,3 +1,4 @@
+import { comboLevel } from '../config/combo.js';
 import { Music } from '../audio/music.js';
 import { MULT_COLS, REACT } from '../config/colour.js';
 import { LV } from '../config/levels.js';
@@ -43,7 +44,7 @@ export function onPass(p) {
   if (now - S.lastPassT > CHAIN_WINDOW) { S.chain = 0; S.snake = 0; S.oncRun = 0; }
   const prev = S.chain > 0 ? S.lastPass : null;
   S.chain++; S.passed++; S.bestChain = Math.max(S.bestChain, S.chain);
-  const mult = Math.min(8, 1 + Math.floor(S.chain / 3));
+  const mult = comboLevel(S.chain);
   let pts = 10, sound = null;
   const tags = [];
   if (S.race) nearBoost(S, gap);
@@ -84,7 +85,7 @@ export function onPass(p) {
     p.react = { t: 0, text: pick(REACT[LV.id]), up: R() < 0.65 };
     if (!p.locked) p.vx += sgn(p.x - S.px) * 0.7;
   }
-  if (mult === 8 && S.multPrev < 8) track('x8');
-  if (mult > S.multPrev) { addPop('×' + mult + ' MULTIPLIER', MULT_COLS[mult - 1], 26); buzz([10, 30, 10]); }
+  if (mult >= 8 && S.multPrev < 8) track('x8');
+  if (mult > S.multPrev) { addPop('×' + mult + ' MULTIPLIER', MULT_COLS[Math.min(mult, MULT_COLS.length) - 1], 26); buzz([10, 30, 10]); }
   S.multPrev = mult;
 }

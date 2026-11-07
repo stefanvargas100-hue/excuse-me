@@ -1,3 +1,5 @@
+import { leaveRoom } from '../online/duel.js';
+import { comboLevel } from '../config/combo.js';
 import { Music } from '../audio/music.js';
 import { LEVELS, LV, LVI, SPAWN_FAR, setLevel } from '../config/levels.js';
 import { STRIP_SPEED, beltAt, beltFor, contain, onStrip, stripLane } from '../config/strips.js';
@@ -78,6 +80,7 @@ function movePlayer(dt) {
 }
 
 export function tick(dt) {
+  if (state === 'paused') return;
   S.clock += dt;
   for (const q of S.pops) q.t += dt;
   if (S.banner) { S.banner.t += dt; if (S.banner.t > 2.4) S.banner = null; }
@@ -146,7 +149,7 @@ export function tick(dt) {
       S.chain = 0; S.snake = 0; S.oncRun = 0; S.multPrev = 1;
     }
     S.heat = Math.max(0, S.heat - dt * 0.16);
-    const mult = Math.min(8, 1 + Math.floor(S.chain / 3));
+    const mult = comboLevel(S.chain);
     Music.target(clamp(0.15 + (mult - 1) * 0.12 + S.heat + (S.timeLeft < 15 ? 0.3 : 0), 0, 1));
     if (S.pz >= goalOf()) { if (S.race) winRace(); else win(); }
   } else if (state === 'ready') {
@@ -332,16 +335,46 @@ export function start(a, b, opts) {
   Music.start(LV.music); Music.ambStart(LV.id);
 }
 
-export function pauseGame() {
-  if (state !== 'play' || (S && S.duel)) return;   // a live race cannot be paused: your friend keeps running
-  setState('paused'); touches.clear(); Music.suspend();
-  $('pauseEyebrow').textContent = (S.race ? 'Race · ' : '') + LV.city + ' · ' + LV.name + ' · ' + Math.floor(S.pz) + ' m';
-  $('restart').hidden = !!(S.daily || S.weekly);   // daily and weekly runs are one try
-  $('pmenu').textContent = S.daily || S.weekly ? 'End run' : 'Main menu';
+function showPauseMenu() {
+  touches.clear(); keys.l = keys.r = false; setPendingDash(null);
+  Music.suspend();
+  $('pauseEyebrow').textContent = (S.duel ? 'Room paused - ' : S.race ? 'Race - ' : '') + LV.city + ' - ' + LV.name + ' - ' + Math.floor(S.pz) + ' m';
+  $('restart').hidden = !!(S.daily || S.weekly || S.duel);
+  $('pmenu').textContent = S.duel ? 'Leave race' : S.daily || S.weekly ? 'End run' : 'Main menu';
+  const waiting = S.duel && !S.duel.pausers.has(S.duel.meId);
+  $('holdPause').hidden = !waiting;
+  $('resume').disabled = !!waiting;
+  $('resume').textContent = waiting ? 'Waiting for racers' : S.duel ? 'Ready to resume' : 'Resume';
+  $('pauseStatus').hidden = !S.duel;
+  if (S.duel) {
+    const names = [...S.duel.pausers].map(id => id === S.duel.meId ? 'You' : S.duel.peers[id]?.name || 'Friend');
+    $('pauseStatus').textContent = 'Paused by: ' + names.join(', ') + '. Everyone who paused must be ready to resume.';
+  }
   $('pause').hidden = false;
 }
 
-export function resumeGame() { if (state !== 'paused') return; hideMenus(); setState('play'); Music.resume(); }
+// Both local input and room messages use the same state transition; receiving never echoes a message.
+export function syncDuelPause() {
+  if (!S?.duel || (state !== 'play' && state !== 'paused')) return;
+  if (S.duel.pausers.size) { setState('paused'); showPauseMenu(); }
+  else if (state === 'paused') { hideMenus(); setState('play'); Music.resume(); }
+}
+function sendPause(paused) {
+  const d = S.duel;
+  if (paused) d.pausers.add(d.meId); else d.pausers.delete(d.meId);
+  d.send('pause', { seed: d.seed, n: ++d.pauseSeq, paused });
+  syncDuelPause();
+}
+export function pauseGame() {
+  if (state !== 'play' && state !== 'paused') return;
+  if (S.duel) { sendPause(true); return; }
+  setState('paused'); showPauseMenu();
+}
+export function resumeGame() {
+  if (state !== 'paused') return;
+  if (S.duel) { if (S.duel.pausers.has(S.duel.meId)) sendPause(false); return; }
+  hideMenus(); setState('play'); Music.resume();
+}
 
 // Quitting mid-run: the score still counts, and a daily or weekly try is still used up.
 export function quitRun() {
@@ -353,6 +386,7 @@ export function quitRun() {
 }
 
 export function toMenu() {
+  if (S?.duel) leaveRoom();
   setR(Math.random); $('tut').hidden = true;
   hideMenus();
   setState('ready'); reset(); $('hud').hidden = true; $('start').hidden = false; buildLevels();

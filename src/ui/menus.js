@@ -1,3 +1,4 @@
+import { comboLevel } from '../config/combo.js';
 import { Music } from '../audio/music.js';
 import { LEVELS, LV, LVI, setLevel } from '../config/levels.js';
 import { CHAIN_WINDOW } from '../config/tuning.js';
@@ -104,7 +105,7 @@ export function hud() {
   if (S.chain !== last.chain) {
     last.chain = S.chain;
     $('combo').classList.toggle('off', S.chain === 0);
-    $('mult').textContent = '×' + Math.min(8, 1 + Math.floor(S.chain / 3));
+    $('mult').textContent = '×' + comboLevel(S.chain);
     $('chain').textContent = S.chain + ' chain';
   }
   if (S.chain > 0) $('cbar').style.width = (clamp(1 - (S.time - S.lastPassT) / CHAIN_WINDOW, 0, 1) * 100).toFixed(0) + '%';
@@ -135,6 +136,7 @@ function raceHud() {
   const rows = standings(), me = rows.findIndex(r => r.me), n = rows.length;
   let gap = '';
   if (S.race.countT > 0) gap = 'Get ready';
+  else if (rows.length === 1) gap = 'Racing solo';
   else if (me > 0) gap = Math.max(1, Math.round(rows[me - 1].z - S.pz)) + ' m behind ' + rows[me - 1].name;
   else gap = Math.max(1, Math.round(S.pz - rows[1].z)) + ' m ahead';
   const txt = ordinal(me + 1) + ' of ' + n + ' · ' + gap + (S.bumpT > 0 ? ' · BUMPED' : '');
@@ -302,6 +304,7 @@ export function init() {
   $('pauseBtn').addEventListener('click', e => { e.stopPropagation(); pauseGame(); });
   $('pauseBtn').addEventListener('pointerdown', e => e.stopPropagation());
   $('resume').addEventListener('click', resumeGame);
+  $('holdPause').addEventListener('click', pauseGame);
   $('restart').addEventListener('click', () => { $('pause').hidden = true; Music.ambStop(); start(lastDaily, lastMode); });
   $('pmenu').addEventListener('click', () => { quitRun(); Music.stop(); Music.ambStop(); toMenu(); });
   window.addEventListener('keydown', e => { const k = e.key.toLowerCase(); if (k === 'escape' || k === 'p') { if (state === 'play') pauseGame(); else if (state === 'paused') resumeGame(); } });
