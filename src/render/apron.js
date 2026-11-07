@@ -4,6 +4,7 @@ import { ctx } from '../dom.js';
 import { H, HOR, VZ, W } from './camera.js';
 import { box3D, fq, poly } from './draw.js';
 import { S } from '../sim/state.js';
+import { airportExtras, airportSky } from './airportdetail.js';
 
 /* ---------- what you see through the airport windows: the apron, parked planes on jet bridges, tugs, a far skyline ----------
    Drawn once, clipped to the window openings, before the terminal itself. Gate g sits at z = GATE_Z0 + g * GATE_EVERY. */
@@ -42,6 +43,7 @@ export function drawApron() {
   const g = ctx.createLinearGradient(0, HOR - H * 0.5, 0, HOR);
   g.addColorStop(0, '#3f8fdc'); g.addColorStop(1, '#a9d0ee');
   ctx.fillStyle = g; ctx.fillRect(-W, -H, 3 * W, HOR + H);
+  airportSky(W, H);
   poly([[-120, 0, 0.3], [-7, 0, 0.3], [-7, 0, 300], [-120, 0, 300]], mixc(hex('#737d86'), 22));
   const z0 = Math.floor((VZ - 14) / GATE_EVERY), z1 = Math.ceil((VZ + 130) / GATE_EVERY);
   const gates = [];
@@ -57,6 +59,7 @@ export function drawApron() {
   for (const gi of gates.slice().reverse()) {
     const z = GATE_Z0 + gi * GATE_EVERY;
     if (gateHasPlane(gi)) { plane(z, gi); bridge(z); } else { bridge(z); tug(z + 12); }
+    airportExtras(gi, z, gateHasPlane(gi));
   }
   // one tug crawls along the apron
   const tz = ((S.clock || 0) * 3.2) % 400 + Math.floor(VZ / 400) * 400;

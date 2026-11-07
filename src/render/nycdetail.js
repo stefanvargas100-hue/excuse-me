@@ -4,6 +4,7 @@ import { TAU, clamp, mod } from '../config/util.js';
 import { ctx } from '../dom.js';
 import { F, H, HOR, VX, VY, VZ, W } from './camera.js';
 import { P, ball, box3D, cq, fq, label, poly, sub, wq } from './draw.js';
+import { disc, hsh, makeLod, padd, pfill, pwq, rgba, topOf, wallText, wqA } from './scenery.js';
 import { inXing } from '../sim/people.js';
 import { S, calm } from '../sim/state.js';
 
@@ -15,10 +16,6 @@ import { S, calm } from '../sim/state.js';
    distance so it costs next to nothing on a phone. Where it sits in the paint order: the world's segment loop calls nycSegment()
    at the end of each 3 m segment (far to near), nycSky() paints before it, nycAfterLoop() after it, nycSteam() after the cars. */
 
-// a stable "random" number from two integers, so a building looks the same every time you pass it, whatever pace you take
-const hsh = (a, b = 0) => { let h = Math.imul(a | 0, 374761393) + Math.imul(b | 0, 668265263); h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
-const rgba = (c, a) => 'rgba(' + (c[0] | 0) + ',' + (c[1] | 0) + ',' + (c[2] | 0) + ',' + a + ')';
-
 const WINDOW = hex('#2c3a4a'), STONE = hex('#d8d0c2'), IRON = hex('#232830'), LIT = hex('#f6cf7a'), BLIND = hex('#d9ceb6'), AC = hex('#aab2b9'), PLY = hex('#b38d5c');
 const GRASS = hex('#4c8a45'), BRICK = hex('#8d4a3a'), WALK = hex('#cbc7c0');
 const POSTERS = ['#e2574c', '#f2c94c', '#2f80ed', '#f4f1ea', '#27ae60', '#9b51e0'];
@@ -29,41 +26,8 @@ const SHOPS = [
   { n: 'BAGELS', c: hex('#c98a1a'), g: hex('#ffe9b0') }, { n: 'BOOKS', c: hex('#2b4a8b'), g: hex('#ffe6b0') },
   { n: 'DINER', c: hex('#a3232f'), g: hex('#fff1c9') }, { n: 'SUSHI', c: hex('#2b2f3a'), g: hex('#ffd6d6') }
 ];
-// Detail level: 1 draws everything; if drawing this scenery ever takes too long on a slow phone, the reach of the fine detail shrinks
-// (down to about half) until it is cheap again, and grows back when there is time to spare.
-let LOD = 1, spent = 0, avg = 1;
-const R = n => n * LOD;
+const lod = makeLod(), R = lod.R;
 const FAR_X = -17;   // the wall across the avenue (matches world.js)
-
-// one translucent wall strip
-function wqA(x, y0, y1, a, b, col, al) { ctx.globalAlpha = al; wq(x, y0, y1, a, b, col); ctx.globalAlpha = 1; }
-
-// text painted on a wall: it follows the wall's slant instead of sitting flat on the screen
-function wallText(str, x, yc, zc, hm, color, side) {
-  const d = zc - VZ;
-  if (d < 3 || hm * F / d < 7) return;
-  const a = P(x, yc, d - 0.5), b = P(x, yc, d + 0.5), c = P(x, yc, d);
-  const ux = side > 0 ? a[0] - b[0] : b[0] - a[0], uy = side > 0 ? a[1] - b[1] : b[1] - a[1];   // one metre along the way you read it
-  ctx.save();
-  ctx.translate(c[0], c[1]); ctx.transform(ux * 0.01, uy * 0.01, 0, (F / d) * 0.01, 0, 0);
-  ctx.font = '700 ' + (hm * 100) + "px 'Patrick Hand','Comic Sans MS',cursive,sans-serif";
-  ctx.fillStyle = color; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText(str, 0, 0);
-  ctx.restore();
-}
-
-// Batching: shapes of one colour are added to one path and filled once, which is far cheaper than a fill each.
-function padd(pts) { for (let i = 0; i < pts.length; i++) { const q = P(pts[i][0], pts[i][1], pts[i][2]); if (i) ctx.lineTo(q[0], q[1]); else ctx.moveTo(q[0], q[1]); } ctx.closePath(); }
-const pwq = (x, y0, y1, a, b) => padd([[x, y0, a], [x, y1, a], [x, y1, b], [x, y0, b]]);
-function pfill(col, al) { ctx.fillStyle = col; if (al < 1) ctx.globalAlpha = al; ctx.fill(); ctx.globalAlpha = 1; }
-// the world height that sits at the top edge of the screen at depth d: nothing above it needs drawing
-const topOf = d => VY + (HOR + 30) * d / F;
-
-// a flat disc on the ground
-function disc(x, z, r, col, n = 10) {
-  const pts = []; for (let i = 0; i < n; i++) { const t = i / n * TAU; pts.push([x + Math.cos(t) * r, 0.006, Math.max(0.2, z + Math.sin(t) * r - VZ)]); }
-  poly(pts, col);
-}
 
 /* ---------- facades (both sides of the avenue) ---------- */
 // windows: some lit, some with blinds half drawn, some with an air conditioner or a flower box, and a sill under each.
@@ -226,12 +190,12 @@ function roadLot(za, bi) {
 
 /* ---------- the call from world.js: once per 3 m segment, far to near ---------- */
 export function nycSegment(k, za, zb, da, db, xing) {
-  const t0 = performance.now();
+  lod.begin();
   const bi = Math.floor(za / 12), sIdx = mod(k, 4);
   farFacade(k, za, zb, da, db, bi, sIdx);
   if (!xing) { rightFacade(k, za, zb, da, db, bi, sIdx, k & 1); if (da < R(50)) sidewalkSeg(k, za, zb, da, db); }
   if (da < 60 && !xing) roadLot(za, bi);
-  spent += performance.now() - t0;
+  lod.end();
 }
 
 /* ---------- sky ---------- */
@@ -297,8 +261,7 @@ function farFolk() {
 }
 
 export function nycAfterLoop() {
-  avg = avg * 0.92 + spent * 0.08; spent = 0;   // milliseconds spent on the segment details this frame, smoothed
-  if (avg > 2.6) LOD = Math.max(0.5, LOD - 0.02); else if (avg < 1.6) LOD = Math.min(1, LOD + 0.01);
+  lod.frame();
   // two tyre tracks in every lane and a worn centre, one shape each, faded with distance by a single gradient
   const g = ctx.createLinearGradient(0, HOR, 0, H); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,0.11)');
   for (const lx of [-6.4, -9.4, -12.4]) for (const s of [-0.8, 0.8]) poly([[lx + s - 0.25, 0.003, 0.6], [lx + s + 0.25, 0.003, 0.6], [lx + s + 0.25, 0.003, 85], [lx + s - 0.25, 0.003, 85]], g);

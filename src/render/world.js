@@ -8,6 +8,8 @@ import { P, ball, box3D, cq, forSegs, fq, label, poly, sky, sub, wq } from './dr
 import { inXing } from '../sim/people.js';
 import { GATE_EVERY, GATE_Z0, drawApron, gateNo } from './apron.js';
 import { S, goalOf } from '../sim/state.js';
+import { airportAfterLoop, airportSegment } from './airportdetail.js';
+import { shibuyaAfterLoop, shibuyaSegment, shibuyaSky } from './shibuyadetail.js';
 import { nycAfterLoop, nycSegment, nycSky } from './nycdetail.js';
 
 
@@ -84,7 +86,9 @@ export function paintAirport() {
       label('TERMINAL B', c[0], c[1] + 0.26 * F / d, 0.26 * F / d, INK);
       ctx.globalAlpha = 1;
     }
+    airportSegment(k, za, zb, da, db);   // lived-in detail on top (render/airportdetail.js)
   });
+  airportAfterLoop();
 }
 
 function goalNYC(d) {
@@ -149,6 +153,7 @@ function goalShibuya(d) {
 
 export function paintShibuya() {
   sky('#0e0b1f');
+  shibuyaSky();
   if (goalOf() - VZ < 86) goalShibuya(goalOf() - VZ);
   const hw = 15;
   forSegs(3, 85, (k, za, zb, da, db) => {
@@ -172,7 +177,9 @@ export function paintShibuya() {
         }
       }
     }
+    shibuyaSegment(k, za, zb, da, db);   // lived-in detail on top (render/shibuyadetail.js)
   });
+  shibuyaAfterLoop();
 }
 
 export function drawCars() {
