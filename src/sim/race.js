@@ -15,6 +15,7 @@ import { LOOK } from '../save/progress.js';
 import { applyBuild, dress } from './people.js';
 import { CLOSE_STAMINA, RAZOR_STAMINA, addPop, nearBoost, nearMul } from './scoring.js';
 import { S } from './state.js';
+import { ghostSave } from './replay.js';
 
 /* ---------- race mode: A to B against bots; a bump slows you down instead of ending the run ---------- */
 export const BUMP_SPEED = 0.3;    // fraction of normal speed while slowed
@@ -390,7 +391,7 @@ export function finishRace() {
   R.finished = true; R.board = standings(); R.place = R.board.findIndex(r => r.me) + 1;
   const key = 'excuseme_race_best_' + LV.id, prev = parseFloat(store.get(key, '0')) || 0;
   R.newBest = !S.duel && R.place === 1 && (!prev || S.time < prev);
-  if (R.newBest) store.set(key, S.time.toFixed(2));
+  if (R.newBest) { store.set(key, S.time.toFixed(2)); ghostSave(); }
   if (R.place === 1) banner('YOU WIN', '#27c27a');
   if (S.duel) { S.duel.send('fin', { ft: S.time }); S.duel.send('fin', { ft: S.time }); return; }   // races against friends do not count toward unlocks
   track('races');
