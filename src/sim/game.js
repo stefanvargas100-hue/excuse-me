@@ -1,6 +1,6 @@
 import { Music } from '../audio/music.js';
 import { LEVELS, LV, LVI, SPAWN_FAR, setLevel } from '../config/levels.js';
-import { STRIP_SPEED, beltAt, beltSpeedAt, contain, onStrip, stripLane } from '../config/strips.js';
+import { STRIP_SPEED, beltAt, beltFor, contain, onStrip, stripLane } from '../config/strips.js';
 import { BASE, BOOST, CHAIN_WINDOW, LAT_ACC, LAT_MAX, REGEN } from '../config/tuning.js';
 import { R, clamp, hashStr, mulberry32, pick, rnd, setR, todayKey, weekKey } from '../config/util.js';
 import { $ } from '../dom.js';
@@ -12,7 +12,7 @@ import { buzz, store } from '../save/store.js';
 import { PERFECT_SPEED, banner } from './actions.js';
 import { collide, updMe, updPeople } from './crowd.js';
 import { genChunk, runEvent, scramble, seeded, spawnFast, spawnRival, updXings, walker } from './people.js';
-import { addPop, onPass } from './scoring.js';
+import { addPop, nearMul, onPass } from './scoring.js';
 import { S, bestOf, endShown, goalOf, reset, setEndShown, setRaceBuild, setState, state } from './state.js';
 import { BUMP_SPEED, addRemoteRacer, draftMul, finishRace, fmtTime, initRace, leadZ, ordinal, raceBest, raceCollide, raceCountdown, racePace, rearZ, updRace } from './race.js';
 import { updCars } from './traffic.js';
@@ -34,7 +34,7 @@ function movePlayer(dt) {
   if (S.slipT > 0) { S.slipT -= dt; steer = 0; }
   if (S.tut) S.tutHold = steer > 0 ? Math.max(0, S.tutHold) + dt : steer < 0 ? Math.min(0, S.tutHold) - dt : 0;
   S.burstT -= dt; S.dashT -= dt; S.dashCool -= dt; S.flash -= dt;
-  S.bumpT = Math.max(0, S.bumpT - dt); S.ghostT = Math.max(0, S.ghostT - dt);   // race mode only: a bump leaves you slow for a moment
+  S.nearT = Math.max(0, S.nearT - dt); S.bumpT = Math.max(0, S.bumpT - dt); S.ghostT = Math.max(0, S.ghostT - dt);   // race mode only: a bump leaves you slow for a moment
   const bursting = S.burstT > 0 && S.bumpT <= 0;
   const st = S.race ? S.race.me : null;   // stats only ever apply in a race
   if (!bursting && S.dashT <= 0) S.energy = Math.min(100, S.energy + REGEN * (st ? st.regen : 1) * dt);
@@ -46,7 +46,7 @@ function movePlayer(dt) {
   const strip = S.race && onStrip(LV.id, S.px, S.pz);
   if (strip && !S.onStrip) addPop('FAST STRIP', stripLane(LV.id).col, 22);
   S.onStrip = strip;
-  const pace = (S.race ? racePace(S.chain, S.energy) * draftMul(S) * (strip ? STRIP_SPEED : 1) : 1) * (S.perfectT > 0 ? PERFECT_SPEED : 1);   // race mode: combo speeds you up, low stamina slows you down
+  const pace = (S.race ? racePace(S.chain, S.energy) * draftMul(S) * nearMul(S) * (strip ? STRIP_SPEED : 1) : 1) * (S.perfectT > 0 ? PERFECT_SPEED : 1);   // race mode: combo speeds you up, low stamina slows you down
   const target = (bursting ? BOOST : BASE) * weave * pace * (st ? st.speed : 1) * (S.bumpT > 0 ? BUMP_SPEED : 1);
   S.speed += (target - S.speed) * Math.min(1, dt * (st && target > S.speed ? st.accel : 5));
   if (S.dashT > 0) S.vx = S.dashDir * DASH_V;
@@ -64,7 +64,7 @@ function movePlayer(dt) {
   S.pz += S.speed * dt;
   // moving walkway (airport races): the belt carries you along, or back
   const bd = S.race ? beltAt(LV.id, S.px, S.pz) : 0;
-  S.belt = S.race ? beltSpeedAt(LV.id, S.px, S.pz) : 0; S.pz += S.belt * dt;
+  S.belt = S.race ? beltFor(LV.id, S.px, S.pz, S.speed) : 0; S.pz += S.belt * dt;
   if (bd !== (S.beltOn || 0)) { S.beltOn = bd; if (bd > 0) addPop('WALKWAY', '#2ec4b6', 24); else if (bd < 0) addPop('WRONG WAY', '#ff8a5c', 24); }
   const sn = Math.floor(S.step / Math.PI);
   if (sn !== S.stepN) { S.stepN = sn; Music.sfx('step'); }

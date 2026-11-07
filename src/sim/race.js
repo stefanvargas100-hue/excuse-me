@@ -4,7 +4,7 @@ import { BASE, BOOST, CHAIN_WINDOW, LAT_ACC, LAT_MAX, REGEN, R_PLAYER } from '..
 import { clamp, mulberry32 } from '../config/util.js';
 import { REACT } from '../config/colour.js';
 import { BOT_NAMES } from '../config/names.js';
-import { STRIP_SPEED, beltAt, beltSpeedAt, contain, onStrip } from '../config/strips.js';
+import { STRIP_SPEED, beltAt, beltFor, contain, onStrip } from '../config/strips.js';
 import { effects, fitOf, randomLoadout, statsOf } from '../config/stats.js';
 import { COST_DASH, DASH_T, DASH_V } from '../input/input.js';
 import { buzz, store } from '../save/store.js';
@@ -12,7 +12,7 @@ import { banner } from './actions.js';
 import { track } from '../save/challenges.js';
 import { LOOK } from '../save/progress.js';
 import { applyBuild, dress } from './people.js';
-import { CLOSE_STAMINA, RAZOR_STAMINA, addPop } from './scoring.js';
+import { CLOSE_STAMINA, RAZOR_STAMINA, addPop, nearBoost, nearMul } from './scoring.js';
 import { S } from './state.js';
 
 /* ---------- race mode: A to B against bots; a bump slows you down instead of ending the run ---------- */
@@ -62,7 +62,7 @@ function stepDraft(r, x, z, slowed, dt) {
 
 // Race pace: a combo makes you walk faster, and running low on stamina makes you walk slower, so dashes and bursts
 // have to be spent wisely, but ordinary use of them costs next to nothing. Used for the player and the bots alike.
-const COMBO_BOOST = 0.025;   // extra speed per combo level (x2 is +2.5%, the x8 cap is +17.5%)
+const COMBO_BOOST = 0.04;   // extra speed per combo level (x2 is +4%, the x8 cap is +28%): a long chain is worth a slipstream
 // Stamina only slows you once it is genuinely low: nothing above 40, a mild 8% by 10, then steeply to 35% when you are out.
 const tiredSlow = energy => {
   const e = clamp(energy, 0, 100);
@@ -109,7 +109,7 @@ function makeBot(i, diff, name) {
   dress(p);
   Object.assign(p, {
     st: effects(statsOf({ ...gear, body: p.body })),
-    draftC: 0, draftT: 0, speed: 0, energy: 100, chain: 0, lastPassT: -9, ahead: new WeakMap(), burstT: 0, dashT: 0, dashDir: 0, bumpT: 0, ghostT: 0, cool: 0, blockT: 0, bumps: 0, pace: diff.pace[i % diff.pace.length], diff,
+    draftC: 0, draftT: 0, nearT: 0, nearAmt: 0, speed: 0, energy: 100, chain: 0, lastPassT: -9, ahead: new WeakMap(), burstT: 0, dashT: 0, dashDir: 0, bumpT: 0, ghostT: 0, cool: 0, blockT: 0, bumps: 0, pace: diff.pace[i % diff.pace.length], diff,
     target: p.x, thinkT: 0, seed: i * 2.3, done: false, finishT: null, seen: new WeakMap(), danger: 99, clear: true
   });
   return p;
@@ -235,7 +235,7 @@ export function raceCollide(dt) {
     const fresh = S.bumpCool <= 0;
     S.bumpCool = BUMP_COOL;   // staying in contact is still the same bump
     if (fresh) {
-      S.bumpT = S.race.me.bumpT; S.bumps++; S.draftC = 0; S.draftT = 0;
+      S.bumpT = S.race.me.bumpT; S.nearT = 0; S.bumps++; S.draftC = 0; S.draftT = 0;
       S.burstT = 0; S.dashT = 0; S.breakFlash = 0.3; S.hitStop = 0.07;
       S.chain = 0; S.snake = 0; S.oncRun = 0; S.multPrev = 1;
       addPop('BUMP!', '#ff4d4f', 34); Music.sfx('oof'); buzz([40, 30, 80]);
@@ -305,7 +305,7 @@ function stepBot(b, dt) {
   const R = S.race, lim = LV.half - 0.5;
   b.thinkT -= dt;
   if (b.thinkT <= 0) { think(b); b.thinkT = 0.1 + R.rng() * 0.18; }   // people do not react instantly
-  b.bumpT = Math.max(0, b.bumpT - dt); b.ghostT = Math.max(0, b.ghostT - dt); b.cool = Math.max(0, b.cool - dt);
+  b.nearT = Math.max(0, b.nearT - dt); b.bumpT = Math.max(0, b.bumpT - dt); b.ghostT = Math.max(0, b.ghostT - dt); b.cool = Math.max(0, b.cool - dt);
   b.burstT -= dt; b.dashT -= dt;
   b.energy = Math.min(100, b.energy + REGEN * b.st.regen * dt);
   if (b.chain > 0 && S.time - b.lastPassT > CHAIN_WINDOW) b.chain = 0;
@@ -324,12 +324,12 @@ function stepBot(b, dt) {
   const weave = 1 - 0.14 * Math.min(1.4, Math.abs(b.vx) / LAT_MAX);
   b.pressT = Math.max(0, (b.pressT || 0) - dt);
   if (stepDraft(b, b.x, b.z, b.bumpT > 0, dt) && b.draftWho === S) addPop(b.name.toUpperCase() + ' SLIPSTREAMED YOU', b.color, 22);
-  const bTarget = (bursting ? BOOST : BASE) * b.pace * b.st.speed * weave * racePace(b.chain, b.energy) * draftMul(b) * (onStrip(LV.id, b.x, b.z) ? STRIP_SPEED : 1) * (b.bumpT > 0 ? BUMP_SPEED : 1);
+  const bTarget = (bursting ? BOOST : BASE) * b.pace * b.st.speed * weave * racePace(b.chain, b.energy) * draftMul(b) * nearMul(b) * (onStrip(LV.id, b.x, b.z) ? STRIP_SPEED : 1) * (b.bumpT > 0 ? BUMP_SPEED : 1);
   b.speed += (bTarget - b.speed) * Math.min(1, dt * (bTarget > b.speed ? b.st.accel : 5));
   const bx0 = b.x;
   b.x = clamp(b.x + b.vx * dt, -lim, lim); b.z += b.speed * dt;
   { const cx = contain(LV.id, bx0, b.x, b.z); if (cx !== b.x) { b.x = cx; b.vx = 0; } }   // glass railings lock bots on the walkway too
-  b.belt = beltSpeedAt(LV.id, b.x, b.z); b.z += b.belt * dt;   // the walkway carries bots too
+  b.belt = beltFor(LV.id, b.x, b.z, b.speed); b.z += b.belt * dt;   // the walkway carries bots too
   if (Math.abs(b.x) >= lim) b.vx = 0;
   // solid people
   if (b.ghostT <= 0) {
@@ -338,7 +338,7 @@ function stepBot(b, dt) {
     b.x = t.x; b.z = t.z; b.vx = t.vx; b.speed = Math.max(0, t.speed);
     if (hit) {
       b.blockT += dt; shove(hit, b.x); b.seen.set(hit, false);   // they notice whoever they just hit
-      if (b.cool <= 0) { b.bumpT = b.st.bumpT; b.draftC = 0; b.draftT = 0; b.bumps++; b.burstT = 0; b.dashT = 0; b.chain = 0; }
+      if (b.cool <= 0) { b.bumpT = b.st.bumpT; b.nearT = 0; b.draftC = 0; b.draftT = 0; b.bumps++; b.burstT = 0; b.dashT = 0; b.chain = 0; }
       b.cool = BUMP_COOL;
       if (b.blockT > STUCK_T) { b.ghostT = STUCK_GHOST; b.blockT = 0; }
     } else b.blockT = Math.max(0, b.blockT - dt * 2);
@@ -350,7 +350,8 @@ function stepBot(b, dt) {
     const was = b.ahead.get(p), now = p.z > b.z;
     if (was && !now) {
       b.chain++; b.lastPassT = S.time;
-      const gap = Math.abs(p.x - b.x) - R_PLAYER - 0.25;   // bots earn near-miss stamina too
+      const gap = Math.abs(p.x - b.x) - R_PLAYER - 0.25;   // bots earn near-miss stamina and speed too
+      nearBoost(b, gap);
       if (gap < 0.15) b.energy = Math.min(100, b.energy + RAZOR_STAMINA); else if (gap < 0.4) b.energy = Math.min(100, b.energy + CLOSE_STAMINA);
     }
     b.ahead.set(p, now);

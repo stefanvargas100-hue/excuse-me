@@ -89,7 +89,7 @@ function closeRoom() {
   if (joinWaiter) { const w = joinWaiter; joinWaiter = null; w(false); }
   ui.roster([]);
 }
-const sendRoster = () => room && room.send('roster', { id: myId, players: roster });
+const sendRoster = () => room && room.send('roster', { id: myId, level: levelIdx, players: roster });
 const changed = () => { ui.roster(lobbyPlayers()); showRematch(); };
 
 function onMessage(ev, data) {
@@ -110,6 +110,7 @@ function onMessage(ev, data) {
     if (!players.length || players[0].id !== from) return;
     if (!players.some(p => p.id === myId)) { if (inRoster) { closeRoom(); say('You were removed from the room.'); } return; }
     hostId = from; roster = players; inRoster = true; hostGone = false;
+    if (Number.isInteger(data.level) && LEVELS[data.level]) levelIdx = data.level;
     for (const id of [...wants]) if (!roster.some(p => p.id === id)) wants.delete(id);
     if (joinWaiter) { const w = joinWaiter; joinWaiter = null; w(true); }
     changed();
@@ -196,6 +197,9 @@ export async function joinRoom(c) {
 
 export const lobbyPlayers = () => (room && inRoster ? roster.map(p => ({ id: p.id, name: p.name, look: p.look, me: p.id === myId, host: p.id === hostId })) : []);
 export const lobbyStatus = () => lastStatus;
+export const roomLevel = () => levelIdx;
+// The host can change the stage any time before Start; everyone sees it on the next roster.
+export function setRoomLevel(i) { if (role !== 'host' || !room || raced || !LEVELS[i]) return; levelIdx = i; sendRoster(); changed(); }
 export const isHost = () => role === 'host';
 
 // After a race everyone presses Rematch; the host then starts a new race on the same stage.

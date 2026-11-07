@@ -1,5 +1,5 @@
 import { Music, init as initAudio } from './audio/music.js';
-import { LEVELS, setLevel } from './config/levels.js';
+import { LEVELS, LV, setLevel } from './config/levels.js';
 import { $ } from './dom.js';
 import { action, init as initInput, keys, onTap } from './input/input.js';
 import { init as initCamera } from './render/camera.js';
@@ -14,12 +14,12 @@ import { LOOK } from './save/progress.js';
 import { rotatingList } from './save/rotating.js';
 import { account, setLevelUpListener } from './save/level.js';
 import { CHALLENGES, isLocked, nextGoal, setRotatingListener, setUnlockListener, tallyOf, track, trackMax } from './save/challenges.js';
-import { addPop } from './sim/scoring.js';
+import { addPop, nearMul, onPass } from './sim/scoring.js';
 import { S, calm, reset, state } from './sim/state.js';
 import { buildLevels, hud, init as initMenus } from './ui/menus.js';
 import { init as initScreens } from './ui/screens.js';
 import { weekKey } from './config/util.js';
-import { duelReceive, hostRoom, hostStart, injectRoomMessage, joinRoom, leaveRoom, lobbyPlayers, lobbyStatus, rematchState, requestRematch, startDuel, useRoomFactory } from './online/duel.js';
+import { duelReceive, roomLevel, setRoomLevel, hostRoom, hostStart, injectRoomMessage, joinRoom, leaveRoom, lobbyPlayers, lobbyStatus, rematchState, requestRematch, startDuel, useRoomFactory } from './online/duel.js';
 import { initFriend } from './ui/friend.js';
 
 
@@ -64,7 +64,7 @@ reset();
 
 buildLevels();
 
-window.__excuse = { injectRoomMessage, lobbyPlayers, lobbyStatus, draftMul, xp: () => account.xp(), account, startDuel, duelReceive, hostRoom, hostStart, joinRoom, leaveRoom, rematchState, requestRematch, useRoomFactory, nextGoal, rotatingList, tick, reset, start, setLevel, get S() { return S; }, get state() { return state; }, keys, action, onTap, render, drawPreview, LEVELS, runEvent, shout, weekKey, hasPlayed, pauseGame, quitRun, toMenu, CHALLENGES, isLocked, tallyOf, track, trackMax, racePace, fitOf, BODIES, BUILDS, ITEM_STATS, effects, statsOf, LOOK, mkPerson: (x, z) => mk(x, z, { hx: 0, hz: 1, v0: 1 }) };
+window.__excuse = { onPass, nearMul, roomLevel, setRoomLevel, get LV() { return LV; }, injectRoomMessage, lobbyPlayers, lobbyStatus, draftMul, xp: () => account.xp(), account, startDuel, duelReceive, hostRoom, hostStart, joinRoom, leaveRoom, rematchState, requestRematch, useRoomFactory, nextGoal, rotatingList, tick, reset, start, setLevel, get S() { return S; }, get state() { return state; }, keys, action, onTap, render, drawPreview, LEVELS, runEvent, shout, weekKey, hasPlayed, pauseGame, quitRun, toMenu, CHALLENGES, isLocked, tallyOf, track, trackMax, racePace, fitOf, BODIES, BUILDS, ITEM_STATS, effects, statsOf, LOOK, mkPerson: (x, z) => mk(x, z, { hx: 0, hz: 1, v0: 1 }) };
 
 requestAnimationFrame(frame);
 

@@ -68,20 +68,18 @@ test('people standing on a belt are carried along with it', () => {
   assert.ok(Math.abs(q.z - zq) < 0.05, 'someone on plain floor did not');
 });
 
-test('riders keep to the right and pass on the left, on both belts', () => {
+test('riders keep to the right and pass on the left on the belt that goes your way, and nobody rides the reverse belt', () => {
   const B = beltInfo('airport'), E = atGo();
   E.S.pz = B.start + 70; E.tick(DT);   // the second walkway comes into view, so there is plenty to check
   const riders = E.S.people.filter(p => p.belt);
   assert.ok(riders.length >= 6, 'the crowd includes belt riders: ' + riders.length);
   const fwdStand = riders.filter(p => p.belt === 1 && p.v0 === 0), fwdWalk = riders.filter(p => p.belt === 1 && p.v0 > 0);
-  const revStand = riders.filter(p => p.belt === -1 && p.v0 === 0), revWalk = riders.filter(p => p.belt === -1 && p.v0 > 0);
-  assert.ok(fwdStand.length && fwdWalk.length && revStand.length && revWalk.length, 'all four kinds present');
+  assert.ok(fwdStand.length && fwdWalk.length, 'both kinds present on the forward belt');
+  assert.strictEqual(riders.filter(p => p.belt === -1).length, 0, 'nobody rides the reverse belt');
   const mid = (a, b) => (a + b) / 2;
   assert.ok(fwdStand.every(p => p.x > mid(B.fwd[0], B.fwd[1])), 'forward belt: standers on the right (high x)');
   assert.ok(fwdWalk.every(p => p.x < mid(B.fwd[0], B.fwd[1]) && p.hz > 0), 'forward belt: walkers on the left, walking along');
-  assert.ok(revStand.every(p => p.x < mid(B.rev[0], B.rev[1])), 'reverse belt: standers on their right (low x, they face the other way)');
-  assert.ok(revWalk.every(p => p.x > mid(B.rev[0], B.rev[1]) && p.hz < 0), 'reverse belt: walkers on their left, coming toward you');
-  assert.ok(fwdStand.every(p => p.fz > 0) && revStand.every(p => p.fz < 0), 'standers face the way their belt goes');
+  assert.ok(fwdStand.every(p => p.fz > 0), 'standers face the way their belt goes');
 });
 
 test('everyone meets the same riders (a friend race stays fair), and other modes have none', () => {

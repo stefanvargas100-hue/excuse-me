@@ -185,3 +185,14 @@ test('three players finishing: places are 1, 2, 3 for everyone by finish time', 
   assert.strictEqual(games[0].S.race.board.length, 3);
   assert.strictEqual(games[0].S.race.place, 3, 'slower than both');
 });
+
+test('the host can change the stage after making the room; guests see it and everyone races on it', async () => {
+  const { games } = await lobby(3);
+  assert.strictEqual(games[0].roomLevel(), 1);
+  games[0].setRoomLevel(2); await settle();
+  for (const g of games) assert.strictEqual(g.roomLevel(), 2, 'everyone sees the new stage');
+  games[1].setRoomLevel(0); await settle();
+  assert.strictEqual(games[0].roomLevel(), 2, 'only the host picks');
+  games[0].hostStart(); await settle();
+  for (const g of games) assert.strictEqual(g.S.race ? g.LV.id : null, g.LEVELS[2].id, 'all on the third stage');
+});

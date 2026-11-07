@@ -11,7 +11,8 @@ export const STRIP_SPEED = 1.12;
 // Airport: a real moving walkway, two belts side by side. The right one goes your way and carries you, the left one goes the
 // other way. People ride on the right of their belt and walk on the left, like in an airport.
 export const BELT_SPEED = 1.2;   // m/s the belt that goes your way carries you
-export const BELT_BACK = 0.8;    // m/s the belt coming back pulls you: gentler than the other pushes, so going the wrong way is a setback, not a disaster
+export const BELT_BACK = 0.45;   // m/s the belt coming back pulls you: a slowdown, not a wall. You still walk forward at about 2.5 m/s, enough to pass a crowd blocking your belt
+const BELT_BACK_MAX = 0.35;      // ...and it can never pull more than this share of your own speed, so a bump or an empty stamina bar cannot send you backwards
 const BELTS = { airport: { start: 30, every: 100, len: 46, fwd: [1.9, 3.9], rev: [3.9, 5.9] } };
 export const beltInfo = id => BELTS[id] || null;
 export const beltHasZ = (B, z) => z > B.start && (z - B.start) % B.every < B.len;
@@ -25,6 +26,8 @@ export const beltAt = (id, x, z) => {
 
 // How fast the belt under (x, z) moves along z: positive carries you forward, negative back, 0 on plain floor.
 export const beltSpeedAt = (id, x, z) => { const d = beltAt(id, x, z); return d > 0 ? BELT_SPEED : d < 0 ? -BELT_BACK : 0; };
+// The same for a racer who is walking at `speed`: the reverse belt's pull is capped at a share of that speed.
+export const beltFor = (id, x, z, speed) => { const v = beltSpeedAt(id, x, z); return v < 0 ? -Math.min(-v, BELT_BACK_MAX * Math.max(0, speed)) : v; };
 
 // Glass railings run along both outer edges of every walkway stretch. Anyone on the walkway is locked in, anyone beside it is locked out,
 // and the divider between the two belts is open. Given where you were (prevX) and where you want to be (x), returns where you end up.

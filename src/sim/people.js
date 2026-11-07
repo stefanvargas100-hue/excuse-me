@@ -314,9 +314,7 @@ function beltRiders(z0) {
   // the belt that goes your way: standers on the right (high x), walkers on the left, walking on
   if (R() < 0.5) mk(rnd(fm + 0.4, B.fwd[1] - 0.3), z0 + rnd(0.2, 3.8), { belt: 1, v0: 0, hx: 0, hz: 1, fx: 0, fz: 1, yieldP: 0.6 });
   if (R() < 0.3) { const x = rnd(B.fwd[0] + 0.35, fm - 0.15); mk(x, z0 + rnd(0.2, 3.8), { belt: 1, hx: 0, hz: 1, v0: walkSpeed(), laneX: x }); }
-  // the belt that comes toward you: for them the right is your left, so they stand on the low-x edge and walk near the divider
-  if (R() < 0.5) mk(rnd(B.rev[0] + 0.3, rm - 0.4), z0 + rnd(0.2, 3.8), { belt: -1, v0: 0, hx: 0, hz: -1, fx: 0, fz: -1, yieldP: 0.6 });
-  if (R() < 0.3) { const x = rnd(rm + 0.15, B.rev[1] - 0.35); mk(x, z0 + rnd(0.2, 3.8), { belt: -1, hx: 0, hz: -1, v0: walkSpeed(), laneX: x }); }
+  // nobody rides the belt that comes toward you: the crowd never walks the wrong way on a walkway
 }
 
 export function genChunk(z0) {

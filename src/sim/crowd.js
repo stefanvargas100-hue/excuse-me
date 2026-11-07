@@ -1,5 +1,5 @@
 import { RIVAL_LINES } from '../config/colour.js';
-import { beltSpeedAt, contain } from '../config/strips.js';
+import { beltAt, beltHasZ, beltInfo, beltSpeedAt, contain } from '../config/strips.js';
 import { LV } from '../config/levels.js';
 import { R_PLAYER, walkSpeed } from '../config/tuning.js';
 import { R, clamp, pick, rnd, sgn } from '../config/util.js';
@@ -110,6 +110,16 @@ export function updPeople(dt) {
     const px0 = p.x;
     p.x += p.vx * dt; p.z += p.vz * dt;
     if (S.race && LV.id === 'airport') {
+      const bd0 = beltAt(LV.id, p.x, p.z), B = beltInfo(LV.id);
+      if (!p.free && !p.locked) {
+        // nobody walks a walkway the wrong way: whoever is on the reverse belt steps over to the divider, and people on the belt
+        // that goes your way face the way it goes. The divider is shut to the crowd so they cannot wander back.
+        if (bd0 < 0) p.vx = Math.min(p.vx, -2.4);
+        else if (bd0 > 0 && p.hz < 0 && p.v0 > 0) { p.hz = 1; p.hx = 0; p.dirz = 1; }
+        if (px0 <= B.rev[0] && p.x > B.rev[0] - 0.05 && beltHasZ(B, p.z)) { p.x = B.rev[0] - 0.05; p.vx = Math.min(p.vx, 0); }
+        // a rider who stood still on the belt walks on once the belt ends, instead of standing at the exit
+        if (p.belt && p.v0 === 0 && bd0 === 0 && !beltHasZ(B, p.z)) { p.v0 = 1.25; p.yieldP = 1; }
+      }
       p.z += beltSpeedAt(LV.id, p.x, p.z) * dt;   // moving walkway carries everyone on it
       if (!p.free) { const cx = contain(LV.id, px0, p.x, p.z); if (cx !== p.x) { p.x = cx; p.vx = 0; } }   // and the glass keeps them on it, or off it
     }

@@ -1,17 +1,17 @@
 import { LEVELS } from '../config/levels.js';
 import { $ } from '../dom.js';
-import { MAX_PLAYERS, duelUi, hostRoom, hostStart, inviteLink, isHost, joinRoom, leaveRoom, roomCode } from '../online/duel.js';
+import { MAX_PLAYERS, duelUi, hostRoom, hostStart, inviteLink, isHost, joinRoom, leaveRoom, roomCode, roomLevel, setRoomLevel } from '../online/duel.js';
 import { go } from './screens.js';
 
 /* ---------- Race friends: make a room or join one, see who is in, then the host starts ---------- */
 let stage = 0;
+const st = () => document.querySelectorAll('#friendStages .chip');
 const view = id => { for (const v of ['friendHome', 'friendHost', 'friendGuest', 'friendJoin']) $(v).hidden = v !== id; };
 
 function reset() {
   leaveRoom(); view('friendHome'); $('friendStatus').textContent = '';
   $('friendStart').disabled = true; $('friendShare').disabled = true; $('friendCode').textContent = '----'; $('friendCodeG').textContent = '----';
   $('friendGo').disabled = false;
-  document.querySelectorAll('#friendStages .chip').forEach(c => { c.disabled = false; });
 }
 
 export function openFriend() { reset(); go('friend'); }
@@ -29,8 +29,10 @@ function showRoster(players) {
   const n = players.length;
   $('friendStart').disabled = !(isHost() && n >= 2);
   $('friendStart').textContent = n >= 2 ? 'Start race (' + n + ' players)' : 'Start race';
-  if (isHost() && n) $('friendStatus').textContent = n < 2 ? 'Waiting for friends to join...' : n < MAX_PLAYERS ? n + ' in the room. Start now or wait for more.' : 'Room is full. Ready when you are.';
-  if (!isHost() && n) { view('friendGuest'); $('friendCodeG').textContent = roomCode(); $('friendStatus').textContent = 'Waiting for the host to start...'; }
+  const stageName = LEVELS[roomLevel()].city;
+  if (isHost()) st().forEach((o, j) => o.setAttribute('aria-pressed', String(j === roomLevel())));
+  if (isHost() && n) $('friendStatus').textContent = stageName + '. ' + (n < 2 ? 'Waiting for friends to join...' : n < MAX_PLAYERS ? n + ' in the room. Start now or wait for more.' : 'Room is full. Ready when you are.');
+  if (!isHost() && n) { view('friendGuest'); $('friendCodeG').textContent = roomCode(); $('friendStatus').textContent = 'Stage: ' + stageName + '. Waiting for the host to start...'; }
 }
 
 async function invite() {
@@ -42,11 +44,11 @@ async function invite() {
 }
 
 export function initFriend() {
-  const st = $('friendStages');
+  const stBox = $('friendStages');
   LEVELS.forEach((L, i) => {
     const c = document.createElement('button'); c.type = 'button'; c.className = 'chip'; c.textContent = L.city; c.setAttribute('aria-pressed', String(i === 0));
-    c.addEventListener('click', () => { stage = i; st.querySelectorAll('.chip').forEach((o, j) => o.setAttribute('aria-pressed', String(j === i))); });
-    st.appendChild(c);
+    c.addEventListener('click', () => { stage = i; setRoomLevel(i); st().forEach((o, j) => o.setAttribute('aria-pressed', String(j === i))); });
+    stBox.appendChild(c);
   });
   duelUi.status = t => { $('friendStatus').textContent = t; };
   duelUi.roster = players => {
@@ -55,9 +57,9 @@ export function initFriend() {
   };
   $('friendBack').addEventListener('click', leaveRoom);
   $('friendMake').addEventListener('click', async () => {
-    view('friendHost'); st.querySelectorAll('.chip').forEach(c => { c.disabled = true; });
+    view('friendHost');
     const code = await hostRoom(stage);
-    if (code) { $('friendCode').textContent = code; $('friendShare').disabled = false; } else { view('friendHome'); st.querySelectorAll('.chip').forEach(c => { c.disabled = false; }); }
+    if (code) { $('friendCode').textContent = code; $('friendShare').disabled = false; } else view('friendHome');
   });
   $('friendJoinBtn').addEventListener('click', () => { view('friendJoin'); $('friendStatus').textContent = ''; $('friendInput').focus(); });
   $('friendGo').addEventListener('click', async () => {
