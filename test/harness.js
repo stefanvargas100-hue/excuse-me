@@ -19,7 +19,8 @@ function stub() {
   });
 }
 
-function load(sourceFile) {
+// load(file, { seed }): with a seed, Math.random inside the game is a fixed sequence, so a test can replay the same crowd.
+function load(sourceFile, opts) {
   const listeners = [];   // window listeners, so tests can fire keyboard events like a browser would
   // the game is ES modules; bundle them into one script so each load() gets its own independent copy of the game state
   const code = esbuild.buildSync({ entryPoints: [sourceFile || path.join(__dirname, '..', 'src', 'main.js')], bundle: true, format: 'iife', write: false, logLevel: 'silent' }).outputFiles[0].text;
@@ -42,6 +43,7 @@ function load(sourceFile) {
   };
   sandbox.globalThis = sandbox; Object.assign(win, sandbox.window);
   vm.createContext(sandbox);
+  if (opts && opts.seed !== undefined) vm.runInContext('(function(){ var s = ' + (opts.seed >>> 0) + ' || 1; Math.random = function(){ s = (s + 0x6D2B79F5) | 0; var t = Math.imul(s ^ (s >>> 15), 1 | s); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; })()', sandbox);
   vm.runInContext(code, sandbox, { filename: 'game-bundle.js' });
   const E = sandbox.window.__excuse || win.__excuse;
   E.storage = store;   // the fake localStorage, so tests can pick settings such as bot difficulty
