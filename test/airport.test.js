@@ -4,7 +4,7 @@ const assert = require('node:assert');
 const { load } = require('./harness.js');
 const DT = 1 / 30;
 
-const SCENERY = ['desk', 'chairs', 'bin', 'plant', 'trolleys'];
+const SCENERY = ['desk', 'chairs', 'bin', 'plant', 'trolleys', 'gatedesk', 'benchz'];
 function airport(kind) { const E = load(); E.setLevel(0); E.start(kind || 'classic'); E.S.people.length = 0; return E; }
 function chunks(E, to) { for (let z = 0; z < to; z += 4) E.genChunk(z); }
 const props = E => E.S.people.filter(p => SCENERY.includes(p.prop));
@@ -97,4 +97,22 @@ test('drawing the airport scenery, a weave and a driving cart does not throw', (
   E.runEvent('weave'); E.runEvent('cart');
   for (const p of E.S.people) if (p.prop === 'cart2') p.z = E.S.pz + 8;
   for (let i = 0; i < 40; i++) { for (const p of E.S.people) if (!p.prop) p.dead = true; E.tick(DT); E.render(); }
+});
+
+test('each gate has a desk and waiting seats against the window wall, and a plane is parked outside', () => {
+  const E = airport(); chunks(E, 300);
+  const A = require('node:fs').readFileSync(require('node:path').join(__dirname, '..', 'src', 'render', 'apron.js'), 'utf8');
+  assert.ok(/GATE_Z0 = 40, GATE_EVERY = 40/.test(A), 'gates every 40 m starting at 40');
+  for (const g of [0, 1, 2, 3, 4]) {
+    const zc = 40 + 40 * g;
+    const desk = E.S.people.find(p => p.prop === 'gatedesk' && Math.abs(p.z - zc) < 4);
+    assert.ok(desk, 'gate desk at ' + zc);
+    assert.ok(desk.x < -5, 'against the window wall');
+    assert.ok(E.S.people.filter(p => p.prop === 'benchz' && Math.abs(p.z - zc) < 12).length >= 2, 'seats near gate at ' + zc);
+  }
+});
+
+test('gate furniture stays off the moving walkway in races and leaves room to pass', () => {
+  const E = airport('race'); chunks(E, 300);
+  for (const p of E.S.people.filter(q => q.prop === 'gatedesk' || q.prop === 'benchz')) assert.ok(p.x + 0.7 < 1.9, 'clear of the belt');
 });

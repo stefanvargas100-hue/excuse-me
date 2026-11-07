@@ -200,9 +200,9 @@ test('fast strip (New York curb run): quicker on it, nothing outside a race', ()
 });
 
 test('bots contest the race: Hard bots use the walkway and draft people more than Easy bots', () => {
-  // The same six crowds (fixed seeds) for both levels, so only the bot level differs and the result is repeatable.
+  // The same twelve crowds (fixed seeds; six was too few to be steady when the crowd changes) for both levels, so only the bot level differs and the result is repeatable.
   const run = (lvl, seed) => { const E = load(undefined, { seed }); E.storage.excuseme_botlvl = String(lvl); E.setLevel(0); E.start('race'); for (let i = 0; i < 91; i++) E.tick(DT); let t = 0, n = 0; while (E.state === 'play' && t < 30 * 40) { for (const p of E.S.people) if (Math.abs(p.z - E.S.pz) < 1) p.dead = true; E.tick(DT); t++; for (const b of E.S.race.bots) if (b.belt > 0) n++; } return n; };
-  const sum = lvl => [1, 2, 3, 4, 5, 6].reduce((a, s) => a + run(lvl, s), 0);
+  const sum = lvl => [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].reduce((a, s) => a + run(lvl, s), 0);
   const easy = sum(0), hard = sum(2);
   assert.ok(hard > 0 && hard > easy, 'time on the forward belt, Hard ' + hard + ' vs Easy ' + easy);
 });

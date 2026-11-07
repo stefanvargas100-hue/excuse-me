@@ -556,6 +556,18 @@ function drawProp(p, s, bx, fy) {
       const q = W3(x, 0.62, z - 0.46); label('CHECK-IN', q[0], q[1], Math.round(0.2 * F / q[2]), '#ffffff');
       break;
     }
+    case 'gatedesk': {
+      box3D(x - 0.5, x + 0.5, 0, 1.05, z - 1.35, z + 1.35, hex('#4c6a8a'));
+      box3D(x - 0.55, x + 0.55, 1.05, 1.12, z - 1.4, z + 1.4, hex('#e8edf4'));
+      box3D(x - 0.2, x + 0.2, 1.12, 1.5, z - 0.5, z - 0.1, hex('#1f2937'));
+      break;
+    }
+    case 'benchz': {
+      box3D(x - 0.3, x + 0.3, 0.1, 0.28, z - 1.0, z + 1.0, hex('#4b5563'));
+      box3D(x - 0.3, x + 0.3, 0.28, 0.46, z - 1.0, z + 1.0, hex('#2f5fa0'));
+      box3D(x - 0.32, x - 0.2, 0.46, 0.95, z - 1.0, z + 1.0, hex('#2f5fa0'));
+      break;
+    }
     case 'chairs': {
       box3D(x - 1.0, x + 1.0, 0.1, 0.28, z - 0.3, z + 0.3, hex('#4b5563'));
       box3D(x - 1.0, x + 1.0, 0.28, 0.46, z - 0.3, z + 0.3, hex('#2f5fa0'));

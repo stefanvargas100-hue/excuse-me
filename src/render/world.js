@@ -6,6 +6,7 @@ import { ctx } from '../dom.js';
 import { F, VZ } from './camera.js';
 import { P, ball, box3D, cq, forSegs, fq, label, poly, sky, sub, wq } from './draw.js';
 import { inXing } from '../sim/people.js';
+import { GATE_EVERY, GATE_Z0, drawApron, gateNo } from './apron.js';
 import { S, goalOf } from '../sim/state.js';
 
 
@@ -23,6 +24,14 @@ function goalAirport(d) {
 export function paintAirport() {
   const Wl = LV.half;
   if (goalOf() - VZ < 84) goalAirport(goalOf() - VZ);
+  // the window openings on the left, found first so the apron outside is drawn through them only
+  const wins = [];
+  forSegs(3, 82, (k, za, zb) => { if (mod(k, 4) !== 0) { const [wa, wb] = sub(za + 0.2, zb - 0.2); if (wb > 0.2) wins.push([wa, wb]); } });
+  if (wins.length) {
+    ctx.save(); ctx.beginPath();
+    for (const [wa, wb] of wins) for (const [i, pt] of [[0, [0.9, wa]], [1, [3.8, wa]], [1, [3.8, wb]], [1, [0.9, wb]]]) { const q = P(-Wl, pt[0], pt[1]); if (i) ctx.lineTo(q[0], q[1]); else ctx.moveTo(q[0], q[1]); }
+    ctx.clip(); drawApron(); ctx.restore();
+  }
   forSegs(3, 82, (k, za, zb, da, db) => {
     const par = k & 1;
     fq(-Wl, Wl, CEIL, da, db, mixc(C.ceil, da));
@@ -39,14 +48,20 @@ export function paintAirport() {
     ctx.stroke();
     for (const side of [-1, 1]) {
       const wx = side * Wl;
-      wq(wx, 0, CEIL, da, db, mixc(C.wall, da));
+      const isWin = side < 0 && mod(k, 4) !== 0;
+      if (isWin) {   // wall around the window opening; the opening itself shows the apron
+        const [wa, wb] = sub(za + 0.2, zb - 0.2);
+        wq(wx, 0, 0.9, da, db, mixc(C.wall, da)); wq(wx, 3.8, CEIL, da, db, mixc(C.wall, da));
+        if (wa > da) wq(wx, 0.9, 3.8, da, wa, mixc(C.wall, da));
+        if (db > wb) wq(wx, 0.9, 3.8, wb, db, mixc(C.wall, wb));
+      } else wq(wx, 0, CEIL, da, db, mixc(C.wall, da));
       if (mod(k, 4) === 0) {
         const [pa, pb] = sub(za - 0.35, za + 0.35);
         if (pb > 0.2) wq(side * (Wl - 0.6), 0, CEIL, pa, pb, mixc(C.pillar, pa));
       } else {
         const [wa, wb] = sub(za + 0.2, zb - 0.2);
         if (wb > 0.2) {
-          if (side < 0) wq(wx, 0.9, 3.8, wa, wb, mixc(C.glass, wa));
+          if (side < 0) { ctx.globalAlpha = 0.16; wq(wx, 0.9, 3.8, wa, wb, mixc(C.glass, wa)); ctx.globalAlpha = 1; }
           else {
             wq(wx, 0.4, 2.7, wa, wb, mixc(C.shop, wa));
             wq(wx, 3.0, 3.9, wa, wb, mixc(SHOPFRONTS[mod(Math.floor(k / 4) + k, SHOPFRONTS.length)], wa));
@@ -54,6 +69,10 @@ export function paintAirport() {
         }
       }
     }
+    { const gi = (za + 1.5 - GATE_Z0) / GATE_EVERY; if (gi >= 0 && Math.abs(gi - Math.round(gi)) < 1.5 / GATE_EVERY && za - VZ > 3) {
+      const [pa, pb] = sub(za + 0.2, zb - 0.2);
+      if (pb > 0.2) { wq(-Wl, 3.88, 4.5, pa, pb, mixc(C.navy, pa)); const c = P(-Wl + 0.02, 4.19, (pa + pb) / 2); label('GATE ' + gateNo(Math.round(gi)), c[0], c[1], 0.3 * F / ((pa + pb) / 2), '#ffffff'); }
+    } }
     if (mod(k, 10) === 0 && za - VZ > 6) {
       const d = za - VZ;
       ctx.globalAlpha = clamp((d - 6) / 5, 0, 1);   // overhead signs fade out before they pass over the camera

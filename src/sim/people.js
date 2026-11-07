@@ -201,16 +201,27 @@ function nycProps(z0) {
 // Terminal furniture you have to weave around: an island every 32 m (info desk, benches, bin, plant, trolleys in turn) and a bin or
 // plant by a wall now and then. Islands leave the walkway open on at least one side, and in a race they keep off the moving walkway.
 const AIRPORT_KINDS = ['desk', 'chairs', 'bin', 'plant', 'trolleys'];
+const GATE_Z0 = 40, GATE_EVERY = 40;   // keep in step with render/apron.js
 function airportProps(z0) {
   const n = Math.floor(z0 / 4);
   if (z0 < 24) return;
+  // gate areas along the window wall: a desk at each gate, seats either side, a few people waiting
+  const gz = GATE_Z0 + Math.round((z0 + 2 - GATE_Z0) / GATE_EVERY) * GATE_EVERY, off = gz - (z0 + 2);
+  const nearGate = Math.abs(off) < 5;   // keep islands and wall bins clear of the gate area
+  if (gz >= GATE_Z0) {
+    const inChunk = d => d >= -2 && d < 2, seatsAt = o2 => inChunk(gz + o2 - (z0 + 2));
+    if (inChunk(off)) mk(-5.9, gz, { prop: 'gatedesk', circles: [-0.9, 0, 0.9].map(oz => ({ ox: 0, oz, r: 0.45 })) });
+    for (const o of [-7, 7]) if (seatsAt(o)) mk(-6.2, gz + o, { prop: 'benchz', circles: [-0.75, -0.25, 0.25, 0.75].map(oz => ({ ox: 0, oz, r: 0.28 })) });
+    if (seatsAt(3)) for (let i = 0; i < 3; i++) mk(rnd(-5.6, -4.6), gz + 3 + rnd(-0.8, 0.8), { v0: 0, fx: -1, fz: 0 });   // waiting for boarding, facing the window
+  }
   const race = raceBuild && beltInfo(LV.id);
   const shape = (kind, x, z) => {
     const cs = o => o.map(ox => ({ ox, oz: 0, r: kind === 'desk' ? 0.45 : kind === 'chairs' ? 0.28 : kind === 'trolleys' ? 0.3 : kind === 'plant' ? 0.38 : 0.3 }));
     const circles = kind === 'desk' ? cs([-0.9, -0.3, 0.3, 0.9]) : kind === 'chairs' ? cs([-0.75, -0.25, 0.25, 0.75]) : kind === 'trolleys' ? cs([-0.5, 0, 0.5]) : cs([0]);
     mk(x, z, { prop: kind, circles });
   };
-  if (n % 8 === 5) shape(AIRPORT_KINDS[Math.floor(n / 8) % AIRPORT_KINDS.length], rnd(-4.2, race ? 0.3 : 4.2), z0 + 2);
+  if (nearGate) return;
+  if (n % 8 === 5) shape(AIRPORT_KINDS[Math.floor(n / 8) % AIRPORT_KINDS.length], rnd(-4.2, race ? -1.4 : 4.2), z0 + 2);
   else if (n % 5 === 2) { const side = race ? -1 : pick([-1, 1]); shape(n % 2 ? 'bin' : 'plant', side * 6.1, z0 + 1); }
 }
 
