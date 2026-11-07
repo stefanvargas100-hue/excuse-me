@@ -67,3 +67,36 @@ test('weather does not change the simulation', () => {
   const go = (v) => { const E = load(undefined, { seed: 2024 }); E.setLevel(2); E.start('classic'); E.setVariant(v); for (let i = 0; i < 600; i++) { E.tick(DT); if (i % 3 === 0) E.render(); } const S = E.S; return [S.pz, S.px, S.score, S.people.length].join(','); };
   assert.strictEqual(go('rain'), go('night'));
 });
+
+// A daily run must show the sky for its date even if the same stage was already on screen with a random look (the menu draws it first).
+test('a daily run gets the sky for its date, whatever was on screen before', () => {
+  const realNow = Date.now;
+  try {
+    for (const [lv, id] of [[0, 'airport'], [1, 'nyc'], [2, 'shibuya']]) {
+      const E = load(undefined, { seed: 9 });
+      // find out which sky today's date gives this stage, then force the casual pick before it to be a different one
+      E.setLevel(lv); E.start('daily'); const seed = E.S.seed; assert.ok(seed);
+      const want = E.pickVariant(id, seed);
+      const other = [...Array(9973).keys()].find(v => E.pickVariant(id, null, () => v / 9973) !== want);
+      Date.now = () => other;
+      const F = load(undefined, { seed: 9 });
+      F.setLevel(lv); F.start('classic'); F.render();
+      assert.notStrictEqual(F.variantOf(), want, 'the casual look should differ for this check to mean anything');
+      F.start('daily'); F.render();
+      assert.strictEqual(F.variantOf(), want, id);
+      Date.now = realNow;
+    }
+  } finally { Date.now = realNow; }
+});
+
+test('restarting straight away picks the look again, even after a very short run', () => {
+  const realNow = Date.now;
+  try {
+    const E = load(undefined, { seed: 9 });
+    E.setLevel(1);
+    const day = [...Array(9973).keys()].find(v => E.pickVariant('nyc', null, () => v / 9973) === 'day');
+    const gold = [...Array(9973).keys()].find(v => E.pickVariant('nyc', null, () => v / 9973) === 'golden');
+    Date.now = () => day; E.start('classic'); E.render(); assert.strictEqual(E.variantOf(), 'day');
+    Date.now = () => gold; E.start('classic'); E.render(); assert.strictEqual(E.variantOf(), 'golden');
+  } finally { Date.now = realNow; }
+});

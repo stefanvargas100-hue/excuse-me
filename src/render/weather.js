@@ -16,11 +16,11 @@ export const VARIANTS = {
   shibuya: [['night', 5], ['rain', 3]]
 };
 
-let cur = 'day', curLevel = '', lastPz = 0, forced = null;
+let cur = 'day', curLevel = '', curRun = null, forced = null;
 try { if (typeof location !== 'undefined') { const m = /[?&]variant=([a-z]+)/.exec(location.search); if (m) forced = m[1]; } } catch (e) { /* no location in tests */ }
 
 export const variantOf = () => cur;
-export function setVariant(v) { forced = v; cur = v; }
+export function setVariant(v) { forced = v; if (v) cur = v; else curRun = null; }   // null hands the choice back to the next pick
 
 // Deterministic for a seed; random for a casual run. Not the game's seeded stream, so crowds and layouts never change.
 export function pickVariant(levelId, seed, rnd) {
@@ -35,10 +35,8 @@ export function pickVariant(levelId, seed, rnd) {
 const clockRnd = () => (Date.now() % 9973) / 9973;
 
 function refresh() {
-  if (forced) { cur = forced; curLevel = LV.id; return; }
-  const newRun = S.pz < 3 && lastPz > 20;
-  if (LV.id !== curLevel || newRun) { curLevel = LV.id; cur = pickVariant(LV.id, S.seed, clockRnd); }
-  lastPz = S.pz;
+  if (forced) { cur = forced; return; }
+  if (LV.id !== curLevel || S !== curRun) { curLevel = LV.id; curRun = S; cur = pickVariant(LV.id, S.seed, clockRnd); }   // every run has its own state object, so this catches every restart
 }
 
 const wash = (a, b, c, alpha) => { ctx.fillStyle = 'rgba(' + a + ',' + b + ',' + c + ',' + alpha + ')'; ctx.fillRect(0, 0, W, H); };
