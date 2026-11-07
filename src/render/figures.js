@@ -5,7 +5,7 @@ import { TAU, clamp, sgn } from '../config/util.js';
 import { ctx } from '../dom.js';
 import { CX, F, HOR, VX, VY, VZ, W } from './camera.js';
 import { FONT, W3, ball, box3D, label } from './draw.js';
-import { S, cues, showHB } from '../sim/state.js';
+import { S, calm, cues, showHB } from '../sim/state.js';
 
 
 
@@ -160,7 +160,8 @@ function drawNear(p, s) {
     minA = Math.min(minA, ankle[2]);
     legs.push({ side, knee, ankle, a });
   }
-  const drop = minA - 0.08;   // planted foot stays on the floor, so the body bobs naturally
+  const hopT = !calm && p.react && p.react.up && p.react.t >= 0 && p.react.t < 0.3 ? Math.sin(Math.PI * p.react.t / 0.3) * 0.07 : 0;   // a little startled hop when brushed past
+  const drop = minA - 0.08 - hopT;   // planted foot stays on the floor, so the body bobs naturally
   const lean = p.lean || 0;   // leaning into a move, so players can read it coming
   const L = (lx, ly, u) => W3(p.x + (rx * lx + fx * ly) * k + lean * u * k, (u - drop) * k, p.z + (rz * lx + fz * ly) * k);
   const sk = s * k;
@@ -246,6 +247,8 @@ function drawNear(p, s) {
       box3D(p.x - 0.18, p.x + 0.18, 1.12, 1.45, bz - 0.17, bz + 0.17, hex('#a8794a'));
     } });
   }
+  const cele = (p.racer && p.done) || (p.isMe && S.race && S.race.finished);   // crossed the line: arms up
+  const talk = !calm && walk < 0.05 && !p.phone && !p.aim && !p.dance && !p.isMe && !p.prop && !cele && Math.sin(S.clock * 0.9 + (p.ph || 0) * 3.1) > 0.15, talkSide = (p.ph || 0) > 3.14 ? 1 : -1;   // standing and chatting: one hand gestures now and then
   const lugSide = p.lug ? (Math.sign(rx * p.lug) || p.lug) : 0;
   for (const side of [-1, 1]) {
     const ap = ph + (side > 0 ? 0 : Math.PI);
@@ -254,6 +257,8 @@ function drawNear(p, s) {
     let c = sw * (p.fast ? 0.62 : 0.5) * walk, bend = p.fast ? 1.35 : 0.16 + (0.1 + 0.34 * Math.max(0, Math.cos(ap))) * walk, hx = 0.235 * armOut;
     if (p.react && p.react.up && p.react.t > 0 && p.react.t < 0.9) { c = 2.45; bend = 0.55; hx = 0.36; }   // hands up
     if (p.dance) { c = 1.7 + Math.sin(ph * 1.3 + side * 1.7) * 1.0; bend = 0.9; hx = 0.38; }
+    if (cele) { c = 2.5 + (calm ? 0 : Math.sin(S.clock * 9 + side * 1.6) * 0.35); bend = 0.45; hx = 0.34; }
+    else if (talk && side === talkSide) { c = 1.15 + Math.sin(S.clock * 5 + (p.ph || 0) * 2) * 0.4; bend = 1.2; hx = 0.18; }
     if (p.phone && side > 0) { c = 0.35; bend = 1.7; hx = 0.1; }
     if (p.aim && side > 0) { c = 1.25; bend = 1.5; hx = 0.1; }   // lifting a phone for a photo: about to stop
     const el = [side * 0.245 * armOut, Math.sin(c) * 0.3, 1.42 - Math.cos(c) * 0.3];
@@ -718,6 +723,8 @@ function drawProp(p, s, bx, fy) {
   }
 }
 
+const hexA = (h, a) => { const c = hex(h); return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')'; };
+
 export function drawPerson(p) {
   const dz = p.z - VZ;
   if (dz < 0.6 || dz > DRAW_FAR) return;
@@ -739,6 +746,10 @@ export function drawPerson(p) {
     ctx.beginPath(); ctx.ellipse(bx, fy, 0.42 * s, 0.42 * s * Math.min(0.6, VY / dz), 0, 0, TAU); ctx.stroke();
   }
   ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  if (p.racer && !p.done && !p.isGhost && Math.hypot(p.vx, p.vz) > 1.8 && !calm) {   // a streak in the racer's colour behind them, so you can follow who is who
+    const a = W3(p.x, 0.95, p.z - 0.45), b = W3(p.x, 0.95, p.z - 2.6);
+    if (b[2] > 0.6) { const g = ctx.createLinearGradient(a[0], a[1], b[0], b[1]); g.addColorStop(0, hexA(p.color, 0.45)); g.addColorStop(1, hexA(p.color, 0)); ctx.strokeStyle = g; ctx.lineWidth = Math.max(2, 0.16 * s); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); }
+  }
   let hd = {};
   if (p.prop) drawProp(p, s, bx, fy);
   else hd = U * 1.75 < 34 ? drawFar(p, bx, fy, U) : drawNear(p, s);
@@ -803,6 +814,11 @@ export function drawPerson(p) {
     ctx.fillStyle = p.rival ? '#ff2d3a' : '#ffffff';
     rrect(bxx, by, bw, bh, 8); ctx.fill();
     ctx.beginPath(); ctx.moveTo(hx - 5, by + bh - 1); ctx.lineTo(hx + 5, by + bh - 1); ctx.lineTo(hx, by + bh + 7); ctx.closePath(); ctx.fill();
+    if (p.react.up && !p.rival) {   // startled: little burst lines at the corners of the bubble
+      ctx.strokeStyle = '#ff9f43'; ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.beginPath();
+      ctx.moveTo(bxx - 3, by + 2); ctx.lineTo(bxx - 9, by - 3); ctx.moveTo(bxx - 4, by + bh / 2); ctx.lineTo(bxx - 11, by + bh / 2);
+      ctx.moveTo(bxx + bw + 3, by + 2); ctx.lineTo(bxx + bw + 9, by - 3); ctx.moveTo(bxx + bw + 4, by + bh / 2); ctx.lineTo(bxx + bw + 11, by + bh / 2); ctx.stroke();
+    }
     ctx.fillStyle = p.rival ? '#ffffff' : INK; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(p.react.text, bxx + bw / 2, by + bh / 2 + 1);
     ctx.globalAlpha = fogA(dz);

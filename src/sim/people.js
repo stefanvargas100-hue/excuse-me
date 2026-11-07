@@ -61,6 +61,25 @@ export function mk(x, z, o) {
     else if (p.v0 === 0 && !p.prop) { const a = rnd(0, TAU); p.fx = Math.cos(a); p.fz = Math.sin(a); }
     else { p.fx = p.hx; p.fz = p.hz; }
   }
+  // Outfit and build variety for the crowd. Drawn from the person's own phase, never from the seeded stream, so positions, speeds and daily layouts stay exactly as they were.
+  if (!p.prop && !o.isMe) {
+    const rv = mulberry32((Math.floor(p.phase * 1e6) ^ 0x5bd1e995) >>> 0);
+    const wp = l => { let t = 0; for (const e of l) t += e[1]; let r = rv() * t; for (const e of l) { r -= e[1]; if (r <= 0) return e[0]; } return l[0][0]; };
+    const set = (k, v) => { if (o[k] === undefined) p[k] = v; };
+    const fem = o.body !== undefined ? o.body === 'f' : (p.hairStyle === 'long' && o.hairStyle === undefined) || rv() < 0.3;
+    set('body', fem ? 'f' : 'm');
+    if (o.hairStyle === undefined && p.hairStyle !== 'bald') p.hairStyle = fem ? wp([['long', 3], ['medium', 2], ['pony', 2], ['bun', 2], ['braid', 1], ['curly', 1], ['short', 1]]) : wp([['short', 8], ['curly', 1.5], ['medium', 1]]);
+    set('bulk', wp(fem ? [[0.9, 2], [0.96, 3], [1.08, 1]] : [[0.96, 2], [1, 3], [1.12, 2]]));
+    set('shirtType', fem ? wp([['tee', 4], ['dress', 2.5], ['tank', 1.5], ['baby', 0.8], ['hoodie', 1.5], ['jacket', 1], ['suit', 0.6], ['velour', 0.5], ['power', 0.3]])
+      : wp([['tee', 5], ['hoodie', 2], ['jacket', 1.2], ['tank', 0.8], ['suit', 0.9], ['wind', 0.5], ['varsity', 0.5], ['puffer', LV.id === 'nyc' ? 1 : 0.3]]));
+    const formal = p.shirtType === 'suit' || p.shirtType === 'power';
+    set('pantsType', formal ? (fem ? wp([['pencil', 2], ['slacks', 2]]) : 'slacks') : p.shirtType === 'dress' ? 'jeans'
+      : fem ? wp([['jeans', 4], ['joggers', 1.5], ['shorts', 1], ['pleats', 1.5], ['pencil', 1], ['slacks', 0.8], ['cargo', 0.6], ['flares', 0.3]])
+      : wp([['jeans', 5], ['joggers', 2], ['shorts', 1.2], ['cargo', 1], ['slacks', 1], ['track', 0.3]]));
+    set('shoeType', formal ? (fem ? wp([['heels', 2], ['oxfords', 1], ['loafers', 1]]) : wp([['oxfords', 2], ['loafers', 1]]))
+      : fem ? wp([['sneakers', 4], ['runners', 1.5], ['heels', 1.5], ['boots', 1], ['dad', 0.6], ['platforms', 0.3], ['slides', 0.5]])
+      : wp([['sneakers', 5], ['runners', 2], ['boots', 1], ['slides', 0.5], ['hightops', 0.3], ['dad', 0.5]]));
+  }
   dress(p);
   p.prevDz = z - (S ? S.pz : 0);
   S.people.push(p);
