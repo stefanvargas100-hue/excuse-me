@@ -13,9 +13,9 @@ export const TUT = [
   { text: 'Now hold the LEFT side to steer left.', zone: 'L', done: () => S.tutHold < -0.6 },
   { text: 'Double tap one side to DASH sideways.', zone: 'LR', done: () => S.dashT > 0 },
   { text: 'Double tap BOTH sides at the same time to BURST forward.', zone: 'both', done: () => S.burstT > 0 },
-  { text: 'Swipe up to say "Excuse me". The person ahead steps aside.', zone: null, done: () => S.shoutCD > 0 },
+  { text: 'Hold both thumbs down for a moment to say "Excuse me". The person ahead steps aside.', zone: 'LR', done: () => S.shoutCD > 0 },
   { text: 'Skill move: walk at the person ahead, then DASH sideways at the very last moment. Close calls give a free boost.', zone: 'LR', done: () => S.perfectT > 0 },
-  { text: 'Another: walk up close, then swipe up just before you would touch them. A well timed "Excuse me" is stronger and recharges faster.', zone: null, done: () => S.tutPerfectShout },
+  { text: 'Another: walk up close, then hold both thumbs just before you would touch them. A well timed "Excuse me" is stronger and recharges faster.', zone: 'LR', done: () => S.tutPerfectShout },
   { text: "That's it. Pass people for points and don't touch anyone. Go!", zone: null, done: () => S.tut.t > 2.6 }
 ];
 

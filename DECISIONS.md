@@ -73,3 +73,4 @@
 - iPhone home-screen strip (2026-11-06): the two earlier attempts (dvh fill, measured --appH) were removed. Fix now follows WebKit bug 254868: in standalone/fullscreen mode use plain 100vh (dvh/svh/innerHeight leave out the bottom safe area), and the canvas takes its size from its own box. Needs Stefan's phone check.
 - 2026-11-06: Race line finish is a flag pole at 88% of the line; finished racers' dots carry on past it.
 - 2026-11-06: Classic HUD matches race: pause and combo at top; score, distance, speed (and clock) in one bottom row. Excuse-me bar says EXCUSE ME; stamina bar has a notch at 40% where low stamina starts slowing you.
+- 2026-11-06: Excuse Me is now activated by holding both thumbs down for 0.25 s (swipe up kept as a backup). Three close calls within 5 s give +10% speed for 2.5 s in every mode.

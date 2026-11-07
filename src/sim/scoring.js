@@ -20,6 +20,8 @@ export const RAZOR_STAMINA = 25, CLOSE_STAMINA = 12;
 // In races a near miss also gives a short speed burst (about a slipstream's worth for a razor), so risking it pays. It never stacks:
 // a weaker burst cannot cut a stronger one short, a stronger one replaces a weaker one. Players and bots follow the same rule.
 export const NEAR_RAZOR = { amt: 0.25, t: 2.0 }, NEAR_CLOSE = { amt: 0.12, t: 1.5 };
+// Three close calls within a few seconds earn a short speed boost, in every mode: the risky line pays.
+export const STREAK_SPEED = 1.1, STREAK_T = 2.5, STREAK_NEEDED = 3, STREAK_WINDOW = 5;
 export const nearMul = r => (r.nearT > 0 ? 1 + r.nearAmt : 1);
 export function nearBoost(r, gap) {
   const k = gap < 0.15 ? NEAR_RAZOR : gap < 0.4 ? NEAR_CLOSE : null;
@@ -45,6 +47,10 @@ export function onPass(p) {
   let pts = 10, sound = null;
   const tags = [];
   if (S.race) nearBoost(S, gap);
+  if (gap < 0.4) {
+    S.nearHits = now - S.nearHitT <= STREAK_WINDOW ? S.nearHits + 1 : 1; S.nearHitT = now;
+    if (S.nearHits >= STREAK_NEEDED) { S.nearHits = 0; S.streakT = STREAK_T; tags.push(['NEAR-MISS STREAK', '#ff6b9d']); }
+  }
   if (gap < 0.15) { pts += 50; S.close++; S.energy = Math.min(100, S.energy + RAZOR_STAMINA); track('close'); tags.push(['RAZOR', '#ff4d4f']); S.heat = Math.min(0.9, S.heat + 0.45); sound = 'razor'; }
   else if (gap < 0.4) { pts += 25; S.close++; S.energy = Math.min(100, S.energy + CLOSE_STAMINA); tags.push(['CLOSE', '#ffcf1f']); S.heat = Math.min(0.9, S.heat + 0.3); sound = 'whoosh'; }
   if (prev && now - prev.t < 0.35 && prev.side !== side && Math.abs(dx) < 1.2 && prev.adx < 1.2) { pts += 150; tags.push(['THREAD THE NEEDLE', '#5ee6a8']); }

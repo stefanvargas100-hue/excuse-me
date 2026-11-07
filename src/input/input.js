@@ -39,6 +39,17 @@ export function onTap(z, now) {
   else lastTap[z] = now;
 }
 
+// Hold BOTH thumbs down for a moment to say "Excuse me" (holding both cancels the steering, so your line does not change).
+export const HOLD_BOTH_S = 0.25;
+let holdT = 0, holdDone = false;
+export function holdTick(dt) {
+  let l = false, r = false;
+  for (const z of touches.values()) { if (z === 'L') l = true; else r = true; }
+  if (!(l && r)) { holdT = 0; holdDone = false; return; }
+  holdT += dt;
+  if (holdT >= HOLD_BOTH_S && !holdDone) { holdDone = true; shout(); }
+}
+
 export function action(z) {
   if (state !== 'play') return;
   if (z === 'M') tryBurst(); else tryDash(z === 'L' ? -1 : 1);

@@ -4,7 +4,7 @@ import { STRIP_SPEED, beltAt, beltFor, contain, onStrip, stripLane } from '../co
 import { BASE, BOOST, CHAIN_WINDOW, LAT_ACC, LAT_MAX, REGEN } from '../config/tuning.js';
 import { R, clamp, hashStr, mulberry32, pick, rnd, setR, todayKey, weekKey } from '../config/util.js';
 import { $ } from '../dom.js';
-import { COST_DASH, DASH_V, action, keys, pendingDash, setPendingDash, touches } from '../input/input.js';
+import { COST_DASH, DASH_V, action, holdTick, keys, pendingDash, setPendingDash, touches } from '../input/input.js';
 import { radarTop, setRadarTop } from '../render/hud.js';
 import { nextGoal, tallySnapshot, track, trackMax } from '../save/challenges.js';
 import { account, gainXp, runXp } from '../save/level.js';
@@ -12,7 +12,7 @@ import { buzz, store } from '../save/store.js';
 import { PERFECT_SPEED, banner } from './actions.js';
 import { collide, updMe, updPeople } from './crowd.js';
 import { genChunk, runEvent, scramble, seeded, spawnFast, spawnRival, updXings, walker } from './people.js';
-import { addPop, nearMul, onPass } from './scoring.js';
+import { STREAK_SPEED, addPop, nearMul, onPass } from './scoring.js';
 import { S, bestOf, endShown, goalOf, reset, setEndShown, setRaceBuild, setState, state } from './state.js';
 import { BUMP_SPEED, addRemoteRacer, draftMul, finishRace, fmtTime, initRace, leadZ, ordinal, raceBest, raceCollide, raceCountdown, racePace, rearZ, updRace } from './race.js';
 import { updCars } from './traffic.js';
@@ -45,11 +45,11 @@ function movePlayer(dt) {
   S.boostV += ((bursting || S.draftT > 0 ? 1 : 0) - S.boostV) * Math.min(1, dt * 8);
   if (S.boostV < 0.2) S.boostPasses = 0;
   const weave = 1 - 0.14 * Math.min(1.4, Math.abs(S.vx) / LAT_MAX);   // weaving costs a little forward speed
-  S.perfectT = Math.max(0, S.perfectT - dt);
+  S.perfectT = Math.max(0, S.perfectT - dt); S.streakT = Math.max(0, S.streakT - dt);
   const strip = S.race && onStrip(LV.id, S.px, S.pz);
   if (strip && !S.onStrip) addPop('FAST STRIP', stripLane(LV.id).col, 22);
   S.onStrip = strip;
-  const pace = (S.race ? racePace(S.chain, S.energy) * draftMul(S) * nearMul(S) * (strip ? STRIP_SPEED : 1) : 1) * (S.perfectT > 0 ? PERFECT_SPEED : 1);   // race mode: combo speeds you up, low stamina slows you down
+  const pace = (S.race ? racePace(S.chain, S.energy) * draftMul(S) * nearMul(S) * (strip ? STRIP_SPEED : 1) : 1) * (S.perfectT > 0 ? PERFECT_SPEED : 1) * (S.streakT > 0 ? STREAK_SPEED : 1);   // race mode: combo speeds you up, low stamina slows you down
   const target = (bursting ? BOOST : BASE) * weave * pace * (st ? st.speed : 1) * (S.bumpT > 0 ? BUMP_SPEED : 1);
   S.speed += (target - S.speed) * Math.min(1, dt * (st && target > S.speed ? st.accel : 5));
   if (S.dashT > 0) S.vx = S.dashDir * DASH_V;
@@ -90,6 +90,7 @@ export function tick(dt) {
     if (S.kind === 'classic' && !S.beatBest && S.score > bestOf(LV.id) && bestOf(LV.id) > 0) { S.beatBest = true; addPop('NEW BEST!', '#ffd166', 30); }
     if (S.kind === 'classic' && S.pz > S.farMark) { S.farMark += 5; trackMax('far_' + LV.id, S.pz); }
     if (pendingDash && performance.now() >= pendingDash.at) { action(pendingDash.z); setPendingDash(null); }
+    holdTick(dt);
     movePlayer(dt);
     S.me.x = S.px; S.me.z = S.pz;
     if (S.coach) coachTick(dt);

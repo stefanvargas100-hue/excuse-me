@@ -33,7 +33,7 @@ export function reset() {
         burstT: 0, dashT: 0, dashCool: 0, dashDir: 0, flash: 0, lastDashT: -9,
         meProxy: { x: 0, z: 0, vx: 0, vz: 0, prop: null },
         slow: 0, slowT: 0, breakFlash: 0, multPrev: 1, stepN: 0,
-        ghostRec: [], ghostNext: 0, ghost: null, ghostPts: null, closest: null, hitStop: 0, perfectT: 0, unlocked: [], farMark: 0, lastSlip: -99, draftC: 0, draftT: 0, nearT: 0, nearAmt: 0, draftFull: 1, draftNear: 0, draftX: 0, draftZ: 0, bumpT: 0, ghostT: 0, bumpCool: 0, blockT: 0, bumps: 0, race: null, duel: null, mode: 'classic', kind: 'classic', endless: false, seed: null, evN: 0, chunkSum: {},
+        ghostRec: [], ghostNext: 0, ghost: null, ghostPts: null, closest: null, hitStop: 0, perfectT: 0, streakT: 0, nearHits: 0, nearHitT: -99, unlocked: [], farMark: 0, lastSlip: -99, draftC: 0, draftT: 0, nearT: 0, nearAmt: 0, draftFull: 1, draftNear: 0, draftX: 0, draftZ: 0, bumpT: 0, ghostT: 0, bumpCool: 0, blockT: 0, bumps: 0, race: null, duel: null, mode: 'classic', kind: 'classic', endless: false, seed: null, evN: 0, chunkSum: {},
         timeLeft: LV.limit, timeout: false, lastSec: 99, shoutCD: 0, slipT: 0, eventT: 16, rush: false, rushT: rnd(28, 40), rushSpawn: 0, banner: null };
   touches.clear(); keys.l = keys.r = false; setPendingDash(null); setLastBoth(-9999);
   S.me = makeMe();
