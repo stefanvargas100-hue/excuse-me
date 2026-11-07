@@ -413,4 +413,5 @@ button:disabled.big, button:disabled.ghost { opacity: .5; cursor: default; }
 .track.race { height: 4px; border: 0; border-radius: 2px; background: var(--ink); box-shadow: none; margin: 0 16px 0 4px; }
 .track.race #prog { display: none; }
 .track.race::after { content: '🏁'; position: absolute; right: -10px; top: 50%; transform: translateY(-62%); font-size: 20px; line-height: 1; }
-#raceDots i.me { width: 20px; height: 20px; margin-top: -10px; margin-left: -10px; background: var(--btn); z-index: 2; }
+#raceDots i.me { width: 20px; height: 20px; margin-left: -10px; background: var(--btn); z-index: 2; }
+.track.race #raceDots i { top: auto; bottom: 100%; margin-top: 0; }   /* dots ride on top of the line, not through it */
