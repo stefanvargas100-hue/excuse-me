@@ -145,7 +145,7 @@ function raceHud() {
     for (const r of bots) { const d = document.createElement('i'); d.style.background = r.color; box.appendChild(d); }
     const d = document.createElement('i'); d.className = 'me'; box.appendChild(d);
   }
-  const at = z => (clamp(z / LV.goal, 0, 1) * 100).toFixed(1) + '%';
+  const at = z => (z >= LV.goal ? 95 : clamp(z / LV.goal, 0, 1) * 88).toFixed(1) + '%';   // the pole stands at 88%; finished racers carry on past it
   bots.forEach((b, i) => { const d = box.children[i]; if (d) d.style.left = at(b.z); });
   const md = box.children[bots.length]; if (md) md.style.left = at(S.pz);
 }
