@@ -79,6 +79,7 @@ export function mk(x, z, o) {
     set('shoeType', formal ? (fem ? wp([['heels', 2], ['oxfords', 1], ['loafers', 1]]) : wp([['oxfords', 2], ['loafers', 1]]))
       : fem ? wp([['sneakers', 4], ['runners', 1.5], ['heels', 1.5], ['boots', 1], ['dad', 0.6], ['platforms', 0.3], ['slides', 0.5]])
       : wp([['sneakers', 5], ['runners', 2], ['boots', 1], ['slides', 0.5], ['hightops', 0.3], ['dad', 0.5]]));
+    if (!p.lug && !p.dog && !p.phone && !p.boxes && !p.flag && !p.fast && !p.photo && !p.dance) set('carry', wp([[null, 7.5], ['coffee', 1.3], ['bag', 1.2]]));
   }
   dress(p);
   p.prevDz = z - (S ? S.pz : 0);
@@ -124,7 +125,7 @@ function group(z, dir, n) {
   const x = clamp(laneX(dir), -LV.half + 1.2, LV.half - 1.2), v = walkSpeed(1.12, 0.12);   // groups walk abreast and slower
   for (let i = 0; i < n; i++) {
     const gx = x + (i - (n - 1) / 2) * 0.74;
-    mk(gx, z + rnd(-0.15, 0.15), { hx: 0, hz: dir, v0: v, laneX: gx, space: 0 });
+    mk(gx, z + rnd(-0.15, 0.15), { hx: 0, hz: dir, v0: v, laneX: gx, space: 0, chat: i < (n - 1) / 2 ? 1 : i > (n - 1) / 2 ? -1 : 1 });   // chat: which way they turn to talk (looks only)
   }
 }
 

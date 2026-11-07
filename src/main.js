@@ -4,6 +4,7 @@ import { $ } from './dom.js';
 import { action, init as initInput, keys, onTap, touches } from './input/input.js';
 import { init as initCamera } from './render/camera.js';
 import { drawPreview, init as initPreview } from './render/preview.js';
+import { drawPodium, podiumOf } from './render/podium.js';
 import { render } from './render/render.js';
 import { shout } from './sim/actions.js';
 import { hasPlayed, pauseGame, quitRun, start, tick, toMenu } from './sim/game.js';
@@ -48,6 +49,7 @@ function frame(now) {
   render(); hud();
   Music.update(dt);
   if (!$('look').hidden) drawPreview(now);
+  if (!$('end').hidden) drawPodium(now);
   requestAnimationFrame(frame);
 }
 
@@ -69,7 +71,7 @@ reset();
 
 buildLevels();
 
-window.__excuse = { setVariant, variantOf, VARIANTS, pickVariant, setTopGhostFetcher, visibleGhosts, visibleGhost, genChunk, touches, onPass, nearMul, roomLevel, setRoomLevel, get LV() { return LV; }, injectRoomMessage, lobbyPlayers, lobbyStatus, draftMul, powerMul, xp: () => account.xp(), account, startDuel, duelReceive, hostRoom, hostStart, joinRoom, leaveRoom, rematchState, requestRematch, useRoomFactory, nextGoal, tallySnapshot, modOf, rotatingList, tick, reset, start, setLevel, get S() { return S; }, get state() { return state; }, keys, action, onTap, render, drawPreview, LEVELS, runEvent, shout, weekKey, hasPlayed, pauseGame, quitRun, toMenu, CHALLENGES, isLocked, tallyOf, track, trackMax, racePace, fitOf, BODIES, BUILDS, ITEM_STATS, effects, statsOf, LOOK, mkPerson: (x, z) => mk(x, z, { hx: 0, hz: 1, v0: 1 }) };
+window.__excuse = { podiumOf, drawPodium, setVariant, variantOf, VARIANTS, pickVariant, setTopGhostFetcher, visibleGhosts, visibleGhost, genChunk, touches, onPass, nearMul, roomLevel, setRoomLevel, get LV() { return LV; }, injectRoomMessage, lobbyPlayers, lobbyStatus, draftMul, powerMul, xp: () => account.xp(), account, startDuel, duelReceive, hostRoom, hostStart, joinRoom, leaveRoom, rematchState, requestRematch, useRoomFactory, nextGoal, tallySnapshot, modOf, rotatingList, tick, reset, start, setLevel, get S() { return S; }, get state() { return state; }, keys, action, onTap, render, drawPreview, LEVELS, runEvent, shout, weekKey, hasPlayed, pauseGame, quitRun, toMenu, CHALLENGES, isLocked, tallyOf, track, trackMax, racePace, fitOf, BODIES, BUILDS, ITEM_STATS, effects, statsOf, LOOK, mkPerson: (x, z) => mk(x, z, { hx: 0, hz: 1, v0: 1 }) };
 
 requestAnimationFrame(frame);
 

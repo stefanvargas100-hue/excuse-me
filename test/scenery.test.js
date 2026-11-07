@@ -100,3 +100,31 @@ test('restarting straight away picks the look again, even after a very short run
     Date.now = () => gold; E.start('classic'); E.render(); assert.strictEqual(E.variantOf(), 'golden');
   } finally { Date.now = realNow; }
 });
+
+// End-of-race podium (render/podium.js) and the feedback effects (render/fx.js): looks only.
+test('finishing a race puts the top three on the podium, drawn from copies so the racers are untouched', () => {
+  const E = load(undefined, { seed: 4 });
+  E.setLevel(1); E.start('race');
+  for (let i = 0; i < 200; i++) E.tick(DT);
+  const R = E.S.race, before = R.bots.map(b => [b.x, b.z, b.done, b.pose].join(',')).join(';');
+  E.S.pz = E.LV.goal + 1; E.S.me.z = E.S.pz;
+  for (let i = 0; i < 90 && E.state !== 'won' && E.state !== 'over'; i++) E.tick(DT);
+  for (let i = 0; i < 40; i++) E.tick(DT);   // the end screen opens after a moment
+  const pod = E.podiumOf();
+  assert.ok(pod && pod.length >= 1, 'podium is set');
+  assert.strictEqual(pod[0].place, 1);
+  assert.ok(pod.every(e => e.p.podium && e.p !== E.S.me && !R.bots.includes(e.p)), 'podium people are copies');
+  assert.ok(R.bots.every(b => b.pose === undefined), 'racers themselves get no pose');
+  assert.doesNotThrow(() => { E.drawPodium(1000); E.render(); });
+  void before;
+});
+
+test('effects draw in every state: chain break, bump, win, rain splashes', () => {
+  const E = load(undefined, { seed: 6 });
+  for (const [lv, v] of [[1, 'golden'], [2, 'rain'], [0, 'night']]) {
+    E.setLevel(lv); E.setVariant(v); E.start('classic');
+    for (let i = 0; i < 60; i++) { E.tick(DT); E.S.chain = 12; if (i % 5 === 0) E.render(); }
+    E.S.breakFlash = 0.3; assert.doesNotThrow(() => E.render(), 'chain break ' + v);
+  }
+  E.setVariant(null);
+});

@@ -6,6 +6,8 @@ import { ctx } from '../dom.js';
 import { CX, F, HOR, VX, VY, VZ, W } from './camera.js';
 import { FONT, W3, ball, box3D, label } from './draw.js';
 import { S, calm, cues, showHB } from '../sim/state.js';
+import { variantOf } from './weather.js';
+import { multGlow } from './fx.js';
 
 
 
@@ -70,7 +72,7 @@ function drawCase(p, s) {
   return W3(cx0, 0.92, p.z);
 }
 
-function drawDog(p, s) {
+function drawDog(p, s, heldBy) {
   const dx = p.x + p.dog * 0.55, dz = p.z + 0.15, c = hex(p.dogCol);
   const f = p.fz >= 0 ? 1 : -1, wag = Math.sin(p.phase * 2) * 0.05;
   box3D(dx - 0.12, dx + 0.12, 0.22, 0.46, dz - 0.3, dz + 0.3, c);
@@ -84,7 +86,7 @@ function drawDog(p, s) {
   }
   const ta = W3(dx, 0.44, dz - f * 0.3), tb = W3(dx + wag, 0.6, dz - f * 0.42);
   ctx.beginPath(); ctx.moveTo(ta[0], ta[1]); ctx.lineTo(tb[0], tb[1]); ctx.stroke();
-  const hand = W3(p.x + p.dog * 0.24, 0.85, p.z);
+  const hand = heldBy || W3(p.x + p.dog * 0.24, 0.85, p.z);
   ctx.strokeStyle = '#c0392b'; ctx.lineWidth = Math.max(1, 0.012 * s);
   ctx.beginPath(); ctx.moveTo(hand[0], hand[1]); ctx.quadraticCurveTo((hand[0] + hd[0]) / 2, Math.max(hand[1], hd[1]) + 0.1 * s, hd[0], hd[1]); ctx.stroke();
 }
@@ -136,8 +138,17 @@ function drawFace(p, hx, hy, r, side) {
 // Body shapes, as fractions of the half-width of an average torso: shoulders, chest, waist, hips; plus limb thickness, neck, head size, hip joint spacing, sway.
 const PROFILE = {
   m: { sh: 1.12, ch: 1.12, wa: 0.9, hip: 0.8, limb: 1.04, neck: 0.1, head: 1.02, hipJ: 0.095, hipSway: 0.03, shSway: 0.1, neckUp: 0, kneeIn: 1, ankIn: 1 },
-  f: { sh: 0.7, ch: 0.76, wa: 0.5, hip: 0.9, limb: 0.86, neck: 0.056, head: 0.95, hipJ: 0.105, hipSway: 0.11, shSway: 0.04, neckUp: 0.05, kneeIn: 0.8, ankIn: 0.68 }
+  f: { sh: 0.7, ch: 0.76, wa: 0.46, hip: 0.9, limb: 0.86, neck: 0.056, head: 0.95, hipJ: 0.105, hipSway: 0.11, shSway: 0.04, neckUp: 0.05, kneeIn: 0.8, ankIn: 0.68 }
 };
+
+// Rain on the stage: about a third of the crowd has an umbrella up. Picked from the person's own numbers, so it changes nothing in the run.
+const umbrellaFor = p => variantOf() === 'rain' && p.ph !== undefined && !p.isMe && !p.racer && !p.prop && !p.lug && !p.boxes && !p.dance && !p.phone && (p.ph * 7) % 1 < 0.35;
+function umbrellaShape(cx, by, rx, ry, col, colD, detail) {
+  ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(cx - rx, by); ctx.quadraticCurveTo(cx - rx * 0.9, by - ry * 1.3, cx, by - ry); ctx.quadraticCurveTo(cx + rx * 0.9, by - ry * 1.3, cx + rx, by);
+  if (detail) for (let i = 1; i >= -2; i--) ctx.quadraticCurveTo(cx + (i + 0.5) * rx * 0.5, by - ry * 0.22, cx + i * rx * 0.5, by);   // scalloped rim
+  ctx.closePath(); ctx.fill();
+  if (detail) { ctx.strokeStyle = LINE; ctx.lineWidth = Math.max(1, rx * 0.05); ctx.stroke(); ctx.strokeStyle = colD; ctx.lineWidth = Math.max(1, rx * 0.03); ctx.beginPath(); ctx.moveTo(cx, by - ry); ctx.lineTo(cx - rx * 0.5, by); ctx.moveTo(cx, by - ry); ctx.lineTo(cx + rx * 0.5, by); ctx.stroke(); }
+}
 
 function drawNear(p, s) {
   const k = p.h / 1.75, fx = p.fx, fz = p.fz, rx = fz, rz = -fx;
@@ -162,8 +173,11 @@ function drawNear(p, s) {
   }
   const hopT = !calm && p.react && p.react.up && p.react.t >= 0 && p.react.t < 0.3 ? Math.sin(Math.PI * p.react.t / 0.3) * 0.07 : 0;   // a little startled hop when brushed past
   const drop = minA - 0.08 - hopT;   // planted foot stays on the floor, so the body bobs naturally
-  const lean = p.lean || 0;   // leaning into a move, so players can read it coming
-  const L = (lx, ly, u) => W3(p.x + (rx * lx + fx * ly) * k + lean * u * k, (u - drop) * k, p.z + (rz * lx + fz * ly) * k);
+  // posture: lean into a dash, tip forward when bursting or hurrying, rock back after a bump, and a small squash as a dash lands
+  const dashT = p.isMe ? (S ? S.dashT : 0) : p.dashT || 0, dashDir = p.isMe ? (S ? S.dashDir : 0) : p.dashDir || 0, burstT = p.isMe ? (S ? S.burstT : 0) : p.burstT || 0, bumpedT = p.isMe ? (S ? S.bumpT : 0) : p.bumpT || 0;
+  const lean = (p.lean || 0) + (dashT > 0 ? dashDir * 0.13 : 0), pitchF = bumpedT > 0 ? -0.07 : burstT > 0 ? 0.1 : p.fast && !p.isMe ? 0.05 : 0;
+  const vs = dashT > 0 && dashT < 0.1 && !calm ? 1 - 0.07 * Math.sin(Math.PI * (1 - dashT / 0.1)) : 1;
+  const L = (lx, ly, u) => W3(p.x + (rx * lx + fx * (ly + pitchF * u)) * k + lean * u * k, (u - drop) * k * vs, p.z + (rz * lx + fz * (ly + pitchF * u)) * k);
   const sk = s * k;
   const vxv = p.x - VX, vzv = Math.max(0.2, p.z - VZ), vl = Math.hypot(vxv, vzv);
   const across = Math.abs(rx * (vzv / vl) - rz * (vxv / vl));   // 1 = shoulders face the camera, 0 = side-on
@@ -238,7 +252,7 @@ function drawNear(p, s) {
   }
   let handle = null;
   if (p.lug) items.push({ d: p.z - VZ, f: () => { handle = drawCase(p, s); } });
-  if (p.dog) items.push({ d: p.z + 0.15 - VZ, f: () => drawDog(p, s) });
+  if (p.dog) items.push({ d: p.z + 0.15 - VZ, f: () => drawDog(p, s, leadHand) });
   if (p.boxes) {
     const bz = p.z + p.dirz * 0.6;
     items.push({ d: bz - VZ, f: () => {
@@ -247,8 +261,13 @@ function drawNear(p, s) {
       box3D(p.x - 0.18, p.x + 0.18, 1.12, 1.45, bz - 0.17, bz + 0.17, hex('#a8794a'));
     } });
   }
-  const cele = (p.racer && p.done) || (p.isMe && S.race && S.race.finished);   // crossed the line: arms up
-  const talk = !calm && walk < 0.05 && !p.phone && !p.aim && !p.dance && !p.isMe && !p.prop && !cele && Math.sin(S.clock * 0.9 + (p.ph || 0) * 3.1) > 0.15, talkSide = (p.ph || 0) > 3.14 ? 1 : -1;   // standing and chatting: one hand gestures now and then
+  const clk = S ? S.clock : 0;
+  const cele = (p.racer && p.done) || (p.isMe && S && S.race && S.race.finished) || p.pose === 'win';   // crossed the line: arms up
+  const talkOn = !calm && p.ph !== undefined && !p.pose && !p.phone && !p.aim && !p.dance && !p.isMe && !p.prop && !cele && Math.sin(clk * 0.9 + (p.ph || 0) * 3.1) > 0.15;
+  const talkSide = p.chat || ((p.ph || 0) > 3.14 ? 1 : -1), talk = talkOn && (walk < 0.05 || !!p.chat);   // standing, or walking with a friend: one hand gestures now and then
+  const umb = umbrellaFor(p), holdSide = p.phone ? -1 : (p.ph || 0) > 3.14 ? -1 : 1, carrying = umb || p.carry;
+  const dogSide = p.dog ? (Math.sign(rx * p.dog) || p.dog) : 0;
+  let leadHand = null, umbHand = null;
   const lugSide = p.lug ? (Math.sign(rx * p.lug) || p.lug) : 0;
   for (const side of [-1, 1]) {
     const ap = ph + (side > 0 ? 0 : Math.PI);
@@ -258,14 +277,26 @@ function drawNear(p, s) {
     if (p.react && p.react.up && p.react.t > 0 && p.react.t < 0.9) { c = 2.45; bend = 0.55; hx = 0.36; }   // hands up
     if (p.dance) { c = 1.7 + Math.sin(ph * 1.3 + side * 1.7) * 1.0; bend = 0.9; hx = 0.38; }
     if (cele) { c = 2.5 + (calm ? 0 : Math.sin(S.clock * 9 + side * 1.6) * 0.35); bend = 0.45; hx = 0.34; }
-    else if (talk && side === talkSide) { c = 1.15 + Math.sin(S.clock * 5 + (p.ph || 0) * 2) * 0.4; bend = 1.2; hx = 0.18; }
+    else if (talk && side === talkSide) { c = 1.15 + Math.sin(clk * 5 + (p.ph || 0) * 2) * 0.4; bend = 1.2; hx = 0.18; }
     if (p.phone && side > 0) { c = 0.35; bend = 1.7; hx = 0.1; }
     if (p.aim && side > 0) { c = 1.25; bend = 1.5; hx = 0.1; }   // lifting a phone for a photo: about to stop
+    if (p.pose === 'wave' && side > 0) { c = 2.75 + Math.sin(ph * 1.6) * 0.3; bend = 0.25; hx = 0.34; }   // podium: second place waves
+    if (p.pose === 'clap') { const cl = Math.abs(Math.sin(ph * 1.5)); c = 1.15; bend = 1.45; hx = 0.03 + 0.05 * cl; }   // third place claps
+    if (p.dog && side === dogSide && !cele) { c = 0.28 + sw * 0.05 * walk; bend = 0.32; hx = 0.3 * armOut; }   // holding the lead out to the side
+    const carryHere = carrying && side === holdSide && !cele && !(p.react && p.react.up);
+    if (carryHere) {
+      if (umb) { c = 0.75; bend = 1.85; hx = 0.1; }
+      else if (p.carry === 'coffee') { c = 0.42 + sw * 0.05 * walk; bend = 1.4; hx = 0.16; }
+      else { c = sw * 0.1 * walk; bend = 0.08; hx = 0.25 * armOut; }
+    }
     const el = [side * 0.245 * armOut, Math.sin(c) * 0.3, 1.42 - Math.cos(c) * 0.3];
     const fa = c + bend;
     const hd = [side * hx, el[1] + Math.sin(fa) * 0.27, el[2] - Math.cos(fa) * 0.27];
     const shp = L(side * 0.19 * armOut, 0.035 * Math.sin(ap) * walk, 1.42), elp = L(el[0], el[1], el[2]), hdp = L(hd[0], hd[1], hd[2]);
     const holds = side === lugSide;
+    if (p.dog && side === dogSide) leadHand = hdp;
+    if (umb && carryHere) umbHand = hdp;
+    const grip = holds || (p.dog && side === dogSide) || carryHere || ((p.phone || p.aim) && side > 0);
     // seen from the front or back both arms hang beside the torso, so they are both drawn over it (like the legs); side-on, the far arm goes behind
     items.push({ d: across > 0.35 ? Math.min(shp[2], chestD) - 0.05 : shp[2] + 0.001, f: () => {
       let e2 = elp, h2 = hdp;
@@ -289,15 +320,36 @@ function drawNear(p, s) {
       {   // a hand: a rounded palm with a thumb on the inner side, pointing along the forearm
         const hx2 = h2[0] - e2[0], hy2 = h2[1] - e2[1], hd2 = Math.hypot(hx2, hy2) || 1, hux = hx2 / hd2, huy = hy2 / hd2, th = Math.atan2(huy, hux) - Math.PI / 2;
         const tx = h2[0] + hux * hr * 0.5 - huy * side * -hr * 0.85, ty2 = h2[1] + huy * hr * 0.5 + hux * side * -hr * 0.85;
-        if (hr > 2.5) { const o = Math.max(1, hr * 0.3); ctx.fillStyle = LINE; ctx.beginPath(); ctx.ellipse(h2[0] + hux * hr * 0.25, h2[1] + huy * hr * 0.25, hr * 0.92 + o, hr * 1.12 + o, th, 0, TAU); ctx.fill(); ctx.beginPath(); ctx.ellipse(tx, ty2, hr * 0.38 + o, hr * 0.62 + o, th + side * 0.5, 0, TAU); ctx.fill(); }
-        ctx.fillStyle = p.skin; ctx.beginPath(); ctx.ellipse(h2[0] + hux * hr * 0.25, h2[1] + huy * hr * 0.25, hr * 0.92, hr * 1.12, th, 0, TAU); ctx.fill();
+        if (hr > 2.5) { const o = Math.max(1, hr * 0.3); ctx.fillStyle = LINE; ctx.beginPath(); ctx.ellipse(h2[0] + hux * hr * 0.25, h2[1] + huy * hr * 0.25, hr * (grip ? 1 : 0.92) + o, hr * (grip ? 1 : 1.12) + o, th, 0, TAU); ctx.fill(); ctx.beginPath(); ctx.ellipse(tx, ty2, hr * 0.38 + o, hr * 0.62 + o, th + side * 0.5, 0, TAU); ctx.fill(); }
+        ctx.fillStyle = p.skin; ctx.beginPath(); ctx.ellipse(h2[0] + hux * hr * 0.25, h2[1] + huy * hr * 0.25, hr * (grip ? 1 : 0.92), hr * (grip ? 1 : 1.12), th, 0, TAU); ctx.fill();
         ctx.beginPath(); ctx.ellipse(tx, ty2, hr * 0.38, hr * 0.62, th + side * 0.5, 0, TAU); ctx.fill();
         if (hr > 3.5) { ctx.strokeStyle = p.skinD; ctx.lineWidth = Math.max(1, hr * 0.14); ctx.beginPath(); ctx.moveTo(h2[0] - huy * hr * 0.5 + hux * hr * 0.55, h2[1] + hux * hr * 0.5 + huy * hr * 0.55); ctx.lineTo(h2[0] + huy * hr * 0.5 + hux * hr * 0.55, h2[1] - hux * hr * 0.5 + huy * hr * 0.55); ctx.stroke(); }
+        if (grip && hr > 3) { ctx.strokeStyle = p.skinD; ctx.lineWidth = Math.max(1, hr * 0.14); ctx.beginPath(); for (const fo of [0.05, -0.4]) { ctx.moveTo(h2[0] - huy * hr * 0.55 + hux * hr * fo, h2[1] + hux * hr * 0.55 + huy * hr * fo); ctx.lineTo(h2[0] + huy * hr * 0.55 + hux * hr * fo, h2[1] - hux * hr * 0.55 + huy * hr * fo); } ctx.stroke(); }   // fingers closed round what they hold
+        if (!longSleeve && ty !== 'tank' && ty !== 'dress' && hr > 2.5) { const ux = e2[0] - shp[0], uy = e2[1] - shp[1], ud = Math.hypot(ux, uy) || 1, cw = 0.05 * sk * lb, cx = shp[0] + ux * 0.94, cy = shp[1] + uy * 0.94; ctx.strokeStyle = sleeveD; ctx.lineWidth = Math.max(1.1, 0.02 * sk); ctx.beginPath(); ctx.moveTo(cx - uy / ud * cw, cy + ux / ud * cw); ctx.lineTo(cx + uy / ud * cw, cy - ux / ud * cw); ctx.stroke(); }   // sleeve hem
         if (longSleeve && hr > 2.5) { const cw = 0.047 * sk * lb * armW, cx = e2[0] + hx2 * 0.8, cy = e2[1] + hy2 * 0.8; ctx.strokeStyle = sleeveD; ctx.lineWidth = Math.max(1.2, 0.03 * sk); ctx.beginPath(); ctx.moveTo(cx - huy * cw, cy + hux * cw); ctx.lineTo(cx + huy * cw, cy - hux * cw); ctx.stroke(); }
       }
       if ((p.phone || p.aim) && side > 0) {
         ctx.fillStyle = '#111827'; ctx.fillRect(h2[0] - 0.04 * sk, h2[1] - 0.09 * sk, 0.08 * sk, 0.13 * sk);
-        ctx.fillStyle = '#8ecbff'; ctx.fillRect(h2[0] - 0.03 * sk, h2[1] - 0.08 * sk, 0.06 * sk, 0.1 * sk);
+        if (facing > 0.2) { ctx.fillStyle = '#39414f'; ctx.beginPath(); ctx.arc(h2[0] - 0.018 * sk, h2[1] - 0.065 * sk, Math.max(0.8, 0.011 * sk), 0, TAU); ctx.fill(); }   // from behind you see the back of the phone
+        else {
+          ctx.fillStyle = '#8ecbff'; ctx.fillRect(h2[0] - 0.03 * sk, h2[1] - 0.08 * sk, 0.06 * sk, 0.1 * sk);
+          if (LV.night && hr > 2.5) { ctx.fillStyle = 'rgba(142,203,255,0.16)'; ctx.beginPath(); ctx.arc(h2[0], h2[1] - 0.05 * sk, 0.17 * sk, 0, TAU); ctx.fill(); }   // screen glow in the dark
+        }
+        if (hr > 2.5) {   // fingers round one edge, thumb on the other
+          ctx.fillStyle = p.skin;
+          for (let fi = 0; fi < 3; fi++) { ctx.beginPath(); ctx.arc(h2[0] + 0.043 * sk, h2[1] - 0.05 * sk + fi * 0.03 * sk, Math.max(0.9, 0.013 * sk), 0, TAU); ctx.fill(); }
+          ctx.beginPath(); ctx.ellipse(h2[0] - 0.042 * sk, h2[1] - 0.012 * sk, Math.max(0.9, 0.014 * sk), Math.max(1.2, 0.028 * sk), 0, 0, TAU); ctx.fill();
+        }
+      }
+      if (carryHere && !umb && p.carry === 'coffee') {   // a takeaway cup
+        const cw = 0.042 * sk, ch = 0.11 * sk, cx = h2[0], cy = h2[1] - ch * 0.42;
+        ctx.fillStyle = '#f4f1ea'; ctx.beginPath(); ctx.moveTo(cx - cw, cy - ch / 2); ctx.lineTo(cx + cw, cy - ch / 2); ctx.lineTo(cx + cw * 0.76, cy + ch / 2); ctx.lineTo(cx - cw * 0.76, cy + ch / 2); ctx.closePath(); ctx.fill();
+        if (hr > 2.5) { ctx.strokeStyle = LINE; ctx.lineWidth = Math.max(1, 0.012 * sk); ctx.stroke(); ctx.fillStyle = '#8a5a34'; ctx.fillRect(cx - cw * 0.9, cy - ch * 0.08, cw * 1.8, ch * 0.3); ctx.fillStyle = '#2b2f36'; ctx.fillRect(cx - cw * 1.05, cy - ch * 0.62, cw * 2.1, ch * 0.15); }
+      } else if (carryHere && !umb && p.carry === 'bag') {   // a shopping bag on two string handles
+        const bw = 0.13 * sk, bh = 0.21 * sk, by = h2[1] + 0.12 * sk;
+        if (hr > 2.5) { ctx.strokeStyle = LINE; ctx.lineWidth = Math.max(1, 0.01 * sk); ctx.beginPath(); ctx.moveTo(h2[0], h2[1]); ctx.lineTo(h2[0] - bw * 0.5, by); ctx.moveTo(h2[0], h2[1]); ctx.lineTo(h2[0] + bw * 0.5, by); ctx.stroke(); }
+        ctx.fillStyle = p.gear; ctx.fillRect(h2[0] - bw, by, bw * 2, bh);
+        if (hr > 2.5) { ctx.fillStyle = p.gearL; ctx.fillRect(h2[0] - bw, by, bw * 2, bh * 0.14); ctx.strokeStyle = LINE; ctx.lineWidth = Math.max(1, 0.012 * sk); ctx.strokeRect(h2[0] - bw, by, bw * 2, bh); }
       }
     } });
   }
@@ -354,8 +406,8 @@ function drawNear(p, s) {
         if (fw > 0.3) { ctx.globalAlpha = keep * clamp((0.35 - facing) / 0.45, 0, 1) * clamp(fw * 1.4 - 0.2, 0, 1); ctx.fillStyle = LINE; ctx.beginPath(); ctx.arc(bx, by, r + Math.max(1.1, hwC * 0.07), 0, TAU); ctx.fill(); ctx.globalAlpha = keep * clamp((0.35 - facing) / 0.45, 0, 1); }
         ctx.fillStyle = p.shirt; ctx.beginPath(); ctx.arc(bx, by, r, 0, TAU); ctx.fill();
         if (r > 2) {
-          ctx.fillStyle = p.shirtL; ctx.globalAlpha *= 0.55; ctx.beginPath(); ctx.arc(bx - r * 0.22, by - r * 0.28, r * 0.5, 0, TAU); ctx.fill(); ctx.globalAlpha /= 0.55;
-          ctx.strokeStyle = p.shirtD; ctx.lineWidth = Math.max(1, r * 0.24); ctx.beginPath(); ctx.arc(bx, by, r * 0.86, Math.PI * 0.08, Math.PI * 0.92); ctx.stroke();
+          ctx.fillStyle = p.shirtL; ctx.globalAlpha *= 0.32; ctx.beginPath(); ctx.arc(bx - r * 0.22, by - r * 0.3, r * 0.48, 0, TAU); ctx.fill(); ctx.globalAlpha /= 0.32;
+          ctx.strokeStyle = p.shirtD; ctx.globalAlpha *= 0.7; ctx.lineWidth = Math.max(1, r * 0.15); ctx.beginPath(); ctx.arc(bx, by, r * 0.86, Math.PI * 0.2, Math.PI * 0.8); ctx.stroke(); ctx.globalAlpha /= 0.7;
         }
       }
       ctx.globalAlpha = keep;
@@ -383,10 +435,26 @@ function drawNear(p, s) {
       if (ty === 'hoodie') { ctx.fillStyle = 'rgba(20,10,40,0.16)'; ctx.strokeStyle = p.shirtD; ctx.lineWidth = Math.max(1, hwC * 0.06); rrect(pc[0] - hwC * 0.55, pc[1] - hwC * 0.12, hwC * 1.1, hwC * 0.42, hwC * 0.1); ctx.fill(); ctx.stroke(); }
       if (['jacket', 'wind', 'varsity', 'suit', 'power', 'velour'].includes(ty)) {
         ctx.strokeStyle = p.shirtD; ctx.lineWidth = Math.max(1, hwC * 0.06); ctx.lineCap = 'round';
-        for (const sd of [-1, 1]) { ctx.beginPath(); ctx.moveTo(pc[0] + sd * hwC * 0.42, pc[1] - hwC * 0.08); ctx.lineTo(pc[0] + sd * hwC * 0.72, pc[1] + hwC * 0.1); ctx.stroke(); }
+        for (const sd of [-1, 1]) { ctx.beginPath(); ctx.moveTo(pc[0] + sd * hwC * 0.36, pc[1]); ctx.lineTo(pc[0] + sd * hwC * 0.7, pc[1] - hwC * 0.02); ctx.stroke(); }   // flat pocket flaps
         ctx.fillStyle = ty === 'varsity' || ty === 'jacket' || ty === 'wind' ? p.shirtD : p.shirtL;
         for (const sd of [-1, 1]) { ctx.beginPath(); ctx.moveTo(neck[0] + sd * nkW * 0.9, neck[1] - hwC * 0.02); ctx.lineTo(neck[0] + sd * nkW * 1.55, neck[1] + hwC * 0.28); ctx.lineTo(neck[0] + sd * nkW * 0.25, neck[1] + hwC * 0.4); ctx.closePath(); ctx.fill(); }
       }
+    }
+    if (hwC > 4 && ty !== 'dress' && p.pantsType !== 'pleats' && p.pantsType !== 'pencil') {
+      const pt = p.pantsType, by = waist[1] + hwC * 0.14;
+      if (pt === 'jeans' || pt === undefined || pt === 'slacks' || pt === 'cargo' || pt === 'acid') {   // a belt, its buckle in front
+        ctx.strokeStyle = pt === 'slacks' ? '#1b1b1f' : '#5b3a22'; ctx.lineWidth = Math.max(1, hwC * 0.11); ctx.beginPath(); ctx.moveTo(waist[0] - hwW * 1.02, by); ctx.lineTo(waist[0] + hwW * 1.02, by); ctx.stroke();
+        if (facing < -0.2) { ctx.fillStyle = '#d4c27a'; ctx.fillRect(waist[0] - hwC * 0.1, by - hwC * 0.09, hwC * 0.2, hwC * 0.18); }
+      }
+      if (facing > 0.2 && (pt === 'jeans' || pt === undefined || pt === 'acid' || pt === 'cargo')) {   // back pockets
+        ctx.strokeStyle = p.pantsD; ctx.lineWidth = Math.max(1, hwC * 0.05); const py = mix(waist, pelvis, 0.55)[1];
+        for (const sd of [-1, 1]) { rrect(pelvis[0] + sd * hipW * 0.46 - hipW * 0.24, py - hipW * 0.2, hipW * 0.48, hipW * 0.46, hipW * 0.08); ctx.stroke(); }
+      }
+    }
+    if (p.racer && hwC > 5) {   // a race bib with the racer's initial, so you can tell them from the crowd at a glance
+      const bc2 = mix(chest, waist, 0.42), bw2 = hwC * 0.92, bh2 = hwC * 0.68;
+      ctx.fillStyle = '#ffffff'; rrect(bc2[0] - bw2 / 2, bc2[1] - bh2 / 2, bw2, bh2, hwC * 0.08); ctx.fill(); ctx.strokeStyle = p.color; ctx.lineWidth = Math.max(1.2, hwC * 0.09); ctx.stroke();
+      ctx.fillStyle = LINE; ctx.font = '700 ' + Math.round(bh2 * 0.72) + 'px ' + FONT; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText((p.name || '?').charAt(0), bc2[0], bc2[1] + bh2 * 0.04);
     }
     if (ty === 'hoodie') { ctx.fillStyle = p.shirtD; ctx.beginPath(); ctx.ellipse(neck[0], neck[1] + hwC * 0.12, hwC * 0.62, hwC * 0.38, 0, 0, TAU); ctx.fill(); }
     if (ty === 'jacket') { ctx.strokeStyle = '#ffffff'; ctx.lineWidth = Math.max(1, hwC * 0.09); ctx.beginPath(); ctx.moveTo(neck[0], neck[1]); ctx.lineTo(waist[0], waist[1]); ctx.stroke(); }
@@ -448,7 +516,7 @@ function drawNear(p, s) {
       }
     } else if (facing < -0.35) {
       if (!p.bald) { ctx.beginPath(); ctx.arc(hx, hy - r * 0.12, r * 1.0, Math.PI, TAU); ctx.closePath(); ctx.fill(); }
-      drawFace(p, hx, hy, r, 0);
+      drawFace(p, hx + (p.chat && talkOn ? p.chat * r * 0.2 : 0), hy, r, 0);
       if (p.rival) {
         ctx.strokeStyle = '#16191f'; ctx.lineWidth = Math.max(1, r * 0.12); ctx.lineCap = 'round';
         ctx.beginPath(); ctx.moveTo(hx - r * 0.58, hy - r * 0.16); ctx.lineTo(hx - r * 0.15, hy - r * 0.02);
@@ -532,6 +600,11 @@ function drawNear(p, s) {
     }
     out.hx = hx; out.hy = hy; out.hr = r;
   } });
+  if (umb) items.push({ d: head[2] - 0.02, f: () => {
+    const top = L(0, 0, 2.2 + nu), rx0 = 0.46 * sk, ry0 = 0.2 * sk, by = top[1] + ry0;
+    if (umbHand) { ctx.strokeStyle = '#2b2f36'; ctx.lineWidth = Math.max(1, 0.016 * sk); ctx.beginPath(); ctx.moveTo(umbHand[0], umbHand[1]); ctx.lineTo(top[0], top[1]); ctx.stroke(); }
+    umbrellaShape(top[0], by, rx0, ry0, p.gear, p.gearD, rx0 > 6);
+  } });
   items.sort((a, b) => b.d - a.d);
   for (const it of items) it.f();
   return out;
@@ -551,6 +624,7 @@ function drawFar(p, bx, fy, U) {
   const r = Math.max(1.2, 0.115 * U), hy = fy - 1.63 * U;
   ctx.fillStyle = p.skin; ctx.beginPath(); ctx.arc(bx, hy, r, 0, TAU); ctx.fill();
   if (!p.bald) { ctx.fillStyle = p.hair; ctx.beginPath(); ctx.arc(bx, hy - r * 0.1, r, Math.PI, TAU); ctx.fill(); }
+  if (umbrellaFor(p)) umbrellaShape(bx, fy - 1.98 * U, 0.46 * U, 0.2 * U, p.gear, p.gearD, false);
   return { hx: bx, hy, hr: r };
 }
 
@@ -723,6 +797,21 @@ function drawProp(p, s, bx, fy) {
   }
 }
 
+// Little marks by the head, in the comic style of the bubbles: shock, a bead of sweat, an anger mark.
+function drawEmote(kind, x, y, r) {
+  ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.strokeStyle = INK; ctx.lineWidth = Math.max(1.2, r * 0.26);
+  if (kind === 'shock') {
+    ctx.fillStyle = '#ffcf1f'; ctx.beginPath(); ctx.moveTo(x - r * 0.3, y - r * 1.2); ctx.lineTo(x + r * 0.3, y - r * 1.2); ctx.lineTo(x + r * 0.14, y + r * 0.35); ctx.lineTo(x - r * 0.14, y + r * 0.35); ctx.closePath(); ctx.stroke(); ctx.fill();
+    ctx.beginPath(); ctx.arc(x, y + r * 0.95, r * 0.26, 0, TAU); ctx.stroke(); ctx.fill();
+  } else if (kind === 'sweat') {
+    ctx.fillStyle = '#7cc4ff'; ctx.beginPath(); ctx.moveTo(x, y - r); ctx.quadraticCurveTo(x + r * 0.75, y + r * 0.1, x, y + r * 0.6); ctx.quadraticCurveTo(x - r * 0.75, y + r * 0.1, x, y - r); ctx.closePath(); ctx.stroke(); ctx.fill();
+  } else {
+    ctx.strokeStyle = '#ff2d3a'; ctx.lineWidth = Math.max(1.4, r * 0.3); ctx.beginPath();
+    for (const [sx, sy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) { ctx.moveTo(x + sx * r * 0.28, y + sy * r); ctx.quadraticCurveTo(x + sx * r * 0.24, y + sy * r * 0.24, x + sx * r, y + sy * r * 0.28); }
+    ctx.stroke();
+  }
+}
+
 const hexA = (h, a) => { const c = hex(h); return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')'; };
 
 export function drawPerson(p) {
@@ -734,27 +823,36 @@ export function drawPerson(p) {
   const fy = HOR + VY * s;
   // fog in the distance; fade people right in front of the camera so they never block your character
   // racers beside and behind you go see-through: they can't touch you, and they must never block your view
-  const racerFade = p.racer ? clamp(0.3 + (p.z - S.pz + 1) * 0.35, 0.3, 1) * (p.isGhost ? 0.5 : 1) : 1;
+  const racerFade = p.racer && !p.podium ? clamp(0.3 + (p.z - S.pz + 1) * 0.35, 0.3, 1) * (p.isGhost ? 0.5 : 1) : 1;
   const ghost = (p.isMe ? S.ghostT : p.ghostT) > 0 ? 0.5 + 0.25 * Math.sin(S.clock * 30) : 1;   // race mode: blink during the rare safety slip-through
   ctx.globalAlpha = Math.min(fogA(dz), p.isMe ? 1 : clamp((dz - 0.6) / 1.6, 0.22, 1), clamp((DRAW_FAR - dz) / 8, 0, 1), p.fadeT === undefined ? 1 : p.fadeT / 0.9) * ghost * racerFade;
   if (p.prop !== 'spill') {
     ctx.fillStyle = LV.night ? 'rgba(0,0,0,0.35)' : 'rgba(15,27,45,0.18)';
     ctx.beginPath(); ctx.ellipse(bx, fy, 0.34 * s, 0.34 * s * Math.min(0.6, VY / dz), 0, 0, TAU); ctx.fill();
   }
+  if (!p.prop && dz < 45 && variantOf() === 'golden') {   // golden hour: the sun is at the far end of the avenue, so shadows fall long toward you
+    const zt = Math.max(p.z - (p.h || 1.75) * 1.2, VZ + 1.2);
+    if (p.z - zt > 0.3) { const a = W3(p.x - 0.17, 0, p.z), b = W3(p.x + 0.17, 0, p.z), c = W3(p.x + 0.1, 0, zt), d = W3(p.x - 0.1, 0, zt); ctx.fillStyle = p.isMe ? 'rgba(60,30,30,0.12)' : 'rgba(60,30,30,0.22)'; ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.lineTo(c[0], c[1]); ctx.lineTo(d[0], d[1]); ctx.closePath(); ctx.fill(); }
+  }
   if (p.isMe) {
+    multGlow(bx, fy, s, Math.min(0.6, VY / dz));
     ctx.strokeStyle = 'rgba(255,207,31,0.85)'; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.ellipse(bx, fy, 0.42 * s, 0.42 * s * Math.min(0.6, VY / dz), 0, 0, TAU); ctx.stroke();
   }
   ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-  if (p.racer && !p.done && !p.isGhost && Math.hypot(p.vx, p.vz) > 1.8 && !calm) {   // a streak in the racer's colour behind them, so you can follow who is who
-    const a = W3(p.x, 0.95, p.z - 0.45), b = W3(p.x, 0.95, p.z - 2.6);
-    if (b[2] > 0.6) { const g = ctx.createLinearGradient(a[0], a[1], b[0], b[1]); g.addColorStop(0, hexA(p.color, 0.45)); g.addColorStop(1, hexA(p.color, 0)); ctx.strokeStyle = g; ctx.lineWidth = Math.max(2, 0.16 * s); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); }
+  if (p.racer && !p.done && !p.isGhost && Math.hypot(p.vx, p.vz) > 1.8 && !calm) {   // a ribbon on the floor in the racer's colour, narrowing as it fades, so you can follow who is who
+    const near = VZ + 1.3, z0 = Math.max(p.z - 0.25, near), z1 = Math.max(p.z - (p.burstT > 0 ? 4.2 : 3), near);
+    if (z0 - z1 > 0.3) {
+      const a = W3(p.x - 0.17, 0.01, z0), b = W3(p.x + 0.17, 0.01, z0), c = W3(p.x + 0.04, 0.01, z1), d = W3(p.x - 0.04, 0.01, z1);
+      const g = ctx.createLinearGradient(0, a[1], 0, c[1]); g.addColorStop(0, hexA(p.color, 0.6)); g.addColorStop(1, hexA(p.color, 0));
+      ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.lineTo(c[0], c[1]); ctx.lineTo(d[0], d[1]); ctx.closePath(); ctx.fill();
+    }
   }
   let hd = {};
   if (p.prop) drawProp(p, s, bx, fy);
   else hd = U * 1.75 < 34 ? drawFar(p, bx, fy, U) : drawNear(p, s);
   const hx = hd.hx !== undefined ? hd.hx : bx, hy = hd.hy !== undefined ? hd.hy : fy - 1.63 * U;
-  if (p.racer && p.z > S.pz - 0.5) {   // a coloured arrow and name so the racers stand out from the crowd
+  if (p.racer && !p.podium && p.z > S.pz - 0.5) {   // a coloured arrow and name so the racers stand out from the crowd
     const ay = hy - 0.42 * U, aw = clamp(0.16 * U, 5, 11);
     ctx.fillStyle = p.color; ctx.strokeStyle = INK; ctx.lineWidth = Math.max(1, 0.03 * U); ctx.lineJoin = 'round';
     ctx.beginPath(); ctx.moveTo(hx, ay); ctx.lineTo(hx - aw, ay - aw * 1.3); ctx.lineTo(hx + aw, ay - aw * 1.3); ctx.closePath(); ctx.fill(); ctx.stroke();
@@ -821,6 +919,7 @@ export function drawPerson(p) {
     }
     ctx.fillStyle = p.rival ? '#ffffff' : INK; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(p.react.text, bxx + bw / 2, by + bh / 2 + 1);
+    if (U > 40) drawEmote(p.rival ? 'anger' : p.react.up ? 'shock' : 'sweat', hx + 0.2 * U, hy - 0.16 * U, clamp(0.09 * U, 5, 11));
     ctx.globalAlpha = fogA(dz);
   }
   if (p.hit) {
