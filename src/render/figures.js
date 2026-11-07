@@ -169,11 +169,12 @@ function drawNear(p, s) {
   const facing = fx * (vxv / vl) + fz * (vzv / vl);            // >0 walking away from the camera
   const sideDir = sgn(fx * (vzv / vl) - fz * (vxv / vl));
   const items = [];
+  const chestD = L(0, 0, 1.38)[2];   // legs are drawn before the body unless you see them side-on, so the top of a leg never shows through the torso
   for (const g of legs) {
-    const hip = L(g.side * P.hipJ, 0, 0.93), kn = L(g.knee[0], g.knee[1], g.knee[2]), an = L(g.ankle[0], g.ankle[1], g.ankle[2]);
+    const hip = L(g.side * P.hipJ, 0, 0.9), kn = L(g.knee[0], g.knee[1], g.knee[2]), an = L(g.ankle[0], g.ankle[1], g.ankle[2]);
     const th = clamp(g.a, -0.5, 0.5) * 0.9;   // foot roll: toe up as the leg swings forward, toe down as it pushes off
     const toe = L(g.ankle[0], g.ankle[1] + 0.13 * Math.cos(th), g.ankle[2] - 0.03 + 0.13 * Math.sin(th));
-    items.push({ d: hip[2], f: () => {
+    items.push({ d: across > 0.35 ? Math.max(hip[2], chestD) + 0.05 : hip[2], f: () => {
       TAP = LEG_TAP;
       const legW = 0.13 * sk * lb, pt = p.pantsType, line = (a, b, col, w) => { ctx.strokeStyle = col; ctx.lineWidth = Math.max(1, w * sk); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); };
       if (pt === 'pleats' || pt === 'pencil') capsule([hip, kn, an], 0.095 * sk * lb, p.skin, p.skinD, p.skinL);   // bare legs; the skirt is drawn with the body
@@ -366,6 +367,15 @@ function drawNear(p, s) {
   const pitch = p.phone ? 0.06 : 0;
   const head = L(0, 0.02 + pitch, 1.63 - pitch * 0.6 + 0.012 * Math.cos(ph * 2) * walk), neckTop = L(0, 0, 1.54), brimP = L(0, 0.22 + pitch, 1.69 - pitch * 0.6);
   const out = {};
+  if (p.hairStyle === 'long' && !p.bald && facing < -0.2) {   // long hair seen from the front hangs behind the shoulders, not over the chest and neck
+    items.push({ d: Math.max(head[2], chestD) + 0.1, f: () => {
+      const r = 0.115 * P.head * F / head[2] * k;
+      // two locks hang beside the neck and drop behind the shoulders, so the neck and chest stay clear
+      const ox = facing > -0.35 ? sideDir * r * 0.25 : 0;
+      ctx.fillStyle = p.hair; ctx.beginPath(); ctx.ellipse(head[0] - ox, head[1] + r * 0.2, r * 1.05, r * 1.0, 0, 0, TAU); ctx.fill();
+      for (const sd of [-1, 1]) { ctx.beginPath(); ctx.ellipse(head[0] - ox + sd * r * 0.82, head[1] + r * 1.0, r * 0.42, r * 1.1, sd * -0.08, 0, TAU); ctx.fill(); }
+    } });
+  }
   items.push({ d: head[2] - 0.002, f: () => {
     const r = 0.115 * P.head * F / head[2] * k, hx = head[0], hy = head[1];
     const longHair = p.hairStyle === 'long' && !p.bald;
@@ -374,7 +384,7 @@ function drawNear(p, s) {
       ctx.ellipse((hx + brimP[0]) / 2, (hy - r * 0.2 + brimP[1]) / 2, r * 0.9 + Math.abs(brimP[0] - hx) * 0.5, r * 0.24, 0, 0, TAU); ctx.fill();
     };
     capsule([neck, neckTop], P.neck * sk, p.skin, p.skinD, p.skinL);
-    if (longHair && facing <= 0.35) { ctx.fillStyle = p.hair; ctx.beginPath(); ctx.ellipse(hx - (facing > -0.35 ? sideDir * r * 0.25 : 0), hy + r * 0.55, r * 1.05, r * 1.15, 0, 0, TAU); ctx.fill(); }
+    if (longHair && facing <= 0.35 && facing >= -0.2) { ctx.fillStyle = p.hair; ctx.beginPath(); ctx.ellipse(hx - (facing > -0.35 ? sideDir * r * 0.25 : 0), hy + r * 0.55, r * 1.05, r * 1.15, 0, 0, TAU); ctx.fill(); }
     if (p.hat === 'cap' && facing > 0.35) brim();
     ball(hx, hy, r, p.skin, p.skinL, p.skinD);
     if (r > 3) { ctx.strokeStyle = LINE; ctx.lineWidth = Math.max(1.2, r * 0.13); ctx.beginPath(); ctx.arc(hx, hy, r, 0, TAU); ctx.stroke(); }
