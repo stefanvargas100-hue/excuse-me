@@ -7,6 +7,7 @@ import { FONT } from './draw.js';
 import { drawPerson, rrect } from './figures.js';
 import { drawFlows, drawPops, radarTop, zoneGuide } from './hud.js';
 import { drawBelts, drawGlass, drawPowerups, drawSlipstream, drawStrips, glassPanels } from './slipstream.js';
+import { nycSteam } from './nycdetail.js';
 import { drawCars, paintAirport, paintNYC, paintShibuya } from './world.js';
 import { S, calm, camBob, state } from '../sim/state.js';
 import { visibleGhosts } from '../sim/replay.js';
@@ -23,7 +24,7 @@ export function render() {
   ctx.save();
   ctx.fillStyle = FOGCSS; ctx.fillRect(-W, -H, 3 * W, 3 * H);
   if (LV.id === 'airport') paintAirport(); else if (LV.id === 'nyc') paintNYC(); else paintShibuya();
-  if (LV.id === 'nyc') drawCars();
+  if (LV.id === 'nyc') { drawCars(); nycSteam(); }
   drawBelts();
   drawStrips();
   drawPowerups();

@@ -8,6 +8,7 @@ import { P, ball, box3D, cq, forSegs, fq, label, poly, sky, sub, wq } from './dr
 import { inXing } from '../sim/people.js';
 import { GATE_EVERY, GATE_Z0, drawApron, gateNo } from './apron.js';
 import { S, goalOf } from '../sim/state.js';
+import { nycAfterLoop, nycSegment, nycSky } from './nycdetail.js';
 
 
 
@@ -102,6 +103,7 @@ function goalNYC(d) {
 
 export function paintNYC() {
   sky('#7fb0dd');
+  nycSky();
   const hw = LV.half;
   if (goalOf() - VZ < 86) goalNYC(goalOf() - VZ);
   forSegs(3, 85, (k, za, zb, da, db) => {
@@ -131,7 +133,9 @@ export function paintNYC() {
         if (wa < 55) { const [a, b] = sub(za + 0.6, zb - 0.6); if (b > 0.2) for (let y = 4.6; y < hB - 1.5 && y < 26; y += 3.4) wq(hw, y, y + 1.9, a, b, mixc(C.win, a)); }
       }
     }
+    nycSegment(k, za, zb, da, db, xing);   // lived-in detail on top (render/nycdetail.js)
   });
+  nycAfterLoop();
 }
 
 function goalShibuya(d) {
