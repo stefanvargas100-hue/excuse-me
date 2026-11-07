@@ -337,8 +337,8 @@ export function runEvent(kind) {
     walker(z, -1, { v0: 1.1, boxes: true, yieldP: 0.15, circles: [{ ox: 0, oz: 0, r: R_BODY }, { ox: 0, oz: -0.6, r: 0.32 }] });
     banner('DELIVERY COMING THROUGH', '#c8a165');
   } else if (kind === 'weave') {
-    // Rows of oncoming people, each row with a gap, and the gap snakes left and right down the hall. The gaps are marked on the floor,
-    // so you can see the pattern coming and plan a line through it.
+    // Rows of oncoming people, each row with a gap, and the gap snakes left and right down the hall. The open spaces between people
+    // let you read the pattern coming and plan a line through it.
     const race = raceBuild && beltInfo(LV.id), lo = LV.id === 'nyc' ? -2.8 : LV.id === 'shibuya' ? -9.5 : -5.6, hi = LV.id === 'nyc' ? 3.0 : LV.id === 'shibuya' ? 9.5 : race ? 1.4 : 5.6, mid = (lo + hi) / 2, amp = Math.min((hi - lo) / 2 - 1.0, 3.2), ph = rnd(0, TAU);
     const rows = [];
     for (let i = 0; i < 6; i++) {

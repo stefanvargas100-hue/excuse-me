@@ -19,6 +19,7 @@ function offlineCache() {
       })(dist);
       files.sort();
       const hash = createHash('sha1');
+      hash.update(readFileSync(join(dist, 'sw.js')));   // worker changes also retire old caches
       for (const f of files) hash.update(f).update(readFileSync(join(dist, f)));
       const sw = readFileSync(join(dist, 'sw.js'), 'utf8')
         .replace('__CACHE_VERSION__', hash.digest('hex').slice(0, 10))
