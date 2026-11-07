@@ -10,7 +10,7 @@ import { STRIP_SPEED, beltAt, beltFor, contain, glassBetween, onStrip } from '..
 import { effects, fitOf, randomLoadout, statsOf } from '../config/stats.js';
 import { COST_DASH, DASH_T, DASH_V } from '../input/input.js';
 import { buzz, store } from '../save/store.js';
-import { banner } from './actions.js';
+import { SHOUT_CD, banner, shoutReact, shoutTargets, wellTimed } from './actions.js';
 import { endCoach } from './racecoach.js';
 import { track } from '../save/challenges.js';
 import { LOOK } from '../save/progress.js';
@@ -84,10 +84,11 @@ export const racePace = (chain, energy) => (1 + COMBO_SPEED_PER * (comboLevel(ch
 // Three tiers. Pace is walking speed relative to yours, miss is how often a bot fails to notice someone,
 // dash is how readily it dashes around trouble, burst is how often it spends stamina on a burst of speed,
 // fight is how hard it contests the race: chasing slipstreams, shaking you off its tail, using the fast strips.
+// excuse is how readily it says Excuse me, as a chance per second while someone is in its way (same range and recharge as yours).
 export const DIFFICULTIES = [
-  { name: 'Easy', pace: [0.82, 0.86, 0.89], miss: 0.14, dash: 0, burst: 0.15, fight: 0 },
-  { name: 'Medium', pace: [0.89, 0.93, 0.97], miss: 0.06, dash: 0.5, burst: 0.3, fight: 0.5 },
-  { name: 'Hard', pace: [0.98, 1.02, 1.06], miss: 0.01, dash: 1, burst: 0.6, fight: 1 }
+  { name: 'Easy', pace: [0.82, 0.86, 0.89], miss: 0.14, dash: 0, burst: 0.15, fight: 0, excuse: 0.15 },
+  { name: 'Medium', pace: [0.89, 0.93, 0.97], miss: 0.06, dash: 0.5, burst: 0.3, fight: 0.5, excuse: 0.7 },
+  { name: 'Hard', pace: [0.98, 1.02, 1.06], miss: 0.01, dash: 1, burst: 0.6, fight: 1, excuse: 2 }
 ];
 const BOTS = [
   { name: 'Mia', color: '#14b8a6', shirt: '#14b8a6', hair: '#3b2a1e', hairStyle: 'long', skin: '#c68863' },
@@ -355,12 +356,29 @@ function think(b) {
   b.target = bestX; b.danger = danger; b.clear = danger > 9 && bestC < 3;
 }
 
+// A bot says Excuse me with the player's rules. Returns how many people it asked; 0 when recharging or nobody was reachable.
+export function botExcuseMe(b) {
+  if (!(b.shoutCD > 0)) b.shoutCD = 0;
+  if (b.shoutCD > 0) return 0;
+  const who = { x: b.x, z: b.z }, perfect = wellTimed(who), near = shoutTargets(who, perfect, true);   // anyone already stepping aside is left alone, so calls cannot stack
+  if (!near.length) return 0;
+  b.shoutCD = SHOUT_CD - (perfect ? 2 : 0); b.calls = (b.calls || 0) + 1;
+  b.react = { t: 0, text: 'Excuse me!', up: false };
+  if (Math.abs(b.z - S.pz) < 14) Music.sfx('shout');   // you can hear the ones near you
+  shoutReact(near, who, perfect, S.race.rng);
+  return near.length;
+}
+const inWay = b => S.people.some(p => !p.prop && !p.dead && !p.rival && !(p.aside > 0) && p.z - b.z > 0.4 && p.z - b.z < 4.5 && Math.abs(p.x - b.x) < 0.8 && !glassBetween(LV.id, b.x, b.z, p.x, p.z));
+
 function stepBot(b, dt) {
   const R = S.race, lim = LV.half - 0.5;
   b.thinkT -= dt;
   if (b.thinkT <= 0) { think(b); b.thinkT = 0.1 + R.rng() * 0.18; }   // people do not react instantly
   b.nearT = Math.max(0, b.nearT - dt); b.bumpT = Math.max(0, b.bumpT - dt); b.ghostT = Math.max(0, b.ghostT - dt); b.cool = Math.max(0, b.cool - dt);
   b.burstT -= dt; b.dashT -= dt; stepPowerups(b, dt);
+  b.shoutCD = Math.max(0, (b.shoutCD || 0) - dt);
+  if (b.react) { b.react.t += dt; if (b.react.t > 1.4) b.react = null; }
+  if (b.shoutCD <= 0 && b.bumpT <= 0 && inWay(b) && R.rng() < b.diff.excuse * dt) botExcuseMe(b);
   b.energy = Math.min(100, b.energy + REGEN * b.st.regen * dt);
   if (b.chain > 0 && S.time - b.lastPassT > CHAIN_WINDOW) b.chain = 0;
   // a good player dashes round a person who is about to be hit, and bursts when the way is clear

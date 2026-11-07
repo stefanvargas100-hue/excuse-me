@@ -15,7 +15,7 @@ Make clean driving, crowd management, learning, route selection and different ra
 |---|---|---|---|---|
 | B0 | Mode boundaries and reproducible run setup | Existing release | Small supporting changes only | Validated (headless) |
 | B1 | Clean-race rewards | B0 | Bot races; private-race summary | Validated (headless + browser) |
-| B2 | Bots use Excuse me | B0, B1 validation | Bot races | Planned |
+| B2 | Bots use Excuse me | B0, B1 validation | Bot races | Validated (headless + browser) |
 | B3 | Replayable practice course | B0, B1, B2 | Four short local lessons | Planned |
 | B4 | Stage-specific route choices | B0-B3 | Airport pilot, then NYC and Tokyo | Planned |
 | B5 | Elimination races | B0, B3, B4 | Bots first; friend rooms second | Planned |
@@ -285,3 +285,12 @@ Later expansion ideas, not required for this queue: public matchmaking, bots fil
 - Browser: Orca browser, dev server; results screen with the new line at 390x844 and 320x568, no overflow. The in-play "CLEAN" popup was not looked at visually. Simulated viewport only; no physical phone.
 - Known limitations / playtest: Easy vs Hard reward totals not compared yet; the cap (+50 = 500 clean m) is untested by feel. Standing still cannot be produced by the headless walker, so the "stationary earns nothing" case is covered by the speed*dt rule and a no-op test, not by a pinned-player scenario.
 - Not published. Next: B2.
+
+### B2 - Validated, 2026-11-07
+- Playable behaviour: bots in local races say "Excuse me" (speech bubble, shout sound if within 14 m) when someone is in their way. The shout is one shared implementation (src/sim/actions.js: wellTimed / shoutTargets / shoutReact), so range, 4-person limit (6 when well timed), 5.5 s recharge (3.5 s when well timed), rival refusal and phone-user rule are identical for you and bots. Decision rate per second while someone is within 4.5 m in its lane: Easy 0.15, Medium 0.7, Hard 2 (`excuse` in DIFFICULTIES, race.js). Bot decisions use the seeded S.race.rng.
+- Side effect on the player (intended, consistent with the glass rule): people on the other side of the airport glass are no longer reachable by your own Excuse me either.
+- Stacking guard: bot calls skip anyone already stepping aside, and the push is a fixed amount, not additive.
+- Regression reproduced first: all 9 tests failed before implementation (no botExcuseMe). The friend-room case is guaranteed structurally (remote bots never run stepBot) rather than by a test.
+- Tests: botexcuse 8/8, full suite 349/349.
+- Browser: dev server in the Orca browser. The bubble and crowd responses were checked in a manually rendered frame (the hidden page auto-pauses the game, so live capture was not possible). The viewport emulation did not resize the page (desktop-sized capture). Call frequency/feel in real play still needs a human playtest.
+- Not published. Next: B3.
