@@ -64,7 +64,7 @@ Lobby for 2-4 players is now built (see below). Not done yet: bigger lobbies, bu
 
 ### Teaching (highest value, players will miss what is already built)
 1. **Teach the new skills.** The tutorial stops at the basic controls. Perfect dash, perfect "Excuse me" and near-miss stamina are the heart of the skill game, and only How to play mentions them.
-2. **Add a race tutorial.** Slipstream, fast strips and bumps are never taught in play.
+2. **Race tutorial: DONE 2026-11-06 (race coach tips on the first race vs bots).** Still open: a practice stage, and teaching near-miss stamina.
 3. **Practice stage.** A short course with repeatable setups for perfect dashes and threading gaps.
 
 ### Gameplay
