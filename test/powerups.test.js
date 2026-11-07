@@ -32,13 +32,13 @@ test('no pickups in classic runs', () => {
   assert.ok(!E.S.race, 'classic has no race state, so nothing to pick up');
 });
 
-test('walking onto a boost pickup makes you faster for about 3 seconds, then it wears off', () => {
+test('walking onto a boost pickup makes you faster for about 3.5 seconds, then it wears off', () => {
   const E = atGo(); const pk = offer(E, 'boost');
   assert.strictEqual(E.powerMul(E.S), 1);
   run(E, 20);
   assert.ok(pk.taken, 'collected');
-  assert.ok(E.powerMul(E.S) > 1.25, 'faster: ' + E.powerMul(E.S));
-  run(E, 110);
+  assert.ok(E.powerMul(E.S) >= 1.55, 'faster: ' + E.powerMul(E.S));
+  run(E, 120);
   assert.strictEqual(E.powerMul(E.S), 1, 'wears off');
 });
 

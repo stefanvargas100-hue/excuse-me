@@ -9,10 +9,10 @@ import { S } from './state.js';
 // Walk (or dash) through one and it is yours at once, no button. First to reach it takes it, so they are worth a detour.
 export const PU_TYPES = {
   boost: { label: 'BOOST!', col: '#ffb020' },        // faster for a few seconds
-  refill: { label: 'STAMINA FULL', col: '#3ddc84' },  // stamina back to full
+  refill: { label: 'STAMINA FULL', col: '#2ec4b6' },  // stamina back to full; same colour as the stamina bar
   clear: { label: 'CLEAR PATH', col: '#7fd0ff' }      // walk through people for a moment
 };
-const BOOST_T = 3, BOOST_MUL = 1.35, CLEAR_T = 2.2;
+const BOOST_T = 3.5, BOOST_MUL = 1.6, CLEAR_T = 2.2;
 const FIRST = 60, GAP = 70, JITTER = 18, END_MARGIN = 45;   // metres: none near the start or the finish
 const REACH_X = 0.8, REACH_Z = 0.7;                          // how close counts as touching
 

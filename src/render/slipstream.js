@@ -134,21 +134,34 @@ export function drawGlass(w) {
   ctx.restore();
 }
 
-// Race power-ups: a bobbing hand-drawn token floating over the floor. Taken ones are gone for everyone.
-const GLYPH = { boost: '»', refill: '+', clear: '✦' };
+// Race power-ups: a bobbing hand-drawn token over the floor. Each kind has its own silhouette so it reads at a glance:
+// boost is a lightning bolt, stamina is a round drop-style badge with a plus, clear path is a diamond with a sparkle.
+// Taken ones are gone for everyone.
+function puShape(type, x, y, r) {
+  ctx.beginPath();
+  if (type === 'boost') {   // lightning bolt
+    const P = [[0.15, -1.15], [-0.75, 0.15], [-0.05, 0.15], [-0.3, 1.15], [0.8, -0.3], [0.1, -0.3], [0.5, -1.15]];
+    P.forEach((q, i) => (i ? ctx.lineTo(x + q[0] * r, y + q[1] * r) : ctx.moveTo(x + q[0] * r, y + q[1] * r)));
+    ctx.closePath();
+  } else if (type === 'clear') {   // diamond
+    ctx.moveTo(x, y - 1.2 * r); ctx.lineTo(x + 1.0 * r, y); ctx.lineTo(x, y + 1.2 * r); ctx.lineTo(x - 1.0 * r, y); ctx.closePath();
+  } else ctx.arc(x, y, r, 0, Math.PI * 2);   // refill: round, like the stamina bar's own colour
+}
 export function drawPowerups() {
   if (!S.race || !S.race.pickups || state !== 'play') return;
   for (const pk of S.race.pickups) {
     if (pk.taken || pk.z - VZ < 1.4 || pk.z - VZ > 45) continue;
-    const bob = 0.75 + 0.12 * Math.sin(S.clock * 3 + pk.z), c = W3(pk.x, bob, pk.z), s = F / c[2], r = 0.34 * s;
+    const bob = 0.75 + 0.12 * Math.sin(S.clock * 3 + pk.z), c = W3(pk.x, bob, pk.z), s = F / c[2], r = 0.36 * s;
     const col = PU_TYPES[pk.type].col, fade = clamp((pk.z - VZ - 1.4) / 1.5, 0, 1);
     ctx.globalAlpha = fade;
     const g = W3(pk.x, 0, pk.z);   // soft shadow on the floor
     ctx.fillStyle = 'rgba(0,0,0,0.18)'; ctx.beginPath(); ctx.ellipse(g[0], g[1], r * 0.8, r * 0.28, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = col; ctx.strokeStyle = '#2b2118'; ctx.lineWidth = Math.max(1.5, r * 0.16);
-    ctx.beginPath(); ctx.arc(c[0], c[1], r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = '#fffbea'; ctx.font = '700 ' + Math.round(r * 1.3) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(GLYPH[pk.type], c[0], c[1] + r * 0.05);
+    ctx.fillStyle = col; ctx.strokeStyle = '#2b2118'; ctx.lineWidth = Math.max(1.5, r * 0.16); ctx.lineJoin = 'round';
+    puShape(pk.type, c[0], c[1], r); ctx.fill(); ctx.stroke();
+    if (pk.type !== 'boost') {   // glyph on the round and diamond ones; the bolt is its own symbol
+      ctx.fillStyle = '#fffbea'; ctx.font = '700 ' + Math.round(r * 1.2) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(pk.type === 'refill' ? '+' : '✦', c[0], c[1] + r * 0.05);
+    }
   }
   ctx.globalAlpha = 1;
 }

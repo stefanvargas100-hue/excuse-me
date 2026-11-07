@@ -82,7 +82,7 @@
 - 2026-11-07: Pale-strip hunt: three height fixes failed on the phone, so a diagnostic was added instead: Settings > Show screen info (also ?debug) shows the sizes the phone reports plus red/blue edge markers. No game behaviour changed. Remove once the strip is understood.
 
 ## Race power-ups (branch race-powerups)
-- Three pickups, applied the moment you touch one (no button): Boost (+35% speed, 3 s), Stamina full, Clear path (walk through people, 2.2 s). Chosen because each reuses an existing mechanic and none needs new controls.
+- Three pickups with different shapes (bolt, round, diamond; stamina is the stamina bar teal), applied the moment you touch one (no button): Boost (+60% speed, 3.5 s; was +35% for 3 s, playtest said too weak), Stamina full, Clear path (walk through people, 2.2 s). Chosen because each reuses an existing mechanic and none needs new controls.
 - Placed by a fixed seed per stage (every ~70 m, none in the first 60 m or last 45 m), so every race on a stage has the same layout. One shared pickup: whoever gets there first takes it, bots included (hard bots steer toward them).
 - Races against bots only. Live friend races have none for now, because pickups are not synced between phones yet.
 - Tuning numbers (3 s, x1.35, 2.2 s, spacing) are first guesses in src/sim/powerups.js.
