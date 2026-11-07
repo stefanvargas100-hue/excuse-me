@@ -94,5 +94,38 @@ export function createBoard({ fetch, url, key, store, profile }) {
     } catch (e) { return []; }
   }
 
-  return { submit, submitBest, flush, top, playerName };
+  // Ghosts exist only for the top 3 of a classic stage (the server refuses anyone else and removes a ghost when its owner drops out
+  // of the top 3). Sent after the score; never queued: the next new best sends it again.
+  async function submitGhost(board, score, ghost) {
+    if (!/^classic:/.test(board)) return 'not a classic board';
+    const text = JSON.stringify(ghost || {});
+    if (text.length > 12000) return 'too big';
+    try {
+      const rows = await top(board, 3);
+      if (!rows.slice(0, 3).some(r => r.you)) return 'not top 3';
+      const s = await session();
+      const r = await fetch(url + '/rest/v1/ghosts?on_conflict=user_id,board', {
+        method: 'POST', headers: { ...base, Authorization: 'Bearer ' + s.access_token, Prefer: 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify({ user_id: s.user_id, board, score: Math.max(0, Math.floor(score)), name: playerName(), path: text })
+      });
+      return r.ok ? 'sent' : 'failed';
+    } catch (e) { return 'failed'; }
+  }
+
+  // The top 3 ghosts of a classic stage: [{ name, score, you, step, pts }]; empty when offline or not set up.
+  async function topGhosts(board) {
+    try {
+      const me = read(KEY_SESSION, null);
+      const r = await fetch(url + '/rest/v1/ghosts?select=user_id,name,score,path&board=eq.' + encodeURIComponent(board) + '&order=score.desc&limit=3', { headers: { ...base, Authorization: 'Bearer ' + key } });
+      if (!r.ok) return [];
+      const out = [];
+      for (const x of await r.json()) {
+        let g = null; try { g = JSON.parse(x.path); } catch (e) {}
+        if (g && Array.isArray(g.pts)) out.push({ name: x.name, score: x.score, you: !!me && x.user_id === me.user_id, step: g.step, pts: g.pts });
+      }
+      return out;
+    } catch (e) { return []; }
+  }
+
+  return { submit, submitBest, submitGhost, topGhosts, flush, top, playerName };
 }

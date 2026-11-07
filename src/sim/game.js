@@ -166,7 +166,7 @@ function recordBest() {
   }
   const b = bestOf(LV.id);
   S.newBest = S.score > b;
-  if (S.newBest) { store.set('excuseme_best_' + LV.id, String(S.score)); ghostSave(); if (S.kind === 'classic') submitBestRun(LV.id, S.score); }
+  if (S.newBest) { store.set('excuseme_best_' + LV.id, String(S.score)); ghostSave(); if (S.kind === 'classic') submitBestRun(LV.id, S.score, S.ghostRec); }
 }
 
 // Every finished run pays XP, once: in any mode, even when you quit. A race against bots pays less.

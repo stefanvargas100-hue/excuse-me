@@ -8,6 +8,7 @@ import { LOOK, LOOK_OPTS } from '../save/progress.js';
 import { store } from '../save/store.js';
 import { start } from '../sim/game.js';
 import { S } from '../sim/state.js';
+import { packGhost, saveFriendGhost } from '../sim/ghostshare.js';
 import { createRoom, cleanCode, makeCode } from './room.js';
 import { createRemote } from './remote.js';
 import { createBoard } from './board.js';
@@ -52,6 +53,20 @@ export const useRoomFactory = f => { roomFactory = f; };
 
 const myName = () => { try { return createBoard({ fetch: () => Promise.reject(), url: URL, key: KEY, store }).playerName(); } catch (e) { return 'Racer'; } };
 const others = () => roster.filter(p => p.id !== myId);
+
+/* ---- ghosts: friends in a room swap their best runs for the stage, and keep them on their own phone (nothing goes to a server) ---- */
+function sendMyGhosts(level) {
+  const L = LEVELS[level]; if (!L || !room) return;
+  for (const kind of ['classic', 'race']) {
+    let pts = null; try { pts = JSON.parse(store.get((kind === 'race' ? 'excuseme_ghost_race_' : 'excuseme_ghost_') + L.id, 'null')); } catch (e) {}
+    const g = packGhost(pts); if (g) room.send('ghost', { id: myId, kind, level, ghost: g });
+  }
+}
+function receiveGhost(from, data) {
+  const p = from && roster.find(r => r.id === from);   // only people in this room; their name comes from the room list
+  if (!p || !LEVELS[data.level] || (data.kind !== 'classic' && data.kind !== 'race')) return;
+  saveFriendGhost(store, data.kind, LEVELS[data.level].id, p.name, data.ghost);
+}
 
 /* ---- one race at a time ---- */
 export function startDuel({ seed, level, friends, friend, send }) {
@@ -137,7 +152,8 @@ function onMessage(ev, data) {
     if (role !== 'guest' || from !== hostId || !inRoster || (raced && !wantMe)) return;
     if (typeof data.seed !== 'string' || !Number.isInteger(data.level) || !LEVELS[data.level]) return;
     beginRace(data.level, data.seed.slice(0, 40));
-  } else duelReceive(ev, data);
+  } else if (ev === 'ghost') receiveGhost(from, data);
+  else duelReceive(ev, data);
 }
 export const injectRoomMessage = onMessage;
 
@@ -145,6 +161,7 @@ function beginRace(level, seed) {
   wantMe = false; wants.clear(); raced = true;
   const id = myId;
   startDuel({ seed, level, friends: others(), send: (ev, d) => { if (room) room.send(ev, { id, ...d }); } });
+  sendMyGhosts(level);
   changed();
 }
 

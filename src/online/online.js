@@ -2,6 +2,7 @@
 import { $ } from '../dom.js';
 import { store } from '../save/store.js';
 import { account } from '../save/level.js';
+import { packGhost } from '../sim/ghostshare.js';
 import { createBoard } from './board.js';
 
 const URL = 'https://hrsbzntphratlnkrevet.supabase.co';
@@ -22,9 +23,11 @@ export function submitRun(mode, key, score) {
 }
 
 // After a new classic best: keep your best score per stage on the server.
-export function submitBestRun(stageId, score) {
+// If that puts you in the top 3, your ghost goes up too (the server only keeps ghosts of the top 3).
+export function submitBestRun(stageId, score, path) {
   if (!net) return;
-  sending = net.submitBest(boardId('classic', stageId), score).catch(() => {});
+  const board = boardId('classic', stageId);
+  sending = net.submitBest(board, score).catch(() => {}).then(() => { const g = packGhost(path); return g ? net.submitGhost(board, score, g) : null; }).catch(() => {});
 }
 
 // On the results screen: once the score is sent, show the top of that board.
@@ -47,3 +50,6 @@ export async function showTop(id) {
 export async function loadBoard(id, limit) { return net ? net.top(id, limit || 20) : []; }
 
 export const myName = () => (net ? net.playerName() : 'Player');
+
+// Top-3 ghosts: stored on the server only for the three best players of a classic stage. Fails quietly if the server part is not set up.
+export async function fetchTopGhosts(stageId) { return net ? net.topGhosts(boardId('classic', stageId)) : []; }

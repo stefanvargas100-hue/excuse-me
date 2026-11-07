@@ -61,3 +61,64 @@ test('a race against bots has a ghost, a daily run has none', () => {
   E.start('daily');
   assert.strictEqual(E.S.ghost, null);
 });
+
+// ---- friends' ghosts and the top 3 ----
+const flat = (end, step = 2) => { const pts = []; for (let z = 0; z <= end; z += 3 * step) pts.push(0, z); return { step, pts }; };
+const friendList = (...fs) => JSON.stringify(fs.map((f, i) => ({ name: f.name, step: f.g.step, pts: f.g.pts, t: 100 + i })));
+
+test('friends\' ghosts join your own, each hidden until you are close to its record', () => {
+  const E = load(); E.setLevel(0);
+  E.storage['excuseme_fg_classic_airport'] = friendList({ name: 'Zippy Pigeon 42', g: flat(200) }, { name: 'Jolly Courier 17', g: flat(400) });
+  plant(E, 'excuseme_ghost_airport', 300);
+  E.start('classic');
+  assert.strictEqual(E.S.otherGhosts.length, 2);
+  assert.strictEqual(JSON.stringify(E.S.otherGhosts.map(g => g.name).sort()), JSON.stringify(['Jolly Courier 17', 'Zippy Pigeon 42']));
+  assert.ok(E.S.otherGhosts.every(g => g.hidden), 'hidden at the start');
+  E.S.pz = 150; for (let i = 0; i < 3; i++) { clear(E); E.tick(DT); }
+  const vis = E.visibleGhosts().map(g => g.name);
+  assert.ok(vis.includes('Zippy Pigeon 42') && !vis.includes('Jolly Courier 17') && !vis.includes('Your best'), 'only the friend whose record is near: ' + vis);
+  E.render();
+});
+
+test('friends\' race ghosts show in races against bots only, and a daily run has none', () => {
+  const E = load(); E.setLevel(0);
+  E.storage['excuseme_fg_race_airport'] = friendList({ name: 'Racer Ann', g: flat(500) });
+  E.storage['excuseme_fg_classic_airport'] = friendList({ name: 'Classic Bob', g: flat(500) });
+  E.start('race');
+  assert.strictEqual(JSON.stringify(E.S.otherGhosts.map(g => g.name)), JSON.stringify(['Racer Ann']));
+  E.start('daily');
+  assert.strictEqual(E.S.otherGhosts.length, 0);
+  E.start('classic');
+  assert.strictEqual(JSON.stringify(E.S.otherGhosts.map(g => g.name)), JSON.stringify(['Classic Bob']));
+});
+
+test('the top 3 of a classic stage arrive as ghosts after the run starts, never your own row, and not into a different run', async () => {
+  const E = load(); E.setLevel(0);
+  const rows = [{ name: 'Leader One', rank: 1, you: false, ...flat(900) }, { name: 'Me', rank: 2, you: true, ...flat(800) }, { name: 'Leader Three', rank: 3, you: false, ...flat(700) }];
+  let asked = null;
+  E.setTopGhostFetcher(async id => { asked = id; return rows; });
+  E.start('classic');
+  assert.strictEqual(E.S.otherGhosts.length, 0, 'not there yet: it is fetched in the background');
+  await new Promise(r => setTimeout(r, 5));
+  assert.strictEqual(asked, 'airport');
+  assert.strictEqual(JSON.stringify(E.S.otherGhosts.map(g => g.name)), JSON.stringify(['Leader One', 'Leader Three']), 'your own row is skipped');
+  assert.ok(E.S.otherGhosts.every(g => g.hidden));
+  // a slow answer for a run that has already ended is dropped: only the latest run gets the leaders
+  const releases = []; E.setTopGhostFetcher(() => new Promise(r => { releases.push(() => r(rows)); }));
+  E.start('classic'); await new Promise(r => setTimeout(r, 2));
+  const first = E.S; E.start('classic'); await new Promise(r => setTimeout(r, 2));
+  releases.forEach(r => r()); await new Promise(r => setTimeout(r, 5));
+  assert.strictEqual(first.otherGhosts.length, 0, 'the run that already ended got nothing');
+  assert.strictEqual(E.S.otherGhosts.length, 2, 'the current run got the leaders once');
+});
+
+test('the top 3 are only fetched for classic runs, and a failed fetch is harmless', async () => {
+  const E = load(); E.setLevel(0);
+  let n = 0; E.setTopGhostFetcher(async () => { n++; throw new Error('offline'); });
+  E.start('race'); E.start('daily'); await new Promise(r => setTimeout(r, 5));
+  assert.strictEqual(n, 0, 'not for races or daily runs');
+  E.start('classic'); await new Promise(r => setTimeout(r, 5));
+  assert.strictEqual(n, 1);
+  assert.strictEqual(E.S.otherGhosts.length, 0);
+  for (let i = 0; i < 10; i++) E.tick(DT);
+});
