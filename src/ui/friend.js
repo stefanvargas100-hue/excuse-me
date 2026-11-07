@@ -22,7 +22,7 @@ function showRoster(players) {
     ul.textContent = '';
     for (let i = 0; i < MAX_PLAYERS; i++) {
       const p = players[i], li = document.createElement('li');
-      if (p) { li.textContent = (p.host ? '★ ' : '') + p.name + (p.me ? ' (you)' : ''); if (p.me) li.className = 'me'; } else { li.textContent = 'waiting...'; li.className = 'empty'; }
+      if (p) { li.textContent = (p.host ? '★ ' : '') + p.name + (p.me ? ' (you)' : '') + (p.status === 'reconnecting' ? ' · reconnecting' : ''); if (p.me) li.className = 'me'; } else { li.textContent = 'waiting...'; li.className = 'empty'; }
       ul.appendChild(li);
     }
   });
@@ -50,7 +50,7 @@ export function initFriend() {
     c.addEventListener('click', () => { stage = i; setRoomLevel(i); st().forEach((o, j) => o.setAttribute('aria-pressed', String(j === i))); });
     stBox.appendChild(c);
   });
-  duelUi.status = t => { $('friendStatus').textContent = t; };
+  duelUi.status = (t, live) => { $('friendStatus').textContent = t; $('liveStatus').textContent = t; $('liveStatus').hidden = !live || !t; };
   duelUi.roster = players => {
     if (players.length) showRoster(players);
     else if (!$('friendGuest').hidden) { view('friendHome'); $('friendStart').disabled = true; }   // the host closed the room on us

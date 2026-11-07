@@ -87,6 +87,35 @@ test('heartbeat messages keep the connection alive', async () => {
   assert.ok(ws.sent.some(m => m.topic === 'phoenix' && m.event === 'heartbeat'));
 });
 
+test('callbacks from a left socket cannot deliver messages or close its replacement', async () => {
+  const room = mk(), got = []; let closes = 0;
+  room.onMessage((...args) => got.push(args)); room.onClose(() => closes++);
+  const join = async () => {
+    const p = room.join('ABCD'), s = FakeSocket.last; s.open();
+    const j = s.sent.find(m => m.event === 'phx_join');
+    s.serve({ topic: j.topic, event: 'phx_reply', ref: j.ref, payload: { status: 'ok' } });
+    await p; return s;
+  };
+  const old = await join(); room.leave(); await join(); const before = closes;
+  old.serve({ topic: 'realtime:excuseme-ABCD', event: 'broadcast', payload: { event: 'fin', payload: { ft: 1 } } });
+  old.onclose();
+  assert.strictEqual(got.length, 0);
+  assert.strictEqual(closes, before);
+  assert.strictEqual(room.joined, true);
+});
+
+test('a half-open socket is closed when heartbeat replies stop', async () => {
+  const timers = []; let closes = 0;
+  const room = mk({ setInterval: f => { timers.push(f); return 1; } });
+  room.onClose(() => closes++);
+  const p = room.join('ABCD'), s = FakeSocket.last; s.open();
+  const j = s.sent.find(m => m.event === 'phx_join');
+  s.serve({ topic: j.topic, event: 'phx_reply', ref: j.ref, payload: { status: 'ok' } }); await p;
+  timers[0](); timers[0]();
+  assert.strictEqual(closes, 1);
+  assert.strictEqual(s.closed, true);
+});
+
 /* ---------- the friend's position ---------- */
 test('remote: moves smoothly toward the latest report and keeps walking between reports', () => {
   const r = createRemote();

@@ -37,6 +37,7 @@ body {
   display: flex; flex-direction: column; gap: 8px;
 }
 #hud[hidden] { display: none; }
+.livestatus { position: fixed; top: env(safe-area-inset-top, 0px); left: 12px; right: 12px; z-index: 30; margin: 4px 0; padding: 5px 10px; border-radius: 12px; background: #fff7e9; color: #49344b; font-size: 12px; text-align: center; pointer-events: none; }
 .top { display: flex; justify-content: space-between; align-items: flex-start; }
 .score { background: var(--paper); border: var(--line); border-radius: var(--wob); padding: 4px 14px 6px; box-shadow: 3px 4px 0 var(--ink); transform: rotate(-1deg); }
 .score small { display: block; font-family: var(--display); font-size: 12px; letter-spacing: .06em; color: var(--btn); }
