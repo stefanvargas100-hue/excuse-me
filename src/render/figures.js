@@ -136,7 +136,7 @@ function drawFace(p, hx, hy, r, side) {
 // Body shapes, as fractions of the half-width of an average torso: shoulders, chest, waist, hips; plus limb thickness, neck, head size, hip joint spacing, sway.
 const PROFILE = {
   m: { sh: 1.12, ch: 1.12, wa: 0.9, hip: 0.8, limb: 1.04, neck: 0.1, head: 1.02, hipJ: 0.095, hipSway: 0.03, shSway: 0.1, neckUp: 0, kneeIn: 1, ankIn: 1 },
-  f: { sh: 0.7, ch: 0.76, wa: 0.5, hip: 0.84, limb: 0.86, neck: 0.056, head: 0.95, hipJ: 0.105, hipSway: 0.11, shSway: 0.04, neckUp: 0.05, kneeIn: 0.8, ankIn: 0.68 }
+  f: { sh: 0.7, ch: 0.76, wa: 0.5, hip: 0.9, limb: 0.86, neck: 0.056, head: 0.95, hipJ: 0.105, hipSway: 0.11, shSway: 0.04, neckUp: 0.05, kneeIn: 0.8, ankIn: 0.68 }
 };
 
 function drawNear(p, s) {
@@ -280,10 +280,16 @@ function drawNear(p, s) {
         ctx.strokeStyle = longSleeve ? sleeveD : p.skinD; ctx.lineWidth = Math.max(1, 0.016 * sk); ctx.lineCap = 'round';
         ctx.beginPath(); ctx.moveTo(e2[0] - anx * aw, e2[1] - any * aw); ctx.lineTo(e2[0] + anx * aw * 0.3, e2[1] + any * aw * 0.3); ctx.stroke();
       }
-      const hr = 0.05 * sk;
-      if (hr > 2.5) { ctx.fillStyle = LINE; ctx.beginPath(); ctx.arc(h2[0], h2[1], hr + Math.max(1, hr * 0.28), 0, TAU); ctx.fill(); }
-      ctx.fillStyle = p.skin; ctx.beginPath(); ctx.arc(h2[0], h2[1], hr, 0, TAU); ctx.fill();
-      if (hr > 3.5) { ctx.fillStyle = p.skinD; ctx.beginPath(); ctx.arc(h2[0] + side * -hr * 0.55, h2[1] + hr * 0.3, hr * 0.42, 0, TAU); ctx.fill(); }
+      const hr = 0.041 * sk;
+      {   // a hand: a rounded palm with a thumb on the inner side, pointing along the forearm
+        const hx2 = h2[0] - e2[0], hy2 = h2[1] - e2[1], hd2 = Math.hypot(hx2, hy2) || 1, hux = hx2 / hd2, huy = hy2 / hd2, th = Math.atan2(huy, hux) - Math.PI / 2;
+        const tx = h2[0] + hux * hr * 0.5 - huy * side * -hr * 0.85, ty2 = h2[1] + huy * hr * 0.5 + hux * side * -hr * 0.85;
+        if (hr > 2.5) { const o = Math.max(1, hr * 0.3); ctx.fillStyle = LINE; ctx.beginPath(); ctx.ellipse(h2[0] + hux * hr * 0.25, h2[1] + huy * hr * 0.25, hr * 0.92 + o, hr * 1.12 + o, th, 0, TAU); ctx.fill(); ctx.beginPath(); ctx.ellipse(tx, ty2, hr * 0.38 + o, hr * 0.62 + o, th + side * 0.5, 0, TAU); ctx.fill(); }
+        ctx.fillStyle = p.skin; ctx.beginPath(); ctx.ellipse(h2[0] + hux * hr * 0.25, h2[1] + huy * hr * 0.25, hr * 0.92, hr * 1.12, th, 0, TAU); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(tx, ty2, hr * 0.38, hr * 0.62, th + side * 0.5, 0, TAU); ctx.fill();
+        if (hr > 3.5) { ctx.strokeStyle = p.skinD; ctx.lineWidth = Math.max(1, hr * 0.14); ctx.beginPath(); ctx.moveTo(h2[0] - huy * hr * 0.5 + hux * hr * 0.55, h2[1] + hux * hr * 0.5 + huy * hr * 0.55); ctx.lineTo(h2[0] + huy * hr * 0.5 + hux * hr * 0.55, h2[1] - hux * hr * 0.5 + huy * hr * 0.55); ctx.stroke(); }
+        if (longSleeve && hr > 2.5) { const cw = 0.047 * sk * lb * armW, cx = e2[0] + hx2 * 0.8, cy = e2[1] + hy2 * 0.8; ctx.strokeStyle = sleeveD; ctx.lineWidth = Math.max(1.2, 0.03 * sk); ctx.beginPath(); ctx.moveTo(cx - huy * cw, cy + hux * cw); ctx.lineTo(cx + huy * cw, cy - hux * cw); ctx.stroke(); }
+      }
       if ((p.phone || p.aim) && side > 0) {
         ctx.fillStyle = '#111827'; ctx.fillRect(h2[0] - 0.04 * sk, h2[1] - 0.09 * sk, 0.08 * sk, 0.13 * sk);
         ctx.fillStyle = '#8ecbff'; ctx.fillRect(h2[0] - 0.03 * sk, h2[1] - 0.08 * sk, 0.06 * sk, 0.1 * sk);
@@ -367,6 +373,16 @@ function drawNear(p, s) {
     if (p.pantsType === 'pencil') skirtOf(0.5, tw, 0.84, p.pants, p.pantsD);
     if (ty === 'dress') skirtOf(0.5, tw, 1.45, p.shirt, p.shirtD);
     ctx.restore();
+    if (facing < -0.2 && hwC > 4) {   // collars, lapels and pockets, seen from the front
+      const pc = mix(chest, waist, 0.72);
+      if (ty === 'hoodie') { ctx.fillStyle = 'rgba(20,10,40,0.16)'; ctx.strokeStyle = p.shirtD; ctx.lineWidth = Math.max(1, hwC * 0.06); rrect(pc[0] - hwC * 0.55, pc[1] - hwC * 0.12, hwC * 1.1, hwC * 0.42, hwC * 0.1); ctx.fill(); ctx.stroke(); }
+      if (['jacket', 'wind', 'varsity', 'suit', 'power', 'velour'].includes(ty)) {
+        ctx.strokeStyle = p.shirtD; ctx.lineWidth = Math.max(1, hwC * 0.06); ctx.lineCap = 'round';
+        for (const sd of [-1, 1]) { ctx.beginPath(); ctx.moveTo(pc[0] + sd * hwC * 0.42, pc[1] - hwC * 0.08); ctx.lineTo(pc[0] + sd * hwC * 0.72, pc[1] + hwC * 0.1); ctx.stroke(); }
+        ctx.fillStyle = ty === 'varsity' || ty === 'jacket' || ty === 'wind' ? p.shirtD : p.shirtL;
+        for (const sd of [-1, 1]) { ctx.beginPath(); ctx.moveTo(neck[0] + sd * nkW * 0.9, neck[1] - hwC * 0.02); ctx.lineTo(neck[0] + sd * nkW * 1.55, neck[1] + hwC * 0.28); ctx.lineTo(neck[0] + sd * nkW * 0.25, neck[1] + hwC * 0.4); ctx.closePath(); ctx.fill(); }
+      }
+    }
     if (ty === 'hoodie') { ctx.fillStyle = p.shirtD; ctx.beginPath(); ctx.ellipse(neck[0], neck[1] + hwC * 0.12, hwC * 0.62, hwC * 0.38, 0, 0, TAU); ctx.fill(); }
     if (ty === 'jacket') { ctx.strokeStyle = '#ffffff'; ctx.lineWidth = Math.max(1, hwC * 0.09); ctx.beginPath(); ctx.moveTo(neck[0], neck[1]); ctx.lineTo(waist[0], waist[1]); ctx.stroke(); }
     ctx.restore();
@@ -395,7 +411,7 @@ function drawNear(p, s) {
     } });
   }
   const pitch = p.phone ? 0.06 : 0;
-  const nu = P.neckUp, head = L(0, 0.02 + pitch, 1.63 + nu - pitch * 0.6 + 0.012 * Math.cos(ph * 2) * walk), neckTop = L(0, 0, 1.54 + nu), brimP = L(0, 0.22 + pitch, 1.69 + nu - pitch * 0.6);
+  const nu = P.neckUp, head = L(-0.012 * Math.sin(ph) * walk * across, 0.02 + pitch, 1.63 + nu - pitch * 0.6 + 0.02 * Math.cos(ph * 2) * walk), neckTop = L(0, 0, 1.54 + nu), brimP = L(0, 0.22 + pitch, 1.69 + nu - pitch * 0.6);
   const out = {};
   const hl = p.hairStyle === 'long' ? 1 : p.hairStyle === 'medium' ? 0.55 : 0;   // how far the hair hangs: 0 short, 0.55 shoulder length, 1 long
   if (hl && !p.bald && facing < -0.2) {   // long hair seen from the front hangs behind the shoulders, not over the chest and neck
@@ -445,6 +461,15 @@ function drawNear(p, s) {
     if (!p.bald && facing <= 0.35 && p.hat === 'none') {
       ctx.strokeStyle = p.hairL; ctx.lineWidth = Math.max(1, r * 0.12); ctx.lineCap = 'round';
       ctx.beginPath(); ctx.arc(hx, hy - r * 0.08, r * 0.78, 1.15 * Math.PI, 1.45 * Math.PI); ctx.stroke();
+    }
+    if (!p.bald && (p.hairStyle === 'bun' || p.hairStyle === 'pony' || p.hairStyle === 'curly' || p.hairStyle === 'braid')) {
+      const hs = p.hairStyle, bk = -sideDir, sideOn = Math.abs(facing) <= 0.35, sway = Math.sin(ph) * walk * r * 0.28;
+      ctx.fillStyle = p.hair; ctx.strokeStyle = LINE; ctx.lineWidth = Math.max(1, r * 0.1);
+      const blob = (x, y, rx, ry, rot) => { ctx.beginPath(); ctx.ellipse(x, y, rx, ry, rot, 0, TAU); ctx.fill(); if (r > 4) ctx.stroke(); };
+      if (hs === 'bun') blob(sideOn ? hx + bk * r * 0.5 : hx, hy - r * 1.05, r * 0.42, r * 0.38, 0);
+      else if (hs === 'pony') { if (facing > 0.35) blob(hx + sway, hy + r * 0.8, r * 0.3, r * 0.85, sway / r * 0.5); else if (sideOn) blob(hx + bk * (r * 1.12 + Math.abs(sway) * 0.2), hy + r * 0.4, r * 0.3, r * 0.82, -bk * 0.45 + bk * sway / r * 0.4); else blob(hx, hy - r * 0.98, r * 0.3, r * 0.2, 0); }
+      else if (hs === 'braid') { if (facing > 0.35 || sideOn) for (let i = 0; i < 4; i++) blob((sideOn ? hx + bk * r * 0.98 : hx) + sway * (i / 3), hy + r * (0.85 + 0.5 * i), r * 0.27, r * 0.3, 0); }
+      else { ctx.lineWidth = Math.max(1, r * 0.07); for (let i = 0; i < 9; i++) { const a = Math.PI * (0.95 + i * 0.138); blob(hx + Math.cos(a) * r * 0.98, hy - r * 0.08 + Math.sin(a) * r * 0.98, r * 0.3, r * 0.3, 0); } }
     }
     if (p.hairStyle === 'mohawk' && (p.hat === 'none' || p.hat === 'headphones')) {
       ctx.fillStyle = p.hair;
