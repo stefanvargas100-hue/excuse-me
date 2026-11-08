@@ -1,7 +1,7 @@
 import { leaveRoom } from '../online/duel.js';
 import { comboLevel } from '../config/combo.js';
 import { Music } from '../audio/music.js';
-import { LEVELS, LV, LVI, SPAWN_FAR, setLevel } from '../config/levels.js';
+import { LEVELS, LV, LVI, SPAWN_FAR, halfAt, setLevel } from '../config/levels.js';
 import { STRIP_SPEED, beltAt, beltFor, contain, onStrip, stripLane } from '../config/strips.js';
 import { BASE, BOOST, CHAIN_WINDOW, LAT_ACC, LAT_MAX, REGEN } from '../config/tuning.js';
 import { R, clamp, hashStr, mulberry32, pick, rnd, setR, todayKey, weekKey } from '../config/util.js';
@@ -72,7 +72,7 @@ function movePlayer(dt) {
   const px0 = S.px;
   S.px += S.vx * dt;
   if (S.race) { const cx = contain(LV.id, px0, S.px, S.pz); if (cx !== S.px) { S.px = cx; S.vx = 0; } }   // glass railings on the airport walkway
-  const lim = LV.half - 0.5;
+  const lim = halfAt(S.pz + S.speed * dt) - 0.5;
   if (Math.abs(S.px) > lim) { S.px = clamp(S.px, -lim, lim); S.vx = 0; }
   S.pz += S.speed * dt;
   // moving walkway (airport races): the belt carries you along, or back
@@ -158,8 +158,7 @@ export function tick(dt) {
       S.chain = 0; S.snake = 0; S.oncRun = 0; S.multPrev = 1;
     }
     S.heat = Math.max(0, S.heat - dt * 0.16);
-    const mult = comboLevel(S.chain);
-    Music.target(clamp(0.15 + (mult - 1) * 0.12 + S.heat + (S.timeLeft < 15 ? 0.3 : 0), 0, 1));
+    Music.gameplay(S, LV.goal);
     if (S.pz >= goalOf()) { if (S.race) winRace(); else win(); }
   } else if (state === 'ready') {
     updPeople(dt);
@@ -391,8 +390,9 @@ export let lastDaily = false, lastMode = 'classic';
 export const playedKey = mode => store.get('excuseme_played_' + mode, '');
 export const periodKey = mode => (mode === 'weekly' ? weekKey() : todayKey());
 export const hasPlayed = mode => playedKey(mode) === periodKey(mode);
-export const dailyLevel = () => hashStr(todayKey() + ':level') % LEVELS.length;
-export const weeklyLevel = () => hashStr(weekKey() + ':wlevel') % LEVELS.length;
+// Keep published periods stable when the fifth stage ships. New periods use the expanded pool.
+export const dailyLevel = (key = todayKey()) => hashStr(key + ':level') % (key < '2026-11-09' ? Math.min(4, LEVELS.length) : LEVELS.length);
+export const weeklyLevel = (key = weekKey()) => hashStr(key + ':wlevel') % (key < '2026-W46' ? Math.min(4, LEVELS.length) : LEVELS.length);
 export function startDaily() { if (hasPlayed('daily')) return; setLevel(dailyLevel()); start('daily'); }
 export function startWeekly() { if (hasPlayed('weekly')) return; setLevel(weeklyLevel()); start('weekly'); }
 

@@ -1,7 +1,7 @@
 import { COMBO_SPEED_PER, comboLevel } from '../config/combo.js';
 export { comboLevel } from '../config/combo.js';
 import { Music } from '../audio/music.js';
-import { LV } from '../config/levels.js';
+import { LV, halfAt } from '../config/levels.js';
 import { BASE, BOOST, CHAIN_WINDOW, LAT_ACC, LAT_MAX, REGEN, R_PLAYER } from '../config/tuning.js';
 import { clamp, mulberry32 } from '../config/util.js';
 import { REACT } from '../config/colour.js';
@@ -201,7 +201,7 @@ export function rearZ() { let z = S.pz; if (S.race) for (const b of S.race.bots)
 // Pushes a runner out of anyone they overlap and cancels the part of their movement that went into that person.
 // Returns the first person touched, or null.
 function resolve(t) {
-  const lim = LV.half - 0.5;
+  const lim = halfAt(t.z) - 0.5;
   let hit = null;
   for (let iter = 0; iter < 3; iter++) {
     let moved = false;
@@ -246,7 +246,7 @@ function givesWayTo(b) {
 }
 function resolveRacers(t) {
   if (!S.duel) return;
-  const lim = LV.half - 0.5;
+  const lim = halfAt(t.z) - 0.5;
   for (let iter = 0; iter < 3; iter++) {
     let moved = false;
     for (const b of S.race.bots) {
@@ -331,7 +331,7 @@ function routeAim(b) {
 // Looks well ahead, picks the lane that gets them past slower walkers without clipping anyone, drifts gently
 // from side to side when the road is clear, and dashes or bursts the way a good player does.
 function think(b) {
-  const lim = LV.half - 0.5, look = 6 + b.speed * 2.6, rng = S.race.rng;
+  const look = 6 + b.speed * 2.6, lim = Math.min(halfAt(b.z),halfAt(b.z+look)) - 0.5, rng = S.race.rng;
   const wander = Math.sin(S.clock * 0.7 + b.seed) * lim * 0.45;
   let bestX = b.x, bestC = Infinity, danger = 99;
   const aim = routeAim(b), aimW = aim ? (aim.dz < 8 ? 2.5 : 0.35) : 0;
@@ -392,7 +392,7 @@ export function botExcuseMe(b) {
 const inWay = b => S.people.some(p => !p.prop && !p.dead && !p.rival && !(p.aside > 0) && p.z - b.z > 0.4 && p.z - b.z < 4.5 && Math.abs(p.x - b.x) < 0.8 && !glassBetween(LV.id, b.x, b.z, p.x, p.z));
 
 function stepBot(b, dt) {
-  const R = S.race, lim = LV.half - 0.5;
+  const R = S.race, lim = halfAt(b.z + b.speed * dt) - 0.5;
   b.thinkT -= dt;
   if (b.thinkT <= 0) { think(b); b.thinkT = 0.1 + R.rng() * 0.18; }   // people do not react instantly
   b.nearT = Math.max(0, b.nearT - dt); b.bumpT = Math.max(0, b.bumpT - dt); b.ghostT = Math.max(0, b.ghostT - dt); b.cool = Math.max(0, b.cool - dt);
@@ -436,6 +436,7 @@ function stepBot(b, dt) {
       if (b.blockT > STUCK_T) { b.ghostT = STUCK_GHOST; b.blockT = 0; }
     } else b.blockT = Math.max(0, b.blockT - dt * 2);
   }
+  if (LV.id === 'park' || LV.id === 'bridge') b.x = clamp(b.x, -halfAt(b.z) + 0.5, halfAt(b.z) - 0.5);
   b.vz = b.speed;
   collectPowerups(b, b.x, b.z, bz0, false);
   // passing people builds the bot's combo, like yours

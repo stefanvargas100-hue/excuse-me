@@ -19,7 +19,17 @@ export const LEVELS = [
     lane: 0.1, fastEvery: [4, 7], rivalEvery: [7, 12], base: 1,
     starScore: 14000, timerLabel: 'Meeting in', timeFail: 'You were late for the meeting.', events: ['tour', 'selfie', 'parade', 'queue', 'weave', 'taxi'],
     blurb: 'Night scramble. Crowds pour in from every side when the lights change. Tokyo keeps left.',
-    music: { bpm: 158, prog: [[66, 69, 73], [62, 66, 69], [57, 61, 64], [64, 68, 71]] } }
+    music: { bpm: 158, prog: [[66, 69, 73], [62, 66, 69], [57, 61, 64], [64, 68, 71]] } },
+  { id: 'park', city: 'New York', name: 'Central Park', goal: 540, goalText: 'BETHESDA TERRACE', half: 6, keep: 1, fog: '#c9dec9',
+    lane: 0.08, fastEvery: [3, 5], rivalEvery: [10, 16], base: 1,
+    starScore: 16000, timerLabel: 'Concert starts', timeFail: 'The concert started without you.', events: ['tour', 'performer', 'weave', 'parade', 'carriage'],
+    blurb: 'Under the elms: joggers, dog walkers and park benches. Race to Bethesda Terrace.',
+    music: { bpm: 138, prog: [[60, 64, 67], [57, 60, 64], [53, 57, 60], [55, 59, 62]] } },
+  { id: 'bridge', city: 'New York', name: 'Brooklyn Bridge', goal: 600, goalText: 'MANHATTAN', half: 5, keep: 1, fog: '#c4d4dd',
+    lane: 0.08, fastEvery: [4,6], rivalEvery: [12,18], base: 1, starScore: 17000,
+    timerLabel: 'Meet-up starts', timeFail: 'Your friends left without you.', events: ['tour','weave','parade'],
+    blurb: 'Wooden promenade, river views, stone towers and tourists stopping for photos.',
+    music: { bpm: 140, prog: [[60,64,67],[57,60,64],[53,57,60],[55,59,62]] } }
 ];
 
 for (const L of LEVELS) L.limit = Math.round(L.goal / 3.0 * 1.07 + 6);
@@ -27,6 +37,16 @@ for (const L of LEVELS) L.limit = Math.round(L.goal / 3.0 * 1.07 + 6);
 export let LVI = 0, LV = LEVELS[0], FOGc = hex(LV.fog), FOGCSS = LV.fog;
 
 export function setLevel(i) { LVI = i; LV = LEVELS[i]; FOGc = hex(LV.fog); FOGCSS = LV.fog; }
+
+// The bridge approaches taper over eight metres, keeping the same boundaries in drawing and movement.
+export function halfAt(z) {
+  if (LV.id === 'bridge') {
+    for (const start of [190,410]) if(z>=start-12 && z<=start+22) return 3.1+1.9*clamp(Math.max(start-z,z-(start+10))/12,0,1);
+    return LV.half;
+  }
+  if (LV.id !== 'park' || z < 232 || z > 284) return LV.half;
+  return 3.4 + 2.6 * clamp(Math.max(240 - z, z - 276) / 8, 0, 1);
+}
 
 export function mixc(c, d) {
   const t = Math.min(1, Math.pow(Math.max(0, d) / 78, 0.9));

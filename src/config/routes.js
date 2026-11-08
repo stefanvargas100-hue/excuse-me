@@ -11,6 +11,8 @@ export const ROUTE_RULES = 1;
 // half: the barrier runs this far each side (walls are 0.5 inside the stage half-width). directW/detourW: opening widths.
 // detourX: where the detour opening is centred. skin: how the barrier is drawn.
 const STAGES = {
+  bridge: { half: 4.6, directW: 1.1, detourW: 2.0, detourX: 3.0, skin: 'fence',
+    zones: [{ z: 120, side: 1 }, { z: 310, side: -1 }] },
   airport: { half: 6.6, directW: 1.0, detourW: 3.0, detourX: 3.9, skin: 'rope',
     // between the moving-walkway stretches (30-76, 130-176, 230-276 ...), so the glass never meets a barrier
     zones: [{ z: 104, side: 1 }, { z: 304, side: -1 }, { z: 404, side: 1 }] },

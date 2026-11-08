@@ -80,13 +80,21 @@ function openChallenge() {
   $('chRules').textContent = 'Solo, no bots or power-ups, same outfit and crowd for everyone. Best time counts; retry freely. Your own outfit is untouched.';
   go('challenge');
 }
+let stageNodes = [];
+function layoutStages() {
+  if (!stageNodes.length) return;
+  pageInto($('levels'), stageNodes, $('stagePager'));
+  relayoutWith(layoutStages);
+}
 function buildStages() {
-  const box = $('levels'); box.innerHTML = '';
+  const box = $('levels'); box.innerHTML = ''; stageNodes = [];
+  $('stagePager').hidden = false;
   const race = stageMode === 'race';
   if (race && raceFormat() === 'weekly') {
     const c = challengeFor(utcWeekKey()), L = LEVELS[c.level], best = challengeBest(c), x = menuCard('lvl daily');
     x.children[0].textContent = 'Weekly challenge · ' + c.week; x.children[1].textContent = L.name; x.children[2].textContent = timeLeft(challengeRemainingMs());
     x.children[3].textContent = best ? 'Your best ' + fmtTime(best) + '. Same course and outfit for everyone.' : 'Same course and a supplied outfit for everyone. Best time counts.';
+    $('stagePager').hidden = true;
     x.style.maxHeight = '150px'; x.addEventListener('click', openChallenge); box.appendChild(x); return;
   }
   LEVELS.forEach((L, i) => {
@@ -97,15 +105,16 @@ function buildStages() {
     x.children[2].textContent = race ? L.goal + ' m' + (rb ? ' · ' + fmtTime(rb) : '') : best ? 'Best ' + fmt(best) : 'Endless';
     x.children[3].textContent = L.blurb;
     x.addEventListener('click', () => { setLevel(i); start(stageMode, undefined, stageMode === 'race' && raceFormat() === 'elim' ? { run: { category: 'elimination' }, elim: true } : undefined); });
-    box.appendChild(x);
+    box.appendChild(x); stageNodes.push(x);
   });
+  if (!$('stages').hidden) layoutStages();
 }
 
 function openStages(mode) {
   stageMode = mode;
   $('stagesTitle').textContent = mode === 'race' ? 'Race vs bots' : 'Classic';
   $('raceOpts').hidden = mode !== 'race'; $('raceFormat').hidden = mode !== 'race';
-  syncFormat(); syncBots(); buildStages(); go('stages');
+  syncFormat(); syncBots(); buildStages(); go('stages'); layoutStages();
 }
 
 const FORMATS = ['race', 'elim', 'weekly'];
