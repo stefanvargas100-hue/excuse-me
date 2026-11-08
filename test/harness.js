@@ -27,8 +27,11 @@ function load(sourceFile, opts) {
   function element(id) {
     if (!elements.has(id)) {
       const values = { hidden: id !== 'start', disabled: false, textContent: '' }, events = new Map();
-      values.addEventListener = (type, fn) => { if (!events.has(type)) events.set(type, []); events.get(type).push(fn); };
-      values.click = async () => { if (!values.disabled) for (const fn of events.get('click') || []) await fn({ preventDefault() {} }); };
+      values.addEventListener = (type, fn, options) => { if (!events.has(type)) events.set(type, []); events.get(type).push({ fn, options }); };
+      values.dispatchEvent = ev => { for (const { fn, options } of events.get(ev.type) || []) { ev.passive = options?.passive === true; fn(ev); } return !ev.defaultPrevented; };
+      values.focus = () => { sandbox.document.activeElement = element(id); };
+      values.blur = () => { if (sandbox.document.activeElement === element(id)) sandbox.document.activeElement = sandbox.document.body; };
+      values.click = async () => { if (!values.disabled) for (const { fn } of events.get('click') || []) await fn({ preventDefault() {} }); };
       elements.set(id, new Proxy(stub(), { get: (target, key) => key in values ? values[key] : target[key], set: (_, key, value) => { values[key] = value; return true; } }));
     }
     return elements.get(id);

@@ -75,6 +75,7 @@ export function initFriend() {
   });
   $('friendJoinBtn').addEventListener('click', () => { view('friendJoin'); $('friendStatus').textContent = ''; $('friendInput').focus(); });
   $('friendGo').addEventListener('click', async () => {
+    $('friendInput').blur();   // dismiss the phone keyboard before the lobby replaces this view
     $('friendGo').disabled = true;
     const ok = await joinRoom($('friendInput').value);
     if (!ok) $('friendGo').disabled = false;

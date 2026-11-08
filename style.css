@@ -23,7 +23,7 @@ body {
   font-family: var(--body); font-size: 18px; color: var(--ink);
   -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
 }
-#game { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; background: var(--haze); }
+#game { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; background: var(--haze); }
 
 /* Home-screen app on iPhone (WebKit bug 254868): with viewport-fit=cover, dvh, svh and the reported height leave out the bottom safe area, which shows as a strip. Plain vh includes it. */
 @media (display-mode: standalone), (display-mode: fullscreen) {
