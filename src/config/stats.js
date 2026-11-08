@@ -1,3 +1,4 @@
+import { BASE, BOOST, REGEN } from './tuning.js';
 /* ---------- race stats: your build and the type of gear you wear. Race mode only; colours never matter. ---------- */
 // Every entry is points of [speed, accel, rec]. Each one is a trade-off that adds up to zero, so nothing is simply better.
 const pts = (speed, accel, rec) => ({ speed, accel, rec });
@@ -110,4 +111,11 @@ export function randomLoadout(rand) {
   const out = { build: pick(BUILDS) };
   for (const key in ITEM_STATS) out[key] = pick(ITEM_STATS[key]);
   return out;
+}
+
+// Gear-only race figures: flat ground, full stamina, before combo or temporary boosts.
+export function statDetails(points) {
+  const e = effects(points), mph = 2.2369362921;
+  return { walkMph: BASE * e.speed * mph, burstMph: BOOST * e.speed * mph,
+    accel90: Math.log(10) / e.accel, refillSeconds: 100 / (REGEN * e.regen), bumpSeconds: e.bumpT };
 }

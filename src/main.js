@@ -9,10 +9,10 @@ import { render } from './render/render.js';
 import { shout } from './sim/actions.js';
 import { hasPlayed, pauseGame, quitRun, start, tick, toMenu } from './sim/game.js';
 import { genChunk, mk, runEvent } from './sim/people.js';
-import { draftCharge, draftMul, racePace } from './sim/race.js';
+import { draftCharge, draftMul, racePace, raceCollide } from './sim/race.js';
 import { powerMul } from './sim/powerups.js';
 import { setTopGhostFetcher, visibleGhost, visibleGhosts } from './sim/replay.js';
-import { BODIES, BUILDS, ITEM_STATS, fitOf, effects, statsOf } from './config/stats.js';
+import { BODIES, BUILDS, ITEM_STATS, fitOf, effects, statsOf, statDetails } from './config/stats.js';
 import { LOOK } from './save/progress.js';
 import { rotatingList } from './save/rotating.js';
 import { account, setLevelUpListener } from './save/level.js';
@@ -71,7 +71,7 @@ reset();
 
 buildLevels();
 
-window.__excuse = { podiumOf, drawPodium, setVariant, variantOf, VARIANTS, pickVariant, setTopGhostFetcher, visibleGhosts, visibleGhost, genChunk, touches, onPass, nearMul, roomLevel, setRoomLevel, get LV() { return LV; }, injectRoomMessage, lobbyPlayers, lobbyStatus, draftMul, powerMul, xp: () => account.xp(), account, startDuel, duelReceive, hostRoom, hostStart, joinRoom, leaveRoom, rematchState, requestRematch, useRoomFactory, nextGoal, tallySnapshot, modOf, rotatingList, tick, reset, start, setLevel, get S() { return S; }, get state() { return state; }, keys, action, onTap, render, drawPreview, LEVELS, runEvent, shout, weekKey, hasPlayed, pauseGame, quitRun, toMenu, CHALLENGES, isLocked, tallyOf, track, trackMax, racePace, fitOf, BODIES, BUILDS, ITEM_STATS, effects, statsOf, LOOK, mkPerson: (x, z) => mk(x, z, { hx: 0, hz: 1, v0: 1 }) };
+window.__excuse = { podiumOf, drawPodium, setVariant, variantOf, VARIANTS, pickVariant, hud, statDetails, raceCollide, setTopGhostFetcher, visibleGhosts, visibleGhost, genChunk, touches, onPass, nearMul, roomLevel, setRoomLevel, get LV() { return LV; }, injectRoomMessage, lobbyPlayers, lobbyStatus, draftMul, powerMul, xp: () => account.xp(), account, startDuel, duelReceive, hostRoom, hostStart, joinRoom, leaveRoom, rematchState, requestRematch, useRoomFactory, nextGoal, tallySnapshot, modOf, rotatingList, tick, reset, start, setLevel, get S() { return S; }, get state() { return state; }, keys, action, onTap, render, drawPreview, LEVELS, runEvent, shout, weekKey, hasPlayed, pauseGame, quitRun, toMenu, CHALLENGES, isLocked, tallyOf, track, trackMax, racePace, fitOf, BODIES, BUILDS, ITEM_STATS, effects, statsOf, LOOK, mkPerson: (x, z) => mk(x, z, { hx: 0, hz: 1, v0: 1 }) };
 
 requestAnimationFrame(frame);
 

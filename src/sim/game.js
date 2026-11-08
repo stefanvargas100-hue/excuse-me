@@ -1,3 +1,5 @@
+import { leaveRoom } from '../online/duel.js';
+import { comboLevel } from '../config/combo.js';
 import { Music } from '../audio/music.js';
 import { LEVELS, LV, LVI, SPAWN_FAR, setLevel } from '../config/levels.js';
 import { STRIP_SPEED, beltAt, beltFor, contain, onStrip, stripLane } from '../config/strips.js';
@@ -16,7 +18,7 @@ import { genChunk, runEvent, scramble, seeded, spawnFast, spawnRival, updXings, 
 import { STREAK_SPEED, addPop, nearMul, onPass } from './scoring.js';
 import { S, bestOf, endShown, goalOf, reset, setEndShown, setRaceBuild, setState, state } from './state.js';
 import { startSlot } from './startgrid.js';
-import { BUMP_SPEED, addRemoteRacer, draftMul, finishRace, fmtTime, initRace, leadZ, ordinal, raceBest, raceCollide, raceCountdown, racePace, rearZ, updRace } from './race.js';
+import { BUMP_SPEED, addRemoteRacer, draftMul, finishRace, fmtTime, initRace, leadZ, ordinal, raceBest, raceCollide, raceCountdown, racePace, rearZ, standings, updRace } from './race.js';
 import { updCars } from './traffic.js';
 import { beginTut, tutTick } from './tutorial.js';
 import { powerMul } from './powerups.js';
@@ -79,6 +81,7 @@ function movePlayer(dt) {
 }
 
 export function tick(dt) {
+  if (state === 'paused') return;
   S.clock += dt;
   for (const q of S.pops) q.t += dt;
   if (S.banner) { S.banner.t += dt; if (S.banner.t > 2.4) S.banner = null; }
@@ -147,7 +150,7 @@ export function tick(dt) {
       S.chain = 0; S.snake = 0; S.oncRun = 0; S.multPrev = 1;
     }
     S.heat = Math.max(0, S.heat - dt * 0.16);
-    const mult = Math.min(8, 1 + Math.floor(S.chain / 3));
+    const mult = comboLevel(S.chain);
     Music.target(clamp(0.15 + (mult - 1) * 0.12 + S.heat + (S.timeLeft < 15 ? 0.3 : 0), 0, 1));
     if (S.pz >= goalOf()) { if (S.race) winRace(); else win(); }
   } else if (state === 'ready') {
@@ -260,14 +263,30 @@ function showUnlocks() {
   if (ng) nn.textContent = 'Next unlock: ' + ng.name + ' · ' + fmt(ng.done) + ' of ' + fmt(ng.target) + (ng.gained ? ' (+' + fmt(ng.gained) + ' this run)' : '');
 }
 
+export function refreshDuelResults() {
+  if (!S || !S.duel || !S.race) return;
+  S.race.board = standings(); S.race.place = S.race.board.findIndex(r => r.me) + 1;
+  if (endShown) showRaceEnd();
+}
+
+export function forfeitDuel() {
+  if (!S || !S.duel || S.race.finished) return;
+  S.duel.dnf = true; S.race.finished = true;
+  setState('lost'); S.live = false; S.overT = 0; touches.clear();
+  refreshDuelResults();
+}
+
 function showRaceEnd() {
   const R = S.race, n = R.board.length, place = R.place;
   setPodium(R.board, S.me, R.bots);
   $('endEyebrow').textContent = 'Race · ' + LV.city + ' · ' + LV.name + ' · ' + (S.duel ? 'live vs ' + S.duel.title : R.diff.name + ' bots');
   const t = $('endTitle'); t.textContent = place === 1 ? 'You win!' : ordinal(place) + ' of ' + n; t.className = place === 1 ? 'good' : 'bad';
+  if (S.duel && S.duel.dnf) { t.textContent = 'Did not finish'; t.className = 'bad'; }
+  else if (S.duel && R.board.some(r => !r.done && !r.dnf)) t.textContent = 'Finished · waiting for racers';
   $('endLead').hidden = true;   // the standings say it all
   $('endLead').textContent = place === 1 ? 'First to ' + LV.goalText + '. Bumps cost you time, so a clean run wins.' : 'Not first this time. Every bump costs about a second and a half, so stay clean and look for gaps.';
   $('sScoreLabel').textContent = 'Finish time'; $('sScore').textContent = fmtTime(S.time);
+  if (S.duel && S.duel.dnf) $('sScore').textContent = 'DNF';
   const best = raceBest(LV.id);
   setStat('sBest', R.newBest ? 'Best time · new best' : 'Best win time', best ? fmtTime(best) : '-');
   setStat('sDist', 'Place', ordinal(place) + ' of ' + n);
@@ -278,7 +297,7 @@ function showRaceEnd() {
   const lead = R.board[0];
   R.board.forEach((r, i) => {
     const li = document.createElement('li'); if (r.me) li.className = 'me';
-    const gap = r.done ? (i === 0 ? fmtTime(r.finishT) : '+' + (r.finishT - lead.finishT).toFixed(1) + ' s') : Math.max(1, Math.round(LV.goal - r.z)) + ' m to go';
+    const gap = r.dnf ? 'DNF · left / lost connection' : r.done ? (i === 0 ? fmtTime(r.finishT) : '+' + (r.finishT - lead.finishT).toFixed(1) + ' s') : Math.max(1, Math.round(LV.goal - r.z)) + ' m to go';
     li.textContent = (i + 1) + '. ' + r.name + ' · ' + gap;
     bd.appendChild(li);
   });
@@ -335,16 +354,46 @@ export function start(a, b, opts) {
   Music.start(LV.music); Music.ambStart(LV.id);
 }
 
-export function pauseGame() {
-  if (state !== 'play' || (S && S.duel)) return;   // a live race cannot be paused: your friend keeps running
-  setState('paused'); touches.clear(); Music.suspend();
-  $('pauseEyebrow').textContent = (S.race ? 'Race · ' : '') + LV.city + ' · ' + LV.name + ' · ' + Math.floor(S.pz) + ' m';
-  $('restart').hidden = !!(S.daily || S.weekly);   // daily and weekly runs are one try
-  $('pmenu').textContent = S.daily || S.weekly ? 'End run' : 'Main menu';
+function showPauseMenu() {
+  touches.clear(); keys.l = keys.r = false; setPendingDash(null);
+  Music.suspend();
+  $('pauseEyebrow').textContent = (S.duel ? 'Room paused - ' : S.race ? 'Race - ' : '') + LV.city + ' - ' + LV.name + ' - ' + Math.floor(S.pz) + ' m';
+  $('restart').hidden = !!(S.daily || S.weekly || S.duel);
+  $('pmenu').textContent = S.duel ? 'Leave race' : S.daily || S.weekly ? 'End run' : 'Main menu';
+  const waiting = S.duel && !S.duel.pausers.has(S.duel.meId);
+  $('holdPause').hidden = !waiting;
+  $('resume').disabled = !!waiting;
+  $('resume').textContent = waiting ? 'Waiting for racers' : S.duel ? 'Ready to resume' : 'Resume';
+  $('pauseStatus').hidden = !S.duel;
+  if (S.duel) {
+    const names = [...S.duel.pausers].map(id => id === S.duel.meId ? 'You' : S.duel.peers[id]?.name || 'Friend');
+    $('pauseStatus').textContent = 'Paused by: ' + names.join(', ') + '. Everyone who paused must be ready to resume.';
+  }
   $('pause').hidden = false;
 }
 
-export function resumeGame() { if (state !== 'paused') return; hideMenus(); setState('play'); Music.resume(); }
+// Both local input and room messages use the same state transition; receiving never echoes a message.
+export function syncDuelPause() {
+  if (!S?.duel || (state !== 'play' && state !== 'paused')) return;
+  if (S.duel.pausers.size) { setState('paused'); showPauseMenu(); }
+  else if (state === 'paused') { hideMenus(); setState('play'); Music.resume(); }
+}
+function sendPause(paused) {
+  const d = S.duel;
+  if (paused) d.pausers.add(d.meId); else d.pausers.delete(d.meId);
+  d.send('pause', { seed: d.seed, n: ++d.pauseSeq, paused });
+  syncDuelPause();
+}
+export function pauseGame() {
+  if (state !== 'play' && state !== 'paused') return;
+  if (S.duel) { sendPause(true); return; }
+  setState('paused'); showPauseMenu();
+}
+export function resumeGame() {
+  if (state !== 'paused') return;
+  if (S.duel) { if (S.duel.pausers.has(S.duel.meId)) sendPause(false); return; }
+  hideMenus(); setState('play'); Music.resume();
+}
 
 // Quitting mid-run: the score still counts, and a daily or weekly try is still used up.
 export function quitRun() {
@@ -356,6 +405,7 @@ export function quitRun() {
 }
 
 export function toMenu() {
+  if (S?.duel) leaveRoom();
   setR(Math.random); $('tut').hidden = true;
   hideMenus();
   setState('ready'); reset(); $('hud').hidden = true; $('start').hidden = false; buildLevels();

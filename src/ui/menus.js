@@ -1,3 +1,4 @@
+import { comboLevel } from '../config/combo.js';
 import { Music } from '../audio/music.js';
 import { LEVELS, LV, LVI, setLevel } from '../config/levels.js';
 import { CHAIN_WINDOW } from '../config/tuning.js';
@@ -20,7 +21,7 @@ import { shareRun } from '../sim/replay.js';
 import { openFriend } from './friend.js';
 import { BOARD_TABS, boardIdFor, boardTitle } from '../online/boards.js';
 import { loadBoard } from '../online/online.js';
-import { leaveRoom, requestRematch } from '../online/duel.js';
+import { leaveRoom, rematchState, requestRematch } from '../online/duel.js';
 
 
 
@@ -104,7 +105,7 @@ export function hud() {
   if (S.chain !== last.chain) {
     last.chain = S.chain;
     $('combo').classList.toggle('off', S.chain === 0);
-    $('mult').textContent = '×' + Math.min(8, 1 + Math.floor(S.chain / 3));
+    $('mult').textContent = '×' + comboLevel(S.chain);
     $('chain').textContent = S.chain + ' chain';
   }
   if (S.chain > 0) $('cbar').style.width = (clamp(1 - (S.time - S.lastPassT) / CHAIN_WINDOW, 0, 1) * 100).toFixed(0) + '%';
@@ -135,6 +136,7 @@ function raceHud() {
   const rows = standings(), me = rows.findIndex(r => r.me), n = rows.length;
   let gap = '';
   if (S.race.countT > 0) gap = 'Get ready';
+  else if (rows.length === 1) gap = 'Racing solo';
   else if (me > 0) gap = Math.max(1, Math.round(rows[me - 1].z - S.pz)) + ' m behind ' + rows[me - 1].name;
   else gap = Math.max(1, Math.round(S.pz - rows[1].z)) + ' m ahead';
   const txt = ordinal(me + 1) + ' of ' + n + ' · ' + gap + (S.bumpT > 0 ? ' · BUMPED' : '');
@@ -292,7 +294,12 @@ export function init() {
   const vol = (id, get, set) => { const el = $(id); el.value = String(Math.round(get() * 100)); el.addEventListener('input', e => set(e.target.value / 100)); };
   vol('musicVol', () => Music.musicVol, v => Music.setMusicVol(v));
   vol('sfxVol', () => Music.sfxVol, v => Music.setSfxVol(v));
-  $('again').addEventListener('click', () => { if (S && S.duel) requestRematch(); else start(lastDaily, lastMode); });
+  $('again').addEventListener('click', () => {
+    if (S && S.duel) {
+      if (rematchState() === 'gone') { leaveRoom(); toMenu(); openFriend(); }
+      else requestRematch();
+    } else start(lastDaily, lastMode);
+  });
   $('dbgBtn').addEventListener('click', () => { if (!window.__dbgOn) { window.__dbgOn = true; import('../dev/debugview.js').then(m => m.openDebug()); } });   // temporary: shows the sizes the phone reports
   $('tutBtn').addEventListener('click', () => { store.set('excuseme_tut', '0'); start('classic'); });
   $('tutSkip').addEventListener('click', e => { e.stopPropagation(); if (S.tut) endTut(); else endCoach(); });
@@ -302,6 +309,7 @@ export function init() {
   $('pauseBtn').addEventListener('click', e => { e.stopPropagation(); pauseGame(); });
   $('pauseBtn').addEventListener('pointerdown', e => e.stopPropagation());
   $('resume').addEventListener('click', resumeGame);
+  $('holdPause').addEventListener('click', pauseGame);
   $('restart').addEventListener('click', () => { $('pause').hidden = true; Music.ambStop(); start(lastDaily, lastMode); });
   $('pmenu').addEventListener('click', () => { quitRun(); Music.stop(); Music.ambStop(); toMenu(); });
   window.addEventListener('keydown', e => { const k = e.key.toLowerCase(); if (k === 'escape' || k === 'p') { if (state === 'play') pauseGame(); else if (state === 'paused') resumeGame(); } });

@@ -20,6 +20,7 @@
 <body>
 <canvas id="game" aria-label="Third-person view of a busy walkway"></canvas>
 
+<p id="liveStatus" class="livestatus" aria-live="polite" hidden></p>
 <div id="hud" hidden>
   <div class="top">
     <div class="topr">
@@ -157,7 +158,7 @@
         <li><b>7</b><span>On a computer: arrow keys or A / D steer, press twice to dash, W or Up to burst, Space or E for "Excuse me", P to pause.</span></li>
       </ul>
       <ul id="howCombos" class="combos">
-        <li><span>Chain</span>Pass again within 2 seconds. Every 3 passes adds ×1, up to ×8.</li>
+        <li><span>Chain</span>Pass again within 2 seconds. Every 3 passes adds ×1, up to ×16.</li>
         <li><span>Close / Razor</span>Pass with under 40 cm / 15 cm to spare.<em>+25 / +50</em></li>
         <li><span>Near-miss streak</span>3 close calls within 5 seconds: a short speed boost.<em>+10% for 2.5 s</em></li>
         <li><span>Snake</span>Pass on alternating sides, 3 or more in a row.<em>+40 each</em></li>
@@ -236,8 +237,10 @@
   <div class="card">
     <div class="eyebrow" id="pauseEyebrow">Paused</div>
     <h1 class="mid">Paused</h1>
+    <p id="pauseStatus" class="note" hidden></p>
     <div class="btns">
       <button id="resume" class="big" type="button">Resume</button>
+      <button id="holdPause" class="ghost" type="button" hidden>Keep paused for me</button>
       <button id="restart" class="ghost" type="button">Restart</button>
       <button id="pauseSet" class="ghost" type="button">Settings</button>
       <button id="pmenu" class="ghost" type="button">Main menu</button>

@@ -2,6 +2,7 @@
    when a chain ends, and confetti when you win. Render only: the particles live here, not in the simulation, and nothing uses
    Math.random (the simulation may draw from it), so drawing never changes a run. */
 import { MULT_COLS, hex } from '../config/colour.js';
+import { comboLevel } from '../config/combo.js';
 import { LV } from '../config/levels.js';
 import { TAU } from '../config/util.js';
 import { ctx } from '../dom.js';
@@ -52,7 +53,7 @@ export function fxGround() {
 
 // The multiplier shows under your feet too: a coloured glow that grows with it.
 export function multGlow(bx, fy, s, ry) {
-  const m = Math.min(8, 1 + Math.floor((S.chain || 0) / 3));
+  const m = Math.min(8, comboLevel(S.chain || 0));   // colours stop at x8, like the screen tint
   if (m < 2 || !S.live) return;
   const c = hex(MULT_COLS[m - 1]), pulse = calm ? 1 : 0.85 + 0.15 * Math.sin(S.clock * 6);
   ctx.fillStyle = 'rgba(' + c.join(',') + ',' + (0.12 + 0.03 * m).toFixed(2) + ')';

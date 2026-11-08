@@ -1,3 +1,4 @@
+import { comboLevel } from '../config/combo.js';
 import { MULT_COLS, hex } from '../config/colour.js';
 import { FOGCSS, LV } from '../config/levels.js';
 import { clamp } from '../config/util.js';
@@ -17,7 +18,7 @@ import { visibleGhosts } from '../sim/replay.js';
 
 
 export function render() {
-  const F0 = F, multNow = Math.min(8, 1 + Math.floor(S.chain / 3));
+  const F0 = F, multNow = Math.min(8, comboLevel(S.chain));
   setF(calm ? F0 : F0 * (1 + 0.07 * S.slow + 0.012 * (multNow - 1)));   // pull in during slow-mo and as the multiplier climbs
   const live = S.live && camBob && !calm;
   setVX(S.camX); setVZ(S.pz - CAM_BACK); setVY(CAM_UP);
