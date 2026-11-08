@@ -45,3 +45,13 @@ Design notes so new maps fit it later:
 - Batch 1 (characters): done, commit 0084a33.
 - Batch 2 (crowd and racers): done, commit da97b95.
 - Batch 3 (weather / time of day): done. Variants: airport day / sunrise / night, Fifth Avenue day / golden hour, Shibuya night / rain. `src/render/weather.js`; `?variant=rain` forces one; `setVariant()` is the hook a cup will use per round.
+- Fix: daily/weekly runs always get the sky for their date; every restart re-picks (commit 20e7e54).
+- Batch 1-2 gaps + Batch 4 (effects, podium): commit 1147bad.
+- Batch 5 (menus/HUD): Customize preview close-ups and drag to turn, race HUD fits narrow phones, stronger pop-up outlines, racer ribbons only for racers ahead.
+
+## Ideas for later (from this work)
+- Profile picture: a "my character" option that draws your own head instead of an emoji.
+- Cup: each round can set its own weather with setVariant(); a final round at golden hour or in the rain.
+- Central Park: autumn leaves kicked up by the footstep puffs; joggers with the burst lean; dog walkers with the real lead.
+- Podium for classic runs on daily/weekly boards (top 3 by score).
+- Footstep sound variation to match dust vs splash.

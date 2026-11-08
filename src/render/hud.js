@@ -32,9 +32,9 @@ export function drawPops() {
   for (let i = S.pops.length - 1; i >= 0; i--) {
     const q = S.pops[i], a = clamp(1.3 - q.t, 0, 1), rise = q.t * 26;
     const pop = q.t < 0.12 ? 0.7 + q.t * 2.5 : 1;
-    ctx.globalAlpha = a * 0.7;
+    ctx.globalAlpha = a * 0.92;   // readable on the bright stages too
     ctx.font = '700 ' + Math.round(q.size * 0.72 * pop * UI) + 'px ' + FONT;
-    ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(15,27,45,0.7)'; ctx.lineJoin = 'round';
+    ctx.lineWidth = 4.5; ctx.strokeStyle = 'rgba(30,20,45,0.85)'; ctx.lineJoin = 'round';
     ctx.strokeText(q.text, W / 2, y - rise);
     ctx.fillStyle = q.color; ctx.fillText(q.text, W / 2, y - rise);
     y -= q.size * 0.8;

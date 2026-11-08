@@ -62,17 +62,33 @@ function tryLocked(key, val) {
 
 function setNote(text, locked) { const n = $('lockInfo'); n.textContent = text; n.classList.toggle('on', !!locked); }
 
+// The preview turns on its own; drag it to turn it yourself. The Face area looks at the face, Back shows the back, Shoes looks at the feet.
+let spin = 0, lastNow = 0, dragX = null, heldUntil = 0;
+function hookDrag(pc) {
+  if (pc.dataset.drag) return; pc.dataset.drag = '1'; pc.style.touchAction = 'none';
+  pc.addEventListener('pointerdown', e => { dragX = e.clientX; if (pc.setPointerCapture) pc.setPointerCapture(e.pointerId); });
+  pc.addEventListener('pointermove', e => { if (dragX === null) return; spin += (e.clientX - dragX) * 0.02; dragX = e.clientX; heldUntil = performance.now() + 1500; });
+  const up = () => { dragX = null; }; pc.addEventListener('pointerup', up); pc.addEventListener('pointercancel', up);
+}
+const VIEW = { face: { zoom: 2.4, focus: 1.6, front: true }, back: { zoom: 1.15, focus: 1.1, back: true }, shoes: { zoom: 1.9, focus: 0.25 }, head: { zoom: 2.0, focus: 1.6 } };
+
 export function drawPreview(now) {
   const pc = $('preview');
   if (!pc || !pc.getContext) return;
   if (!PV) PV = makeMe();
+  if (pc.addEventListener) hookDrag(pc);
+  const dt = lastNow ? Math.min(0.1, (now - lastNow) / 1000) : 0; lastNow = now;
+  if (dragX === null && now > heldUntil) spin += dt * 0.7;
+  const view = (currentArea && VIEW[currentArea.id]) || null;
   const pctx = pc.getContext('2d'), pw = 170, ph = 210;
   if (pc.width !== Math.round(pw * DPR)) { pc.width = Math.round(pw * DPR); pc.height = Math.round(ph * DPR); }
   const saved = [ctx, W, H, F, HOR, CX, VX, VZ, VY, showHB];
   setCtx(pctx); ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.clearRect(0, 0, pw, ph);
-  setW(pw); setH(ph); setF(262); setVX(0); setVZ(-3); setVY(1.0); setCX(pw / 2); setHOR(92); setShowHB(false);
-  const a = now / 1000 * 0.7;
-  PV.fx = Math.sin(a); PV.fz = -Math.cos(a); PV.vx = PV.fx * 1.3; PV.vz = PV.fz * 1.3; PV.x = 0; PV.z = 0;
+  const zoom = view ? view.zoom : 1, f = 262 * zoom, hor = view ? ph * 0.52 - (1.0 - view.focus) * f / 3 : 92;
+  setW(pw); setH(ph); setF(f); setVX(0); setVZ(-3); setVY(1.0); setCX(pw / 2); setHOR(hor); setShowHB(false);
+  const a = view && view.front && dragX === null && now > heldUntil ? 0 : view && view.back && dragX === null && now > heldUntil ? Math.PI : spin;
+  const still = view && (view.front || view.zoom > 1.5);   // stand still for close-ups
+  PV.fx = Math.sin(a); PV.fz = -Math.cos(a); PV.vx = still ? 0 : PV.fx * 1.3; PV.vz = still ? 0 : PV.fz * 1.3; PV.walkA = still ? 0 : 1; PV.x = 0; PV.z = 0;
   PV.phase = now / 1000 * 5.5;
   drawPerson(PV);
   setCtx(saved[0]); setW(saved[1]); setH(saved[2]); setF(saved[3]); setHOR(saved[4]); setCX(saved[5]); setVX(saved[6]); setVZ(saved[7]); setVY(saved[8]); setShowHB(saved[9]);

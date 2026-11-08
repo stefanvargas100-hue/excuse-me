@@ -840,8 +840,8 @@ export function drawPerson(p) {
     ctx.beginPath(); ctx.ellipse(bx, fy, 0.42 * s, 0.42 * s * Math.min(0.6, VY / dz), 0, 0, TAU); ctx.stroke();
   }
   ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-  if (p.racer && !p.done && !p.isGhost && Math.hypot(p.vx, p.vz) > 1.8 && !calm) {   // a ribbon on the floor in the racer's colour, narrowing as it fades, so you can follow who is who
-    const near = VZ + 1.3, z0 = Math.max(p.z - 0.25, near), z1 = Math.max(p.z - (p.burstT > 0 ? 4.2 : 3), near);
+  if (p.racer && !p.done && !p.isGhost && !p.podium && p.z > S.pz + 1.2 && Math.hypot(p.vx, p.vz) > 1.8 && !calm) {   // only for racers ahead of you, and never reaching back under your feet: a ribbon on the floor in the racer's colour, narrowing as it fades, so you can follow who is who
+    const near = Math.max(VZ + 1.3, S.pz + 0.8), z0 = Math.max(p.z - 0.25, near), z1 = Math.max(p.z - (p.burstT > 0 ? 4.2 : 3), near);
     if (z0 - z1 > 0.3) {
       const a = W3(p.x - 0.17, 0.01, z0), b = W3(p.x + 0.17, 0.01, z0), c = W3(p.x + 0.04, 0.01, z1), d = W3(p.x - 0.04, 0.01, z1);
       const g = ctx.createLinearGradient(0, a[1], 0, c[1]); g.addColorStop(0, hexA(p.color, 0.6)); g.addColorStop(1, hexA(p.color, 0));
