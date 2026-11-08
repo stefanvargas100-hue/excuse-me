@@ -175,6 +175,18 @@ button.big:focus-visible, button.ghost:focus-visible, .toggle input:focus-visibl
 #tut.coach .tstep { font-size: 11px; }
 #tut.coach #tutSkip { font-size: 13px; padding: 2px; }
 .tstep { font-size: 16px; color: var(--btn); }
+.chlist { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin: 6px 0; padding: 0; }
+.chlist li { border: 2px solid var(--ink); border-radius: var(--wob); padding: 3px 6px; font: 400 14px var(--body); background: var(--paper); }
+.chlist li b { display: block; font: 400 11px var(--body); color: var(--btn); }
+#lesson { position: fixed; left: 12px; right: 12px; top: 13%; pointer-events: none; text-align: center; padding: 8px 12px 8px; border: 3px solid var(--ink); border-radius: var(--wob); background: rgba(255,244,236,.88); box-shadow: 3px 4px 0 rgba(43,42,51,.6); }
+#lesson[hidden] { display: none; }
+#lesson .tstep { font-size: 12px; }
+#lesson .ttext { font-size: 13px; line-height: 1.2; margin: 1px 0 3px; }
+#lesson .lbtns[hidden], #lesson .lmsg[hidden], #lesson .lbtns button[hidden] { display: none; }
+#lesson .lmsg { font: 400 12px var(--body); color: var(--ink); margin: 0 0 4px; }
+#lesson .lbtns { display: flex; gap: 6px; justify-content: center; pointer-events: auto; }
+#lesson .lbtns button { font: 400 13px var(--display); padding: 4px 8px; border: 3px solid var(--ink); border-radius: var(--wob); background: var(--paper); color: var(--ink); cursor: pointer; }
+#lesson .lbtns button.primary { background: var(--btn); color: #fff; }
 .ttext { margin: 2px 0 8px; font-family: var(--display); font-size: 22px; line-height: 1.2; text-wrap: balance; }
 #tutSkip { pointer-events: auto; background: transparent; border: 0; color: var(--ink); font: 400 16px var(--body); text-decoration: underline wavy; cursor: pointer; padding: 6px; }
 @media (prefers-reduced-motion: reduce) { #combo { transition: none; } .star.new b { animation: none; } }
@@ -248,6 +260,13 @@ button.big.huge { min-height: 84px; font-size: 38px; margin-bottom: 18px; }
 .stack { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 10px; margin: 0; }
 .stack .lvl { flex: 1 1 0; min-height: 0; overflow: hidden; align-content: center; }
 .stack .lvl .ln { font-size: clamp(18px, 3.2vh, 26px); }
+/* Four stages plus race controls must fit short phones without clipping names. */
+#raceOpts, #raceFormat { flex-wrap: nowrap; gap: 6px; }
+#raceOpts .chip, #raceFormat .chip { min-width: 0; padding: 0 7px; font-size: 14px; flex: 1 1 auto; }
+@media (max-height: 650px) {
+  #stages .lvl .lb { display: none; }
+  #stages .lvl { padding: 7px 10px; }
+}
 .pager { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 8px; font-size: 17px; }
 .pagebtn { width: 58px; height: 42px; border: 3px solid var(--ink); border-radius: var(--wob-s); background: var(--sign); color: var(--ink); box-shadow: 2px 3px 0 var(--ink); font: 400 24px/1 var(--display); cursor: pointer; padding: 0 0 3px; }
 .pagebtn:disabled { opacity: .35; }
@@ -469,3 +488,7 @@ button:disabled.big, button:disabled.ghost { opacity: .5; cursor: default; }
 .boost .rmph, .boost .clock, .boost .score { flex-shrink: 0; }
 #podium { display: block; margin: 4px auto 2px; max-width: 360px; }
 #podium[hidden] { display: none; }
+
+#levels .lvl { flex: 0 0 auto; min-height: 125px; }
+#stagePager[hidden] { display: none; }
+@media (max-height: 650px) { #levels .lvl { min-height: 78px; } }

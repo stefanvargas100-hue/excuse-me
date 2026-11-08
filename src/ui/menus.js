@@ -10,10 +10,13 @@ import { account, TITLES, PICS } from '../save/level.js';
 import { myName } from '../online/online.js';
 import { ITEM_STATS, statHint } from '../config/stats.js';
 import { setVibOn, store, vibOn } from '../save/store.js';
-import { dailyLevel, fmt, hasPlayed, lastDaily, lastMode, pauseGame, quitRun, resumeGame, start, startDaily, startWeekly, toMenu, weeklyLevel } from '../sim/game.js';
+import { dailyLevel, fmt, hasPlayed, lastDaily, lastMode, challengeBest, startChallenge, restartRun, lessonNext, lessonRetry, pauseGame, quitRun, resumeGame, start, startDaily, startPractice, startWeekly, toMenu, weeklyLevel } from '../sim/game.js';
 import { draftMul, fmtTime, ordinal, raceBest, racePace, raceDifficulty, standings } from '../sim/race.js';
 import { S, bestOf, calm, camBob, cues, reset, setCalm, setCamBob, setCues, setShowHB, showHB, state } from '../sim/state.js';
 import { endTut } from '../sim/tutorial.js';
+import { LESSONS, syncLesson } from '../sim/practice.js';
+import { challengeFor, challengeRemainingMs, fmtChallengeScore, utcWeekKey } from '../config/challenge.js';
+import { LOOK_OPTS } from '../save/progress.js';
 import { endCoach, syncCoach } from '../sim/racecoach.js';
 import { modOf } from '../sim/modifiers.js';
 import { back, go, pageInto, relayoutWith } from './screens.js';
@@ -52,10 +55,48 @@ function buildPlay() {
   periodic('weekly', 'Weekly run', weeklyLevel(), weekKey(), startWeekly, 'Go as far as you can. Same crowd for everyone this week.');
 }
 
+// The practice screen: tap a lesson and it starts.
+function buildPractice() {
+  const box = $('practiceList'); box.innerHTML = '';
+  LESSONS.forEach((L, i) => {
+    const x = menuCard('lvl');
+    x.children[0].textContent = 'Lesson ' + (i + 1); x.children[1].textContent = L.name; x.children[2].textContent = 'Practice'; x.children[3].textContent = L.brief;
+    x.addEventListener('click', () => startPractice(L.id));
+    box.appendChild(x);
+  });
+}
+
 // The stage screen: tap a stage and it starts.
+// Weekly challenge: the course is fixed for the week, so the stage list is replaced by one card that opens the details.
+const outfitLabel = (key, val) => { const o = LOOK_OPTS.find(x => x.key === key), v = o && o.vals.find(x => x[0] === val); return v ? v[1] : String(val); };
+function timeLeft(ms) { const h = Math.floor(ms / 3600000), d = Math.floor(h / 24); return d >= 1 ? d + ' d ' + (h % 24) + ' h left' : h + ' h ' + Math.floor(ms % 3600000 / 60000) + ' min left'; }
+function openChallenge() {
+  const c = challengeFor(utcWeekKey()), L = LEVELS[c.level], best = challengeBest(c);
+  $('chInfo').textContent = c.week + ' · ' + L.city + ' · ' + L.name + ' · ' + timeLeft(challengeRemainingMs()) + (best ? ' · your best ' + fmtTime(best) : '');
+  const ul = $('chOutfit'); ul.innerHTML = '';
+  for (const [k, label] of [['body', 'Body'], ['build', 'Build'], ['hat', 'Headpiece'], ['shirtType', 'Top'], ['pantsType', 'Bottoms'], ['shoeType', 'Shoes'], ['pack', 'Back']]) {
+    const li = document.createElement('li'), b = document.createElement('b'); b.textContent = label; li.appendChild(b); li.appendChild(document.createTextNode(outfitLabel(k, c.outfit[k]))); ul.appendChild(li);
+  }
+  $('chRules').textContent = 'Solo, no bots or power-ups, same outfit and crowd for everyone. Best time counts; retry freely. Your own outfit is untouched.';
+  go('challenge');
+}
+let stageNodes = [];
+function layoutStages() {
+  if (!stageNodes.length) return;
+  pageInto($('levels'), stageNodes, $('stagePager'));
+  relayoutWith(layoutStages);
+}
 function buildStages() {
-  const box = $('levels'); box.innerHTML = '';
+  const box = $('levels'); box.innerHTML = ''; stageNodes = [];
+  $('stagePager').hidden = false;
   const race = stageMode === 'race';
+  if (race && raceFormat() === 'weekly') {
+    const c = challengeFor(utcWeekKey()), L = LEVELS[c.level], best = challengeBest(c), x = menuCard('lvl daily');
+    x.children[0].textContent = 'Weekly challenge · ' + c.week; x.children[1].textContent = L.name; x.children[2].textContent = timeLeft(challengeRemainingMs());
+    x.children[3].textContent = best ? 'Your best ' + fmtTime(best) + '. Same course and outfit for everyone.' : 'Same course and a supplied outfit for everyone. Best time counts.';
+    $('stagePager').hidden = true;
+    x.style.maxHeight = '150px'; x.addEventListener('click', openChallenge); box.appendChild(x); return;
+  }
   LEVELS.forEach((L, i) => {
     const x = menuCard('lvl');
     const best = bestOf(L.id), rb = raceBest(L.id);
@@ -63,16 +104,24 @@ function buildStages() {
     x.children[1].textContent = L.name;
     x.children[2].textContent = race ? L.goal + ' m' + (rb ? ' · ' + fmtTime(rb) : '') : best ? 'Best ' + fmt(best) : 'Endless';
     x.children[3].textContent = L.blurb;
-    x.addEventListener('click', () => { setLevel(i); start(stageMode); });
-    box.appendChild(x);
+    x.addEventListener('click', () => { setLevel(i); start(stageMode, undefined, stageMode === 'race' && raceFormat() === 'elim' ? { run: { category: 'elimination' }, elim: true } : undefined); });
+    box.appendChild(x); stageNodes.push(x);
   });
+  if (!$('stages').hidden) layoutStages();
 }
 
 function openStages(mode) {
   stageMode = mode;
   $('stagesTitle').textContent = mode === 'race' ? 'Race vs bots' : 'Classic';
-  $('raceOpts').hidden = mode !== 'race';
-  syncBots(); buildStages(); go('stages');
+  $('raceOpts').hidden = mode !== 'race'; $('raceFormat').hidden = mode !== 'race';
+  syncFormat(); syncBots(); buildStages(); go('stages'); layoutStages();
+}
+
+const FORMATS = ['race', 'elim', 'weekly'];
+const raceFormat = () => { const f = store.get('excuseme_raceformat', 'race'); return FORMATS.includes(f) ? f : 'race'; };
+function syncFormat() {
+  document.querySelectorAll('#raceFormat .chip').forEach((c, i) => c.setAttribute('aria-pressed', String(FORMATS[i] === raceFormat())));
+  $('raceOpts').hidden = stageMode !== 'race' || raceFormat() === 'weekly';   // the challenge has no bots
 }
 
 function syncBots() {
@@ -92,7 +141,7 @@ export function hud() {
   const dm = Math.floor(S.pz);
   if (dm !== last.dist) { last.dist = dm; $('dist').textContent = S.endless ? dm + ' m' : dm + ' / ' + LV.goal + ' m'; $('prog').style.width = (clamp(S.pz / LV.goal, 0, 1) * 100).toFixed(1) + '%'; }
   // speed over the ground in mph (belts included); a race has no score, only time and place
-  $('prog').parentElement.hidden = !!S.endless; $('prog').parentElement.classList.toggle('race', !!S.race);   // endless runs have no finish line: just score and distance travelled
+  $('prog').parentElement.hidden = !!S.endless || !!S.lesson; $('prog').parentElement.classList.toggle('race', !!S.race);   // endless runs have no finish line: just score and distance travelled
   const sc = Math.floor(S.score);
   if (sc !== last.score || last.race !== !!S.race) {
     last.score = sc; last.race = !!S.race;
@@ -129,9 +178,9 @@ export function hud() {
 // Race mode: your place, the gap to the next racer, and a dot for each racer on the progress bar.
 const dotsKey = { n: -1, k: '' };
 function raceHud() {
-  syncCoach();
+  syncCoach(); syncLesson();
   const pl = $('place');
-  if (!S.race) { if (!pl.hidden) pl.hidden = true; if (dotsKey.n !== 0) { dotsKey.n = 0; dotsKey.k = ''; $('raceDots').innerHTML = ''; } return; }
+  if (!S.race || S.lesson) { if (!pl.hidden) pl.hidden = true; if (dotsKey.n !== 0) { dotsKey.n = 0; dotsKey.k = ''; $('raceDots').innerHTML = ''; } return; }
   pl.hidden = false;
   const rows = standings(), me = rows.findIndex(r => r.me), n = rows.length;
   let gap = '';
@@ -139,7 +188,9 @@ function raceHud() {
   else if (rows.length === 1) gap = 'Racing solo';
   else if (me > 0) gap = Math.max(1, Math.round(rows[me - 1].z - S.pz)) + ' m behind ' + rows[me - 1].name;
   else gap = Math.max(1, Math.round(S.pz - rows[1].z)) + ' m ahead';
-  const txt = ordinal(me + 1) + ' of ' + n + ' · ' + gap + (S.bumpT > 0 ? ' · BUMPED' : '');
+  let cut = '';
+  if (S.race.elim && !S.race.elim.over && S.race.elim.next < S.race.elim.cps.length) { const lead = Math.max(S.pz, ...S.race.bots.map(b => b.z)); cut = ' · cut in ' + Math.max(1, Math.round(S.race.elim.cps[S.race.elim.next] - lead)) + ' m' + (me === n - 1 ? ' · LAST' : ''); }
+  const txt = ordinal(me + 1) + ' of ' + n + ' · ' + gap + cut + (S.bumpT > 0 ? ' · BUMPED' : '');
   if (pl.textContent !== txt) { pl.textContent = txt; pl.classList.toggle('bumped', S.bumpT > 0); }
   const box = $('raceDots'), bots = S.race.bots, key = bots.map(r => r.color).join();
   if (dotsKey.k !== key) {   // one dot per racer, you last so your dot is drawn on top
@@ -176,14 +227,14 @@ async function showBoard() {
   const draw = rows => { pageInto($('boardList'), rows, $('boardPager')); };
   const ask = ++boardAsk;   // a slow answer for an old tab must not overwrite the one now showing
   draw([msg('Loading...')]);
-  const rows = await loadBoard(boardIdFor(boardTab, boardStage), 30);
+  const rows = await loadBoard(boardIdFor(boardTab, boardStage), 30), fmtScore = s => (boardTab === 'challenge' ? fmtChallengeScore(s) : s.toLocaleString('en-US'));
   if (ask !== boardAsk) return;
   const nodes = rows.length ? rows.map((r, i) => {
     const li = document.createElement('li'); if (r.you) li.className = 'me';
     const rk = document.createElement('span'); rk.className = 'rk'; rk.textContent = String(i + 1);
     const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = (r.pic ? r.pic + ' ' : '') + r.name + (r.you ? ' (you)' : '');
     const lv = document.createElement('span'); lv.className = 'lv'; lv.textContent = 'Lv ' + r.level;
-    const sc = document.createElement('span'); sc.className = 'sc'; sc.textContent = r.score.toLocaleString('en-US');
+    const sc = document.createElement('span'); sc.className = 'sc'; sc.textContent = fmtScore(r.score);
     [rk, nm, lv, sc].forEach(n => li.appendChild(n)); return li;
   }) : [msg('No scores yet. Be the first!')];
   draw(nodes);
@@ -278,6 +329,7 @@ export function init() {
     shareRun(text);
   });
   $('playBtn').addEventListener('click', () => { buildPlay(); go('play'); });
+  $('practiceBtn').addEventListener('click', () => { buildPractice(); go('practice'); });
   initProfile();
   $('chalBtn').addEventListener('click', () => { go('chal'); buildChallenges(); });
   $('boardsBtn').addEventListener('click', openBoards);
@@ -288,6 +340,8 @@ export function init() {
   document.querySelectorAll('[data-back]').forEach(b => b.addEventListener('click', back));
   document.querySelectorAll('#howTabs .chip').forEach(c => c.addEventListener('click', () => showHowTab(c.dataset.tab)));
   document.querySelectorAll('#raceOpts .chip').forEach((c, i) => c.addEventListener('click', () => { store.set('excuseme_botlvl', String(i)); syncBots(); }));
+  document.querySelectorAll('#raceFormat .chip').forEach((c, i) => c.addEventListener('click', () => { store.set('excuseme_raceformat', FORMATS[i]); syncFormat(); buildStages(); }));
+  $('chStart').addEventListener('click', () => startChallenge());
   const flag = (id, on, set, key) => { const el = $(id); el.checked = on; el.addEventListener('change', e => { set(e.target.checked); store.set(key, e.target.checked ? '1' : '0'); }); };
   flag('calmT', calm, setCalm, 'excuseme_calm');
   flag('cuesT', cues, setCues, 'excuseme_cues');
@@ -298,7 +352,7 @@ export function init() {
     if (S && S.duel) {
       if (rematchState() === 'gone') { leaveRoom(); toMenu(); openFriend(); }
       else requestRematch();
-    } else start(lastDaily, lastMode);
+    } else restartRun();
   });
   $('dbgBtn').addEventListener('click', () => { if (!window.__dbgOn) { window.__dbgOn = true; import('../dev/debugview.js').then(m => m.openDebug()); } });   // temporary: shows the sizes the phone reports
   $('tutBtn').addEventListener('click', () => { store.set('excuseme_tut', '0'); start('classic'); });
@@ -310,7 +364,11 @@ export function init() {
   $('pauseBtn').addEventListener('pointerdown', e => e.stopPropagation());
   $('resume').addEventListener('click', resumeGame);
   $('holdPause').addEventListener('click', pauseGame);
-  $('restart').addEventListener('click', () => { $('pause').hidden = true; Music.ambStop(); start(lastDaily, lastMode); });
+  $('restart').addEventListener('click', () => { if (S.lesson) { lessonRetry(); resumeGame(); return; } $('pause').hidden = true; Music.ambStop(); restartRun(); });
+  for (const id of ['lessonRetry', 'lessonNext', 'lessonExit']) $(id).addEventListener('pointerdown', e => e.stopPropagation());
+  $('lessonRetry').addEventListener('click', e => { e.stopPropagation(); lessonRetry(); });
+  $('lessonNext').addEventListener('click', e => { e.stopPropagation(); lessonNext(); });
+  $('lessonExit').addEventListener('click', e => { e.stopPropagation(); Music.stop(); Music.ambStop(); toMenu(); });
   $('pmenu').addEventListener('click', () => { quitRun(); Music.stop(); Music.ambStop(); toMenu(); });
   window.addEventListener('keydown', e => { const k = e.key.toLowerCase(); if (k === 'escape' || k === 'p') { if (state === 'play') pauseGame(); else if (state === 'paused') resumeGame(); } });
   document.querySelectorAll('.vibt').forEach(el => {

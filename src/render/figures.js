@@ -649,8 +649,9 @@ function drawProp(p, s, bx, fy) {
       break;
     }
     case 'tree': {
-      ctx.strokeStyle = 'rgba(30,30,30,0.6)'; ctx.lineWidth = Math.max(1, 0.04 * s);
-      ctx.beginPath(); ctx.ellipse(bx, fy, 0.55 * s, 0.55 * s * Math.min(0.6, VY / (z - VZ)), 0, 0, TAU); ctx.stroke();
+      // a soil pit at the foot: ground you can step on, only the trunk is solid
+      ctx.fillStyle = 'rgba(74,56,38,0.5)'; ctx.strokeStyle = 'rgba(30,30,30,0.45)'; ctx.lineWidth = Math.max(1, 0.03 * s);
+      ctx.beginPath(); ctx.ellipse(bx, fy, 0.45 * s, 0.45 * s * Math.min(0.6, VY / (z - VZ)), 0, 0, TAU); ctx.fill(); ctx.stroke();
       const a = W3(x, 0, z), b = W3(x, 2.8, z);
       capsule([a, b], 0.22 * s, '#6b4a2b', '#3b2a1e', '#8a6a46');
       const c1 = W3(x, 3.7, z), c2 = W3(x + 0.6, 3.3, z + 0.3), c3 = W3(x - 0.5, 3.4, z - 0.3);
@@ -666,13 +667,41 @@ function drawProp(p, s, bx, fy) {
       ball(b[0], b[1], 0.15 * s, '#d4a017', '#ffe08a', '#8a6a0c');
       break;
     }
+    case 'carriage': {
+      const dir=p.dirx||1, seg=(a,b,y0,y1,depth,c)=>box3D(Math.min(x-dir*a,x-dir*b),Math.max(x-dir*a,x-dir*b),y0,y1,z-depth,z+depth,hex(c));
+      seg(0.3,1.9,0.8,1.5,0.35,'#88603c'); // horse
+      seg(0,0.65,1.25,2.05,0.24,'#88603c');
+      for(const a of [0.55,1.55])for(const side of [-1,1])box3D(x-dir*a-0.08,x-dir*a+0.08,0,0.9,z+side*0.25-0.06,z+side*0.25+0.06,hex('#59402c'));
+      seg(1.8,3.2,0.65,0.72,0.12,'#403728'); // shafts
+      seg(2.6,4.9,0.55,1.35,0.7,'#284a35');
+      seg(3.1,4.9,1.8,2.1,0.75,'#f0e7d3'); // canopy
+      for(const a of [3.1,4.7])for(const side of [-1,1]){
+        box3D(x-dir*a-0.04,x-dir*a+0.04,1.2,1.9,z+side*0.6-0.04,z+side*0.6+0.04,hex('#403728'));
+        const q=W3(x-dir*a,0.42,z+side*0.7);ctx.strokeStyle='#3a332b';ctx.lineWidth=Math.max(1,0.08*F/q[2]);ctx.beginPath();ctx.arc(q[0],q[1],0.4*F/q[2],0,TAU);ctx.stroke();
+      }
+      break;
+    }
+    case 'tripod': {
+      for(const side of [-1,1])box3D(x+side*0.3-0.07,x+side*0.3+0.07,0,1.15,z-0.3,z+0.3,hex('#56616a'));
+      box3D(x-0.25,x+0.25,1.1,1.4,z-0.15,z+0.15,hex('#273744'));
+      box3D(x-0.1,x+0.1,1.17,1.32,z-0.25,z-0.15,hex('#89b6ce'));
+      break;
+    }
+    case 'easel': {
+      for (const side of [-1,1]) box3D(x+side*0.35-0.07,x+side*0.35+0.07,0,1.45,z-0.3,z+0.3,hex('#956b43'));
+      box3D(x-0.45,x+0.45,0.65,1.55,z-0.08,z+0.08,hex('#eee1be'));
+      box3D(x-0.38,x+0.38,0.72,1.48,z-0.09,z-0.08,hex('#a4c8b5'));
+      box3D(x-0.25,x+0.2,0.72,1.02,z-0.1,z-0.09,hex('#639264'));
+      break;
+    }
+    case 'pretzel':
     case 'cart': {
       box3D(x - 0.45, x + 0.45, 0.25, 1.1, z - 1.0, z + 1.0, hex('#c9ced6'));
       const a = W3(x, 1.1, z), b = W3(x, 2.25, z);
       capsule([a, b], 0.05 * s, '#6b7280', '#374151', null);
       ctx.fillStyle = '#2f80ed'; ctx.beginPath(); ctx.ellipse(b[0], b[1], 1.2 * F / b[2], 0.5 * F / b[2], 0, Math.PI, TAU); ctx.fill();
       ctx.fillStyle = '#ffcf1f'; ctx.beginPath(); ctx.ellipse(b[0], b[1], 0.6 * F / b[2], 0.5 * F / b[2], 0, Math.PI, TAU); ctx.fill();
-      const fq0 = W3(x, 0.7, z - 1.01); label('HOT DOGS', fq0[0], fq0[1], Math.round(0.2 * F / fq0[2]), '#c0392b');
+      const fq0 = W3(x, 0.7, z - 1.01); label(p.prop === 'pretzel' ? 'PRETZELS' : 'HOT DOGS', fq0[0], fq0[1], Math.round(0.2 * F / fq0[2]), '#c0392b');
       break;
     }
     case 'board': box3D(x - 0.3, x + 0.3, 0, 0.95, z - 0.12, z + 0.12, hex('#1f2937')); { const q = W3(x, 0.6, z - 0.13); label('SALE', q[0], q[1], Math.round(0.18 * F / q[2]), '#f4f6f8'); } break;
@@ -695,11 +724,23 @@ function drawProp(p, s, bx, fy) {
       const q = W3(x, 1.2, z - 0.56); label('NEWS', q[0], q[1], Math.round(0.26 * F / q[2]), '#ffffff');
       break;
     }
-    case 'bikes': {
-      for (const dx of [-0.6, 0, 0.6]) {
-        box3D(x + dx - 0.04, x + dx + 0.04, 0.05, 0.62, z - 0.45, z + 0.45, hex(dx < 0 ? '#c0392b' : dx > 0 ? '#2f80ed' : '#2aa56a'));
-        box3D(x + dx - 0.04, x + dx + 0.04, 0.62, 0.7, z - 0.25, z + 0.1, hex('#1f2937'));
-      }
+    case 'bikes': {   // a bike at each spot in the rack (the same spots the hitbox uses), parked along a low rail
+      const os = p.rack || [-0.6, 0, 0.6], cols = ['#c0392b', '#2aa56a', '#2f80ed', '#f2994a', '#9b51e0'], lw = Math.max(1.4, 0.045 * s);
+      box3D(x + os[0] - 0.12, x + os[os.length - 1] + 0.12, 0, 0.07, z - 0.03, z + 0.03, hex('#6b7280'));
+      const line = (pts, col, w) => { ctx.strokeStyle = col; ctx.lineWidth = w; ctx.beginPath(); pts.forEach((q, i) => { const c = W3(q[0], q[1], q[2]); if (i) ctx.lineTo(c[0], c[1]); else ctx.moveTo(c[0], c[1]); }); ctx.stroke(); };
+      ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      os.forEach((ox, i) => {
+        const bx0 = x + ox, col = cols[(i + Math.abs(Math.round(x * 3))) % cols.length];
+        for (const wz of [0.3, -0.3]) {   // wheels, far one first
+          const ring = []; for (let k = 0; k <= 14; k++) { const a = k / 14 * TAU; ring.push([bx0, 0.3 + 0.28 * Math.sin(a), z + wz + 0.28 * Math.cos(a)]); }
+          line(ring, INK, lw * 1.3);
+        }
+        const back = [bx0, 0.3, z + 0.3], front = [bx0, 0.3, z - 0.3], bb = [bx0, 0.33, z + 0.02], seat = [bx0, 0.82, z + 0.16], head = [bx0, 0.86, z - 0.2];
+        line([back, bb, head, front], col, lw); line([bb, seat, back], col, lw); line([seat, head], col, lw);
+        line([[bx0 - 0.03, 0.86, z + 0.24], [bx0 + 0.03, 0.86, z + 0.08]], INK, lw * 1.6);           // saddle
+        line([[bx0 - 0.2, 0.95, z - 0.22], [bx0 + 0.2, 0.95, z - 0.22]], INK, lw * 1.2);             // handlebars
+        line([head, [bx0, 0.95, z - 0.22]], col, lw);
+      });
       break;
     }
     case 'bench': {
@@ -711,6 +752,8 @@ function drawProp(p, s, bx, fy) {
       for (const dz of [-1.4, 1.4]) box3D(x - 0.35, x - 0.27, 0, 2.3, z + dz - 0.05, z + dz + 0.05, hex('#374151'));
       box3D(x - 0.5, x + 0.5, 2.3, 2.42, z - 1.5, z + 1.5, hex('#1f2937'));
       box3D(x - 0.35, x - 0.3, 0.6, 2.2, z - 1.4, z + 1.4, hex('#9fc7e6'));
+      for (const dz of [-0.75, 0.75]) box3D(x - 0.25, x - 0.2, 0, 0.42, z + dz - 0.04, z + dz + 0.04, hex('#374151'));
+      box3D(x - 0.3, x + 0.0, 0.42, 0.5, z - 0.95, z + 0.95, hex('#8a6a46'));   // the seat (the hitbox stops at its front edge)
       break;
     }
     case 'trashbags': {
@@ -791,6 +834,23 @@ function drawProp(p, s, bx, fy) {
           box3D(cx - 0.4, cx + 0.4, 0.5, 0.95, z - 0.35, z + 0.35, hex(i === 1 ? '#c0392b' : '#2f80ed'));
         }
       }
+      break;
+    }
+    case 'cpgate': {
+      const h = p.span || 4, red = hex('#ff4d4f');
+      box3D(x - h, x + h, 0, 0.03, z - 0.25, z + 0.25, red);
+      box3D(x - h - 0.1, x - h + 0.1, 0, 3.3, z - 0.1, z + 0.1, red); box3D(x + h - 0.1, x + h + 0.1, 0, 3.3, z - 0.1, z + 0.1, red);
+      box3D(x - h, x + h, 3.0, 3.3, z - 0.08, z + 0.08, red);
+      { const q = W3(x, 3.15, z - 0.1); label('CHECKPOINT ' + (p.num || ''), q[0], q[1], Math.round(0.2 * F / q[2]), '#ffffff'); }
+      break;
+    }
+    case 'rope': {
+      const h = p.span || 1, sk = p.skin === 'fence' ? ['#ff8a1f', '#2b2a33', 0.1, 0.95, 0.06] : p.skin === 'crowdbar' ? ['#b8c0cc', '#4b5563', 0.08, 0.95, 0.05] : ['#d6336c', '#2b2a33', 0.82, 0.9, 0.03];
+      const bar = hex(sk[0]), post = hex(sk[1]);
+      if (p.skin === 'fence') { box3D(x - h, x + h, 0.1, 0.95, z - 0.05, z + 0.05, bar); box3D(x - h, x + h, 0.55, 0.7, z - 0.06, z + 0.06, hex('#f4f6f8')); }
+      else if (p.skin === 'crowdbar') { box3D(x - h, x + h, 0.85, 0.93, z - 0.04, z + 0.04, bar); box3D(x - h, x + h, 0.45, 0.5, z - 0.04, z + 0.04, bar); }
+      else box3D(x - h, x + h, sk[2], sk[3], z - sk[4], z + sk[4], bar);
+      for (let px = -h; px <= h + 1e-6; px += Math.max(1.6, (2 * h) / Math.ceil((2 * h) / 2.2))) box3D(x + px - 0.05, x + px + 0.05, 0, 0.95, z - 0.05, z + 0.05, post);
       break;
     }
     case 'wetfloor': box3D(x - 0.25, x + 0.25, 0, 0.62, z - 0.12, z + 0.12, hex('#ffcf1f')); { const q = W3(x, 0.4, z - 0.13); label('WET', q[0], q[1], Math.round(0.14 * F / q[2]), INK); } break;

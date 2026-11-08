@@ -43,6 +43,14 @@ export function fxGround() {
       ctx.beginPath(); ctx.ellipse(c[0], c[1], s * (0.05 + 0.16 * f), s * (0.02 + 0.05 * f), 0, 0, TAU); ctx.stroke();
       ctx.fillStyle = 'rgba(210,225,255,' + (0.7 * (1 - f)).toFixed(3) + ')';
       for (const d of [-1, 1]) { const hop = Math.sin(Math.PI * f) * s * 0.12; ctx.fillRect(c[0] + d * s * (0.04 + 0.1 * f), c[1] - hop, Math.max(1, s * 0.012), Math.max(1, s * 0.018)); }
+    } else if (LV.id === 'park' && variantOf() === 'autumn') {
+      ctx.globalAlpha = 1-f;
+      for (const d of [-1,1]) {
+        ctx.fillStyle=d<0?'#bd7137':'#d6a044';
+        const x=c[0]+d*s*0.22*f,y=c[1]-Math.sin(f*Math.PI)*s*0.18;
+        ctx.beginPath();ctx.moveTo(x,y-s*0.04);ctx.lineTo(x+s*0.05,y);ctx.lineTo(x,y+s*0.04);ctx.lineTo(x-s*0.05,y);ctx.closePath();ctx.fill();
+      }
+      ctx.globalAlpha=1;
     } else {      // dust: two soft puffs drifting apart and fading
       const col = LV.id === 'airport' ? '200,206,216' : LV.night ? '120,110,150' : '190,182,170';
       ctx.fillStyle = 'rgba(' + col + ',' + (0.42 * (1 - f)).toFixed(3) + ')';

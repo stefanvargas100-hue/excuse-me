@@ -7,9 +7,13 @@ import { drawPreview, init as initPreview } from './render/preview.js';
 import { drawPodium, podiumOf } from './render/podium.js';
 import { render } from './render/render.js';
 import { shout } from './sim/actions.js';
-import { hasPlayed, pauseGame, quitRun, start, tick, toMenu } from './sim/game.js';
+import { hasPlayed, startChallenge, restartRun, lessonNext, resumeGame, lessonRetry, pauseGame, quitRun, start, startPractice, tick, toMenu } from './sim/game.js';
 import { genChunk, mk, runEvent } from './sim/people.js';
-import { draftCharge, draftMul, racePace, raceCollide } from './sim/race.js';
+import { openings, routeCfg, zonesOf } from './config/routes.js';
+import { beltAt, onStrip } from './config/strips.js';
+import { elimCheckpoints, elimLast } from './sim/elim.js';
+import { CHALLENGE_SUBMIT_ENABLED, boardNameFor, challengeFor, challengeRemainingMs, decodeChallengeTime, encodeChallengeTime, utcWeekKey, validChallengeTime } from './config/challenge.js';
+import { botExcuseMe, draftCharge, draftMul, racePace, raceCollide } from './sim/race.js';
 import { powerMul } from './sim/powerups.js';
 import { setTopGhostFetcher, visibleGhost, visibleGhosts } from './sim/replay.js';
 import { BODIES, BUILDS, ITEM_STATS, fitOf, effects, statsOf, statDetails } from './config/stats.js';
@@ -17,6 +21,8 @@ import { LOOK } from './save/progress.js';
 import { rotatingList } from './save/rotating.js';
 import { account, setLevelUpListener } from './save/level.js';
 import { modOf } from './sim/modifiers.js';
+import { makeRun, recordKey } from './sim/runopts.js';
+import { cleanBonusFor, stepClean } from './sim/clean.js';
 
 import { CHALLENGES, isLocked, nextGoal, tallySnapshot, setRotatingListener, setUnlockListener, tallyOf, track, trackMax } from './save/challenges.js';
 import { addPop, nearMul, onPass } from './sim/scoring.js';
@@ -24,7 +30,7 @@ import { S, calm, reset, state } from './sim/state.js';
 import { buildLevels, hud, init as initMenus } from './ui/menus.js';
 import { init as initScreens } from './ui/screens.js';
 import { weekKey } from './config/util.js';
-import { duelReceive, roomLevel, setRoomLevel, hostRoom, hostStart, injectRoomMessage, joinRoom, leaveRoom, lobbyPlayers, lobbyStatus, rematchState, requestRematch, startDuel, useRoomFactory, useLobbyClock, setRoomReady, canStartRoom, roomLobbyState } from './online/duel.js';
+import { duelReceive, roomElim, setRoomElim, roomLevel, setRoomLevel, hostRoom, hostStart, injectRoomMessage, joinRoom, leaveRoom, lobbyPlayers, lobbyStatus, rematchState, requestRematch, startDuel, useRoomFactory, useLobbyClock, setRoomReady, canStartRoom, roomLobbyState } from './online/duel.js';
 import { initFriend } from './ui/friend.js';
 import { pickVariant, setVariant, variantOf, VARIANTS } from './render/weather.js';
 
@@ -71,7 +77,7 @@ reset();
 
 buildLevels();
 
-window.__excuse = { podiumOf, drawPodium, setVariant, variantOf, VARIANTS, pickVariant, hud, statDetails, raceCollide, setTopGhostFetcher, visibleGhosts, visibleGhost, genChunk, touches, onPass, nearMul, roomLevel, setRoomLevel, get LV() { return LV; }, injectRoomMessage, lobbyPlayers, lobbyStatus, draftMul, powerMul, xp: () => account.xp(), account, startDuel, duelReceive, hostRoom, hostStart, joinRoom, leaveRoom, rematchState, requestRematch, useRoomFactory, nextGoal, tallySnapshot, modOf, rotatingList, tick, reset, start, setLevel, get S() { return S; }, get state() { return state; }, keys, action, onTap, render, drawPreview, LEVELS, runEvent, shout, weekKey, hasPlayed, pauseGame, quitRun, toMenu, CHALLENGES, isLocked, tallyOf, track, trackMax, racePace, fitOf, BODIES, BUILDS, ITEM_STATS, effects, statsOf, LOOK, mkPerson: (x, z) => mk(x, z, { hx: 0, hz: 1, v0: 1 }) };
+window.__excuse = { podiumOf, drawPodium, setVariant, variantOf, VARIANTS, pickVariant, startChallenge, utcWeekKey, challengeFor, challengeRemainingMs, encodeChallengeTime, decodeChallengeTime, validChallengeTime, boardNameFor, challengeSubmitEnabled: CHALLENGE_SUBMIT_ENABLED, resumeGame, roomElim, setRoomElim, elimCheckpoints, elimLast, restartRun, onStrip, routeZones: zonesOf, routeOpenings: openings, routeCfg, beltAt, startPractice, lessonRetry, lessonNext, botExcuseMe, stepClean, cleanBonusFor, recordKey, makeRun, hud, statDetails, raceCollide, setTopGhostFetcher, visibleGhosts, visibleGhost, genChunk, touches, onPass, nearMul, roomLevel, setRoomLevel, get LV() { return LV; }, injectRoomMessage, lobbyPlayers, lobbyStatus, draftMul, powerMul, xp: () => account.xp(), account, startDuel, duelReceive, hostRoom, hostStart, joinRoom, leaveRoom, rematchState, requestRematch, useRoomFactory, nextGoal, tallySnapshot, modOf, rotatingList, tick, reset, start, setLevel, get S() { return S; }, get state() { return state; }, keys, action, onTap, render, drawPreview, LEVELS, runEvent, shout, weekKey, hasPlayed, pauseGame, quitRun, toMenu, CHALLENGES, isLocked, tallyOf, track, trackMax, racePace, fitOf, BODIES, BUILDS, ITEM_STATS, effects, statsOf, LOOK, mkPerson: (x, z) => mk(x, z, { hx: 0, hz: 1, v0: 1 }) };
 
 Object.assign(window.__excuse, { useLobbyClock, setRoomReady, canStartRoom, roomLobbyState });
 requestAnimationFrame(frame);

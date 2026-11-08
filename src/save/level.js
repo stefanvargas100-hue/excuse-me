@@ -6,8 +6,8 @@ export const xpToReach = n => 50 * n * (n - 1);
 export function levelFromXp(xp) { let n = 1; while (xpToReach(n + 1) <= xp) n++; return n; }
 
 // XP for one finished run. Every mode pays; a race against bots pays clearly less than any standard mode, and capped so it cannot be farmed.
-export function runXp({ mode, score = 0, won = false, bots = false }) {
-  if (mode === 'race' && bots) return 6 + (won ? 5 : 0);
+export function runXp({ mode, score = 0, won = false, bots = false, bonus = 0 }) {
+  if (mode === 'race' && bots) return 6 + (won ? 5 : 0) + Math.max(0, bonus);   // bonus: the clean-race segments
   if (mode === 'race') return 15 + (won ? 10 : 0);
   return 15 + Math.min(60, Math.floor(Math.max(0, score) / 250));
 }

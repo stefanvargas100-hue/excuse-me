@@ -13,7 +13,9 @@ import { hsh } from './scenery.js';
 export const VARIANTS = {
   airport: [['day', 5], ['sunrise', 2], ['night', 2]],
   nyc: [['day', 5], ['golden', 3]],
-  shibuya: [['night', 5], ['rain', 3]]
+  shibuya: [['night', 5], ['rain', 3]],
+  park: [['day', 5], ['autumn', 3], ['golden', 2]],
+  bridge: [['day', 5], ['golden', 3], ['mist', 2]]
 };
 
 let cur = 'day', curLevel = '', curRun = null, forced = null;
@@ -34,7 +36,7 @@ export function pickVariant(levelId, seed, rnd) {
 // Not Math.random: the simulation may draw from it, and drawing a frame must never shift what the simulation sees.
 const clockRnd = () => (Date.now() % 9973) / 9973;
 
-function refresh() {
+export function refreshWeather() {
   if (forced) { cur = forced; return; }
   if (LV.id !== curLevel || S !== curRun) { curLevel = LV.id; curRun = S; cur = pickVariant(LV.id, S.seed, clockRnd); }   // every run has its own state object, so this catches every restart
 }
@@ -42,11 +44,11 @@ function refresh() {
 const wash = (a, b, c, alpha) => { ctx.fillStyle = 'rgba(' + a + ',' + b + ',' + c + ',' + alpha + ')'; ctx.fillRect(0, 0, W, H); };
 
 export function weatherGrade() {
-  refresh();
+  refreshWeather();
   if (cur === 'day' || (cur === 'night' && LV.id === 'shibuya')) return;   // the usual looks
   const u = Math.min(W, H) / 390, t = S.clock || 0;
   ctx.save();
-  if (cur === 'golden') {   // late sun down the avenue: warm wash, a glow at the far end, deeper corners
+  if (cur === 'mist') { wash(225,235,238,0.22); } else if (cur === 'golden') {   // late sun down the avenue: warm wash, a glow at the far end, deeper corners
     wash(255, 160, 70, 0.07);
     const g = ctx.createRadialGradient(W * 0.5, HOR, 0, W * 0.5, HOR, Math.max(W, H) * 0.7);
     g.addColorStop(0, 'rgba(255,224,150,0.42)'); g.addColorStop(0.4, 'rgba(255,184,100,0.16)'); g.addColorStop(1, 'rgba(255,150,70,0)');

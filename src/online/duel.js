@@ -6,7 +6,7 @@ import { LEVELS, LV, setLevel } from '../config/levels.js';
 import { $ } from '../dom.js';
 import { LOOK, LOOK_OPTS } from '../save/progress.js';
 import { store } from '../save/store.js';
-import { start, syncDuelPause, forfeitDuel, refreshDuelResults } from '../sim/game.js';
+import { start, syncDuelPause, forfeitDuel, refreshDuelResults, elimReceive, elimAbort } from '../sim/game.js';
 import { S, state } from '../sim/state.js';
 import { packGhost, saveFriendGhost } from '../sim/ghostshare.js';
 import { createRoom, cleanCode, makeCode } from './room.js';
@@ -50,6 +50,10 @@ let lobby = null, startTimer = null, lobbyNow = () => performance.now();
 let lobbyNotice = '';
 export const useLobbyClock = f => { lobbyNow = f; };
 let outcomeRev = 0, receivedOutcome = -1;
+let raceElim = false;     // elimination format: the host picks it, guests learn it from the roster
+// Room protocol version. Race layouts and the start handshake must be identical on every phone, so phones on different builds
+// refuse each other instead of racing on different crowds. Raise it whenever a change would make layouts or rules differ.
+export const PROTO = 3;
 let myId = '', hostId = '', roster = [];        // roster: [{ id, name, look }], the host first, me included
 let inRoster = false, raced = false, hostGone = false, lastStatus = '', joinWaiter = null;
 let wantMe = false; const wants = new Set();    // rematch: everyone still in the room has to ask
@@ -77,7 +81,7 @@ function receiveGhost(from, data) {
 }
 
 /* ---- one race at a time ---- */
-export function startDuel({ seed, level, friends, friend, send, roster: ids, meId }) {
+export function startDuel({ seed, level, friends, friend, send, roster: ids, meId, elim }) {
   setLevel(level);
   const list = friends || (friend ? [{ id: 'friend', ...friend }] : []);
   const peers = {}, order = [];
@@ -87,7 +91,7 @@ export function startDuel({ seed, level, friends, friend, send, roster: ids, meI
   const lineUp = ids && ids.length ? ids : ['me', ...order], slotOf = {};
   lineUp.forEach((id, i) => { slotOf[id === meId ? 'me' : id] = i; });
   // ten reports a second for one friend; five with more (measured 2026-11-07: a full room of 8 at 5 a second lost nothing on the free plan)
-  const d = { pausers: new Set(), pauseSeq: 0, refresh: showRematch, seed, peers, order, slotOf, meId: meId || 'me', count: lineUp.length, title: names.length === 1 ? names[0] : names.length + ' friends', send, n: 0, sendT: 0, sendEvery: order.length > 1 ? 0.2 : 0.1 };
+  const d = { elim: !!elim, elimHost: false, pausers: new Set(), pauseSeq: 0, refresh: showRematch, seed, peers, order, slotOf, meId: meId || 'me', count: lineUp.length, title: names.length === 1 ? names[0] : names.length + ' friends', send, n: 0, sendT: 0, sendEvery: order.length > 1 ? 0.2 : 0.1 };
   start('race', null, { duel: d });
   return d;
 }
@@ -127,7 +131,7 @@ function closeRoom() {
     if (raced && d && !S.race.finished) forfeitDuel();
   }
   sessionId = ''; rosterRev = 0; receivedRev = -1; outcomeRev = 0; receivedOutcome = -1; disconnectedAt = null; retrying = false; hiddenAt = null; retired.clear(); started.clear();
-  room = null; role = null; code = ''; hostId = ''; myId = ''; roster = []; inRoster = false; raced = false; hostGone = false; wantMe = false; wants.clear();
+  room = null; role = null; code = ''; hostId = ''; myId = ''; roster = []; inRoster = false; raced = false; hostGone = false; wantMe = false; wants.clear(); raceElim = false;
   for (const k in seenAt) delete seenAt[k];
   if (joinWaiter) { const w = joinWaiter; joinWaiter = null; w(false); }
   ui.roster([]);
@@ -136,8 +140,8 @@ function closeRoom() {
 }
 const sendRoster = () => {
   if (!room) return;
-  ensureLobby(); lobby.setPlayers(roster.map(p => ({ id: p.id, protocol: p.protocol || 0 })), levelIdx);
-  room.send('roster', { id: myId, session: sessionId, rev: ++rosterRev, level: levelIdx, players: roster, lobby: lobby.snapshot() });
+  ensureLobby(); lobby.setPlayers(roster.map(p => ({ id: p.id, protocol: p.protocol || 0 })), levelIdx, raceElim);
+  room.send('roster', { proto: PROTO, elim: raceElim, id: myId, session: sessionId, rev: ++rosterRev, level: levelIdx, players: roster, lobby: lobby.snapshot() });
 };
 const changed = () => {
   ui.roster(lobbyPlayers());
@@ -225,6 +229,7 @@ function onMessage(ev, data) {
   if (ev.startsWith('lobby:')) { if (lobby) lobby.receive(ev.slice(6), data); return; }
   if (ev === 'hello') {
     if (role !== 'host' || !from) return;
+    if (data.proto !== PROTO) { room.send('full', { id: myId, to: from, why: 'version' }); return; }   // a phone on another build cannot share a crowd with us
     if (roster.some(p => p.id === from)) { sendRoster(); return; }
     if (roster.length >= MAX_PLAYERS || raced) { room.send('full', { id: myId, to: from, why: raced ? 'started' : 'full' }); return; }
     roster.push({ id: from, name: cleanName(data.name), look: cleanLook(data.look), protocol: data.startProtocol || 0 });
@@ -232,6 +237,7 @@ function onMessage(ev, data) {
     sendRoster(); changed();
   } else if (ev === 'roster') {
     if (role !== 'guest' || !from || (hostId && from !== hostId)) return;
+    if (data.proto !== PROTO) { if (!inRoster) { closeRoom(); say('Update the game on both phones: the host is on a different version. Then try again.'); } return; }
     if (Number.isInteger(data.rev) && data.rev <= receivedRev) return;
     const players = (Array.isArray(data.players) ? data.players : []).slice(0, MAX_PLAYERS)
       .map(p => ({ id: cleanId(p && p.id), name: cleanName(p && p.name), look: cleanLook(p && p.look), protocol: p?.protocol || 0 })).filter(p => p.id);
@@ -244,6 +250,7 @@ function onMessage(ev, data) {
     if (Number.isInteger(data.rev)) receivedRev = data.rev;
     if (disconnectedAt === null && !raced) say('Connected. Waiting for the host.');
     if (Number.isInteger(data.level) && LEVELS[data.level]) levelIdx = data.level;
+    raceElim = data.elim === true;
     for (const id of [...wants]) if (!roster.some(p => p.id === id)) wants.delete(id);
     if (joinWaiter) { const w = joinWaiter; joinWaiter = null; w(true); }
     ensureLobby(); lobby.acceptSnapshot(data.lobby);
@@ -251,7 +258,7 @@ function onMessage(ev, data) {
   } else if (ev === 'full') {
     if (role === 'guest' && !inRoster && data.to === myId && joinWaiter) {
       const w = joinWaiter; joinWaiter = null;
-      say(data.why === 'started' ? 'That room already started a race. Ask the host for a new room.' : 'That room is full (' + MAX_PLAYERS + ' players).'); w(false);
+      say(data.why === 'started' ? 'That room already started a race. Ask the host for a new room.' : data.why === 'version' ? 'The host is on a different version of the game. Reload both phones to update, then try again.' : 'That room is full (' + MAX_PLAYERS + ' players).'); w(false);
     }
   } else if (ev === 'rematch') {
     if (data.race && (!S || !S.duel || data.race !== S.duel.seed)) return;
@@ -264,8 +271,8 @@ function onMessage(ev, data) {
     if (raced && from === hostId) applyOutcomes(data.outcomes);
     if (from === hostId && role === 'guest') {
       if (!raced) { closeRoom(); say('The host left the room.'); return; }
-      hostGone = true;
-      say('Host left. Finish this race; create a new room for another.');
+      hostGone = true; elimAbort();
+      say(S?.duel?.elim ? 'Host left. The elimination race is over.' : 'Host left. Finish this race; create a new room for another.');
     }
     roster = roster.filter(p => p.id !== from); wants.delete(from);
     retired.add(from);
@@ -275,6 +282,9 @@ function onMessage(ev, data) {
     changed();
   } else if (ev === 'start') {
     if (role === 'guest' && from === hostId && !raced) say('Update the game on every phone before starting.');
+  } else if (ev === 'elim') {
+    if (role !== 'guest' || from !== hostId || !S?.duel?.elim || data.race !== S.duel.seed) return;
+    elimReceive(Array.isArray(data.out) ? data.out.slice(0, MAX_PLAYERS) : []); changed();
   } else if (ev === 'dnf') {
     if (!S || !S.duel || data.race !== S.duel.seed) return;
     duelReceive('bye', data); say((S.duel.peers[from]?.name || 'Racer') + ' did not finish.'); refreshDuelResults(); changed(); publishOutcomes();
@@ -291,18 +301,19 @@ export const injectRoomMessage = onMessage;
 
 function beginRace(level, seed, schedule) {
   if (started.has(seed)) return;
+  raceElim = schedule?.elim === true;
   started.add(seed);
   receivedOutcome = -1;
   wantMe = false; wants.clear(); raced = true;
   const id = myId;
   const epoch = generation;
-  const d = startDuel({ seed, level, friends: others(), roster: roster.map(p => p.id), meId: id, send: (ev, payload) => {
+  const d = startDuel({ seed, level, elim: raceElim, friends: others(), roster: roster.map(p => p.id), meId: id, send: (ev, payload) => {
     if (epoch !== generation) return;
     if (ev === 'fin' && !S.duel.dnf && S.duel.finish == null) S.duel.finish = payload.ft;
     if (room) room.send(ev, { id, ...payload, race: seed, session: sessionId });
     if (ev === 'fin') { refreshDuelResults(); publishOutcomes(); }
   } });
-  d.managed = true; d.beganAt = Date.now();
+  d.managed = true; d.beganAt = Date.now(); d.elimHost = role === 'host';
   if (schedule) d.startRemaining = () => Math.max(0, (schedule.startAtLocal - schedule.now()) / 1000);
   for (const p of roster) seenAt[p.id] = Date.now();
   sendMyGhosts(level);
@@ -342,11 +353,12 @@ function heartbeat() {
       forfeitDuel(); d.send('dnf', {}); say('Race timed out · DNF.');
     }
     publishOutcomes();
+    if (d.elim && d.elimHost && S.race.elim && S.race.elim.out.length) d.send('elim', { rev: ++S.race.elim.rev, out: S.race.elim.out.map(o => o.id) });
   }
   if (role === 'guest') {
-    room.send('hello', { id: myId, name: myName(), look: LOOK, startProtocol: START_PROTOCOL });
+    room.send('hello', { proto: PROTO, id: myId, name: myName(), look: LOOK, startProtocol: START_PROTOCOL });
     if (inRoster && !hostGone && seenAt[hostId] && now - seenAt[hostId] > STALE_MS) {
-      if (!raced) { closeRoom(); say('Lost contact with the host.'); } else { hostGone = true; say('Host lost connection. Finish this race; create a new room for another.'); changed(); }
+      if (!raced) { closeRoom(); say('Lost contact with the host.'); } else { hostGone = true; elimAbort(); say(S?.duel?.elim ? 'Host lost connection. The elimination race is over.' : 'Host lost connection. Finish this race; create a new room for another.'); changed(); }
     }
   } else if (role === 'host') {
     const gone = others().filter(p => seenAt[p.id] && now - seenAt[p.id] > STALE_MS);
@@ -377,7 +389,7 @@ async function reconnect() {
     if (lobby) lobby.setConnected(true);
     say('Connected again.');
     if (role === 'host') sendRoster();
-    else room.send('hello', { id: myId, name: myName(), look: LOOK, session: sessionId, startProtocol: START_PROTOCOL });
+    else room.send('hello', { proto: PROTO, id: myId, name: myName(), look: LOOK, session: sessionId, startProtocol: START_PROTOCOL });
     changed();
   } catch (e) { /* heartbeat retries within the original grace period */ }
   finally { if (generation === epoch) retrying = false; }
@@ -411,7 +423,7 @@ export async function joinRoom(c) {
   try { await pending; } catch (e) { if (generation === epoch) { closeRoom(); say('Could not connect. Check the code and your internet.'); } return false; }
   const ok = await new Promise(resolve => {
     joinWaiter = resolve;
-    room.send('hello', { id: myId, name: myName(), look: LOOK, startProtocol: START_PROTOCOL });
+    room.send('hello', { proto: PROTO, id: myId, name: myName(), look: LOOK, startProtocol: START_PROTOCOL });
     const t = setTimeout(() => { if (joinWaiter === resolve) { joinWaiter = null; say('Nobody answered. Check the code and try again.'); resolve(false); } }, JOIN_WAIT_MS);
     if (t && t.unref) t.unref();
   });
@@ -440,6 +452,9 @@ export const roomLevel = () => levelIdx;
 // The host can change the stage any time before Start; everyone sees it on the next roster.
 export function setRoomLevel(i) { if (role !== 'host' || !room || raced || !LEVELS[i]) return; levelIdx = i; sendRoster(); changed(); }
 export const isHost = () => role === 'host';
+// Format of the next race: the host picks it before Start; guests learn it from the roster.
+export const roomElim = () => raceElim;
+export function setRoomElim(v) { if (role !== 'host' || !room || raced) return; raceElim = !!v; sendRoster(); changed(); }
 
 // After a race everyone presses Rematch; the host then starts a new race on the same stage.
 export function rematchCounts() { const o = others(); return { asked: o.filter(p => wants.has(p.id)).length, total: o.length }; }

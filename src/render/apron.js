@@ -5,6 +5,7 @@ import { H, HOR, VZ, W } from './camera.js';
 import { box3D, fq, poly } from './draw.js';
 import { S } from '../sim/state.js';
 import { airportExtras, airportSky } from './airportdetail.js';
+import { taxiingJet } from './landmarks.js';
 
 /* ---------- what you see through the airport windows: the apron, parked planes on jet bridges, tugs, a far skyline ----------
    Drawn once, clipped to the window openings, before the terminal itself. Gate g sits at z = GATE_Z0 + g * GATE_EVERY. */
@@ -53,6 +54,7 @@ export function drawApron() {
     box3D(-150, -128, 0, 9 + ((k * 5) & 3) * 3, k * 60 + 6, k * 60 + 40, hex('#9fb0c2'));
     if (k % 3 === 0) { box3D(-143, -139, 9, 26, k * 60 + 20, k * 60 + 24, hex('#b8c4d0')); box3D(-146, -136, 26, 30, k * 60 + 18, k * 60 + 26, hex('#7a8da3')); }
   }
+  taxiingJet();   // out on the taxiway, behind the parked planes
   // painted lead-in lines to each gate
   for (const gi of gates) { const z = GATE_Z0 + gi * GATE_EVERY; fq(-60, -7, 0.003, Math.max(0.3, z - 0.1 - VZ), Math.max(0.4, z + 0.1 - VZ), mixc(hex('#e0b400'), 25)); }
   // furthest first

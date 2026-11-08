@@ -9,15 +9,18 @@ import { drawPerson, rrect } from './figures.js';
 import { pruneFlows, drawPops, radarTop, zoneGuide } from './hud.js';
 import { drawBelts, drawGlass, drawPowerups, drawSlipstream, drawStrips, glassPanels } from './slipstream.js';
 import { nycSteam } from './nycdetail.js';
-import { weatherGrade } from './weather.js';
+import { refreshWeather, weatherGrade } from './weather.js';
 import { chainShards, confetti, fxGround, shakeOffset } from './fx.js';
 import { drawCars, paintAirport, paintNYC, paintShibuya } from './world.js';
 import { S, calm, camBob, state } from '../sim/state.js';
+import { paintBridge } from './bridge.js';
+import { paintPark } from './park.js';
 import { visibleGhosts } from '../sim/replay.js';
 
 
 
 export function render() {
+  refreshWeather();
   const F0 = F, multNow = Math.min(8, comboLevel(S.chain));
   setF(calm ? F0 : F0 * (1 + 0.07 * S.slow + 0.012 * (multNow - 1)));   // pull in during slow-mo and as the multiplier climbs
   const live = S.live && camBob && !calm;
@@ -27,7 +30,7 @@ export function render() {
   ctx.save();
   const shake = shakeOffset(); if (shake) ctx.translate(shake[0], shake[1]);
   ctx.fillStyle = FOGCSS; ctx.fillRect(-W, -H, 3 * W, 3 * H);
-  if (LV.id === 'airport') paintAirport(); else if (LV.id === 'nyc') paintNYC(); else paintShibuya();
+  if (LV.id === 'airport') paintAirport(); else if (LV.id === 'nyc') paintNYC(); else if (LV.id === 'park') paintPark(); else if (LV.id === 'bridge') paintBridge(); else paintShibuya();
   if (LV.id === 'nyc') { drawCars(); nycSteam(); }
   drawBelts();
   drawStrips();

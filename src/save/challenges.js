@@ -92,11 +92,14 @@ function setTally(name, value) {
   for (const c of before) if (isDone(c)) { gainXp(XP_UNLOCK); if (listener) listener(c); }
 }
 // Add to a running total, such as people passed.
-export const track = (name, n = 1) => { setTally(name, tallyOf(name) + n); rotateAdd(name, n); };
+// Practice and other non-standard runs switch counting off, so they cannot move unlocks or daily/weekly goals.
+let counting = true;
+export const setCounting = v => { counting = !!v; };
+export const track = (name, n = 1) => { if (!counting) return; setTally(name, tallyOf(name) + n); rotateAdd(name, n); };
 
 // Today's and this week's rotating challenges count the same events.
 let rotListener = null;
 export function setRotatingListener(fn) { rotListener = fn; }
 setRotating(createRotating({ store, keys: liveKeys, onComplete: c => { gainXp(c.period === 'daily' ? XP_DAILY : XP_WEEKLY); if (rotListener) rotListener(c); } }));
 // Keep the best single result, such as distance in one run.
-export const trackMax = (name, value) => { const v = Math.floor(value); if (v > tallyOf(name)) setTally(name, v); };
+export const trackMax = (name, value) => { if (!counting) return; const v = Math.floor(value); if (v > tallyOf(name)) setTally(name, v); };

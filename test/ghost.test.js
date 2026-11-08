@@ -6,7 +6,8 @@ const DT = 1 / 30;
 
 // a stored ghost that walks 3 m/s straight down the middle until it reaches `end` metres
 function plant(E, key, end) { const pts = []; for (let z = 0; z <= end; z += 1.2) pts.push(0, +z.toFixed(1)); E.storage[key] = JSON.stringify(pts); }
-const clear = E => { for (const p of E.S.people) if (Math.abs(p.z - E.S.pz) < 3.5) p.dead = true; };
+// clears the space around you; after a jump down the hall, the crowd for that stretch is made first, so the next tick cannot spawn it on top of you
+const clear = E => { while (E.S.nextChunk < E.S.pz + 80) { E.genChunk(E.S.nextChunk); E.S.nextChunk += 4; } for (const p of E.S.people) if (Math.abs(p.z - E.S.pz) < 3.5) p.dead = true; };
 
 test('a classic ghost stays out of sight until you are within 60 m of where your best run ended', () => {
   const E = load(); plant(E, 'excuseme_ghost_airport', 300);
@@ -47,7 +48,7 @@ test('a race win with a new best time saves a ghost, and the next race brings it
   E.S.race.bots.forEach(b => { b.z = 0; b.speed = 0; });
   E.S.pz = E.LV.goal + 1; E.tick(DT);
   assert.ok(E.S.race.finished && E.S.race.place === 1 && E.S.race.newBest, 'won with a new best');
-  const saved = E.storage['excuseme_ghost_race_airport'];
+  const saved = E.storage['excuseme_ghost_race_airport:rt1'];
   assert.ok(saved && JSON.parse(saved).length >= 4, 'ghost saved');
   E.start('race');
   assert.ok(E.S.ghost, 'ghost loaded for the next race');
@@ -55,7 +56,7 @@ test('a race win with a new best time saves a ghost, and the next race brings it
 });
 
 test('a race against bots has a ghost, a daily run has none', () => {
-  const E = load(); plant(E, 'excuseme_ghost_race_airport', 300);
+  const E = load(); plant(E, 'excuseme_ghost_race_airport:rt1', 300);
   E.setLevel(0); E.start('race');
   assert.ok(E.S.ghost, 'bot race has one');
   E.start('daily');

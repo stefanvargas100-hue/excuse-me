@@ -54,7 +54,9 @@ export const CARCOLS = ['#1f2937', '#e5e7eb', '#9ca3af', '#1e3a8a', '#7f1d1d', '
 export const REACT = {
   airport: ['Whoa!', 'Hey!', 'Rude.', 'Watch it!', 'Excuse YOU.', 'Seriously?', 'My bag!'],
   nyc: ['Hey!', "I'm walkin' here!", 'Watch it!', 'Come ON.', 'Yo!', 'Unbelievable.'],
-  shibuya: ['Sumimasen!', 'Ah!', 'Eh?!', 'Whoa!', 'Abunai!']
+  shibuya: ['Sumimasen!', 'Ah!', 'Eh?!', 'Whoa!', 'Abunai!'],
+  bridge: ['Watch the camera!', 'Excuse me!', 'On your right!', 'Nice view!'],
+  park: ['On your right!', 'Watch the dog!', 'Easy!', 'Excuse me!', 'Enjoy the park!']
 };
 
 export const RIVAL_LINES = ['Move.', 'Coming through.', 'Mine.', 'Outta my way.', 'Too slow.'];

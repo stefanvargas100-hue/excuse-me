@@ -10,6 +10,12 @@ function setup(n=2,delay=0){
  return {nodes,starts,notices,flush,advance,get time(){return time;},setFilter:f=>filter=f,get packets(){return packets;}};
 }
 const ready=s=>{s.nodes.forEach(n=>n.setReady(true));s.advance(600);s.flush();};
+test('a race format change invalidates acknowledgements and travels with the start plan',()=>{
+ const s=setup();ready(s);s.nodes[0].setPlayers(['p0','p1'],1,true);s.flush();
+ assert.equal(s.nodes[0].canStart(),false);assert.ok(s.nodes[0].view().players.every(p=>!p.ready));
+ ready(s);assert.equal(s.nodes[0].start('elim:1'),true);s.advance(1000);
+ assert.equal(s.starts.length,2);assert.ok(s.starts.every(({p})=>p.elim===true));
+});
 test('offset clocks map a common deadline into every phone clock at 2, 4 and 8 players',()=>{
  for(const n of [2,4,8]){const s=setup(n,40);ready(s);assert.equal(s.nodes[0].canStart(),true);assert.equal(s.nodes[0].start('room:1'),true);s.advance(1000);assert.equal(s.starts.length,n);const deadlines=s.starts.map(({i,p})=>p.startAtLocal-i*54321);assert.ok(Math.max(...deadlines)-Math.min(...deadlines)<1);assert.ok(deadlines.every(t=>t>s.time));}
 });

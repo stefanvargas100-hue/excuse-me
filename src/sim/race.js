@@ -1,7 +1,7 @@
 import { COMBO_SPEED_PER, comboLevel } from '../config/combo.js';
 export { comboLevel } from '../config/combo.js';
 import { Music } from '../audio/music.js';
-import { LV } from '../config/levels.js';
+import { LV, halfAt } from '../config/levels.js';
 import { BASE, BOOST, CHAIN_WINDOW, LAT_ACC, LAT_MAX, REGEN, R_PLAYER } from '../config/tuning.js';
 import { clamp, mulberry32 } from '../config/util.js';
 import { REACT } from '../config/colour.js';
@@ -10,7 +10,7 @@ import { STRIP_SPEED, beltAt, beltFor, contain, glassBetween, onStrip } from '..
 import { effects, fitOf, randomLoadout, statsOf } from '../config/stats.js';
 import { COST_DASH, DASH_T, DASH_V } from '../input/input.js';
 import { buzz, store } from '../save/store.js';
-import { banner } from './actions.js';
+import { SHOUT_CD, banner, shoutReact, shoutTargets, wellTimed } from './actions.js';
 import { endCoach } from './racecoach.js';
 import { track } from '../save/challenges.js';
 import { LOOK } from '../save/progress.js';
@@ -18,6 +18,10 @@ import { applyBuild, dress } from './people.js';
 import { CLOSE_STAMINA, RAZOR_STAMINA, addPop, nearBoost, nearMul } from './scoring.js';
 import { S } from './state.js';
 import { ghostSave } from './replay.js';
+import { recordKey } from './runopts.js';
+import { breakClean, stepClean } from './clean.js';
+import { courseTag, openingX, zonesOf } from '../config/routes.js';
+import { duelElimRows, elimRows } from './elim.js';
 import { collectPowerups, placePowerups, powerMul, stepPowerups } from './powerups.js';
 
 /* ---------- race mode: A to B against bots; a bump slows you down instead of ending the run ---------- */
@@ -32,6 +36,8 @@ const DRAFT_CHARGE = 1.2;             // seconds to earn it at middling distance
 const DRAFT_T = 2.5, DRAFT_BOOST = 1.25;   // how long it lasts and how much faster you go
 const DRAFT_COOL = 3;                 // after a boost runs out, no new slipstream for this long, so they cannot be chained
 const DRAFT_MIN_V = 0.8;              // they have to be walking your way, not standing or coming at you
+// The outfit this run uses: your saved one, or the one the run supplies. Never written back to the save.
+export const lookOf = () => (S.run && S.run.outfit ? { ...LOOK, ...S.run.outfit } : LOOK);
 export const draftMul = r => (r.draftT > 0 ? DRAFT_BOOST : 1);
 export const draftCharge = r => clamp(r.draftC / DRAFT_CHARGE, 0, 1);
 
@@ -80,10 +86,12 @@ export const racePace = (chain, energy) => (1 + COMBO_SPEED_PER * (comboLevel(ch
 // Three tiers. Pace is walking speed relative to yours, miss is how often a bot fails to notice someone,
 // dash is how readily it dashes around trouble, burst is how often it spends stamina on a burst of speed,
 // fight is how hard it contests the race: chasing slipstreams, shaking you off its tail, using the fast strips.
+// detour is how often it takes the clear side opening at a route zone rather than the tight direct one.
+// excuse is how readily it says Excuse me, as a chance per second while someone is in its way (same range and recharge as yours).
 export const DIFFICULTIES = [
-  { name: 'Easy', pace: [0.82, 0.86, 0.89], miss: 0.14, dash: 0, burst: 0.15, fight: 0 },
-  { name: 'Medium', pace: [0.89, 0.93, 0.97], miss: 0.06, dash: 0.5, burst: 0.3, fight: 0.5 },
-  { name: 'Hard', pace: [0.98, 1.02, 1.06], miss: 0.01, dash: 1, burst: 0.6, fight: 1 }
+  { name: 'Easy', pace: [0.82, 0.86, 0.89], miss: 0.14, dash: 0, burst: 0.15, fight: 0, excuse: 0.15, detour: 0.75 },
+  { name: 'Medium', pace: [0.89, 0.93, 0.97], miss: 0.06, dash: 0.5, burst: 0.3, fight: 0.5, excuse: 0.7, detour: 0.5 },
+  { name: 'Hard', pace: [0.98, 1.02, 1.06], miss: 0.01, dash: 1, burst: 0.6, fight: 1, excuse: 2, detour: 0.3 }
 ];
 const BOTS = [
   { name: 'Mia', color: '#14b8a6', shirt: '#14b8a6', hair: '#3b2a1e', hairStyle: 'long', skin: '#c68863' },
@@ -127,7 +135,7 @@ export function initRace(botCount) {
   for (let i = 0; i < n; i++) S.race.bots.push(makeBot(i, diff, pool.splice((Math.random() * pool.length) | 0, 1)[0]));
   S.race.pickups = n > 0 ? placePowerups(LV.goal) : [];   // live races against friends have none: pickups are not shared between phones yet
   S.puZ0 = 0;
-  S.race.me = effects(statsOf(LOOK));   // your build and gear, race mode only
+  S.race.me = effects(statsOf(lookOf()));   // your build and gear, race mode only
   S.speed = 0;          // everyone starts from a standstill, so acceleration counts
   S.timeLeft = 99999;   // no clock in a race
 }
@@ -141,7 +149,7 @@ export function raceCountdown(dt) {
     if (sec > 0) { addPop(String(sec), '#ffffff', 56); Music.sfx('tick'); }
     else {
       addPop('GO!', '#27c27a', 60); Music.sfx('combo'); buzz(20);
-      const fit = fitOf(LOOK).boost;
+      const fit = fitOf(lookOf()).boost;
       if (fit) addPop('FIT CHECK +' + fit, '#ff6b9d', 30);
     }
   }
@@ -173,7 +181,7 @@ function duelTick(dt) {
   if (D.sendT <= 0) {
     D.sendT = D.sendEvery;
     const r = v => Math.round(v * 100) / 100;
-    D.send('pos', { n: ++D.n, x: r(S.px), z: r(S.pz), vx: r(S.vx), s: r(S.speed) });
+    if (!(S.race.elim && S.race.elim.meOut)) D.send('pos', { n: ++D.n, x: r(S.px), z: r(S.pz), vx: r(S.vx), s: r(S.speed) });
   }
   for (const f of S.race.bots.filter(b => b.remote)) {
     const P = D.peers[f.peerId];
@@ -193,7 +201,7 @@ export function rearZ() { let z = S.pz; if (S.race) for (const b of S.race.bots)
 // Pushes a runner out of anyone they overlap and cancels the part of their movement that went into that person.
 // Returns the first person touched, or null.
 function resolve(t) {
-  const lim = LV.half - 0.5;
+  const lim = halfAt(t.z) - 0.5;
   let hit = null;
   for (let iter = 0; iter < 3; iter++) {
     let moved = false;
@@ -238,7 +246,7 @@ function givesWayTo(b) {
 }
 function resolveRacers(t) {
   if (!S.duel) return;
-  const lim = LV.half - 0.5;
+  const lim = halfAt(t.z) - 0.5;
   for (let iter = 0; iter < 3; iter++) {
     let moved = false;
     for (const b of S.race.bots) {
@@ -276,7 +284,8 @@ export function raceCollide(dt) {
     if (fresh) {
       S.bumpT = S.race.me.bumpT; S.nearT = 0; S.bumps++; S.draftC = 0; S.draftT = 0;
       S.burstT = 0; S.dashT = 0; S.breakFlash = 0.3; S.hitStop = 0.07;
-      S.chain = 0; S.snake = 0; S.oncRun = 0; S.multPrev = 1;
+      S.chain = 0; S.snake = 0; S.oncRun = 0; S.multPrev = 1; breakClean();
+      if (S.lesson) S.lesson.log.push({ k: 'bump' });
       addPop('BUMP!', '#ff4d4f', 34); Music.sfx('oof'); buzz([40, 30, 80]);
     }
     if (S.blockT > STUCK_T) { S.ghostT = STUCK_GHOST; S.blockT = 0; }   // never let anyone stay pinned
@@ -285,6 +294,7 @@ export function raceCollide(dt) {
 
 // Current standings, front to back: [{ name, z, me, color, done, finishT }]
 export function standings() {
+  if (S.duel && S.race.elim) return duelElimRows();
   if (S.duel) {
     const D = S.duel;
     const rows = [{ id: D.meId, name: 'You', z: S.pz, me: true, color: '#ffcf1f', done: !D.dnf && S.race.finished, dnf: !!D.dnf, finishT: D.finish ?? (S.race.finished && !D.dnf ? S.time : null) }];
@@ -295,20 +305,36 @@ export function standings() {
     rows.sort((a, b) => Number(b.done) - Number(a.done) || Number(a.dnf) - Number(b.dnf) || (a.done && b.done ? a.finishT - b.finishT : b.z - a.z) || a.id.localeCompare(b.id));
     return rows;
   }
-  const R = S.race, rows = [{ name: 'You', z: S.pz, me: true, color: '#ffcf1f', done: R.finished, finishT: R.finished ? S.time : null }];
+  const R = S.race, rows = [];
+  if (!R.elim || !R.elim.out.some(o => o.me)) rows.push({ name: 'You', z: S.pz, me: true, color: '#ffcf1f', done: R.finished, finishT: R.finished ? S.time : null });
   for (const b of R.bots) rows.push({ name: b.name, z: b.z, me: false, color: b.color, done: b.done, finishT: b.finishT });
+  if (R.elim) return elimRows(rows);   // eliminated racers rank below everyone still in, latest out first
   rows.sort((a, b) => (b.done - a.done) || (a.done && b.done ? a.finishT - b.finishT : b.z - a.z));
   return rows;
 }
 export const myPlace = () => standings().findIndex(r => r.me) + 1;
 
 /* ---------- bots: they steer like a person would, not along a line ---------- */
+// Route zones: each bot decides once per zone which opening to take, then lines up for it early, so it is never caught
+// against the barrier far from an opening. Returns the x to aim for and how far away the barrier is, or null.
+function routeAim(b) {
+  for (const zone of zonesOf(LV.id)) {
+    const dz = zone.z - b.z;
+    if (dz < -1.5 || dz > 30) continue;
+    if (!b.routes) b.routes = {};
+    if (b.routes[zone.z] === undefined) b.routes[zone.z] = S.race.rng() < b.diff.detour ? 'detour' : 'direct';
+    return { x: openingX(LV.id, zone, b.routes[zone.z]), dz };
+  }
+  return null;
+}
+
 // Looks well ahead, picks the lane that gets them past slower walkers without clipping anyone, drifts gently
 // from side to side when the road is clear, and dashes or bursts the way a good player does.
 function think(b) {
-  const lim = LV.half - 0.5, look = 6 + b.speed * 2.6, rng = S.race.rng;
+  const look = 6 + b.speed * 2.6, lim = Math.min(halfAt(b.z),halfAt(b.z+look)) - 0.5, rng = S.race.rng;
   const wander = Math.sin(S.clock * 0.7 + b.seed) * lim * 0.45;
   let bestX = b.x, bestC = Infinity, danger = 99;
+  const aim = routeAim(b), aimW = aim ? (aim.dz < 8 ? 2.5 : 0.35) : 0;
   for (let tx = -lim; tx <= lim + 1e-6; tx += 0.4) {
     if (contain(LV.id, b.x, tx, b.z) !== tx) continue;   // behind the glass: not a place this bot can go
     let c = Math.abs(tx - b.x) * 0.18 + (Math.abs(tx - b.target) < 0.01 ? -0.25 : 0);
@@ -331,7 +357,7 @@ function think(b) {
         if (Math.abs(tx - b.x) < 0.01 && gap < 0.3 && dz < danger) danger = dz;
       }
     }
-    c += Math.abs(tx - wander) * 0.07;
+    c += Math.abs(tx - wander) * 0.07 + (aim ? Math.abs(tx - aim.x) * aimW : 0);
     // racing: tuck in behind whoever is just ahead, shake off anyone on your own tail, take the fast strip
     const fight = b.diff.fight;
     if (fight) {
@@ -351,12 +377,29 @@ function think(b) {
   b.target = bestX; b.danger = danger; b.clear = danger > 9 && bestC < 3;
 }
 
+// A bot says Excuse me with the player's rules. Returns how many people it asked; 0 when recharging or nobody was reachable.
+export function botExcuseMe(b) {
+  if (!(b.shoutCD > 0)) b.shoutCD = 0;
+  if (b.shoutCD > 0) return 0;
+  const who = { x: b.x, z: b.z }, perfect = wellTimed(who), near = shoutTargets(who, perfect, true);   // anyone already stepping aside is left alone, so calls cannot stack
+  if (!near.length) return 0;
+  b.shoutCD = SHOUT_CD - (perfect ? 2 : 0); b.calls = (b.calls || 0) + 1;
+  b.react = { t: 0, text: 'Excuse me!', up: false };
+  if (Math.abs(b.z - S.pz) < 14) Music.sfx('shout');   // you can hear the ones near you
+  shoutReact(near, who, perfect, S.race.rng);
+  return near.length;
+}
+const inWay = b => S.people.some(p => !p.prop && !p.dead && !p.rival && !(p.aside > 0) && p.z - b.z > 0.4 && p.z - b.z < 4.5 && Math.abs(p.x - b.x) < 0.8 && !glassBetween(LV.id, b.x, b.z, p.x, p.z));
+
 function stepBot(b, dt) {
-  const R = S.race, lim = LV.half - 0.5;
+  const R = S.race, lim = halfAt(b.z + b.speed * dt) - 0.5;
   b.thinkT -= dt;
   if (b.thinkT <= 0) { think(b); b.thinkT = 0.1 + R.rng() * 0.18; }   // people do not react instantly
   b.nearT = Math.max(0, b.nearT - dt); b.bumpT = Math.max(0, b.bumpT - dt); b.ghostT = Math.max(0, b.ghostT - dt); b.cool = Math.max(0, b.cool - dt);
   b.burstT -= dt; b.dashT -= dt; stepPowerups(b, dt);
+  b.shoutCD = Math.max(0, (b.shoutCD || 0) - dt);
+  if (b.react) { b.react.t += dt; if (b.react.t > 1.4) b.react = null; }
+  if (b.shoutCD <= 0 && b.bumpT <= 0 && inWay(b) && R.rng() < b.diff.excuse * dt) botExcuseMe(b);
   b.energy = Math.min(100, b.energy + REGEN * b.st.regen * dt);
   if (b.chain > 0 && S.time - b.lastPassT > CHAIN_WINDOW) b.chain = 0;
   // a good player dashes round a person who is about to be hit, and bursts when the way is clear
@@ -393,6 +436,7 @@ function stepBot(b, dt) {
       if (b.blockT > STUCK_T) { b.ghostT = STUCK_GHOST; b.blockT = 0; }
     } else b.blockT = Math.max(0, b.blockT - dt * 2);
   }
+  if (LV.id === 'park' || LV.id === 'bridge') b.x = clamp(b.x, -halfAt(b.z) + 0.5, halfAt(b.z) - 0.5);
   b.vz = b.speed;
   collectPowerups(b, b.x, b.z, bz0, false);
   // passing people builds the bot's combo, like yours
@@ -416,10 +460,18 @@ function stepBot(b, dt) {
   if (!b.done && b.z >= LV.goal) { b.done = true; b.finishT = S.time; b.z = LV.goal; }
 }
 
+// A friend-room host who has been eliminated no longer runs, but still follows the others so they can be eliminated in turn.
+export function stepRemotes(dt) {
+  for (const b of S.race.bots) if (b.remote) stepRemote(b, dt);
+  if (S.duel) duelTick(dt);
+}
+
 export function updRace(dt) {
   const R = S.race; if (!R) return;
   R.elapsed = S.time;
+  if (!R.finished) stepClean(S.speed * dt);
   if (stepDraft(S, S.px, S.pz, S.bumpT > 0, dt)) {
+    if (S.lesson) S.lesson.log.push({ k: 'slip' });
     addPop('SLIPSTREAM!', '#7fd0ff', 30); Music.sfx('dash'); buzz(15);
     track('slips');
     if (S.time - S.lastSlip < 20) { track('doubleSlip'); S.lastSlip = -99; } else S.lastSlip = S.time;
@@ -440,9 +492,10 @@ export function finishRace() {
   const R = S.race;
   endCoach();
   R.finished = true; R.board = standings(); R.place = R.board.findIndex(r => r.me) + 1;
-  const key = 'excuseme_race_best_' + LV.id, prev = parseFloat(store.get(key, '0')) || 0;
-  R.newBest = !S.duel && R.place === 1 && (!prev || S.time < prev);
+  const key = recordKey('excuseme_race_best_' + LV.id + courseTag(LV.id), S.run), prev = parseFloat(store.get(key, '0')) || 0;
+  R.newBest = !S.duel && S.run.policy.records && R.place === 1 && (!prev || S.time < prev);
   if (R.newBest) { store.set(key, S.time.toFixed(2)); ghostSave(); }
+  if (!S.run.policy.progress) return;   // practice and other special runs end here: no tallies, no unlock progress
   if (R.place === 1) banner('YOU WIN', '#27c27a');
   if (S.duel) { S.duel.send('fin', { ft: S.time }); S.duel.send('fin', { ft: S.time }); return; }   // races against friends do not count toward unlocks
   track('races');
@@ -452,5 +505,5 @@ export function finishRace() {
     if (R.diff.name === 'Hard') track('winsHard');
   }
 }
-export const raceBest = id => parseFloat(store.get('excuseme_race_best_' + id, '0')) || 0;
+export const raceBest = (id, run) => parseFloat(store.get(recordKey('excuseme_race_best_' + id + courseTag(id), run), '0')) || 0;
 export const fmtTime = t => Math.floor(t / 60) + ':' + (t % 60 < 10 ? '0' : '') + (t % 60).toFixed(1);

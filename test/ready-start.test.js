@@ -29,6 +29,16 @@ test('changing the stage clears both ready confirmations and updates the ready c
   for(const p of [h,g])assert.ok(p.lobbyPlayers().every(r=>!r.ready));
   assert.equal(h.canStartRoom(),false);assert.equal(h.element('friendStart').disabled,true);
 });
+
+test('changing race format clears readiness and starts the same synchronized elimination race',async()=>{
+  const {games:[h,g]}=await pair();h.setRoomReady(true);g.setRoomReady(true);await settle();
+  h.setRoomElim(true);await settle();
+  for(const p of [h,g])assert.ok(p.lobbyPlayers().every(r=>!r.ready),'format change requires fresh agreement');
+  assert.equal(h.canStartRoom(),false);
+  h.setRoomReady(true);g.setRoomReady(true);await settle();h.hostStart();await settle();
+  for(const p of[h,g]){assert.equal(p.state,'play');assert.ok(p.S.race.elim);assert.ok(p.S.duel.startRemaining()>0);}
+  assert.equal(h.S.seed,g.S.seed);
+});
 test('backgrounding in the lobby clears readiness without ending a short visit',async()=>{
   const {games:[h,g]}=await pair();h.setRoomReady(true);g.setRoomReady(true);await settle();
   g.visibility(true);await settle();g.visibility(false);await settle();

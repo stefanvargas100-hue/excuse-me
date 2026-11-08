@@ -1,6 +1,6 @@
 import { LEVELS } from '../config/levels.js';
 import { $ } from '../dom.js';
-import { MAX_PLAYERS, duelUi, hostRoom, hostStart, inviteLink, isHost, joinRoom, leaveRoom, roomCode, roomLevel, setRoomLevel, setRoomReady, roomLobbyState, canStartRoom } from '../online/duel.js';
+import { MAX_PLAYERS, duelUi, hostRoom, hostStart, inviteLink, isHost, joinRoom, leaveRoom, roomCode, roomElim, setRoomElim, roomLevel, setRoomLevel, setRoomReady, roomLobbyState, canStartRoom } from '../online/duel.js';
 import { go } from './screens.js';
 
 /* ---------- Race friends: make a room or join one, see who is in, then the host starts ---------- */
@@ -41,7 +41,8 @@ function showRoster(players) {
   $('friendReady').disabled = lobby.pending || (!lobby.canReady && !(mine?.ready && lobby.busy));
   $('friendReady').textContent = lobby.pending ? 'Confirming...' : mine?.ready ? 'Not ready' : 'Ready';
   $('friendReady').setAttribute('aria-pressed', String(!!mine?.ready));
-  const stageName = LEVELS[roomLevel()].city;
+  const stageName = LEVELS[roomLevel()].city + (roomElim() ? ' ? Elimination' : '');
+  document.querySelectorAll('#friendFormat .chip').forEach((c, i) => c.setAttribute('aria-pressed', String((i === 1) === roomElim())));
   if (isHost()) st().forEach((o, j) => o.setAttribute('aria-pressed', String(j === roomLevel())));
   if (isHost() && n) $('friendStatus').textContent = stageName + '. ' + (n < 2 ? 'Waiting for friends to join...' : n < MAX_PLAYERS ? n + ' in the room. Start now or wait for more.' : 'Room is full. Ready when you are.');
   if (!isHost() && n) { view('friendGuest'); $('friendCodeG').textContent = roomCode(); $('friendStatus').textContent = 'Stage: ' + stageName + '. Waiting for the host to start...'; }
@@ -67,6 +68,7 @@ export function initFriend() {
     if (players.length) showRoster(players);
     else if (!$('friendGuest').hidden) { view('friendHome'); $('friendStart').disabled = true; }   // the host closed the room on us
   };
+  document.querySelectorAll('#friendFormat .chip').forEach((c, i) => c.addEventListener('click', () => setRoomElim(i === 1)));
   $('friendBack').addEventListener('click', leaveRoom);
   $('friendMake').addEventListener('click', async () => {
     view('friendHost');
