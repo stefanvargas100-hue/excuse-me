@@ -38,6 +38,17 @@
   <button id="tutSkip" type="button">Skip tips</button>
 </div>
 
+<div id="lesson" hidden>
+  <div class="tstep" id="lessonStep">Lesson 1 / 4</div>
+  <div class="ttext" id="lessonText"></div>
+  <div class="lmsg" id="lessonMsg" hidden></div>
+  <div class="lbtns" id="lessonBtns" hidden>
+    <button id="lessonRetry" type="button">Try again</button>
+    <button id="lessonNext" type="button" class="primary">Next lesson</button>
+    <button id="lessonExit" type="button">Exit</button>
+  </div>
+</div>
+
 <div id="start" class="panel">
   <div class="card home">
     <div class="eyebrow">Don't touch anyone</div>
@@ -47,8 +58,9 @@
       <button id="lookBtn" class="tile" type="button">Customize</button>
       <button id="chalBtn" class="tile" type="button">Challenges</button>
       <button id="howBtn" class="tile" type="button">How to play</button>
+      <button id="practiceBtn" class="tile" type="button">Practice</button>
       <button id="setBtn" class="tile" type="button">Settings</button>
-      <button id="boardsBtn" class="tile wide" type="button">Leaderboards</button>
+      <button id="boardsBtn" class="tile" type="button">Leaderboards</button>
     </div>
     <button id="profBtn" class="profchip" type="button" aria-label="Your profile">
       <span id="profPic" class="pic">🚶</span>
@@ -81,6 +93,23 @@
   </div>
 </div>
 
+<div id="practice" class="panel" hidden>
+  <div class="card full">
+    <div class="topbar"><button class="backbtn" data-back type="button" aria-label="Back">‹</button><h2>Practice</h2></div>
+    <div id="practiceList" class="stack"></div>
+  </div>
+</div>
+
+<div id="challenge" class="panel" hidden>
+  <div class="card full">
+    <div class="topbar"><button class="backbtn" data-back type="button" aria-label="Back">‹</button><h2>Weekly challenge</h2></div>
+    <p id="chInfo" class="lead"></p>
+    <ul id="chOutfit" class="chlist" aria-label="Supplied outfit"></ul>
+    <p id="chRules" class="lead"></p>
+    <button id="chStart" class="big" type="button">Start</button>
+  </div>
+</div>
+
 <div id="stages" class="panel" hidden>
   <div class="card full">
     <div class="topbar"><button class="backbtn" data-back type="button" aria-label="Back">‹</button><h2 id="stagesTitle">Classic</h2></div>
@@ -89,6 +118,12 @@
       <button class="chip" type="button" aria-pressed="false">Easy</button>
       <button class="chip" type="button" aria-pressed="true">Medium</button>
       <button class="chip" type="button" aria-pressed="false">Hard</button>
+    </div>
+    <div id="raceFormat" class="modes" role="group" aria-label="Race format" hidden>
+      <span class="modelabel">Format</span>
+      <button class="chip" type="button" aria-pressed="true">Race</button>
+      <button class="chip" type="button" aria-pressed="false">Elimination</button>
+      <button class="chip" type="button" aria-pressed="false">Weekly</button>
     </div>
     <div id="levels" class="stack" role="group" aria-label="Choose a stage"></div>
   </div>
@@ -101,6 +136,7 @@
       <button class="chip" type="button" data-tab="daily" aria-pressed="true">Daily</button>
       <button class="chip" type="button" data-tab="weekly" aria-pressed="false">Weekly</button>
       <button class="chip" type="button" data-tab="classic" aria-pressed="false">Classic</button>
+      <button class="chip" type="button" data-tab="challenge" aria-pressed="false">Challenge</button>
     </div>
     <div id="boardStages" class="modes" role="group" aria-label="Stage" hidden></div>
     <p id="boardTitle" class="boardtitle"></p>
@@ -119,6 +155,10 @@
     </div>
     <div id="friendHost" class="btns" hidden>
       <div id="friendStages" class="modes" role="group" aria-label="Stage"></div>
+      <div id="friendFormat" class="modes" role="group" aria-label="Race format">
+        <button class="chip" type="button" aria-pressed="true">Race</button>
+        <button class="chip" type="button" aria-pressed="false">Elimination</button>
+      </div>
       <div id="friendCode" class="roomcode" aria-live="polite">----</div>
       <ul class="friendroster" aria-label="Players in the room"></ul>
       <button id="friendShare" class="ghost" type="button" disabled>Send invite</button>
@@ -268,6 +308,7 @@
     <p id="unlockNote" class="unlock" hidden></p>
     <p id="nextNote" class="nextgoal" hidden></p>
     <p id="xpNote" class="nextgoal" hidden></p>
+    <p id="cleanNote" class="nextgoal" hidden></p>
     <div class="btns">
       <button id="next" class="big" type="button" hidden>Next level</button>
       <button id="again" class="big" type="button">Try again</button>

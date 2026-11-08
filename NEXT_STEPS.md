@@ -1,5 +1,7 @@
 # Excuse Me: Next Steps
 
+Current gameplay expansion queue (2026-11-07): see [GAMEPLAY_BATCH_PLAN.md](GAMEPLAY_BATCH_PLAN.md). It covers the six agreed mechanics, ordered batches, acceptance checks and release verification. The older notes below are historical context.
+
 Written 2026-11-05 at the end of a long build session. Start here next time.
 Live game: https://stefanvargas100-hue.github.io/excuse-me/
 

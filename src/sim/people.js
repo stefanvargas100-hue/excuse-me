@@ -2,6 +2,7 @@ import { Music } from '../audio/music.js';
 import { DOGS, FASTSHIRTS, GEARS, HAIRS, LUGS, PANTS, SHIRTS, SHOES, SKINS, shade } from '../config/colour.js';
 import { randomFace } from '../config/faces.js';
 import { LV, SPAWN_FAR } from '../config/levels.js';
+import { routePieces } from '../config/routes.js';
 import { BUILDS } from '../config/stats.js';
 import { BELT_SPEED, beltHasZ, beltInfo } from '../config/strips.js';
 import { R_BODY, R_LUGGAGE, R_PLAYER, walkSpeed } from '../config/tuning.js';
@@ -16,6 +17,14 @@ import { PHONE_SHARE, activeMod } from './modifiers.js';
 import { S, goalOf, raceBuild, state } from './state.js';
 
 
+
+/* ---------- obstacle shapes ----------
+   Collision circles fitted inside what is drawn (render/figures.js drawProp), so passing close beside something never counts as a hit.
+   test/hitboxes.test.js checks every kind against its drawn size. */
+const rowC = (os, r) => os.map(ox => ({ ox, oz: 0, r }));
+const WET = () => rowC([-0.13, 0.13], 0.12);                               // wet-floor sign: thin, as wide as the board
+const BARRIER = () => rowC([-0.8, -0.4, 0, 0.4, 0.8], 0.14);              // crowd barrier: a thin rail 1.9 m wide
+const RACK = os => os.flatMap(ox => [{ ox, oz: -0.22, r: 0.15 }, { ox, oz: 0.22, r: 0.15 }]);   // a bike at each spot, front and back wheel
 
 /* ---------- people ---------- */
 export function dress(p) {
@@ -97,7 +106,7 @@ export function applyBuild(p) {
 
 export function makeMe() {
   const p = Object.assign({ x: 0, z: 0, vx: 0, vz: 0, phase: 0, t: 0, h: 1.76, lug: 0, lugCol: '#000000', dog: 0, phone: false, fast: false,
-    rival: false, tele: false, hit: false, isMe: true, fx: 0, fz: 1, circles: [{ ox: 0, oz: 0, r: R_PLAYER }] }, LOOK);
+    rival: false, tele: false, hit: false, isMe: true, fx: 0, fz: 1, circles: [{ ox: 0, oz: 0, r: R_PLAYER }] }, LOOK, S && S.run && S.run.outfit);
   applyBuild(p); dress(p); return p;
 }
 
@@ -142,6 +151,8 @@ function spawnUnit(z, d) {
     if (d > 0.08) pool.push(['speedster', 1.5], ['luggage', 0.5]);
     if (d > 0.2) pool.push(['swerver', 1]);
     if (d > 0.4) pool.push(['trio', 1]);
+  } else if (id === 'park') {
+    pool = [['walker', 3], ['oncoming', 3], ['pair', 2], ['dog', 2], ['joggers', 2], ['tourist', 0.5]];
   } else {
     pool = [['oncoming', 5], ['walker', 3], ['pair', 2], ['phone', 1.5], ['diagonal', 2], ['luggage', 0.5]];
     if (d > 0.15) pool.push(['trio', 1], ['swerver', 1], ['speedster', 0.5]);
@@ -149,6 +160,10 @@ function spawnUnit(z, d) {
   let type = wpick(pool); const dirv = R() < 0.5 ? 1 : -1;
   if (raceBuild && (type === 'crosser' || type === 'diagonal') && beltInfo(id) && beltHasZ(beltInfo(id), z)) type = 'walker';   // nobody cuts across the glass walls
   switch (type) {
+    case 'joggers': {
+      for (let i=0;i<2;i++) mk(2.4+i*0.8, z+i*0.3, { jogger: true, fast: true, hx: 0, hz: 1, v0: rnd(3.3,4.1), shirtType: 'tank', pantsType: 'shorts', yieldP: 0.7 });
+      break;
+    }
     case 'walker': walker(z, 1); break;
     case 'oncoming': walker(z, -1, { lug: id === 'airport' && R() < 0.35 ? pick([-1, 1]) : 0 }); break;
     case 'luggage': walker(z, dirv, { lug: pick([-1, 1]) }); break;
@@ -183,7 +198,7 @@ function spawnUnit(z, d) {
       ctx.fillStyle = '#f4f1ea'; ctx.fillRect(cup[0] - 0.06 * s, cup[1] - 0.05 * s, 0.16 * s, 0.1 * s);
       break;
     }
-    case 'wetfloor': mk(rnd(-4, 4), z, { prop: 'wetfloor', circles: [{ ox: 0, oz: 0, r: 0.28 }] }); break;
+    case 'wetfloor': mk(rnd(-4, 4), z, { prop: 'wetfloor', circles: WET() }); break;
   }
 }
 
@@ -210,11 +225,11 @@ function nycProps(z0) {
   for (let z = Math.ceil(z0); z < z0 + 4; z++) {
     if (inXing(z) || inXing(z + 2) || inXing(z - 2) || z < 8) continue;
     if (z % 30 === 6) mk(-3.95, z, { prop: 'lamp', circles: [{ ox: 0, oz: 0, r: 0.14 }] });
-    else if (z % 15 === 12) mk(-3.7, z, { prop: 'tree', circles: [{ ox: 0, oz: 0, r: 0.55 }] });
+    else if (z % 15 === 12) mk(-3.7, z, { prop: 'tree', circles: [{ ox: 0, oz: 0, r: 0.18 }] });
     else if (z % 45 === 21) mk(-3.85, z, { prop: 'trash', circles: [{ ox: 0, oz: 0, r: 0.3 }] });
     else if (z % 60 === 39) mk(-4.0, z, { prop: 'hydrant', circles: [{ ox: 0, oz: 0, r: 0.18 }] });
     else if (z % 90 === 52 && R() < 0.6) mk(-3.35, z, { prop: 'cart', circles: [{ ox: 0, oz: -0.6, r: 0.45 }, { ox: 0, oz: 0, r: 0.45 }, { ox: 0, oz: 0.6, r: 0.45 }] });
-    if (z % 36 === 30 && R() < 0.6) mk(3.95, z, { prop: 'board', circles: [{ ox: 0, oz: 0, r: 0.3 }] });
+    if (z % 36 === 30 && R() < 0.6) mk(3.95, z, { prop: 'board', circles: rowC([-0.18, 0.18], 0.12) });
   }
 }
 
@@ -227,11 +242,11 @@ function nycStreet(z0) {
   const row = (k, x, z, os, r) => mk(x, z, { prop: k, circles: os.map(ox => ({ ox, oz: 0, r })) });
   if (n % 9 === 4) {
     const kind = NYC_ISLANDS[Math.floor(n / 9) % NYC_ISLANDS.length], x = rnd(-2.2, 2.4), z = z0 + 2;
-    if (kind === 'barrier') row(kind, x, z, [-0.6, 0, 0.6], 0.3);
+    if (kind === 'barrier') mk(x, z, { prop: kind, circles: BARRIER() });
     else if (kind === 'newsstand') row(kind, x, z, [-0.4, 0.4], 0.55);
-    else if (kind === 'bikes') row(kind, x, z, [-0.6, 0, 0.6], 0.28);
-    else row(kind, x, z, [-0.6, -0.2, 0.2, 0.6], 0.3);
-  } else if (n % 27 === 20) mk(-3.5, z0 + 2, { prop: 'shelter', circles: [-1.2, -0.4, 0.4, 1.2].map(oz => ({ ox: 0, oz, r: 0.45 })) });
+    else if (kind === 'bikes') mk(x, z, { prop: kind, rack: [-0.6, 0, 0.6], circles: RACK([-0.6, 0, 0.6]) });
+    else row(kind, x, z, [-0.5, -0.17, 0.17, 0.5], 0.21);
+  } else if (n % 27 === 20) mk(-3.5, z0 + 2, { prop: 'shelter', circles: [-1.25, -0.625, 0, 0.625, 1.25].map(oz => ({ ox: -0.18, oz, r: 0.19 })) });   // the back wall and the seat; the roof is overhead
   else if (n % 11 === 7) mk(-3.75, z0 + 1, { prop: 'trashbags', circles: [{ ox: 0, oz: 0, r: 0.45 }] });
 }
 
@@ -243,8 +258,9 @@ function tokyoStreet(z0) {
   if (n % 6 === 1) mk((n % 12 === 1 ? -1 : 1) * 10.0, z0 + 1, { prop: 'vending', circles: [{ ox: 0, oz: 0, r: 0.4 }] });
   if (n % 11 === 5) {
     const kind = TOKYO_ISLANDS[Math.floor(n / 11) % TOKYO_ISLANDS.length], x = rnd(-7.5, 7.5), z = z0 + 2;
-    const os = kind === 'asign' ? [0] : kind === 'bikes' ? [-1.0, -0.5, 0, 0.5, 1.0] : [-0.9, -0.3, 0.3, 0.9];
-    mk(x, z, { prop: kind, circles: os.map(ox => ({ ox, oz: 0, r: kind === 'asign' ? 0.3 : 0.28 })) });
+    if (kind === 'asign') mk(x, z, { prop: kind, circles: rowC([-0.17, 0.17], 0.13) });
+    else if (kind === 'bikes') { const os = [-1.0, -0.5, 0, 0.5, 1.0]; mk(x, z, { prop: kind, rack: os, circles: RACK(os) }); }
+    else mk(x, z, { prop: kind, circles: BARRIER() });
   }
 }
 
@@ -266,7 +282,7 @@ function airportProps(z0) {
   }
   const race = raceBuild && beltInfo(LV.id);
   const shape = (kind, x, z) => {
-    const cs = o => o.map(ox => ({ ox, oz: 0, r: kind === 'desk' ? 0.45 : kind === 'chairs' ? 0.28 : kind === 'trolleys' ? 0.3 : kind === 'plant' ? 0.38 : 0.3 }));
+    const cs = o => o.map(ox => ({ ox, oz: 0, r: kind === 'desk' ? 0.45 : kind === 'chairs' ? 0.28 : kind === 'trolleys' ? 0.26 : kind === 'plant' ? 0.38 : 0.3 }));
     const circles = kind === 'desk' ? cs([-0.9, -0.3, 0.3, 0.9]) : kind === 'chairs' ? cs([-0.75, -0.25, 0.25, 0.75]) : kind === 'trolleys' ? cs([-0.5, 0, 0.5]) : cs([0]);
     mk(x, z, { prop: kind, circles });
   };
@@ -275,11 +291,23 @@ function airportProps(z0) {
   else if (n % 5 === 2) { const side = race ? -1 : pick([-1, 1]); shape(n % 2 ? 'bin' : 'plant', side * 6.1, z0 + 1); }
 }
 
+function parkProps(z0) {
+  if (z0 < 24 || (z0 >= 232 && z0 <= 284)) return;
+  const n = Math.floor(z0 / 4), side = n % 2 ? -1 : 1, z = z0 + 2;
+  if (n % 6 === 0) mk(side * 5.1, z, { prop: 'bench', circles: rowC([-0.5,-0.17,0.17,0.5],0.2) });
+  else if (n % 6 === 1) mk(side * 5.4, z, { prop: 'lamp', circles: rowC([0],0.13) });
+  else if (n % 6 === 2) mk(side * 5.3, z, { prop: 'trash', circles: rowC([0],0.27) });
+  else if (n % 12 === 3) mk(side * 4.5, z, { prop: 'pretzel', circles: [-0.6,0,0.6].map(oz=>({ox:0,oz,r:0.4})) });
+  else if (n % 12 === 9) mk(side * 3.4, z, { prop: 'easel', circles: rowC([-0.2,0,0.2],0.15) });
+  else if (n % 6 === 4) mk(side * 4.6, z, { prop: 'bikes', rack: [-0.6,0,0.6], circles: RACK([-0.6,0,0.6]) });
+}
+
 function genChunkInner(z0) {
   const d = clamp(z0 / LV.goal, 0, 1);
   if (LV.id === 'nyc') { nycProps(z0); nycStreet(z0); }
   if (LV.id === 'airport') airportProps(z0);
   if (LV.id === 'shibuya') tokyoStreet(z0);
+  if (LV.id === 'park') parkProps(z0);
   if (inXing(z0 + 2)) return;   // the crosswalk crowds come from the signal waves instead
   const k = LV.base + (R() < 0.4 + 0.4 * d ? 1 : 0) + (d > 0.25 && R() < 0.55 ? 1 : 0) + (d > 0.6 && R() < 0.6 ? 1 : 0);
   for (let i = 0; i < k; i++) spawnUnit(z0 + R() * 4, d);
@@ -331,7 +359,7 @@ export function runEvent(kind) {
     banner(kind === 'parade' ? 'PARADE COMING THROUGH' : 'QUEUE ACROSS THE WALKWAY', '#ff9f43');
   } else if (kind === 'cleaners') {
     const lim = LV.half - 0.5, gapW = 2.2, gapX = rnd(-lim + gapW / 2 + 0.2, lim - gapW / 2 - 0.2);
-    for (let x = -lim; x <= lim; x += 1.0) if (Math.abs(x - gapX) >= gapW / 2) mk(x, z, { prop: 'wetfloor', circles: [{ ox: 0, oz: 0, r: 0.28 }] });
+    for (let x = -lim; x <= lim; x += 1.0) if (Math.abs(x - gapX) >= gapW / 2) mk(x, z, { prop: 'wetfloor', circles: WET() });
     banner('CLEANING CREW AHEAD', '#ffd166');
   } else if (kind === 'arrivals') {
     for (let i = 0; i < 13; i++) walker(S.pz + rnd(SPAWN_FAR, SPAWN_FAR + 28), -1, { lug: pick([-1, 1]) });
@@ -339,7 +367,7 @@ export function runEvent(kind) {
   } else if (kind === 'spill') {
     const x = clamp(S.px + rnd(-1.5, 1.5), -h + 1.4, h - 1.4), sz = z - 10;
     const sp = mk(x, sz, { prop: 'spill', circles: [] }); sp.rad = 1.0;
-    mk(x + (x > 0 ? -1.4 : 1.4), sz, { prop: 'wetfloor', circles: [{ ox: 0, oz: 0, r: 0.28 }] });
+    mk(x + (x > 0 ? -1.4 : 1.4), sz, { prop: 'wetfloor', circles: WET() });
     const dropper = mk(x + 0.6, sz + 0.8, { v0: 0, fx: 0, fz: -1 });
     dropper.react = { t: -1.2, text: 'My latte!', up: true };
     banner('SPILL AHEAD: NO GRIP', '#c8a165');
@@ -372,11 +400,13 @@ export function runEvent(kind) {
     }
     S.flows.push({ kind: 'weave', rows });
     banner('WEAVE AHEAD: FOLLOW THE GAPS', '#5ee6a8');
-  } else if (kind === 'cart' || kind === 'van' || kind === 'taxi') {
+  } else if (kind === 'cart' || kind === 'van' || kind === 'taxi' || kind === 'carriage') {
     // A vehicle crosses the walkway from one side to the other, beeping as it starts. Beat it across or wait for it to pass.
-    const dir = kind === 'van' ? 1 : pick([-1, 1]), x0 = -dir * (h + 3), cz = z - 4;
-    const spec = { cart: ['cart2', 2.6, 24, 3, 1.25, 0.5, 'BAGGAGE CART CROSSING', '#ffd166'], van: ['van', 3.2, 24, 3, 1.5, 0.7, 'DELIVERY VAN CUTTING ACROSS', '#c8a165'], taxi: ['taxi', 4.0, 30, 3, 1.4, 0.7, 'TAXI CUTTING THROUGH', '#ffcf1f'] }[kind];
-    const v = mk(x0, cz, { prop: spec[0], drive: dir * spec[1], driveAt: spec[2], circles: [...Array(spec[3]).keys()].map(i => ({ ox: -dir * i * spec[4], oz: 0, r: spec[5] })) });
+    const dir = kind === 'van' ? 1 : pick([-1, 1]), x0 = -dir * (h + 3);
+    const cz = kind === 'carriage' && z - 4 >= 225 && z - 4 <= 290 ? 300 : z - 4;
+    // [prop, speed, trigger distance, circles, spacing, radius, banner, colour, first circle back from the front, length]
+    const spec = { carriage: ['carriage', 2.5, 30, 6, 0.8, 0.4, 'HORSE CARRIAGE CROSSING', '#c8a165', 0.5, 5], cart: ['cart2', 2.6, 24, 3, 1.25, 0.5, 'BAGGAGE CART CROSSING', '#ffd166', 0, 3.05], van: ['van', 3.2, 24, 4, 3.2 / 3, 0.7, 'DELIVERY VAN CUTTING ACROSS', '#c8a165', 0.7, 4.6], taxi: ['taxi', 4.0, 30, 4, 1.0, 0.7, 'TAXI CUTTING THROUGH', '#ffcf1f', 0.7, 4.4] }[kind];
+    const v = mk(x0, cz, { prop: spec[0], drive: dir * spec[1], driveAt: spec[2], len: spec[9], circles: [...Array(spec[3]).keys()].map(i => ({ ox: -dir * (spec[8] + i * spec[4]), oz: 0, r: spec[5] })) });
     v.rad = 3.4; v.dirx = dir;
     banner(spec[6], spec[7]);
   } else if (kind === 'selfie') {
@@ -422,8 +452,20 @@ function beltRiders(z0) {
   // nobody rides the belt that comes toward you: the crowd never walks the wrong way on a walkway
 }
 
+// Route zones (config/routes.js): the same rope lines and queues for everyone, placed from data, never from the random stream.
+function placeRoute(z0) {
+  for (const p of routePieces(LV.id, z0, z0 + 4)) {
+    if (p.kind === 'rope') {
+      const os = []; for (let o = -p.half; o < p.half; o += 0.4) os.push(o); os.push(p.half);
+      mk(p.x, p.z, { prop: 'rope', skin: p.skin, span: p.half, circles: os.map(ox => ({ ox, oz: 0, r: 0.22 })) });
+    } else mk(p.x, p.z, { v0: 0, fx: 0, fz: 1, laneX: p.x });
+  }
+}
+
 export function genChunk(z0) {
   const n0 = S.people.length;
   seeded(':c' + z0, () => { genChunkInner(z0); beltRiders(z0); });
+  if (raceBuild) seeded(':r' + z0, () => placeRoute(z0));
+  if (S.race && S.race.elim) seeded(':g' + z0, () => { for (const [i, c] of S.race.elim.cps.entries()) if (c >= z0 && c < z0 + 4) mk(0, c, { prop: 'cpgate', span: LV.half - 0.5, num: i + 1, circles: [] }); });
   if (S.seed) { let sum = 0; for (let i = n0; i < S.people.length; i++) { const q = S.people[i]; sum += q.x * 7 + q.z; } S.chunkSum[z0] = Math.round(sum * 100); }
 }

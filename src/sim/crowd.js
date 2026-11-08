@@ -1,6 +1,6 @@
 import { RIVAL_LINES } from '../config/colour.js';
 import { beltAt, beltHasZ, beltInfo, beltSpeedAt, contain } from '../config/strips.js';
-import { LV } from '../config/levels.js';
+import { LV, halfAt } from '../config/levels.js';
 import { R_PLAYER, walkSpeed } from '../config/tuning.js';
 import { R, clamp, pick, rnd, sgn } from '../config/util.js';
 import { addPop } from './scoring.js';
@@ -26,7 +26,8 @@ function behaviours(p, dt) {
   if (p.swerve) {
     const dz = p.z - S.pz;
     if (!p.swFired) {
-      if (!p.tele && dz < p.swAt + 3 && dz > 0) { p.tele = true; p.swDir = R() < 0.7 ? (Math.sign(S.px - p.x) || 1) : pick([-1, 1]); }
+      // weekly challenge: the direction comes from the person's own seeded phase, not from the shared random stream, so it cannot depend on how the player ran
+      if (!p.tele && dz < p.swAt + 3 && dz > 0) { const u = S.challenge ? p.ph / 6.2831853 : R(); p.tele = true; p.swDir = u < 0.7 ? (Math.sign(S.px - p.x) || 1) : S.challenge ? (u < 0.85 ? -1 : 1) : pick([-1, 1]); }
       if (p.tele && dz < p.swAt) { p.swFired = true; p.tele = false; p.locked = true; p.vx = p.swDir * 1.8; p.swT = 1.0; }
     } else if (p.swT > 0) { p.swT -= dt; if (p.swT <= 0) { p.locked = false; } }
   }
@@ -67,7 +68,7 @@ export function updPeople(dt) {
     const p = ppl[i];
     if (p.drive && !p.dead) {   // a baggage cart: waits at the wall, then drives across once you are close, and is gone on the far side
       if (!p.driving && p.z - S.pz < p.driveAt) { p.driving = true; if (state === 'play') addPop('BEEP BEEP', '#ffcf1f', 24); }
-      if (p.driving) { p.vx = p.drive; p.x += p.drive * dt; if (Math.abs(p.x) > LV.half + 4) p.dead = true; }
+      if (p.driving) { p.vx = p.drive; p.x += p.drive * dt; if (Math.sign(p.drive) * p.x - (p.len || 0) > LV.half + 4) p.dead = true; }
       continue;
     }
     if (p.prop || p.dead) continue;
@@ -129,7 +130,8 @@ export function updPeople(dt) {
       p.z += beltSpeedAt(LV.id, p.x, p.z) * dt;   // moving walkway carries everyone on it
       if (!p.free) { const cx = contain(LV.id, px0, p.x, p.z); if (cx !== p.x) { p.x = cx; p.vx = 0; } }   // and the glass keeps them on it, or off it
     }
-    if (!p.free && Math.abs(p.x) > lim) { p.x = clamp(p.x, -lim, lim); if (p.locked) p.vx = 0; }
+    const pathLim = Math.min(lim, halfAt(p.z) - 0.35);
+    if (!p.free && Math.abs(p.x) > pathLim) { p.x = clamp(p.x, -pathLim, pathLim); if (p.locked) p.vx = 0; }
     if (p.exit && Math.abs(p.x) > (LV.id === 'shibuya' ? 14.5 : LV.half + 0.2)) p.dead = true;
     if (p.z > goalOf() - 1.5 && p.hz > 0) { p.hz = -p.hz; p.dirz = -1; }
     const sp = Math.hypot(p.vx, p.vz);

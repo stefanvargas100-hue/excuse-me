@@ -4,6 +4,7 @@ import { store } from '../save/store.js';
 import { account } from '../save/level.js';
 import { packGhost } from '../sim/ghostshare.js';
 import { createBoard } from './board.js';
+import { CHALLENGE_SUBMIT_ENABLED, boardNameFor, encodeChallengeTime, fmtChallengeScore, validChallengeTime } from '../config/challenge.js';
 
 const URL = 'https://hrsbzntphratlnkrevet.supabase.co';
 const KEY = 'sb_publishable_FoFHiii4XagCq3-oi3ygQg_UcyZNoJn';
@@ -30,17 +31,24 @@ export function submitBestRun(stageId, score, path) {
   sending = net.submitBest(board, score).catch(() => {}).then(() => { const g = packGhost(path); return g ? net.submitGhost(board, score, g) : null; }).catch(() => {});
 }
 
-// On the results screen: once the score is sent, show the top of that board.
-export async function showRunBoard(mode, key) { await sending; return showTop(boardId(mode, key)); }
+// After a weekly-challenge finish: your best time of the week goes to its own board (the server only ever keeps the best). Off until
+// the database update is applied; see config/challenge.js.
+export function submitChallenge(week, rules, ms) {
+  if (!net || !CHALLENGE_SUBMIT_ENABLED || !validChallengeTime(ms)) return;
+  sending = net.submitBest(boardNameFor(week, rules), encodeChallengeTime(ms)).catch(() => {});
+}
 
-export async function showTop(id) {
+// On the results screen: once the score is sent, show the top of that board.
+export async function showRunBoard(mode, key) { await sending; return showTop(boardId(mode, key), mode === 'wchal' ? fmtChallengeScore : undefined); }
+
+export async function showTop(id, fmt) {
   const bd = $('dayBoard'); if (!net || !bd) return;
   const rows = await net.top(id, 3);
   bd.innerHTML = '';
   if (!rows.length) { bd.hidden = true; return; }
   rows.forEach((r, i) => {
     const li = document.createElement('li'); if (r.you) li.className = 'me';
-    li.textContent = (i + 1) + '. ' + (r.pic ? r.pic + ' ' : '') + r.name + ' · Lv ' + r.level + ' · ' + r.score.toLocaleString('en-US');
+    li.textContent = (i + 1) + '. ' + (r.pic ? r.pic + ' ' : '') + r.name + ' · Lv ' + r.level + ' · ' + (fmt ? fmt(r.score) : r.score.toLocaleString('en-US'));
     bd.appendChild(li);
   });
   bd.hidden = false;

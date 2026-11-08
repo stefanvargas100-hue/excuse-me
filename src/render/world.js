@@ -11,6 +11,7 @@ import { S, goalOf } from '../sim/state.js';
 import { airportAfterLoop, airportSegment } from './airportdetail.js';
 import { shibuyaAfterLoop, shibuyaSegment, shibuyaSky } from './shibuyadetail.js';
 import { nycAfterLoop, nycSegment, nycSky } from './nycdetail.js';
+import { hachiko } from './landmarks.js';
 
 
 
@@ -149,6 +150,7 @@ function goalShibuya(d) {
   cq(-4.2, 4.2, 3.3, 4.6, d, mixc(hex('#1d8f4e'), d));
   const c = P(0, 3.95, d);
   label(LV.goalText, c[0], c[1], 0.8 * F / d, '#ffffff');
+  hachiko(d);
 }
 
 export function paintShibuya() {
