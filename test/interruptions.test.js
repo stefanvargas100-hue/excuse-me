@@ -146,7 +146,7 @@ test('out-of-order roster revisions cannot resurrect a player who left', async (
 test('a racer that keeps the socket alive but never finishes cannot block final results forever', async () => {
   const { games: [h, g] } = await race(); const id = me(g);
   h.S.race.finished = true; h.S.duel.send('fin', { ft: 12 });
-  for (let i = 0; i < 302; i++) { h.injectRoomMessage('hello', { id }); h.advance(2000); }
+  for (let i = 0; i < 302; i++) { h.injectRoomMessage('hello', { id, proto: 2 }); h.advance(2000); }
   await settle();
   assert.equal(h.S.duel.peers[id].bye, true);
 });
@@ -253,4 +253,43 @@ test('a missed ready message is repaired by the next pause heartbeat', async () 
   g.pauseGame(); await settle(); assert.equal(h.state,'paused');
   net.sockets[0].active=false; g.fire('keydown',{key:'p'}); await settle(); assert.equal(h.state,'paused');
   net.sockets[0].active=true; g.advance(2000); await settle(); assert.equal(h.state,'play');
+});
+
+test('incompatible start packets cannot start a joined guest on different rules', async () => {
+  const { games: [h, g], net } = await lobby();
+  const proto = net.packets.find(p => p.ev === 'roster').data.proto;
+  for (const version of [undefined, proto + 1]) {
+    g.injectRoomMessage('start', { id: me(h), proto: version, level: 1, seed: 'wrong:1' });
+    assert.notEqual(g.state, 'play');
+  }
+  h.hostStart(); await settle();
+  assert.equal(g.state, 'play');
+  assert.equal(g.S.seed, h.S.seed);
+});
+
+test('host refuses missing and incompatible protocol versions without adding racers', async () => {
+  const { games: [h], net } = await lobby(2);
+  const proto = net.packets.find(p => p.ev === 'roster').data.proto;
+  for (const version of [undefined, proto + 1]) {
+    h.injectRoomMessage('hello', { id: 'oldphone', proto: version, name: 'Old phone' });
+    assert.equal(h.lobbyPlayers().length, 2);
+    assert.equal(net.packets.at(-1).data.why, 'version');
+  }
+});
+
+test('guest refuses an incompatible host roster and closes its pending join', async () => {
+  for (const proto of [undefined, 999]) {
+    const g = load(); let receive, left = false;
+    g.useRoomFactory(() => ({
+      join: async () => {}, leave: () => { left = true; },
+      onMessage: f => { receive = f; }, onClose: () => {},
+      send: (ev, data) => { if (ev === 'hello') receive('roster', {
+        id: 'oldhost1', proto, level: 1, players: [{ id: 'oldhost1' }, { id: data.id }]
+      }); }
+    }));
+    assert.equal(await g.joinRoom('ABCD'), false);
+    assert.equal(left, true);
+    assert.match(g.lobbyStatus(), /different version/);
+    assert.equal(g.lobbyPlayers().length, 0);
+  }
 });

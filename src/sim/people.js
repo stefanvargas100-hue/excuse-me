@@ -2,6 +2,7 @@ import { Music } from '../audio/music.js';
 import { DOGS, FASTSHIRTS, GEARS, HAIRS, LUGS, PANTS, SHIRTS, SHOES, SKINS, shade } from '../config/colour.js';
 import { randomFace } from '../config/faces.js';
 import { LV, SPAWN_FAR } from '../config/levels.js';
+import { routePieces } from '../config/routes.js';
 import { BUILDS } from '../config/stats.js';
 import { BELT_SPEED, beltHasZ, beltInfo } from '../config/strips.js';
 import { R_BODY, R_LUGGAGE, R_PLAYER, walkSpeed } from '../config/tuning.js';
@@ -105,7 +106,7 @@ export function applyBuild(p) {
 
 export function makeMe() {
   const p = Object.assign({ x: 0, z: 0, vx: 0, vz: 0, phase: 0, t: 0, h: 1.76, lug: 0, lugCol: '#000000', dog: 0, phone: false, fast: false,
-    rival: false, tele: false, hit: false, isMe: true, fx: 0, fz: 1, circles: [{ ox: 0, oz: 0, r: R_PLAYER }] }, LOOK);
+    rival: false, tele: false, hit: false, isMe: true, fx: 0, fz: 1, circles: [{ ox: 0, oz: 0, r: R_PLAYER }] }, LOOK, S && S.run && S.run.outfit);
   applyBuild(p); dress(p); return p;
 }
 
@@ -451,8 +452,20 @@ function beltRiders(z0) {
   // nobody rides the belt that comes toward you: the crowd never walks the wrong way on a walkway
 }
 
+// Route zones (config/routes.js): the same rope lines and queues for everyone, placed from data, never from the random stream.
+function placeRoute(z0) {
+  for (const p of routePieces(LV.id, z0, z0 + 4)) {
+    if (p.kind === 'rope') {
+      const os = []; for (let o = -p.half; o < p.half; o += 0.4) os.push(o); os.push(p.half);
+      mk(p.x, p.z, { prop: 'rope', skin: p.skin, span: p.half, circles: os.map(ox => ({ ox, oz: 0, r: 0.22 })) });
+    } else mk(p.x, p.z, { v0: 0, fx: 0, fz: 1, laneX: p.x });
+  }
+}
+
 export function genChunk(z0) {
   const n0 = S.people.length;
   seeded(':c' + z0, () => { genChunkInner(z0); beltRiders(z0); });
+  if (raceBuild) seeded(':r' + z0, () => placeRoute(z0));
+  if (S.race && S.race.elim) seeded(':g' + z0, () => { for (const [i, c] of S.race.elim.cps.entries()) if (c >= z0 && c < z0 + 4) mk(0, c, { prop: 'cpgate', span: LV.half - 0.5, num: i + 1, circles: [] }); });
   if (S.seed) { let sum = 0; for (let i = n0; i < S.people.length; i++) { const q = S.people[i]; sum += q.x * 7 + q.z; } S.chunkSum[z0] = Math.round(sum * 100); }
 }

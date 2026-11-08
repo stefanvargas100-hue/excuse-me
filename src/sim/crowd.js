@@ -26,7 +26,8 @@ function behaviours(p, dt) {
   if (p.swerve) {
     const dz = p.z - S.pz;
     if (!p.swFired) {
-      if (!p.tele && dz < p.swAt + 3 && dz > 0) { p.tele = true; p.swDir = R() < 0.7 ? (Math.sign(S.px - p.x) || 1) : pick([-1, 1]); }
+      // weekly challenge: the direction comes from the person's own seeded phase, not from the shared random stream, so it cannot depend on how the player ran
+      if (!p.tele && dz < p.swAt + 3 && dz > 0) { const u = S.challenge ? p.ph / 6.2831853 : R(); p.tele = true; p.swDir = u < 0.7 ? (Math.sign(S.px - p.x) || 1) : S.challenge ? (u < 0.85 ? -1 : 1) : pick([-1, 1]); }
       if (p.tele && dz < p.swAt) { p.swFired = true; p.tele = false; p.locked = true; p.vx = p.swDir * 1.8; p.swT = 1.0; }
     } else if (p.swT > 0) { p.swT -= dt; if (p.swT <= 0) { p.locked = false; } }
   }

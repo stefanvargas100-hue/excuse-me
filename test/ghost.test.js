@@ -48,7 +48,7 @@ test('a race win with a new best time saves a ghost, and the next race brings it
   E.S.race.bots.forEach(b => { b.z = 0; b.speed = 0; });
   E.S.pz = E.LV.goal + 1; E.tick(DT);
   assert.ok(E.S.race.finished && E.S.race.place === 1 && E.S.race.newBest, 'won with a new best');
-  const saved = E.storage['excuseme_ghost_race_airport'];
+  const saved = E.storage['excuseme_ghost_race_airport:rt1'];
   assert.ok(saved && JSON.parse(saved).length >= 4, 'ghost saved');
   E.start('race');
   assert.ok(E.S.ghost, 'ghost loaded for the next race');
@@ -56,7 +56,7 @@ test('a race win with a new best time saves a ghost, and the next race brings it
 });
 
 test('a race against bots has a ghost, a daily run has none', () => {
-  const E = load(); plant(E, 'excuseme_ghost_race_airport', 300);
+  const E = load(); plant(E, 'excuseme_ghost_race_airport:rt1', 300);
   E.setLevel(0); E.start('race');
   assert.ok(E.S.ghost, 'bot race has one');
   E.start('daily');
