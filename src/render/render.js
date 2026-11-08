@@ -9,6 +9,8 @@ import { drawPerson, rrect } from './figures.js';
 import { pruneFlows, drawPops, radarTop, zoneGuide } from './hud.js';
 import { drawBelts, drawGlass, drawPowerups, drawSlipstream, drawStrips, glassPanels } from './slipstream.js';
 import { nycSteam } from './nycdetail.js';
+import { weatherGrade } from './weather.js';
+import { chainShards, confetti, fxGround, shakeOffset } from './fx.js';
 import { drawCars, paintAirport, paintNYC, paintShibuya } from './world.js';
 import { S, calm, camBob, state } from '../sim/state.js';
 import { visibleGhosts } from '../sim/replay.js';
@@ -23,17 +25,22 @@ export function render() {
   setHOR(H * 0.34 + (live ? (1 - Math.cos(S.step)) * H * 0.0012 : 0));
   setCX(W / 2);
   ctx.save();
+  const shake = shakeOffset(); if (shake) ctx.translate(shake[0], shake[1]);
   ctx.fillStyle = FOGCSS; ctx.fillRect(-W, -H, 3 * W, 3 * H);
   if (LV.id === 'airport') paintAirport(); else if (LV.id === 'nyc') paintNYC(); else paintShibuya();
   if (LV.id === 'nyc') { drawCars(); nycSteam(); }
   drawBelts();
   drawStrips();
   drawPowerups();
+  fxGround();
   for (const p of S.people) if (p.prop === 'spill') drawPerson(p);   // puddles lie under everyone
   const list = S.people.filter(p => p.prop !== 'spill').concat([S.me], S.race ? S.race.bots : [], visibleGhosts(), glassPanels()).sort((a, b) => b.z - a.z);
   for (const p of list) { if (p.glass) drawGlass(p); else drawPerson(p); }
   drawSlipstream();
+  weatherGrade();
+  chainShards();
   ctx.restore();
+  confetti();
 
   if (S.boostV > 0.25 && !calm) {
     const R = Math.max(W, H), cx = W / 2, cy = H * 0.45, f = Math.floor(S.clock * 14);

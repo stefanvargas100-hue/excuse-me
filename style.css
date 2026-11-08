@@ -470,3 +470,8 @@ button:disabled.big, button:disabled.ghost { opacity: .5; cursor: default; }
 #hud.race .hchip { display: none; }
 
 .stathelp { font-size: 11px; line-height: 1.15; opacity: .8; margin-top: 2px; }
+/* Race HUD on narrow phones: the place text gives way (smaller, then cut short) so the speed and clock always fit. */
+.boost .place { min-width: 0; flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; font-size: clamp(11px, 3.4vw, 15px); }
+.boost .rmph, .boost .clock, .boost .score { flex-shrink: 0; }
+#podium { display: block; margin: 4px auto 2px; max-width: 360px; }
+#podium[hidden] { display: none; }

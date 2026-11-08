@@ -42,3 +42,89 @@ test('a race (belts, bots) draws the airport scenery too', () => {
   for (let i = 0; i < 120; i++) E.tick(DT);
   assert.doesNotThrow(() => E.render());
 });
+
+// Time of day and weather (render/weather.js): every variant draws on its stage, picking is stable for a seed, and drawing never changes the run.
+test('every weather variant draws without errors on its stage', () => {
+  const E = load(undefined, { seed: 5 });
+  for (const [lv, id] of [[0, 'airport'], [1, 'nyc'], [2, 'shibuya']]) {
+    E.setLevel(lv); E.start('classic');
+    for (const [v] of E.VARIANTS[id]) { E.setVariant(v); for (let i = 0; i < 3; i++) E.tick(DT); assert.doesNotThrow(() => E.render(), id + ' ' + v); }
+  }
+});
+
+test('the weather for a daily seed is the same every time and is always one of the stage\'s variants', () => {
+  const E = load(undefined, { seed: 5 });
+  for (const id of ['airport', 'nyc', 'shibuya']) {
+    const names = E.VARIANTS[id].map(e => e[0]);
+    for (const seed of ['2026-11-07', '2026-11-08', '2026-W45']) {
+      const a = E.pickVariant(id, seed, Math.random), b = E.pickVariant(id, seed, Math.random);
+      assert.strictEqual(a, b); assert.ok(names.includes(a));
+    }
+  }
+});
+
+test('weather does not change the simulation', () => {
+  const go = (v) => { const E = load(undefined, { seed: 2024 }); E.setLevel(2); E.start('classic'); E.setVariant(v); for (let i = 0; i < 600; i++) { E.tick(DT); if (i % 3 === 0) E.render(); } const S = E.S; return [S.pz, S.px, S.score, S.people.length].join(','); };
+  assert.strictEqual(go('rain'), go('night'));
+});
+
+// A daily run must show the sky for its date even if the same stage was already on screen with a random look (the menu draws it first).
+test('a daily run gets the sky for its date, whatever was on screen before', () => {
+  const realNow = Date.now;
+  try {
+    for (const [lv, id] of [[0, 'airport'], [1, 'nyc'], [2, 'shibuya']]) {
+      const E = load(undefined, { seed: 9 });
+      // find out which sky today's date gives this stage, then force the casual pick before it to be a different one
+      E.setLevel(lv); E.start('daily'); const seed = E.S.seed; assert.ok(seed);
+      const want = E.pickVariant(id, seed);
+      const other = [...Array(9973).keys()].find(v => E.pickVariant(id, null, () => v / 9973) !== want);
+      Date.now = () => other;
+      const F = load(undefined, { seed: 9 });
+      F.setLevel(lv); F.start('classic'); F.render();
+      assert.notStrictEqual(F.variantOf(), want, 'the casual look should differ for this check to mean anything');
+      F.start('daily'); F.render();
+      assert.strictEqual(F.variantOf(), want, id);
+      Date.now = realNow;
+    }
+  } finally { Date.now = realNow; }
+});
+
+test('restarting straight away picks the look again, even after a very short run', () => {
+  const realNow = Date.now;
+  try {
+    const E = load(undefined, { seed: 9 });
+    E.setLevel(1);
+    const day = [...Array(9973).keys()].find(v => E.pickVariant('nyc', null, () => v / 9973) === 'day');
+    const gold = [...Array(9973).keys()].find(v => E.pickVariant('nyc', null, () => v / 9973) === 'golden');
+    Date.now = () => day; E.start('classic'); E.render(); assert.strictEqual(E.variantOf(), 'day');
+    Date.now = () => gold; E.start('classic'); E.render(); assert.strictEqual(E.variantOf(), 'golden');
+  } finally { Date.now = realNow; }
+});
+
+// End-of-race podium (render/podium.js) and the feedback effects (render/fx.js): looks only.
+test('finishing a race puts the top three on the podium, drawn from copies so the racers are untouched', () => {
+  const E = load(undefined, { seed: 4 });
+  E.setLevel(1); E.start('race');
+  for (let i = 0; i < 200; i++) E.tick(DT);
+  const R = E.S.race, before = R.bots.map(b => [b.x, b.z, b.done, b.pose].join(',')).join(';');
+  E.S.pz = E.LV.goal + 1; E.S.me.z = E.S.pz;
+  for (let i = 0; i < 90 && E.state !== 'won' && E.state !== 'over'; i++) E.tick(DT);
+  for (let i = 0; i < 40; i++) E.tick(DT);   // the end screen opens after a moment
+  const pod = E.podiumOf();
+  assert.ok(pod && pod.length >= 1, 'podium is set');
+  assert.strictEqual(pod[0].place, 1);
+  assert.ok(pod.every(e => e.p.podium && e.p !== E.S.me && !R.bots.includes(e.p)), 'podium people are copies');
+  assert.ok(R.bots.every(b => b.pose === undefined), 'racers themselves get no pose');
+  assert.doesNotThrow(() => { E.drawPodium(1000); E.render(); });
+  void before;
+});
+
+test('effects draw in every state: chain break, bump, win, rain splashes', () => {
+  const E = load(undefined, { seed: 6 });
+  for (const [lv, v] of [[1, 'golden'], [2, 'rain'], [0, 'night']]) {
+    E.setLevel(lv); E.setVariant(v); E.start('classic');
+    for (let i = 0; i < 60; i++) { E.tick(DT); E.S.chain = 12; if (i % 5 === 0) E.render(); }
+    E.S.breakFlash = 0.3; assert.doesNotThrow(() => E.render(), 'chain break ' + v);
+  }
+  E.setVariant(null);
+});
