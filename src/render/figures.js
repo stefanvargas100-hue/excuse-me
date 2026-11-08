@@ -681,6 +681,12 @@ function drawProp(p, s, bx, fy) {
       }
       break;
     }
+    case 'tripod': {
+      for(const side of [-1,1])box3D(x+side*0.3-0.07,x+side*0.3+0.07,0,1.15,z-0.3,z+0.3,hex('#56616a'));
+      box3D(x-0.25,x+0.25,1.1,1.4,z-0.15,z+0.15,hex('#273744'));
+      box3D(x-0.1,x+0.1,1.17,1.32,z-0.25,z-0.15,hex('#89b6ce'));
+      break;
+    }
     case 'easel': {
       for (const side of [-1,1]) box3D(x+side*0.35-0.07,x+side*0.35+0.07,0,1.45,z-0.3,z+0.3,hex('#956b43'));
       box3D(x-0.45,x+0.45,0.65,1.55,z-0.08,z+0.08,hex('#eee1be'));

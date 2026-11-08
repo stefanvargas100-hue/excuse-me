@@ -482,3 +482,7 @@ button:disabled.big, button:disabled.ghost { opacity: .5; cursor: default; }
 .boost .rmph, .boost .clock, .boost .score { flex-shrink: 0; }
 #podium { display: block; margin: 4px auto 2px; max-width: 360px; }
 #podium[hidden] { display: none; }
+
+#levels .lvl { flex: 0 0 auto; min-height: 125px; }
+#stagePager[hidden] { display: none; }
+@media (max-height: 650px) { #levels .lvl { min-height: 78px; } }

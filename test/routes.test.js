@@ -3,7 +3,7 @@ const test = require('node:test');
 const assert = require('node:assert');
 const { load } = require('./harness.js');
 const DT = 1 / 30;
-const STAGES = [[0, 'airport'], [1, 'nyc'], [2, 'shibuya']];
+const STAGES = [[0, 'airport'], [1, 'nyc'], [2, 'shibuya'], [4, 'bridge']];
 
 const raceAt = (stage = 0, seed = 4) => { const E = load(undefined, { seed }); E.setLevel(stage); E.start('race'); return E; };
 const ropes = E => E.S.people.filter(p => p.prop === 'rope');

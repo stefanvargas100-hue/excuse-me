@@ -151,6 +151,8 @@ function spawnUnit(z, d) {
     if (d > 0.08) pool.push(['speedster', 1.5], ['luggage', 0.5]);
     if (d > 0.2) pool.push(['swerver', 1]);
     if (d > 0.4) pool.push(['trio', 1]);
+  } else if (id === 'bridge') {
+    pool = [['walker',4],['oncoming',4],['pair',2],['tourist',3],['joggers',1]];
   } else if (id === 'park') {
     pool = [['walker', 3], ['oncoming', 3], ['pair', 2], ['dog', 2], ['joggers', 2], ['tourist', 0.5]];
   } else {
@@ -302,12 +304,22 @@ function parkProps(z0) {
   else if (n % 6 === 4) mk(side * 4.6, z, { prop: 'bikes', rack: [-0.6,0,0.6], circles: RACK([-0.6,0,0.6]) });
 }
 
+function bridgeProps(z0) {
+  if(z0<24 || (z0>=170&&z0<220)||(z0>=390&&z0<440))return;
+  if(raceBuild && [120,310].some(z=>Math.abs(z-z0)<14))return;
+  const n=Math.floor(z0/4), side=n%2?-1:1, z=z0+2;
+  if(n%9===0)mk(side*4.1,z,{prop:'bench',circles:rowC([-0.5,-0.17,0.17,0.5],0.2)});
+  else if(n%9===2)mk(side*4.4,z,{prop:'trash',circles:rowC([0],0.27)});
+  else if(n%9===4)mk(side*3.3,z,{prop:'tripod',circles:rowC([-0.2,0,0.2],0.15)});
+  else if(n%9===6)mk(side*3.5,z,{prop:'barrier',circles:BARRIER()});
+}
 function genChunkInner(z0) {
   const d = clamp(z0 / LV.goal, 0, 1);
   if (LV.id === 'nyc') { nycProps(z0); nycStreet(z0); }
   if (LV.id === 'airport') airportProps(z0);
   if (LV.id === 'shibuya') tokyoStreet(z0);
   if (LV.id === 'park') parkProps(z0);
+  if (LV.id === 'bridge') bridgeProps(z0);
   if (inXing(z0 + 2)) return;   // the crosswalk crowds come from the signal waves instead
   const k = LV.base + (R() < 0.4 + 0.4 * d ? 1 : 0) + (d > 0.25 && R() < 0.55 ? 1 : 0) + (d > 0.6 && R() < 0.6 ? 1 : 0);
   for (let i = 0; i < k; i++) spawnUnit(z0 + R() * 4, d);

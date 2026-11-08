@@ -390,8 +390,9 @@ export let lastDaily = false, lastMode = 'classic';
 export const playedKey = mode => store.get('excuseme_played_' + mode, '');
 export const periodKey = mode => (mode === 'weekly' ? weekKey() : todayKey());
 export const hasPlayed = mode => playedKey(mode) === periodKey(mode);
-export const dailyLevel = () => hashStr(todayKey() + ':level') % LEVELS.length;
-export const weeklyLevel = () => hashStr(weekKey() + ':wlevel') % LEVELS.length;
+// Keep published periods stable when the fifth stage ships. New periods use the expanded pool.
+export const dailyLevel = (key = todayKey()) => hashStr(key + ':level') % (key < '2026-11-09' ? Math.min(4, LEVELS.length) : LEVELS.length);
+export const weeklyLevel = (key = weekKey()) => hashStr(key + ':wlevel') % (key < '2026-W46' ? Math.min(4, LEVELS.length) : LEVELS.length);
 export function startDaily() { if (hasPlayed('daily')) return; setLevel(dailyLevel()); start('daily'); }
 export function startWeekly() { if (hasPlayed('weekly')) return; setLevel(weeklyLevel()); start('weekly'); }
 

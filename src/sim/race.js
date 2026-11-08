@@ -436,7 +436,7 @@ function stepBot(b, dt) {
       if (b.blockT > STUCK_T) { b.ghostT = STUCK_GHOST; b.blockT = 0; }
     } else b.blockT = Math.max(0, b.blockT - dt * 2);
   }
-  if (LV.id === 'park') b.x = clamp(b.x, -halfAt(b.z) + 0.5, halfAt(b.z) - 0.5);
+  if (LV.id === 'park' || LV.id === 'bridge') b.x = clamp(b.x, -halfAt(b.z) + 0.5, halfAt(b.z) - 0.5);
   b.vz = b.speed;
   collectPowerups(b, b.x, b.z, bz0, false);
   // passing people builds the bot's combo, like yours

@@ -14,7 +14,8 @@ export const VARIANTS = {
   airport: [['day', 5], ['sunrise', 2], ['night', 2]],
   nyc: [['day', 5], ['golden', 3]],
   shibuya: [['night', 5], ['rain', 3]],
-  park: [['day', 5], ['autumn', 3], ['golden', 2]]
+  park: [['day', 5], ['autumn', 3], ['golden', 2]],
+  bridge: [['day', 5], ['golden', 3], ['mist', 2]]
 };
 
 let cur = 'day', curLevel = '', curRun = null, forced = null;
@@ -47,7 +48,7 @@ export function weatherGrade() {
   if (cur === 'day' || (cur === 'night' && LV.id === 'shibuya')) return;   // the usual looks
   const u = Math.min(W, H) / 390, t = S.clock || 0;
   ctx.save();
-  if (cur === 'golden') {   // late sun down the avenue: warm wash, a glow at the far end, deeper corners
+  if (cur === 'mist') { wash(225,235,238,0.22); } else if (cur === 'golden') {   // late sun down the avenue: warm wash, a glow at the far end, deeper corners
     wash(255, 160, 70, 0.07);
     const g = ctx.createRadialGradient(W * 0.5, HOR, 0, W * 0.5, HOR, Math.max(W, H) * 0.7);
     g.addColorStop(0, 'rgba(255,224,150,0.42)'); g.addColorStop(0.4, 'rgba(255,184,100,0.16)'); g.addColorStop(1, 'rgba(255,150,70,0)');

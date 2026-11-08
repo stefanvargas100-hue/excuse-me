@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const { load } = require('./harness.js');
 const park = () => { const E = load(undefined, {seed: 33}); assert.equal(E.LEVELS[3]?.id, 'park'); E.setLevel(3); E.start('classic'); return E; };
 test('Central Park appends a playable stage without changing existing indexes', () => {
-  const E = park(); assert.equal(E.LEVELS.map(l => l.id).join(','), 'airport,nyc,shibuya,park');
+  const E = park(); assert.equal(E.LEVELS.slice(0,4).map(l => l.id).join(','), 'airport,nyc,shibuya,park');
   assert.equal(E.LV.keep, 1); assert.equal(E.S.endless, true);
   E.S.pz = 650; E.S.me.z = 650; E.tick(1/30); assert.ok(E.S.pz > 650); E.render();
 });
