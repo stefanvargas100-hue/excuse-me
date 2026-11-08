@@ -20,7 +20,7 @@ Make clean driving, crowd management, learning, route selection and different ra
 | B4 | Stage-specific route choices | B0-B3 | Airport pilot, then NYC and Tokyo | Validated (headless + browser) |
 | B5 | Elimination races | B0, B3, B4 | Bots first; friend rooms second | B5a, B5b Validated (headless; no live two-phone test) |
 | B6 | Weekly challenge race with a supplied outfit | B0, B3-B5 | Solo timed race and dedicated board | Validated offline; online board switched off pending the DB migration |
-| B7 | Combined balance, compatibility and release check | B1-B6 | All supported modes | Planned |
+| B7 | Combined balance, compatibility and release check | B1-B6 | All supported modes | In progress: compatibility guard implemented; release checks pending |
 
 Order: B0 -> B1 -> B2 -> B3 -> B4 -> B5 -> B6 -> B7.
 The dependencies intentionally favour one stable batch at a time. There is no need to implement all six before reviewing the first one.
@@ -351,3 +351,11 @@ Protocol (written before the client code, as the plan required):
 - Browser: Weekly card, details screen (outfit grid, rules, Start) and results screen at 320x568, after trimming the text so the Start button fits.
 - Known limitations: no weekly-course ghost (omitted from v1, as allowed); the timed spawns are removed rather than seeded, so the weekly crowd is quieter than a normal race; no push/notification when the week changes; the supplied outfit keeps the player's own colours (cosmetic only); online submission and the board are unverified until the migration is applied.
 - Not published. Next: B7.
+
+
+### B7 - Compatibility checkpoint, 2026-11-07 (in progress)
+- Recovered the unfinished protocol-version guard after B6. Room protocol v2 is carried by hello, roster and start, including reconnects, heartbeats and rematches. Hosts refuse missing/different versions; guests refuse incompatible host rosters and start messages. A rejected join gives instructions to reload both phones.
+- Test-first: the new incompatible-start test reproduced a race starting despite a mismatched protocol, then passed after guarding start. Added rejection tests for old/missing hello and roster versions. Updated existing synthetic packets representing compatible phones to include v2; their behavior assertions are unchanged.
+- Targeted lobby/interruption tests: 45/45 pass. Production build succeeds. Fresh full regression run: 409/409 pass (npm.cmd test). git diff --check passes.
+- Not published or committed. Current base: 4025e12 (B6); changes remain on Gameplay for review.
+- Still pending: same-device performance comparison with the baseline, x16 plus boosts/route readability playtest, small-phone input/menu review, real two/eight-phone tests and published service-worker activation preserving saves. Earlier batch screenshots and simulated rooms do not establish these checks. Weekly online submissions remain disabled pending verified migration.
