@@ -24,3 +24,9 @@ Local single-player only. Three bot races in a fixed order: Fifth Avenue (index 
 
 ## Out of scope
 Online/friend-room cups, cup leaderboards, Supabase changes, physical-device playtest.
+
+## Implementation checkpoint - 2026-11-08
+- Batches 1-2 built test-first (17 tests: scoring model, ties, record compare, full three-round flow, abandon, single payment, outfit/save untouched, restart rules).
+- Batch 3 built: "NYC Cup" format chip with one card; round results show the cup table and "Next round: <stage>"; final screen shows place, points, XP and Race again; pause shows "Abandon cup" and hides Restart.
+- Batch 4 checks done in the Orca embedded browser at 320 x 568 (mobile emulation): menu card (no overflow; title shortened after the first look overlapped), round-1 results, and a full three-round cup with forced finishes (final: Cup winner, +60 XP, record stored). Layout verified by measurement; the embedded browser's screenshots are tiled at this scale so they were not used as evidence. Not checked: 390 x 844 and desktop screenshots, calm mode, real phones, older-phone performance.
+- Merged origin/main (ready-start/sync work); full suite and build pass after the merge.

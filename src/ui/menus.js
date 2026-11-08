@@ -99,10 +99,10 @@ function buildStages() {
   }
   if (race && raceFormat() === 'cup') {
     const best = cupBest(), x = menuCard('lvl daily');
-    x.children[0].textContent = 'NYC Cup · 3 rounds'; x.children[1].textContent = 'Fifth Avenue, Central Park, Brooklyn Bridge'; x.children[2].textContent = best ? 'Best ' + best.points + ' pts · ' + fmtTime(best.time) : 'Win rounds for points';
-    x.children[3].textContent = 'Same three bots all the way: 10, 7, 5 or 3 points per round. Leaving the cup early records nothing.';
+    x.children[0].textContent = 'New York'; x.children[1].textContent = 'NYC Cup'; x.children[2].textContent = best ? 'Best ' + best.points + ' pts · ' + fmtTime(best.time) : 'Win rounds for points';
+    x.children[3].textContent = 'Fifth Avenue, Central Park, Brooklyn Bridge against the same bots. 10, 7, 5 or 3 points a round.';
     $('stagePager').hidden = true;
-    x.style.maxHeight = '170px'; x.addEventListener('click', startCup); box.appendChild(x); return;
+    x.style.maxHeight = '150px'; x.addEventListener('click', startCup); box.appendChild(x); return;
   }
   LEVELS.forEach((L, i) => {
     const x = menuCard('lvl');
