@@ -10,11 +10,13 @@ import { account, TITLES, PICS } from '../save/level.js';
 import { myName } from '../online/online.js';
 import { ITEM_STATS, statHint } from '../config/stats.js';
 import { setVibOn, store, vibOn } from '../save/store.js';
-import { dailyLevel, fmt, hasPlayed, lastDaily, lastMode, restartRun, lessonNext, lessonRetry, pauseGame, quitRun, resumeGame, start, startDaily, startPractice, startWeekly, toMenu, weeklyLevel } from '../sim/game.js';
+import { dailyLevel, fmt, hasPlayed, lastDaily, lastMode, challengeBest, startChallenge, restartRun, lessonNext, lessonRetry, pauseGame, quitRun, resumeGame, start, startDaily, startPractice, startWeekly, toMenu, weeklyLevel } from '../sim/game.js';
 import { draftMul, fmtTime, ordinal, raceBest, racePace, raceDifficulty, standings } from '../sim/race.js';
 import { S, bestOf, calm, camBob, cues, reset, setCalm, setCamBob, setCues, setShowHB, showHB, state } from '../sim/state.js';
 import { endTut } from '../sim/tutorial.js';
 import { LESSONS, syncLesson } from '../sim/practice.js';
+import { challengeFor, challengeRemainingMs, fmtChallengeScore, utcWeekKey } from '../config/challenge.js';
+import { LOOK_OPTS } from '../save/progress.js';
 import { endCoach, syncCoach } from '../sim/racecoach.js';
 import { modOf } from '../sim/modifiers.js';
 import { back, go, pageInto, relayoutWith } from './screens.js';
@@ -65,9 +67,28 @@ function buildPractice() {
 }
 
 // The stage screen: tap a stage and it starts.
+// Weekly challenge: the course is fixed for the week, so the stage list is replaced by one card that opens the details.
+const outfitLabel = (key, val) => { const o = LOOK_OPTS.find(x => x.key === key), v = o && o.vals.find(x => x[0] === val); return v ? v[1] : String(val); };
+function timeLeft(ms) { const h = Math.floor(ms / 3600000), d = Math.floor(h / 24); return d >= 1 ? d + ' d ' + (h % 24) + ' h left' : h + ' h ' + Math.floor(ms % 3600000 / 60000) + ' min left'; }
+function openChallenge() {
+  const c = challengeFor(utcWeekKey()), L = LEVELS[c.level], best = challengeBest(c);
+  $('chInfo').textContent = c.week + ' · ' + L.city + ' · ' + L.name + ' · ' + timeLeft(challengeRemainingMs()) + (best ? ' · your best ' + fmtTime(best) : '');
+  const ul = $('chOutfit'); ul.innerHTML = '';
+  for (const [k, label] of [['body', 'Body'], ['build', 'Build'], ['hat', 'Headpiece'], ['shirtType', 'Top'], ['pantsType', 'Bottoms'], ['shoeType', 'Shoes'], ['pack', 'Back']]) {
+    const li = document.createElement('li'), b = document.createElement('b'); b.textContent = label; li.appendChild(b); li.appendChild(document.createTextNode(outfitLabel(k, c.outfit[k]))); ul.appendChild(li);
+  }
+  $('chRules').textContent = 'Solo, no bots or power-ups, same outfit and crowd for everyone. Best time counts; retry freely. Your own outfit is untouched.';
+  go('challenge');
+}
 function buildStages() {
   const box = $('levels'); box.innerHTML = '';
   const race = stageMode === 'race';
+  if (race && raceFormat() === 'weekly') {
+    const c = challengeFor(utcWeekKey()), L = LEVELS[c.level], best = challengeBest(c), x = menuCard('lvl daily');
+    x.children[0].textContent = 'Weekly challenge · ' + c.week; x.children[1].textContent = L.name; x.children[2].textContent = timeLeft(challengeRemainingMs());
+    x.children[3].textContent = best ? 'Your best ' + fmtTime(best) + '. Same course and outfit for everyone.' : 'Same course and a supplied outfit for everyone. Best time counts.';
+    x.style.maxHeight = '150px'; x.addEventListener('click', openChallenge); box.appendChild(x); return;
+  }
   LEVELS.forEach((L, i) => {
     const x = menuCard('lvl');
     const best = bestOf(L.id), rb = raceBest(L.id);
@@ -87,8 +108,12 @@ function openStages(mode) {
   syncFormat(); syncBots(); buildStages(); go('stages');
 }
 
-const raceFormat = () => (store.get('excuseme_raceformat', 'race') === 'elim' ? 'elim' : 'race');
-function syncFormat() { document.querySelectorAll('#raceFormat .chip').forEach((c, i) => c.setAttribute('aria-pressed', String((i === 1) === (raceFormat() === 'elim')))); }
+const FORMATS = ['race', 'elim', 'weekly'];
+const raceFormat = () => { const f = store.get('excuseme_raceformat', 'race'); return FORMATS.includes(f) ? f : 'race'; };
+function syncFormat() {
+  document.querySelectorAll('#raceFormat .chip').forEach((c, i) => c.setAttribute('aria-pressed', String(FORMATS[i] === raceFormat())));
+  $('raceOpts').hidden = stageMode !== 'race' || raceFormat() === 'weekly';   // the challenge has no bots
+}
 
 function syncBots() {
   const d = raceDifficulty();
@@ -193,14 +218,14 @@ async function showBoard() {
   const draw = rows => { pageInto($('boardList'), rows, $('boardPager')); };
   const ask = ++boardAsk;   // a slow answer for an old tab must not overwrite the one now showing
   draw([msg('Loading...')]);
-  const rows = await loadBoard(boardIdFor(boardTab, boardStage), 30);
+  const rows = await loadBoard(boardIdFor(boardTab, boardStage), 30), fmtScore = s => (boardTab === 'challenge' ? fmtChallengeScore(s) : s.toLocaleString('en-US'));
   if (ask !== boardAsk) return;
   const nodes = rows.length ? rows.map((r, i) => {
     const li = document.createElement('li'); if (r.you) li.className = 'me';
     const rk = document.createElement('span'); rk.className = 'rk'; rk.textContent = String(i + 1);
     const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = (r.pic ? r.pic + ' ' : '') + r.name + (r.you ? ' (you)' : '');
     const lv = document.createElement('span'); lv.className = 'lv'; lv.textContent = 'Lv ' + r.level;
-    const sc = document.createElement('span'); sc.className = 'sc'; sc.textContent = r.score.toLocaleString('en-US');
+    const sc = document.createElement('span'); sc.className = 'sc'; sc.textContent = fmtScore(r.score);
     [rk, nm, lv, sc].forEach(n => li.appendChild(n)); return li;
   }) : [msg('No scores yet. Be the first!')];
   draw(nodes);
@@ -306,7 +331,8 @@ export function init() {
   document.querySelectorAll('[data-back]').forEach(b => b.addEventListener('click', back));
   document.querySelectorAll('#howTabs .chip').forEach(c => c.addEventListener('click', () => showHowTab(c.dataset.tab)));
   document.querySelectorAll('#raceOpts .chip').forEach((c, i) => c.addEventListener('click', () => { store.set('excuseme_botlvl', String(i)); syncBots(); }));
-  document.querySelectorAll('#raceFormat .chip').forEach((c, i) => c.addEventListener('click', () => { store.set('excuseme_raceformat', i === 1 ? 'elim' : 'race'); syncFormat(); }));
+  document.querySelectorAll('#raceFormat .chip').forEach((c, i) => c.addEventListener('click', () => { store.set('excuseme_raceformat', FORMATS[i]); syncFormat(); buildStages(); }));
+  $('chStart').addEventListener('click', () => startChallenge());
   const flag = (id, on, set, key) => { const el = $(id); el.checked = on; el.addEventListener('change', e => { set(e.target.checked); store.set(key, e.target.checked ? '1' : '0'); }); };
   flag('calmT', calm, setCalm, 'excuseme_calm');
   flag('cuesT', cues, setCues, 'excuseme_cues');

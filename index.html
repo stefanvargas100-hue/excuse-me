@@ -100,6 +100,16 @@
   </div>
 </div>
 
+<div id="challenge" class="panel" hidden>
+  <div class="card full">
+    <div class="topbar"><button class="backbtn" data-back type="button" aria-label="Back">‹</button><h2>Weekly challenge</h2></div>
+    <p id="chInfo" class="lead"></p>
+    <ul id="chOutfit" class="chlist" aria-label="Supplied outfit"></ul>
+    <p id="chRules" class="lead"></p>
+    <button id="chStart" class="big" type="button">Start</button>
+  </div>
+</div>
+
 <div id="stages" class="panel" hidden>
   <div class="card full">
     <div class="topbar"><button class="backbtn" data-back type="button" aria-label="Back">‹</button><h2 id="stagesTitle">Classic</h2></div>
@@ -113,6 +123,7 @@
       <span class="modelabel">Format</span>
       <button class="chip" type="button" aria-pressed="true">Race</button>
       <button class="chip" type="button" aria-pressed="false">Elimination</button>
+      <button class="chip" type="button" aria-pressed="false">Weekly</button>
     </div>
     <div id="levels" class="stack" role="group" aria-label="Choose a stage"></div>
   </div>
@@ -125,6 +136,7 @@
       <button class="chip" type="button" data-tab="daily" aria-pressed="true">Daily</button>
       <button class="chip" type="button" data-tab="weekly" aria-pressed="false">Weekly</button>
       <button class="chip" type="button" data-tab="classic" aria-pressed="false">Classic</button>
+      <button class="chip" type="button" data-tab="challenge" aria-pressed="false">Challenge</button>
     </div>
     <div id="boardStages" class="modes" role="group" aria-label="Stage" hidden></div>
     <p id="boardTitle" class="boardtitle"></p>

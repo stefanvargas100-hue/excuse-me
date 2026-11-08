@@ -31,7 +31,8 @@ import { makeRun, recordKey } from './runopts.js';
 import { cleanBonusFor, cleanMedal } from './clean.js';
 import { applyElimList, initElim, stepElim } from './elim.js';
 import { LESSONS, PRACTICE_OUTFIT, beginLesson, lessonIndex, lessonTick, restartLesson } from './practice.js';
-import { flushScores, showRunBoard, submitBestRun, submitRun } from '../online/online.js';
+import { flushScores, showRunBoard, submitBestRun, submitChallenge, submitRun } from '../online/online.js';
+import { CHALLENGE_SUBMIT_ENABLED, challengeFor, utcWeekKey, validChallengeTime } from '../config/challenge.js';
 
 
 
@@ -107,13 +108,13 @@ export function tick(dt) {
       tutTick(dt);
       if (S.tut) { updPeople(dt); S.people = S.people.filter(p => !p.dead && p.z > S.pz - 16); return; }
     }
-    const crowd = !S.lesson;   // practice lessons have only their own people
+    const crowd = !S.lesson, dynamic = crowd && !S.challenge;   // lessons have only their own people; the challenge has the seeded course and nothing random on top
     while (crowd && S.nextChunk < leadZ() + SPAWN_FAR && S.nextChunk < goalOf() - 15) { genChunk(S.nextChunk); S.nextChunk += 4; }
     const prog = clamp(S.pz / LV.goal, 0, 1);
     S.fastT -= dt;
-    if (S.fastT <= 0 && !S.duel && crowd) { spawnFast(true); if (R() < 0.3) spawnFast(true); S.fastT = rnd(LV.fastEvery[0], LV.fastEvery[1]) * (1.3 - 0.6 * prog); }
+    if (S.fastT <= 0 && !S.duel && dynamic) { spawnFast(true); if (R() < 0.3) spawnFast(true); S.fastT = rnd(LV.fastEvery[0], LV.fastEvery[1]) * (1.3 - 0.6 * prog); }
     S.rivalT -= dt;
-    if (S.rivalT <= 0 && !S.duel && crowd && S.pz > 25 && S.pz < goalOf() - 40) { spawnRival(); S.rivalT = rnd(LV.rivalEvery[0], LV.rivalEvery[1]) * (1.2 - 0.5 * prog); }
+    if (S.rivalT <= 0 && !S.duel && dynamic && S.pz > 25 && S.pz < goalOf() - 40) { spawnRival(); S.rivalT = rnd(LV.rivalEvery[0], LV.rivalEvery[1]) * (1.2 - 0.5 * prog); }
     if (LV.id === 'nyc') updXings();
     // clock
     S.timeLeft -= dt;
@@ -122,9 +123,9 @@ export function tick(dt) {
     if (S.timeLeft <= 0 && !S.race) { loseTime(); return; }
     // scripted crowd moments
     S.eventT -= dt;
-    if (S.eventT <= 0 && !S.duel && crowd && S.pz < goalOf() - 60) { seeded(':e' + (S.evN++), () => runEvent(pick(LV.events))); S.eventT = S.endless && S.pz > LV.goal ? rnd(11, 17) : rnd(16, 24); }   // past the old finish line, surprises come more often
+    if (S.eventT <= 0 && !S.duel && dynamic && S.pz < goalOf() - 60) { seeded(':e' + (S.evN++), () => runEvent(pick(LV.events))); S.eventT = S.endless && S.pz > LV.goal ? rnd(11, 17) : rnd(16, 24); }   // past the old finish line, surprises come more often
     // rush hour surges
-    if (!S.duel && crowd && S.pz < goalOf() - 50) {
+    if (!S.duel && dynamic && S.pz < goalOf() - 50) {
       S.rushT -= dt;
       if (S.rushT <= 0) {
         if (!S.rush) { S.rush = true; S.rushT = 10; banner('RUSH HOUR', '#ff9f43'); Music.sfx('combo'); }
@@ -138,7 +139,7 @@ export function tick(dt) {
       }
     }
     for (const p of S.people) if (p.prop === 'spill' && !p.slipped && Math.hypot(S.px - p.x, (S.pz - p.z) * 0.8) < 1.0) { p.slipped = true; S.slipT = 0.7; addPop('SLIPPERY!', '#c8a165', 26); buzz([10, 20, 10]); }
-    if (LV.id === 'shibuya') { S.waveT -= dt; if (S.waveT <= 0 && !S.duel && crowd && S.pz < goalOf() - 60) { scramble(); S.waveT = rnd(8, 11); } }
+    if (LV.id === 'shibuya') { S.waveT -= dt; if (S.waveT <= 0 && !S.duel && dynamic && S.pz < goalOf() - 60) { scramble(); S.waveT = rnd(8, 11); } }
     updPeople(dt);
     if (S.race) updRace(dt);
     if (S.race && S.race.elim) { const ev = stepElim(); if (ev) { elimEnd(ev); return; } }
@@ -237,9 +238,20 @@ export function elimAbort() {
   Music.stop(); Music.ambStop();
 }
 
+// Weekly challenge finish: the time is filed under the week the run STARTED in. Best time only; nothing else is paid or recorded.
+function challengeDone() {
+  const C = S.challenge, ms = Math.round(S.time * 1000), key = recordKey('excuseme_wchal_' + C.week, S.run), prev = parseFloat(store.get(key, '0')) || 0;
+  C.newBest = !prev || S.time < prev;
+  if (C.newBest) store.set(key, S.time.toFixed(2));
+  C.best = C.newBest ? S.time : prev;
+  if (validChallengeTime(ms)) submitChallenge(C.week, C.rules, ms);
+}
+export const challengeBest = c => parseFloat(store.get(recordKey('excuseme_wchal_' + c.week, { category: 'challenge', rules: c.rules }), '0')) || 0;
+
 function winRace() {
   setState('won'); S.live = false; S.overT = 0; S.pz = LV.goal; touches.clear();
   finishRace(); payRun();
+  if (S.challenge) challengeDone();
   Music.sfx('win'); Music.stop(); Music.ambStop(); buzz([20, 60, 20, 60, 80]);
 }
 
@@ -322,7 +334,23 @@ export function forfeitDuel() {
   refreshDuelResults();
 }
 
+// Results of a weekly challenge run: time, best of the week and (once the online board is switched on) the top times.
+function showChallengeEnd() {
+  const C = S.challenge;
+  $('endEyebrow').textContent = 'Weekly challenge · ' + C.week + ' · ' + LV.city + ' · ' + LV.name;
+  const t = $('endTitle'); t.textContent = C.newBest ? 'New best!' : 'Finished'; t.className = 'good';
+  $('endLead').hidden = true;
+  $('sScoreLabel').textContent = 'Finish time'; $('sScore').textContent = fmtTime(S.time);
+  setStat('sBest', 'Best this week', fmtTime(C.best)); setStat('sDist', 'Week', C.week); setStat('sChain', 'Bumps', String(S.bumps));
+  setExtraStats(false);
+  $('raceBoard').hidden = true; $('unlockNote').hidden = true; $('xpNote').hidden = true; $('nextNote').hidden = true; $('cleanNote').hidden = true;
+  if (CHALLENGE_SUBMIT_ENABLED) showRunBoard('wchal', C.week + ':r' + C.rules); else $('dayBoard').hidden = true;
+  $('next').hidden = true; $('again').hidden = false; $('again').disabled = false; $('again').textContent = 'Try again'; $('again').className = 'big';
+  $('end').hidden = false;
+}
+
 function showRaceEnd() {
+  if (S.challenge) { showChallengeEnd(); return; }
   const R = S.race, n = R.board.length, place = R.place, EL = R.elim;
   $('endEyebrow').textContent = (EL ? 'Elimination · ' : 'Race · ') + LV.city + ' · ' + LV.name + ' · ' + (S.duel ? 'live vs ' + S.duel.title : R.diff.name + ' bots');
   const t = $('endTitle'); t.textContent = place === 1 ? 'You win!' : ordinal(place) + ' of ' + n; t.className = place === 1 ? 'good' : 'bad';
@@ -367,7 +395,7 @@ export function startWeekly() { if (hasPlayed('weekly')) return; setLevel(weekly
 
 // start('classic' | 'race' | 'daily' | 'weekly'); the older start(true) and start(false, 'race') forms still work.
 export function start(a, b, opts) {
-  lastOpts = opts && opts.elim ? { run: opts.run, elim: true } : undefined;
+  lastOpts = opts && opts.elim ? { run: opts.run, elim: true } : undefined; lastChallenge = !!(opts && opts.challenge);
   const duel = opts && opts.duel || null;   // a live race against a friend: { seed, friend, send, remote }
   const mode = a === true ? 'daily' : typeof a === 'string' ? a : (b || lastMode);
   const daily = mode === 'daily', weekly = mode === 'weekly', key = daily || weekly ? periodKey(mode) : null;
@@ -382,11 +410,11 @@ export function start(a, b, opts) {
   reset();
   S.tallyStart = tallySnapshot();
   S.mod = activeMod;
-  S.mode = mode; S.kind = mode; S.endless = mode !== 'race'; S.seed = key || (duel ? duel.seed : run.seed); S.duel = duel;
+  S.mode = mode; S.kind = mode; S.endless = mode !== 'race'; S.seed = key || (duel ? duel.seed : run.seed); S.duel = duel; S.challenge = opts && opts.challenge || null;
   if (S.endless) S.timeLeft = Infinity;
   ghostStart();
   if (mode === 'race') {
-    initRace(duel || opts && opts.lesson ? 0 : 3);
+    initRace(duel || opts && (opts.lesson || opts.solo) ? 0 : 3);
     if (opts && opts.lesson) beginLesson(opts.lesson);
     if (duel) {
       const spot = k => startSlot(duel.slotOf[k], duel.count, LV.half);   // everyone on one line, in the order of the room list
@@ -406,6 +434,14 @@ export function start(a, b, opts) {
   Music.start(LV.music); Music.ambStart(LV.id);
 }
 
+// Weekly challenge: a solo timed race on this UTC week's course, in this week's supplied outfit.
+let lastChallenge = false;
+export function startChallenge(date) {
+  const c = challengeFor(utcWeekKey(date));
+  setLevel(c.level);
+  start('race', undefined, { run: { category: 'challenge', rules: c.rules, seed: c.seed, outfit: c.outfit }, solo: true, challenge: c });
+}
+
 // Practice: a lesson on a bare street, as a practice-category run (nothing is paid or recorded).
 export function startPractice(id) {
   setLevel(0);
@@ -413,7 +449,7 @@ export function startPractice(id) {
 }
 // Race again / Restart keeps the format (elimination) of the run being repeated.
 let lastOpts;
-export function restartRun() { start(lastDaily, lastMode, lastOpts); }
+export function restartRun() { if (lastChallenge) startChallenge(); else start(lastDaily, lastMode, lastOpts); }
 export function lessonRetry() { if (S && S.lesson) restartLesson(); }
 export function lessonNext() { if (S && S.lesson) startPractice(LESSONS[Math.min(LESSONS.length - 1, lessonIndex(S.lesson.id) + 1)].id); }
 

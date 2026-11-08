@@ -7,8 +7,8 @@ const m = { exports: {} }; new Function('module', 'exports', 'require', out)(m, 
 const { BOARD_TABS, boardIdFor, boardTitle } = m.exports;
 const util = require('./harness.js');
 
-test('tabs: Daily, Weekly and Classic', () => {
-  assert.deepStrictEqual(BOARD_TABS.map(t => t.id), ['daily', 'weekly', 'classic']);
+test('tabs: Daily, Weekly, Classic and Challenge', () => {
+  assert.deepStrictEqual(BOARD_TABS.map(t => t.id), ['daily', 'weekly', 'classic', 'challenge']);
 });
 
 test('daily and weekly boards use today and this week; classic has one board per stage', () => {
@@ -29,4 +29,10 @@ test('titles say what you are looking at', () => {
   assert.match(boardTitle('daily', 0), /Today/i);
   assert.match(boardTitle('weekly', 0), /week/i);
   assert.match(boardTitle('classic', 1), /New York|Fifth/i);
+});
+
+test('the challenge tab points at this UTC week and the current rules version', () => {
+  const { utcWeekKey } = require('./harness.js').load();
+  assert.strictEqual(boardIdFor('challenge', 0), 'wchal:' + utcWeekKey(new Date()) + ':r1');
+  assert.match(boardTitle('challenge', 0), /Weekly challenge/);
 });
