@@ -375,4 +375,4 @@ Protocol (written before the client code, as the plan required):
 - Applied migration 0002 to production through the authenticated Supabase SQL editor. Transactional tests under the authenticated role passed insert, improve, slower retry, invalid time/week/name, board-rename bypass and ownership checks; fixtures rolled back.
 - The real anonymous game leaderboard client successfully submitted, improved, retained the best and read the ranked challenge result through the live REST API. Its temporary score and account were removed.
 - Enabled CHALLENGE_SUBMIT_ENABLED after live checks. The test requiring submissions off was deliberately updated for the new release requirement, failed first, then passed after enabling. Disable the flag and deploy before rolling back the database migration.
-- Release validation after merging current main: 465/465 tests and production build pass.
+- Release validation after merging current main: 444/444 tests and production build pass.
