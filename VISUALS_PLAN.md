@@ -30,7 +30,31 @@ Rules for all batches: render only (no sim state, no seeded RNG, no collision or
 - E16 HUD icon consistency, contrast on bright maps, notch-safe layout.
 - First step is an audit of these screens; the list may change after it.
 
-## Next update (not started): C10 landmark set-pieces, C11 new maps
+## Batch 6 — Landmark moments (C10), render only
+One set-piece per map, at a fixed distance so every run passes it at the same spot. Nothing you can walk into, no sim change.
+- Fifth Avenue: a Gothic cathedral on the right between the 270 m and 360 m crossings: twin spires over the street, a rose window,
+  bronze doors and steps at sidewalk level. (Subway steam already exists.)
+- Shibuya: the scramble moment. When the lights change, the big screens flash a walking figure, and the Hachikō dog statue sits
+  by the exit at the finish.
+- Airport: around halfway, a jet taxis slowly past the window, close up.
+- Check: in-game screenshots of each; determinism tests stay green.
+
+## Batch 7 — Central Park (C11), the first new map
+The fourth level, and the second New York one (with Fifth Avenue, the start of a cup).
+- The Mall / Literary Walk: a paved promenade under arching elms, benches and lamp posts down both edges, lawns beyond, the
+  Midtown skyline over the trees. Finish at Bethesda Terrace.
+- A stone bridge over the lake partway along: the path narrows between railings for a stretch.
+- Obstacles: benches, lamp posts, bins, a pretzel cart, a bike rack, an artist's easel. All use fitted hitboxes and are checked by
+  the hitbox test from day one.
+- People: joggers in packs (fast, keep right), dog walkers, a horse carriage crossing (like the taxi), the street performer.
+- Looks: day, autumn (orange leaves, leaves kicked up by footsteps), golden hour.
+- Everything else a level needs: level card, music, reaction lines, timer text, race support.
+- Tests: the street tests (every kind appears, never fully blocked), hitboxes, a classic and a race run to the finish, determinism.
+
+## Batch 8 — NYC Cup (plan for review, not built)
+Needs at least three New York maps, so it comes after a third NYC map. Design notes are below.
+
+## Next update (not started): more NYC maps
 
 ### Cup idea: New York, several famous locations, 4–5 maps in a row, tallied total
 Design notes so new maps fit it later:
@@ -55,3 +79,11 @@ Design notes so new maps fit it later:
 - Central Park: autumn leaves kicked up by the footstep puffs; joggers with the burst lean; dog walkers with the real lead.
 - Podium for classic runs on daily/weekly boards (top 3 by score).
 - Footstep sound variation to match dust vs splash.
+
+## Batch 6 continuation (2026-11-07)
+- Implemented the cathedral, Shibuya GO announcement and Hachiko statue, and taxiing airport jet.
+- Fixed cathedral anchors to match the renderer's 3 m segments: both towers and the central portal now draw. Replaced the right storefronts rather than the buildings across the avenue.
+- Added a regression test for both towers and the portal, plus scramble announcement timing/reset coverage. The cathedral test failed before the fix.
+- Validation: all 336 tests passed; production build passed; focused scenery/landmark checks passed (16 tests), including render determinism.
+- Browser checks: desktop and 390 x 844 phone views inspected. Full landmark framing and 4x CPU performance review remain pending; tutorial overlays affected the browser walkthrough. The screens currently use GO text rather than the proposed walking figure.
+- Central Park (Batch 7) remains unstarted.

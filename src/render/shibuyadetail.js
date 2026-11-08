@@ -4,7 +4,8 @@ import { TAU, clamp, mod } from '../config/util.js';
 import { ctx } from '../dom.js';
 import { F, H, HOR, VX, VZ, W } from './camera.js';
 import { P, cq, fq, label, poly, sub, wq } from './draw.js';
-import { hsh, makeLod, padd, pfill, pfq, pwq, rgba } from './scenery.js';
+import { hsh, makeLod, padd, pfill, pfq, pwq, rgba, wallText } from './scenery.js';
+import { scrambleFlash } from './landmarks.js';
 import { S, calm } from '../sim/state.js';
 
 
@@ -19,6 +20,7 @@ const HW = 15;
 const SIGNS = ['居酒屋', 'ラーメン', 'カラオケ', '焼肉', '寿司', 'ゲーム', '薬', '麺'];
 const SCREEN = ['#ff3d9a', '#20e3ff', '#7c4dff', '#ff9f1c', '#2ee6a6', '#ff4d4d'];
 const t = () => S.clock || 0;
+let flash = 0;   // the screens' GO flash when the lights change (render/landmarks.js), worked out once a frame
 
 /* ---------- the walls ---------- */
 // a big video screen on some buildings: the picture changes every couple of seconds, bars bounce to the "music"
@@ -28,6 +30,12 @@ function screen(k, za, zb, da, side, bi) {
   ctx.globalAlpha = 0.32 * fogA(a); wq(x, y0 - 0.9, y1 + 0.9, Math.max(0.2, a - 0.3), b + 0.3, mixc(c, a * 0.5)); ctx.globalAlpha = 1;   // the glow round it
   wq(x, y0 - 0.2, y1 + 0.2, a, b, mixc(hex('#0b0a14'), a));                                                                              // frame
   wq(x, y0, y1, a, b, mixc(scl(c, 0.55), a * 0.5));                                                                                      // picture
+  if (flash > 0) {   // the lights just changed: every screen says GO
+    wq(x, y0, y1, a, b, mixc(hex('#0d5c35'), a * 0.5));
+    const on = calm || Math.floor(t() * 6) % 2 === 0 || flash < 0.5;
+    if (on) wallText('GO', x - side * 0.02, (y0 + y1) / 2, (za + zb) / 2, 5.5, '#7dffb0', side);
+    return;
+  }
   const bars = 3, tt = calm ? 0 : t();
   ctx.beginPath();
   for (let i = 0; i < bars; i++) {
@@ -122,6 +130,7 @@ export function shibuyaSegment(k, za, zb, da, db) {
 
 /* ---------- sky: stars, a moon, haze, far towers with blinking lights, a blimp ---------- */
 export function shibuyaSky() {
+  flash = scrambleFlash();
   const tt = t(), u = Math.min(W, H) / 390, y0 = HOR - H * 0.45;
   const g = ctx.createLinearGradient(0, HOR - H * 0.2, 0, HOR); g.addColorStop(0, 'rgba(255,61,154,0)'); g.addColorStop(1, 'rgba(255,61,154,0.16)');
   ctx.fillStyle = g; ctx.fillRect(0, HOR - H * 0.2, W, H * 0.2);                                         // the city's glow

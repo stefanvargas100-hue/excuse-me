@@ -7,6 +7,7 @@ import { P, ball, box3D, cq, fq, label, poly, sub, wq } from './draw.js';
 import { disc, hsh, makeLod, padd, pfill, pwq, rgba, topOf, wallText, wqA } from './scenery.js';
 import { inXing } from '../sim/people.js';
 import { S, calm } from '../sim/state.js';
+import { cathedralAt, cathedralSeg } from './landmarks.js';
 
 
 
@@ -193,7 +194,9 @@ export function nycSegment(k, za, zb, da, db, xing) {
   lod.begin();
   const bi = Math.floor(za / 12), sIdx = mod(k, 4);
   farFacade(k, za, zb, da, db, bi, sIdx);
-  if (!xing) { rightFacade(k, za, zb, da, db, bi, sIdx, k & 1); if (da < R(50)) sidewalkSeg(k, za, zb, da, db); }
+  if (cathedralAt(za)) cathedralSeg(za, zb);
+  else if (!xing) rightFacade(k, za, zb, da, db, bi, sIdx, k & 1);
+  if (!xing && da < R(50)) sidewalkSeg(k, za, zb, da, db);
   if (da < 60 && !xing) roadLot(za, bi);
   lod.end();
 }
