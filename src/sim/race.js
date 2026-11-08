@@ -20,6 +20,7 @@ import { S } from './state.js';
 import { ghostSave } from './replay.js';
 import { recordKey } from './runopts.js';
 import { breakClean, stepClean } from './clean.js';
+import { courseTag, openingX, zonesOf } from '../config/routes.js';
 import { collectPowerups, placePowerups, powerMul, stepPowerups } from './powerups.js';
 
 /* ---------- race mode: A to B against bots; a bump slows you down instead of ending the run ---------- */
@@ -84,11 +85,12 @@ export const racePace = (chain, energy) => (1 + COMBO_SPEED_PER * (comboLevel(ch
 // Three tiers. Pace is walking speed relative to yours, miss is how often a bot fails to notice someone,
 // dash is how readily it dashes around trouble, burst is how often it spends stamina on a burst of speed,
 // fight is how hard it contests the race: chasing slipstreams, shaking you off its tail, using the fast strips.
+// detour is how often it takes the clear side opening at a route zone rather than the tight direct one.
 // excuse is how readily it says Excuse me, as a chance per second while someone is in its way (same range and recharge as yours).
 export const DIFFICULTIES = [
-  { name: 'Easy', pace: [0.82, 0.86, 0.89], miss: 0.14, dash: 0, burst: 0.15, fight: 0, excuse: 0.15 },
-  { name: 'Medium', pace: [0.89, 0.93, 0.97], miss: 0.06, dash: 0.5, burst: 0.3, fight: 0.5, excuse: 0.7 },
-  { name: 'Hard', pace: [0.98, 1.02, 1.06], miss: 0.01, dash: 1, burst: 0.6, fight: 1, excuse: 2 }
+  { name: 'Easy', pace: [0.82, 0.86, 0.89], miss: 0.14, dash: 0, burst: 0.15, fight: 0, excuse: 0.15, detour: 0.75 },
+  { name: 'Medium', pace: [0.89, 0.93, 0.97], miss: 0.06, dash: 0.5, burst: 0.3, fight: 0.5, excuse: 0.7, detour: 0.5 },
+  { name: 'Hard', pace: [0.98, 1.02, 1.06], miss: 0.01, dash: 1, burst: 0.6, fight: 1, excuse: 2, detour: 0.3 }
 ];
 const BOTS = [
   { name: 'Mia', color: '#14b8a6', shirt: '#14b8a6', hair: '#3b2a1e', hairStyle: 'long', skin: '#c68863' },
@@ -309,12 +311,26 @@ export function standings() {
 export const myPlace = () => standings().findIndex(r => r.me) + 1;
 
 /* ---------- bots: they steer like a person would, not along a line ---------- */
+// Route zones: each bot decides once per zone which opening to take, then lines up for it early, so it is never caught
+// against the barrier far from an opening. Returns the x to aim for and how far away the barrier is, or null.
+function routeAim(b) {
+  for (const zone of zonesOf(LV.id)) {
+    const dz = zone.z - b.z;
+    if (dz < -1.5 || dz > 30) continue;
+    if (!b.routes) b.routes = {};
+    if (b.routes[zone.z] === undefined) b.routes[zone.z] = S.race.rng() < b.diff.detour ? 'detour' : 'direct';
+    return { x: openingX(LV.id, zone, b.routes[zone.z]), dz };
+  }
+  return null;
+}
+
 // Looks well ahead, picks the lane that gets them past slower walkers without clipping anyone, drifts gently
 // from side to side when the road is clear, and dashes or bursts the way a good player does.
 function think(b) {
   const lim = LV.half - 0.5, look = 6 + b.speed * 2.6, rng = S.race.rng;
   const wander = Math.sin(S.clock * 0.7 + b.seed) * lim * 0.45;
   let bestX = b.x, bestC = Infinity, danger = 99;
+  const aim = routeAim(b), aimW = aim ? (aim.dz < 8 ? 2.5 : 0.35) : 0;
   for (let tx = -lim; tx <= lim + 1e-6; tx += 0.4) {
     if (contain(LV.id, b.x, tx, b.z) !== tx) continue;   // behind the glass: not a place this bot can go
     let c = Math.abs(tx - b.x) * 0.18 + (Math.abs(tx - b.target) < 0.01 ? -0.25 : 0);
@@ -337,7 +353,7 @@ function think(b) {
         if (Math.abs(tx - b.x) < 0.01 && gap < 0.3 && dz < danger) danger = dz;
       }
     }
-    c += Math.abs(tx - wander) * 0.07;
+    c += Math.abs(tx - wander) * 0.07 + (aim ? Math.abs(tx - aim.x) * aimW : 0);
     // racing: tuck in behind whoever is just ahead, shake off anyone on your own tail, take the fast strip
     const fight = b.diff.fight;
     if (fight) {
@@ -465,7 +481,7 @@ export function finishRace() {
   const R = S.race;
   endCoach();
   R.finished = true; R.board = standings(); R.place = R.board.findIndex(r => r.me) + 1;
-  const key = recordKey('excuseme_race_best_' + LV.id, S.run), prev = parseFloat(store.get(key, '0')) || 0;
+  const key = recordKey('excuseme_race_best_' + LV.id + courseTag(LV.id), S.run), prev = parseFloat(store.get(key, '0')) || 0;
   R.newBest = !S.duel && S.run.policy.records && R.place === 1 && (!prev || S.time < prev);
   if (R.newBest) { store.set(key, S.time.toFixed(2)); ghostSave(); }
   if (!S.run.policy.progress) return;   // practice and other special runs end here: no tallies, no unlock progress
@@ -478,5 +494,5 @@ export function finishRace() {
     if (R.diff.name === 'Hard') track('winsHard');
   }
 }
-export const raceBest = (id, run) => parseFloat(store.get(recordKey('excuseme_race_best_' + id, run), '0')) || 0;
+export const raceBest = (id, run) => parseFloat(store.get(recordKey('excuseme_race_best_' + id + courseTag(id), run), '0')) || 0;
 export const fmtTime = t => Math.floor(t / 60) + ':' + (t % 60 < 10 ? '0' : '') + (t % 60).toFixed(1);

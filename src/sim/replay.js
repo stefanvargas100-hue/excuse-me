@@ -6,6 +6,7 @@ import { makeMe } from './people.js';
 import { addPop } from './scoring.js';
 import { S } from './state.js';
 import { recordKey } from './runopts.js';
+import { courseTag } from '../config/routes.js';
 
 /* ---------- ghosts: your best run, friends' best runs, the top 3 of a classic stage; and sharing a run ----------
    Each ghost only shows up when you are close to its record: within GHOST_CLOSE_M of where that run ended.
@@ -14,7 +15,7 @@ import { recordKey } from './runopts.js';
 const GHOST_MAX = 1500;   // up to 10 minutes of your own samples
 export const GHOST_CLOSE_M = 60;
 const FRIEND_COLORS = ['#8be9fd', '#ff9f43', '#c792ff', '#7ee081'], LEADER_COLORS = ['#ff6b9d', '#ffb3d1', '#ff8fb8'];
-const ghostKey = () => recordKey((S.kind === 'race' ? 'excuseme_ghost_race_' : 'excuseme_ghost_') + LV.id, S.run);
+const ghostKey = () => recordKey((S.kind === 'race' ? 'excuseme_ghost_race_' + LV.id + courseTag(LV.id) : 'excuseme_ghost_' + LV.id), S.run);
 const raceKind = () => S.kind === 'race' && !S.duel;
 const wantsGhost = () => (S.kind === 'classic' || raceKind()) && !S.tut && S.run.policy.ghosts;
 export const visibleGhost = () => (S.ghost && !S.ghost.hidden ? S.ghost : null);

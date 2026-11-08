@@ -17,7 +17,7 @@ Make clean driving, crowd management, learning, route selection and different ra
 | B1 | Clean-race rewards | B0 | Bot races; private-race summary | Validated (headless + browser) |
 | B2 | Bots use Excuse me | B0, B1 validation | Bot races | Validated (headless + browser) |
 | B3 | Replayable practice course | B0, B1, B2 | Four short local lessons | Validated (headless + browser) |
-| B4 | Stage-specific route choices | B0-B3 | Airport pilot, then NYC and Tokyo | Planned |
+| B4 | Stage-specific route choices | B0-B3 | Airport pilot, then NYC and Tokyo | Validated (headless + browser) |
 | B5 | Elimination races | B0, B3, B4 | Bots first; friend rooms second | Planned |
 | B6 | Weekly challenge race with a supplied outfit | B0, B3-B5 | Solo timed race and dedicated board | Planned |
 | B7 | Combined balance, compatibility and release check | B1-B6 | All supported modes | Planned |
@@ -297,9 +297,21 @@ Later expansion ideas, not required for this queue: public matchmaking, bots fil
 
 ### B3 - Validated, 2026-11-07
 - Playable behaviour: home screen Practice tile opens four lessons (Close pass, Perfect dash, Thread the needle, Slipstream) on a bare airport street: no crowd, bots, clock or countdown. A lesson panel states one task, reports what was detected (e.g. "That pass left 83 cm", "Dash started 4.2 m away: too early") and offers Try again / Next lesson / Exit when done. A bump, a wrong attempt or running out of people restarts only the lesson (fresh people, full stamina, boosts and queued taps cleared, player back at the start). Pause > Restart retries the lesson.
-- Real mechanics: the normal pass, dash, slipstream and bump code post events to S.lesson.log; lessons only read them (src/sim/practice.js). Runs use category  (B0), a fixed supplied outfit and a fixed seed, so nothing is paid, recorded, submitted, ghosted, or written to the save, and the saved outfit is untouched.
+- Real mechanics: the normal pass, dash, slipstream and bump code post events to S.lesson.log; lessons only read them (src/sim/practice.js). Runs use category `practice` (B0), a fixed supplied outfit and a fixed seed, so nothing is paid, recorded, submitted, ghosted, or written to the save, and the saved outfit is untouched.
 - Regression reproduced first: all 12 tests in test/practice.test.js failed before implementation.
 - Tests: practice 12/12, full suite 361/361, production build succeeds.
 - Browser: home, practice list and lesson panel (running and done states) at 320x568; lesson text and buttons do not cover the player. The Play screen was left unchanged after a sixth card made it too tight at 320x568 (Practice moved to the home tiles).
 - Known limitations: lessons are driven by simulated steering in tests, not by a person on touch; the first-time 'how to play' text mentions no link to Practice yet; route choice lesson deferred to after B4.
 - Not published. Next: B4a (Airport route pilot).
+
+### B4 (a, b, c together) - Validated, 2026-11-07
+- Playable behaviour: in bot races and friend races each stage has three route zones (src/config/routes.js): a barrier line across the street (Airport: rope, New York: orange construction fence, Tokyo: crowd-control barrier) with a tight 1.0-1.1 m DIRECT opening in the middle behind a zigzag queue of four stationary people, and a wide clear DETOUR opening (3.0 m airport, 1.5 m NYC, 4.0 m Tokyo) off to one side that alternates left/right between zones. Nothing is required to take either; no speed multiplier was added. Classic, Daily and Weekly are unchanged (no barriers), so their seeded crowds and records are unaffected.
+- One data source: routes.js drives placement/collision (barriers are solid props with circles, queue people are ordinary stationary people), the renderer (rope/fence/crowdbar skin on the prop) and bot planning. Placement uses data, never the random stream.
+- Bots: each bot decides once per zone (Easy 75% / Medium 50% / Hard 30% take the detour) and lines up for that opening up to 30 m out. This fixed a real softlock found by the tests: without it, bots hugging the barrier far from an opening could not plan a 4 m sideways move in time and sat pinned.
+- Records: stages with routes use ':rt1' on their race best and race ghost keys, so old times and ghosts are preserved but never compared with the new course. Old Airport/NYC/Tokyo race records and ghosts are therefore no longer shown (they are intact under the old keys). Bump ROUTE_RULES in routes.js for any later geometry change.
+- Regression reproduced first: the route tests failed (no barriers) before implementation; a Shibuya bot-softlock was reproduced and fixed. test/routes.test.js: 8 tests across all three stages (opening widths, clear of belts/crossings/strips, barriers only in races, barrier solid with both openings passable, bots clear every zone on several seeds, identical simulation with and without drawing, draw smoke test, versioned records). Two existing ghost tests moved to the versioned airport key.
+- Tests: full suite 369/369, production build succeeds.
+- Browser: barrier and opening readable at 390x844 on Airport, New York and Tokyo (manually placed frames; the hidden page pauses the game).
+- Tuning (first guess, to be playtested): headless crude-controller timing for the Airport first zone, 12 seeds: direct 16.5 s / 3.3 bumps vs detour 17.3 s / 2.9 bumps (direct 0.8 s faster, slightly more bumps). Later zones were noisy and roughly even. The controller is not a person, so treat as a sanity check only.
+- Known limitations: no signage or floor arrows tell a new player what the two openings mean; NYC/Tokyo fences are only visually distinguished by colour; friend rooms have no build-version handshake (see B7), so phones on different versions would see different layouts.
+- Not published. Next: B5a (elimination vs bots).

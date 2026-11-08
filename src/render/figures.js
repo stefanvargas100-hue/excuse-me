@@ -666,6 +666,15 @@ function drawProp(p, s, bx, fy) {
       }
       break;
     }
+    case 'rope': {
+      const h = p.span || 1, sk = p.skin === 'fence' ? ['#ff8a1f', '#2b2a33', 0.1, 0.95, 0.06] : p.skin === 'crowdbar' ? ['#b8c0cc', '#4b5563', 0.08, 0.95, 0.05] : ['#d6336c', '#2b2a33', 0.82, 0.9, 0.03];
+      const bar = hex(sk[0]), post = hex(sk[1]);
+      if (p.skin === 'fence') { box3D(x - h, x + h, 0.1, 0.95, z - 0.05, z + 0.05, bar); box3D(x - h, x + h, 0.55, 0.7, z - 0.06, z + 0.06, hex('#f4f6f8')); }
+      else if (p.skin === 'crowdbar') { box3D(x - h, x + h, 0.85, 0.93, z - 0.04, z + 0.04, bar); box3D(x - h, x + h, 0.45, 0.5, z - 0.04, z + 0.04, bar); }
+      else box3D(x - h, x + h, sk[2], sk[3], z - sk[4], z + sk[4], bar);
+      for (let px = -h; px <= h + 1e-6; px += Math.max(1.6, (2 * h) / Math.ceil((2 * h) / 2.2))) box3D(x + px - 0.05, x + px + 0.05, 0, 0.95, z - 0.05, z + 0.05, post);
+      break;
+    }
     case 'wetfloor': box3D(x - 0.25, x + 0.25, 0, 0.62, z - 0.12, z + 0.12, hex('#ffcf1f')); { const q = W3(x, 0.4, z - 0.13); label('WET', q[0], q[1], Math.round(0.14 * F / q[2]), INK); } break;
   }
 }
