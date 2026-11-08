@@ -52,6 +52,7 @@ export function holdTick(dt) {
 
 export function action(z) {
   if (state !== 'play') return;
+  if (S.duel?.startRemaining && S.race.countT > 0) return;
   if (z === 'M') tryBurst(); else tryDash(z === 'L' ? -1 : 1);
 }
 

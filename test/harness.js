@@ -65,10 +65,21 @@ function load(sourceFile, opts) {
   vm.runInContext(code, sandbox, { filename: 'game-bundle.js' });
   const E = sandbox.window.__excuse || win.__excuse;
   E.storage = store;   // the fake localStorage, so tests can pick settings such as bot difficulty
+  let lobbyTime = opts?.lobbyOffset || 0;
+  if (E.useLobbyClock) E.useLobbyClock(() => lobbyTime);
+  const gameTick = E.tick;
+  E.tick = dt => { if (!opts?.manualLobbyClock && E.S?.duel?.startRemaining && E.S.race.countT > 0) lobbyTime += dt * 1000; gameTick(dt); };
   E.fire = (type, ev) => { for (const [t, fn] of listeners) if (t === type) fn(Object.assign({ preventDefault() {}, repeat: false }, ev)); };
-  E.advance = ms => { now += ms; for (const fn of [...intervals.values()]) fn(); };
+  E.advance = ms => { now += ms; lobbyTime += ms; for (const fn of [...intervals.values()]) fn(); };
   E.visibility = hidden => { sandbox.document.hidden = hidden; for (const [t, fn] of docListeners) if (t === 'visibilitychange') fn(); };
   E.element = element;
   return E;
 }
-module.exports = { load, stub };
+async function readyPlayers(games) {
+  for (let i = 0; i < 80; i++) await Promise.resolve();
+  for (const g of games) {
+    if (!g.setRoomReady(true)) throw new Error('Fixture could not ready a player: ' + JSON.stringify(g.roomLobbyState()));
+  }
+  for (let i = 0; i < 80; i++) await Promise.resolve();
+}
+module.exports = { load, stub, readyPlayers };

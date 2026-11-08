@@ -1,7 +1,7 @@
 // Lobby for 2-4 phones: join, roster, start, drop-outs, rematch. Pretend room, no network. node --test
 const test = require('node:test');
 const assert = require('node:assert');
-const { load } = require('./harness.js');
+const { load, readyPlayers } = require('./harness.js');
 
 const DT = 1 / 30;
 const settle = () => new Promise(r => setTimeout(r, 5));
@@ -28,6 +28,7 @@ async function lobby(n, options) {
   const code = await games[0].hostRoom(1);
   for (let i = 1; i < n; i++) { assert.strictEqual(await games[i].joinRoom(code), true, 'player ' + (i + 1) + ' joined'); await settle(); }
   await settle();
+  await readyPlayers(games);
   return { games, host: games[0], code };
 }
 const tickAll = (games, frames) => { for (let i = 0; i < frames; i++) for (const g of games) g.tick(DT); };
@@ -184,6 +185,7 @@ test('the host can change the stage after making the room; guests see it and eve
   for (const g of games) assert.strictEqual(g.roomLevel(), 2, 'everyone sees the new stage');
   games[1].setRoomLevel(0); await settle();
   assert.strictEqual(games[0].roomLevel(), 2, 'only the host picks');
+  await readyPlayers(games);
   games[0].hostStart(); await settle();
   for (const g of games) assert.strictEqual(g.S.race ? g.LV.id : null, g.LEVELS[2].id, 'all on the third stage');
 });

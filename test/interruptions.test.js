@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { load } = require('./harness');
+const { load, readyPlayers } = require('./harness');
 const settle = async () => { for (let i = 0; i < 20; i++) await Promise.resolve(); };
 
 // Multiple isolated game bundles, asynchronous channel delivery, controllable packet loss.
@@ -28,7 +28,7 @@ async function lobby(n = 2, options = {}) {
   games.forEach(g => g.useRoomFactory(net.factory));
   const code = await games[0].hostRoom(1);
   for (const g of games.slice(1)) assert.equal(await g.joinRoom(code), true);
-  await settle(); return { net, games, code };
+  await settle(); await readyPlayers(games); return { net, games, code };
 }
 const me = g => g.lobbyPlayers().find(p => p.me).id;
 async function race(n = 2) { const p = await lobby(n); p.games[0].hostStart(); await settle(); return p; }
@@ -154,7 +154,7 @@ test('a racer that keeps the socket alive but never finishes cannot block final 
 test('missing a start while briefly offline cannot leave a guest stuck in the lobby', async () => {
   const { net, games: [h, g] } = await lobby();
   net.sockets[1].active = false; h.hostStart(); await settle();
-  net.sockets[1].active = true; h.advance(2000); await settle();
+  net.sockets[1].active = true; h.advance(2000); g.advance(2000); await settle();
   assert.equal(g.S?.seed, h.S.seed);
   assert.equal(g.S.race.countT, h.S.race.countT, 'recovered countdown uses elapsed wall time');
 });
@@ -198,11 +198,12 @@ test('a cancelled pending join cannot close a newer room when its rejection arri
   assert.equal(g.roomLevel(), 2);
 });
 
-test('a host starting while a guest is already backgrounded cannot give that guest a suspended race', async () => {
+test('a backgrounded guest clears readiness so the host cannot start a suspended race', async () => {
   const { games: [h, g] } = await lobby();
   g.visibility(true); h.hostStart(); await settle(); g.visibility(false); await settle();
-  assert.equal(g.S.duel.dnf, true);
-  assert.equal(h.S.duel.peers[me(g)].bye, true);
+  assert.notEqual(g.state, 'play');
+  assert.notEqual(h.state, 'play');
+  assert.equal(h.canStartRoom(), false);
 });
 
 test('after host departure both result screens offer a working path to create a fresh room', async () => {

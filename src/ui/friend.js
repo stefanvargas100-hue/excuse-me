@@ -1,6 +1,6 @@
 import { LEVELS } from '../config/levels.js';
 import { $ } from '../dom.js';
-import { MAX_PLAYERS, duelUi, hostRoom, hostStart, inviteLink, isHost, joinRoom, leaveRoom, roomCode, roomLevel, setRoomLevel } from '../online/duel.js';
+import { MAX_PLAYERS, duelUi, hostRoom, hostStart, inviteLink, isHost, joinRoom, leaveRoom, roomCode, roomLevel, setRoomLevel, setRoomReady, roomLobbyState, canStartRoom } from '../online/duel.js';
 import { go } from './screens.js';
 
 /* ---------- Race friends: make a room or join one, see who is in, then the host starts ---------- */
@@ -12,6 +12,7 @@ function reset() {
   leaveRoom(); view('friendHome'); $('friendStatus').textContent = '';
   $('friendStart').disabled = true; $('friendShare').disabled = true; $('friendCode').textContent = '----'; $('friendCodeG').textContent = '----';
   $('friendGo').disabled = false;
+  $('friendReady').hidden = true;
 }
 
 export function openFriend() { reset(); go('friend'); }
@@ -22,13 +23,24 @@ function showRoster(players) {
     ul.textContent = '';
     for (let i = 0; i < MAX_PLAYERS; i++) {
       const p = players[i], li = document.createElement('li');
-      if (p) { li.textContent = (p.host ? '★ ' : '') + p.name + (p.me ? ' (you)' : '') + (p.status === 'reconnecting' ? ' · reconnecting' : ''); if (p.me) li.className = 'me'; } else { li.textContent = 'waiting...'; li.className = 'empty'; }
+      if (p) {
+        li.textContent = (p.host ? '★ ' : '') + p.name + (p.me ? ' (you)' : '');
+        const detail = document.createElement('small');
+        const labels = { good: 'Good connection', slow: 'Slow connection', checking: 'Checking', reconnecting: 'Reconnecting', update: 'Update game' };
+        detail.textContent = (p.ready ? 'Ready' : 'Not ready') + ' · ' + (labels[p.connection] || 'Checking connection') + (p.latencyMs == null ? '' : ' · ' + p.latencyMs + ' ms');
+        li.appendChild(detail); if (p.me) li.className = 'me';
+      } else { li.textContent = 'waiting...'; li.className = 'empty'; }
       ul.appendChild(li);
     }
   });
   const n = players.length;
-  $('friendStart').disabled = !(isHost() && n >= 2);
-  $('friendStart').textContent = n >= 2 ? 'Start race (' + n + ' players)' : 'Start race';
+  const lobby = roomLobbyState(), mine = players.find(p => p.me);
+  $('friendStart').disabled = !canStartRoom();
+  $('friendStart').textContent = lobby.busy ? 'Preparing race...' : canStartRoom() ? 'Start race (' + n + ' players)' : n >= 2 ? 'Ready ' + players.filter(p => p.ready).length + '/' + n : 'Start race';
+  $('friendReady').hidden = !n || lobby.phase === 'running';
+  $('friendReady').disabled = lobby.pending || (!lobby.canReady && !(mine?.ready && lobby.busy));
+  $('friendReady').textContent = lobby.pending ? 'Confirming...' : mine?.ready ? 'Not ready' : 'Ready';
+  $('friendReady').setAttribute('aria-pressed', String(!!mine?.ready));
   const stageName = LEVELS[roomLevel()].city;
   if (isHost()) st().forEach((o, j) => o.setAttribute('aria-pressed', String(j === roomLevel())));
   if (isHost() && n) $('friendStatus').textContent = stageName + '. ' + (n < 2 ? 'Waiting for friends to join...' : n < MAX_PLAYERS ? n + ' in the room. Start now or wait for more.' : 'Room is full. Ready when you are.');
@@ -70,6 +82,7 @@ export function initFriend() {
   $('friendInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('friendGo').click(); });
   $('friendShare').addEventListener('click', invite);
   $('friendStart').addEventListener('click', hostStart);
+  $('friendReady').addEventListener('click', () => setRoomReady(!lobbyPlayersReady()));
   // an invite link opens straight into joining
   const m = typeof location !== 'undefined' ? /[?&]room=([A-Za-z0-9]{4})/.exec(location.search) : null;
   if (m) {
@@ -78,3 +91,5 @@ export function initFriend() {
     $('friendGo').click();
   }
 }
+
+const lobbyPlayersReady = () => roomLobbyState().ready;

@@ -1,7 +1,7 @@
 // Lobby for up to 8 phones: room size, start line, colours, results, rematch, and passing through each other. Pretend room, no network. node --test
 const test = require('node:test');
 const assert = require('node:assert');
-const { load } = require('./harness.js');
+const { load, readyPlayers } = require('./harness.js');
 
 const DT = 1 / 30;
 const settle = () => new Promise(r => setTimeout(r, 5));
@@ -26,6 +26,7 @@ async function lobby(n, level = 1) {
   const code = await games[0].hostRoom(level);
   for (let i = 1; i < n; i++) { assert.strictEqual(await games[i].joinRoom(code), true, 'player ' + (i + 1) + ' joined'); await settle(); }
   await settle();
+  await readyPlayers(games);
   return { games, host: games[0], code };
 }
 const tickAll = (games, frames) => { for (let i = 0; i < frames; i++) for (const g of games) g.tick(DT); };

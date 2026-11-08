@@ -15,6 +15,7 @@ const POLITE = ['Oh, sorry!', 'Go ahead.', 'My bad.', 'Sure!', 'Oops, sorry.'];
 
 // "Excuse me": up to four people ahead of you step aside, enough to open a gap in a big crowd. Rivals refuse; phone zombies may not hear.
 export function shout() {
+  if (S.duel?.startRemaining && S.race.countT > 0) return;
   if (S.shoutCD > 0) return;
   S.shoutCD = 5.5; track('shouts');
   // Timing: shout right before you would hit someone and it works better. More people move, they move further,

@@ -134,7 +134,7 @@ export function initRace(botCount) {
 
 export function raceCountdown(dt) {
   const R = S.race;
-  R.countT -= dt;
+  R.countT = S.duel?.startRemaining ? S.duel.startRemaining() : R.countT - dt;
   const sec = Math.ceil(R.countT);
   if (sec !== R.countLast) {
     R.countLast = sec;

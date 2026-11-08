@@ -12,6 +12,7 @@ import { packGhost, saveFriendGhost } from '../sim/ghostshare.js';
 import { createRoom, cleanCode, makeCode } from './room.js';
 import { createRemote } from './remote.js';
 import { createBoard } from './board.js';
+import { createStartCoordinator, START_PROTOCOL } from './start-sync.js';
 
 const URL = 'https://hrsbzntphratlnkrevet.supabase.co';
 const KEY = 'sb_publishable_FoFHiii4XagCq3-oi3ygQg_UcyZNoJn';
@@ -45,6 +46,9 @@ let room = null, role = null, code = '', levelIdx = 0, tick = null, raceNo = 0;
 let generation = 0, sessionId = '', rosterRev = 0, receivedRev = -1, disconnectedAt = null, retrying = false;
 const retired = new Set(), started = new Set();
 let hiddenAt = null;
+let lobby = null, startTimer = null, lobbyNow = () => performance.now();
+let lobbyNotice = '';
+export const useLobbyClock = f => { lobbyNow = f; };
 let outcomeRev = 0, receivedOutcome = -1;
 let myId = '', hostId = '', roster = [];        // roster: [{ id, name, look }], the host first, me included
 let inRoster = false, raced = false, hostGone = false, lastStatus = '', joinWaiter = null;
@@ -111,6 +115,9 @@ export function duelReceive(ev, data) {
 
 /* ---- the room before the race ---- */
 function closeRoom() {
+  if (startTimer) { clearInterval(startTimer); startTimer = null; }
+  if (lobby) { lobby.close(); lobby = null; }
+  lobbyNotice = '';
   const old = room; room = null; generation++;
   if (tick) { clearInterval(tick); tick = null; }
   if (old) {
@@ -127,9 +134,60 @@ function closeRoom() {
   ui.status(lastStatus, false);
   showRematch();
 }
-const sendRoster = () => room && room.send('roster', { id: myId, session: sessionId, rev: ++rosterRev, level: levelIdx, players: roster,
-  activeRace: raced && S?.duel ? { seed: S.duel.seed, level: levelIdx, countT: S.race.countT } : null });
-const changed = () => { ui.roster(lobbyPlayers()); ui.status(lastStatus, !!room && raced && !S?.race?.finished); showRematch(); };
+const sendRoster = () => {
+  if (!room) return;
+  ensureLobby(); lobby.setPlayers(roster.map(p => ({ id: p.id, protocol: p.protocol || 0 })), levelIdx);
+  room.send('roster', { id: myId, session: sessionId, rev: ++rosterRev, level: levelIdx, players: roster, lobby: lobby.snapshot() });
+};
+const changed = () => {
+  ui.roster(lobbyPlayers());
+  if (room && inRoster && !raced && lobby && disconnectedAt === null) {
+    const view = lobby.view(), stage = LEVELS[levelIdx].city;
+    lastStatus = lobbyNotice || (!view.compatible ? 'Update the game on every phone before joining.' : view.busy ? 'Preparing race. Keep the game open.' :
+      roster.length < 2 ? 'Waiting for friends to join...' : lobby.canStart() || view.players.every(p => p.ready) ? stage + ' · Everyone is ready. ' + (role === 'host' ? 'Press Start race.' : 'Waiting for the host.') :
+      'Connected · ' + stage + ' · Choose Ready when you are set.');
+  }
+  ui.status(lastStatus, !!room && raced && !S?.race?.finished); showRematch();
+};
+
+function ensureLobby() {
+  if (lobby || !myId || !hostId) return;
+  const epoch = generation;
+  lobby = createStartCoordinator({ id: myId, hostId, now: () => lobbyNow(),
+    send: (ev, payload) => { if (room && epoch === generation) room.send('lobby:' + ev, { ...payload, id: myId, session: sessionId }); },
+    allowStart: () => !document.hidden && (!raced || wantMe),
+    allowAgreed: () => raced && wantMe,
+    onExpired: plan => {
+      if (epoch !== generation) return;
+      if (room) room.send('bye', { id: myId, session: sessionId, race: plan.seed });
+      closeRoom(); say('Start could not be confirmed. Rejoin the room.');
+    },
+    onStart: plan => {
+      if (epoch !== generation) return;
+      lobbyNotice = '';
+      beginRace(plan.level, plan.seed, plan);
+      if (plan.late) { forfeitDuel(); S.duel.send('dnf', {}); say('Missed the start · DNF. Create a new room.'); }
+    },
+    onNotice: text => {
+      if (epoch !== generation) return;
+      if (!raced && lobby && !lobby.view().compatible) { closeRoom(); say(text); return; }
+      lobbyNotice = text; say(text);
+    },
+    onChange: () => {
+      if (epoch !== generation) return;
+      changed();
+      const view = lobby?.view();
+      if (view && (view.busy || (view.deadline !== null && view.deadline > lobbyNow())) && !startTimer) {
+        startTimer = setInterval(() => {
+          if (epoch !== generation || !lobby) return;
+          lobby.tick(); const v = lobby.view();
+          if (!v.busy && (v.deadline === null || lobbyNow() > v.deadline + 500)) { clearInterval(startTimer); startTimer = null; }
+        }, 200);
+        if (startTimer?.unref) startTimer.unref();
+      }
+    }
+  });
+}
 
 // While present, the existing lobby host settles terminal results. Retain them even after
 // a player leaves, so a missed finish/bye can be repaired without database storage.
@@ -164,18 +222,19 @@ function onMessage(ev, data) {
   if (sessionId && data.session && data.session !== sessionId) return;
   if (retired.has(from)) return;
   if (from && roster.some(p => p.id === from)) seenAt[from] = Date.now();
+  if (ev.startsWith('lobby:')) { if (lobby) lobby.receive(ev.slice(6), data); return; }
   if (ev === 'hello') {
     if (role !== 'host' || !from) return;
     if (roster.some(p => p.id === from)) { sendRoster(); return; }
     if (roster.length >= MAX_PLAYERS || raced) { room.send('full', { id: myId, to: from, why: raced ? 'started' : 'full' }); return; }
-    roster.push({ id: from, name: cleanName(data.name), look: cleanLook(data.look) });
+    roster.push({ id: from, name: cleanName(data.name), look: cleanLook(data.look), protocol: data.startProtocol || 0 });
     seenAt[from] = Date.now();
     sendRoster(); changed();
   } else if (ev === 'roster') {
     if (role !== 'guest' || !from || (hostId && from !== hostId)) return;
     if (Number.isInteger(data.rev) && data.rev <= receivedRev) return;
     const players = (Array.isArray(data.players) ? data.players : []).slice(0, MAX_PLAYERS)
-      .map(p => ({ id: cleanId(p && p.id), name: cleanName(p && p.name), look: cleanLook(p && p.look) })).filter(p => p.id);
+      .map(p => ({ id: cleanId(p && p.id), name: cleanName(p && p.name), look: cleanLook(p && p.look), protocol: p?.protocol || 0 })).filter(p => p.id);
     if (!players.length || players[0].id !== from) return;
     if (!players.some(p => p.id === myId)) { if (inRoster) { closeRoom(); say('You were removed from the room.'); } return; }
     if (raced) for (const p of roster) if (!players.some(next => next.id === p.id)) duelReceive('bye', { id: p.id });
@@ -187,13 +246,7 @@ function onMessage(ev, data) {
     if (Number.isInteger(data.level) && LEVELS[data.level]) levelIdx = data.level;
     for (const id of [...wants]) if (!roster.some(p => p.id === id)) wants.delete(id);
     if (joinWaiter) { const w = joinWaiter; joinWaiter = null; w(true); }
-    const active = data.activeRace;
-    if (active && typeof active.seed === 'string' && Number.isInteger(active.level) && LEVELS[active.level] &&
-        (!raced || wantMe) && !started.has(active.seed)) {
-      beginRace(active.level, active.seed.slice(0, 40));
-      if (Number.isFinite(active.countT) && active.countT > 0) S.race.countT = Math.min(S.race.countT, active.countT);
-      else { forfeitDuel(); S.duel.send('dnf', {}); say('Missed the start · DNF. Create a new room to race again.'); }
-    }
+    ensureLobby(); lobby.acceptSnapshot(data.lobby);
     changed();
   } else if (ev === 'full') {
     if (role === 'guest' && !inRoster && data.to === myId && joinWaiter) {
@@ -221,10 +274,7 @@ function onMessage(ev, data) {
     if (role === 'host') { sendRoster(); maybeRematch(); }
     changed();
   } else if (ev === 'start') {
-    if (role !== 'guest' || from !== hostId || !inRoster || (raced && !wantMe)) return;
-    if (typeof data.seed !== 'string' || !Number.isInteger(data.level) || !LEVELS[data.level]) return;
-    if (started.has(data.seed)) return;
-    beginRace(data.level, data.seed.slice(0, 40));
+    if (role === 'guest' && from === hostId && !raced) say('Update the game on every phone before starting.');
   } else if (ev === 'dnf') {
     if (!S || !S.duel || data.race !== S.duel.seed) return;
     duelReceive('bye', data); say((S.duel.peers[from]?.name || 'Racer') + ' did not finish.'); refreshDuelResults(); changed(); publishOutcomes();
@@ -239,7 +289,8 @@ function onMessage(ev, data) {
 }
 export const injectRoomMessage = onMessage;
 
-function beginRace(level, seed) {
+function beginRace(level, seed, schedule) {
+  if (started.has(seed)) return;
   started.add(seed);
   receivedOutcome = -1;
   wantMe = false; wants.clear(); raced = true;
@@ -252,6 +303,7 @@ function beginRace(level, seed) {
     if (ev === 'fin') { refreshDuelResults(); publishOutcomes(); }
   } });
   d.managed = true; d.beganAt = Date.now();
+  if (schedule) d.startRemaining = () => Math.max(0, (schedule.startAtLocal - schedule.now()) / 1000);
   for (const p of roster) seenAt[p.id] = Date.now();
   sendMyGhosts(level);
   changed();
@@ -265,6 +317,7 @@ function beginRace(level, seed) {
 // Every 2 seconds: guests say hello (join retry and keepalive); the host sends the roster and drops phones that went quiet.
 function heartbeat() {
   if (!room) return;
+  if (lobby) lobby.tick();
   const now = Date.now();
   if (raced && S?.duel && (state === 'play' || state === 'paused')) S.duel.send('pause', { seed: S.duel.seed, n: S.duel.pauseSeq, paused: S.duel.pausers.has(myId) });
   if (disconnectedAt !== null) {
@@ -291,7 +344,7 @@ function heartbeat() {
     publishOutcomes();
   }
   if (role === 'guest') {
-    room.send('hello', { id: myId, name: myName(), look: LOOK });
+    room.send('hello', { id: myId, name: myName(), look: LOOK, startProtocol: START_PROTOCOL });
     if (inRoster && !hostGone && seenAt[hostId] && now - seenAt[hostId] > STALE_MS) {
       if (!raced) { closeRoom(); say('Lost contact with the host.'); } else { hostGone = true; say('Host lost connection. Finish this race; create a new room for another.'); changed(); }
     }
@@ -308,6 +361,7 @@ function bindRoom(r, epoch) {
   r.onClose(() => {
     if (room !== r || generation !== epoch) return;
     if (disconnectedAt === null) disconnectedAt = Date.now();
+    if (lobby) lobby.setConnected(false);
     say('Connection interrupted. Reconnecting (up to 30 seconds)...'); changed();
   });
 }
@@ -320,9 +374,10 @@ async function reconnect() {
     await replacement.join(code);
     if (generation !== epoch || room !== replacement) { replacement.leave(); return; }
     disconnectedAt = null;
+    if (lobby) lobby.setConnected(true);
     say('Connected again.');
     if (role === 'host') sendRoster();
-    else room.send('hello', { id: myId, name: myName(), look: LOOK, session: sessionId });
+    else room.send('hello', { id: myId, name: myName(), look: LOOK, session: sessionId, startProtocol: START_PROTOCOL });
     changed();
   } catch (e) { /* heartbeat retries within the original grace period */ }
   finally { if (generation === epoch) retrying = false; }
@@ -344,7 +399,8 @@ export async function hostRoom(level) {
   say('Making a room...');
   const pending = connect(makeCode(), 'host'), epoch = generation;
   try { await pending; } catch (e) { if (generation === epoch) { closeRoom(); say('Could not connect. Check your internet and try again.'); } return null; }
-  roster = [{ id: myId, name: myName(), look: LOOK }]; hostId = myId; inRoster = true;
+  roster = [{ id: myId, name: myName(), look: LOOK, protocol: START_PROTOCOL }]; hostId = myId; inRoster = true;
+  sendRoster();
   say('Waiting for friends to join...'); changed();
   return code;
 }
@@ -355,7 +411,7 @@ export async function joinRoom(c) {
   try { await pending; } catch (e) { if (generation === epoch) { closeRoom(); say('Could not connect. Check the code and your internet.'); } return false; }
   const ok = await new Promise(resolve => {
     joinWaiter = resolve;
-    room.send('hello', { id: myId, name: myName(), look: LOOK });
+    room.send('hello', { id: myId, name: myName(), look: LOOK, startProtocol: START_PROTOCOL });
     const t = setTimeout(() => { if (joinWaiter === resolve) { joinWaiter = null; say('Nobody answered. Check the code and try again.'); resolve(false); } }, JOIN_WAIT_MS);
     if (t && t.unref) t.unref();
   });
@@ -364,8 +420,21 @@ export async function joinRoom(c) {
   return true;   // the roster screen shows the stage and who is in
 }
 
-export const lobbyPlayers = () => (room && inRoster ? roster.map(p => ({ id: p.id, name: p.name, look: p.look, me: p.id === myId, host: p.id === hostId,
-  status: p.id === myId ? (disconnectedAt === null ? 'connected' : 'reconnecting') : Date.now() - (seenAt[p.id] ?? Date.now()) > 6000 ? 'reconnecting' : 'connected' })) : []);
+export const lobbyPlayers = () => (room && inRoster ? roster.map(p => {
+  const info = lobby?.view().players.find(r => r.id === p.id);
+  const stale = p.id === myId ? disconnectedAt !== null : Date.now() - (seenAt[p.id] ?? Date.now()) > 6000;
+  return { id: p.id, name: p.name, look: p.look, me: p.id === myId, host: p.id === hostId, ready: !!info?.ready,
+    status: stale ? 'reconnecting' : 'connected', connection: stale ? 'reconnecting' : info?.status || 'checking', latencyMs: info?.rtt ?? null };
+}) : []);
+export const roomLobbyState = () => lobby?.view() || { phase: 'idle', compatible: false, canReady: false, ready: false, pending: false, busy: false };
+export function setRoomReady(ready) {
+  if (!inRoster || raced || document.hidden || !lobby) return false;
+  const previous = lobbyNotice; lobbyNotice = '';
+  const ok = lobby.setReady(ready);
+  if (!ok) lobbyNotice = previous;
+  return ok;
+}
+export const canStartRoom = () => !!(!raced && lobby?.canStart());
 export const lobbyStatus = () => lastStatus;
 export const roomLevel = () => levelIdx;
 // The host can change the stage any time before Start; everyone sees it on the next roster.
@@ -389,9 +458,8 @@ function showRematch() {
 }
 function maybeRematch() {
   const o = others();
-  if (role === 'host' && room && disconnectedAt === null && wantMe && o.length && o.every(p => wants.has(p.id)) && rematchState() !== 'gone') {
-    const seed = code + ':' + (++raceNo);
-    room.send('start', { id: myId, session: sessionId, level: levelIdx, seed }); beginRace(levelIdx, seed);
+  if (role === 'host' && room && disconnectedAt === null && wantMe && o.length && o.every(p => wants.has(p.id)) && rematchState() !== 'gone' && !lobby?.view().busy) {
+    lobby?.start(code + ':' + (raceNo + 1), { agreed: true }) && raceNo++;
   }
 }
 export function requestRematch() {
@@ -399,10 +467,8 @@ export function requestRematch() {
   wantMe = true; room.send('rematch', { id: myId, session: sessionId, race: S.duel.seed }); maybeRematch(); showRematch();
 }
 export function hostStart() {
-  if (role !== 'host' || !room || disconnectedAt !== null || others().length < 1 || raced) return;
-  const seed = code + ':' + (++raceNo);
-  room.send('start', { id: myId, session: sessionId, level: levelIdx, seed });
-  beginRace(levelIdx, seed);
+  if (role !== 'host' || !room || disconnectedAt !== null || !canStartRoom()) return;
+  if (lobby.start(code + ':' + (raceNo + 1))) raceNo++;
 }
 export function leaveRoom() { closeRoom(); }
 export const inviteLink = () => location.origin + location.pathname + '?room=' + code;
@@ -413,6 +479,7 @@ document.addEventListener('visibilitychange', () => {
   if (!room) return;
   if (document.hidden) {
     hiddenAt = Date.now();
+    if (!raced) lobby?.setReady(false);
     if (raced && S && S.duel && !S.race.finished) {
       forfeitDuel(); S.duel.send('dnf', {});
       say('Race ended · DNF because this phone left the game.');

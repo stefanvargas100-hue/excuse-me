@@ -1,7 +1,7 @@
 // Friends swap their best ghosts when a room race starts, and keep them on their own phones. Pretend room. node --test
 const test = require('node:test');
 const assert = require('node:assert');
-const { load } = require('./harness.js');
+const { load, readyPlayers } = require('./harness.js');
 
 const settle = () => new Promise(r => setTimeout(r, 5));
 function hub() {
@@ -24,6 +24,7 @@ async function room(n) {
   const code = await games[0].hostRoom(1);                                  // stage 1 = nyc
   for (let i = 1; i < n; i++) { await games[i].joinRoom(code); await settle(); }
   await settle();
+  await readyPlayers(games);
   return games;
 }
 const names = g => g.lobbyPlayers().map(p => p.name);
