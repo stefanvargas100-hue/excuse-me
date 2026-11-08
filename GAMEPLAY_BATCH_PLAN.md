@@ -20,7 +20,7 @@ Make clean driving, crowd management, learning, route selection and different ra
 | B4 | Stage-specific route choices | B0-B3 | Airport pilot, then NYC and Tokyo | Validated (headless + browser) |
 | B5 | Elimination races | B0, B3, B4 | Bots first; friend rooms second | B5a, B5b Validated (headless; no live two-phone test) |
 | B6 | Weekly challenge race with a supplied outfit | B0, B3-B5 | Solo timed race and dedicated board | Validated offline; online board switched off pending the DB migration |
-| B7 | Combined balance, compatibility and release check | B1-B6 | All supported modes | In progress: compatibility guard implemented; release checks pending |
+| B7 | Combined balance, compatibility and release check | B1-B6 | All supported modes | Complete: automated checks and user-reported release testing |
 
 Order: B0 -> B1 -> B2 -> B3 -> B4 -> B5 -> B6 -> B7.
 The dependencies intentionally favour one stable batch at a time. There is no need to implement all six before reviewing the first one.
@@ -359,3 +359,14 @@ Protocol (written before the client code, as the plan required):
 - Targeted lobby/interruption tests: 45/45 pass. Production build succeeds. Fresh full regression run: 409/409 pass (npm.cmd test). git diff --check passes.
 - Not published or committed. Current base: 4025e12 (B6); changes remain on Gameplay for review.
 - Still pending: same-device performance comparison with the baseline, x16 plus boosts/route readability playtest, small-phone input/menu review, real two/eight-phone tests and published service-worker activation preserving saves. Earlier batch screenshots and simulated rooms do not establish these checks. Weekly online submissions remain disabled pending verified migration.
+
+### B7 - User validation complete
+- Stefan reports that the remaining release checks all work correctly, including deployed updates/save preservation, phone play, live friend rooms and performance. This is user-reported validation.
+- Gameplay and main visual updates were integrated and pushed as 29dfcf9; combined regression suite 416/416 and production build passed before push.
+- B7 is complete. Weekly leaderboard activation remains a separate B6 follow-up pending live database migration and verification.
+
+### B6 follow-up - Database activation preparation
+- Added tools/verify-weekly-db.cjs, an isolated in-memory PostgreSQL/PGlite check (dependency installed outside the repository). It checks repeat migration, insert/improvement/slower retry, bad week/time/name, ownership, classic/daily behavior and repeat rollback.
+- Reproduced a trigger-order validation bypass before fixing it: changing a challenge row's submitted board to classic skipped challenge validation before keep_best restored its original board. The validation trigger now retains the original board/user before checking; the failing regression now passes.
+- Production build passes. Live migration and submission activation await an authenticated Supabase dashboard session; the game flag stays false.
+- Follow-up validation: all 416 game tests pass; production build and isolated SQL checks pass. No live database changes or submission activation performed.

@@ -1,4 +1,4 @@
--- Weekly challenge boards (rules version 1). NOT YET APPLIED OR TESTED against a real Supabase project.
+-- Weekly challenge boards (rules version 1). Locally checked with PostgreSQL/PGlite; NOT YET APPLIED OR TESTED against the live Supabase project.
 -- Until this has been run and checked, the game keeps CHALLENGE_SUBMIT_ENABLED = false (src/config/challenge.js) and never sends challenge times.
 --
 -- Board names look like  wchal:2026-W46:r1  (UTC ISO week, rules version).
@@ -26,6 +26,12 @@ declare
   cur text := to_char(now() at time zone 'utc', 'IYYY-"W"IW');
   prev text := to_char((now() - interval '6 hours') at time zone 'utc', 'IYYY-"W"IW');
 begin
+  -- keep_best runs after this trigger. Validate the board that will actually be retained,
+  -- rather than a client-supplied rename that keep_best would later discard.
+  if TG_OP = 'UPDATE' then
+    new.board := old.board;
+    new.user_id := old.user_id;
+  end if;
   if new.board like 'wchal:%' then
     if new.board !~ '^wchal:[0-9]{4}-W[0-9]{2}:r[0-9]{1,3}$' then raise exception 'bad challenge board name'; end if;
     ms := 2000000 - new.score;
