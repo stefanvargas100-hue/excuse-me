@@ -38,6 +38,17 @@
   <button id="tutSkip" type="button">Skip tips</button>
 </div>
 
+<div id="lesson" hidden>
+  <div class="tstep" id="lessonStep">Lesson 1 / 4</div>
+  <div class="ttext" id="lessonText"></div>
+  <div class="lmsg" id="lessonMsg" hidden></div>
+  <div class="lbtns" id="lessonBtns" hidden>
+    <button id="lessonRetry" type="button">Try again</button>
+    <button id="lessonNext" type="button" class="primary">Next lesson</button>
+    <button id="lessonExit" type="button">Exit</button>
+  </div>
+</div>
+
 <div id="start" class="panel">
   <div class="card home">
     <div class="eyebrow">Don't touch anyone</div>
@@ -47,8 +58,9 @@
       <button id="lookBtn" class="tile" type="button">Customize</button>
       <button id="chalBtn" class="tile" type="button">Challenges</button>
       <button id="howBtn" class="tile" type="button">How to play</button>
+      <button id="practiceBtn" class="tile" type="button">Practice</button>
       <button id="setBtn" class="tile" type="button">Settings</button>
-      <button id="boardsBtn" class="tile wide" type="button">Leaderboards</button>
+      <button id="boardsBtn" class="tile" type="button">Leaderboards</button>
     </div>
     <button id="profBtn" class="profchip" type="button" aria-label="Your profile">
       <span id="profPic" class="pic">🚶</span>
@@ -78,6 +90,13 @@
   <div class="card full">
     <div class="topbar"><button class="backbtn" data-back type="button" aria-label="Back">‹</button><h2>Play</h2></div>
     <div id="playList" class="stack"></div>
+  </div>
+</div>
+
+<div id="practice" class="panel" hidden>
+  <div class="card full">
+    <div class="topbar"><button class="backbtn" data-back type="button" aria-label="Back">‹</button><h2>Practice</h2></div>
+    <div id="practiceList" class="stack"></div>
   </div>
 </div>
 

@@ -16,7 +16,7 @@ Make clean driving, crowd management, learning, route selection and different ra
 | B0 | Mode boundaries and reproducible run setup | Existing release | Small supporting changes only | Validated (headless) |
 | B1 | Clean-race rewards | B0 | Bot races; private-race summary | Validated (headless + browser) |
 | B2 | Bots use Excuse me | B0, B1 validation | Bot races | Validated (headless + browser) |
-| B3 | Replayable practice course | B0, B1, B2 | Four short local lessons | Planned |
+| B3 | Replayable practice course | B0, B1, B2 | Four short local lessons | Validated (headless + browser) |
 | B4 | Stage-specific route choices | B0-B3 | Airport pilot, then NYC and Tokyo | Planned |
 | B5 | Elimination races | B0, B3, B4 | Bots first; friend rooms second | Planned |
 | B6 | Weekly challenge race with a supplied outfit | B0, B3-B5 | Solo timed race and dedicated board | Planned |
@@ -294,3 +294,12 @@ Later expansion ideas, not required for this queue: public matchmaking, bots fil
 - Tests: botexcuse 8/8, full suite 349/349.
 - Browser: dev server in the Orca browser. The bubble and crowd responses were checked in a manually rendered frame (the hidden page auto-pauses the game, so live capture was not possible). The viewport emulation did not resize the page (desktop-sized capture). Call frequency/feel in real play still needs a human playtest.
 - Not published. Next: B3.
+
+### B3 - Validated, 2026-11-07
+- Playable behaviour: home screen Practice tile opens four lessons (Close pass, Perfect dash, Thread the needle, Slipstream) on a bare airport street: no crowd, bots, clock or countdown. A lesson panel states one task, reports what was detected (e.g. "That pass left 83 cm", "Dash started 4.2 m away: too early") and offers Try again / Next lesson / Exit when done. A bump, a wrong attempt or running out of people restarts only the lesson (fresh people, full stamina, boosts and queued taps cleared, player back at the start). Pause > Restart retries the lesson.
+- Real mechanics: the normal pass, dash, slipstream and bump code post events to S.lesson.log; lessons only read them (src/sim/practice.js). Runs use category  (B0), a fixed supplied outfit and a fixed seed, so nothing is paid, recorded, submitted, ghosted, or written to the save, and the saved outfit is untouched.
+- Regression reproduced first: all 12 tests in test/practice.test.js failed before implementation.
+- Tests: practice 12/12, full suite 361/361, production build succeeds.
+- Browser: home, practice list and lesson panel (running and done states) at 320x568; lesson text and buttons do not cover the player. The Play screen was left unchanged after a sixth card made it too tight at 320x568 (Practice moved to the home tiles).
+- Known limitations: lessons are driven by simulated steering in tests, not by a person on touch; the first-time 'how to play' text mentions no link to Practice yet; route choice lesson deferred to after B4.
+- Not published. Next: B4a (Airport route pilot).

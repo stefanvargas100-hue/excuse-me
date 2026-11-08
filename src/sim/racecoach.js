@@ -16,7 +16,7 @@ const GIVE_UP = 12;   // seconds a tip waits for you before moving on
 
 export function beginCoach(mode) {
   S.coach = null; shown = '';
-  if (mode !== 'race' || S.duel || store.get('excuseme_racetut', '0') === '1') return;
+  if (S.lesson || mode !== 'race' || S.duel || store.get('excuseme_racetut', '0') === '1') return;
   S.coach = { tips: TIPS.filter(t => !t.when || t.when()), i: 0, t: 0 };
 }
 

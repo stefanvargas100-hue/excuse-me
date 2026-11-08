@@ -69,6 +69,7 @@ export function onPass(p) {
     if (p.cutDone) { pts += 250; S.dodged++; tags.push(['RIVAL BURNED', '#ff2d3a']); }
     else { pts += 80; tags.push(['RIVAL PASSED', '#ff2d3a']); }
   }
+  if (S.lesson) S.lesson.log.push({ k: 'pass', p, gap, tags: tags.map(t => t[0]) });   // practice lessons watch what the game detected
   const total = pts * mult;
   S.score += total;
   track('passes'); trackMax('chain', S.bestChain);

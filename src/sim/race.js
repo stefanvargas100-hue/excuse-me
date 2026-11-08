@@ -282,6 +282,7 @@ export function raceCollide(dt) {
       S.bumpT = S.race.me.bumpT; S.nearT = 0; S.bumps++; S.draftC = 0; S.draftT = 0;
       S.burstT = 0; S.dashT = 0; S.breakFlash = 0.3; S.hitStop = 0.07;
       S.chain = 0; S.snake = 0; S.oncRun = 0; S.multPrev = 1; breakClean();
+      if (S.lesson) S.lesson.log.push({ k: 'bump' });
       addPop('BUMP!', '#ff4d4f', 34); Music.sfx('oof'); buzz([40, 30, 80]);
     }
     if (S.blockT > STUCK_T) { S.ghostT = STUCK_GHOST; S.blockT = 0; }   // never let anyone stay pinned
@@ -443,6 +444,7 @@ export function updRace(dt) {
   R.elapsed = S.time;
   if (!R.finished) stepClean(S.speed * dt);
   if (stepDraft(S, S.px, S.pz, S.bumpT > 0, dt)) {
+    if (S.lesson) S.lesson.log.push({ k: 'slip' });
     addPop('SLIPSTREAM!', '#7fd0ff', 30); Music.sfx('dash'); buzz(15);
     track('slips');
     if (S.time - S.lastSlip < 20) { track('doubleSlip'); S.lastSlip = -99; } else S.lastSlip = S.time;

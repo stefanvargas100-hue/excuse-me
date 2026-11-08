@@ -10,10 +10,11 @@ import { account, TITLES, PICS } from '../save/level.js';
 import { myName } from '../online/online.js';
 import { ITEM_STATS, statHint } from '../config/stats.js';
 import { setVibOn, store, vibOn } from '../save/store.js';
-import { dailyLevel, fmt, hasPlayed, lastDaily, lastMode, pauseGame, quitRun, resumeGame, start, startDaily, startWeekly, toMenu, weeklyLevel } from '../sim/game.js';
+import { dailyLevel, fmt, hasPlayed, lastDaily, lastMode, lessonNext, lessonRetry, pauseGame, quitRun, resumeGame, start, startDaily, startPractice, startWeekly, toMenu, weeklyLevel } from '../sim/game.js';
 import { draftMul, fmtTime, ordinal, raceBest, racePace, raceDifficulty, standings } from '../sim/race.js';
 import { S, bestOf, calm, camBob, cues, reset, setCalm, setCamBob, setCues, setShowHB, showHB, state } from '../sim/state.js';
 import { endTut } from '../sim/tutorial.js';
+import { LESSONS, syncLesson } from '../sim/practice.js';
 import { endCoach, syncCoach } from '../sim/racecoach.js';
 import { modOf } from '../sim/modifiers.js';
 import { back, go, pageInto, relayoutWith } from './screens.js';
@@ -50,6 +51,17 @@ function buildPlay() {
   };
   periodic('daily', 'Daily run', dailyLevel(), todayKey(), startDaily, 'Today: ' + modOf(todayKey()).name + '. ' + modOf(todayKey()).text);
   periodic('weekly', 'Weekly run', weeklyLevel(), weekKey(), startWeekly, 'Go as far as you can. Same crowd for everyone this week.');
+}
+
+// The practice screen: tap a lesson and it starts.
+function buildPractice() {
+  const box = $('practiceList'); box.innerHTML = '';
+  LESSONS.forEach((L, i) => {
+    const x = menuCard('lvl');
+    x.children[0].textContent = 'Lesson ' + (i + 1); x.children[1].textContent = L.name; x.children[2].textContent = 'Practice'; x.children[3].textContent = L.brief;
+    x.addEventListener('click', () => startPractice(L.id));
+    box.appendChild(x);
+  });
 }
 
 // The stage screen: tap a stage and it starts.
@@ -92,7 +104,7 @@ export function hud() {
   const dm = Math.floor(S.pz);
   if (dm !== last.dist) { last.dist = dm; $('dist').textContent = S.endless ? dm + ' m' : dm + ' / ' + LV.goal + ' m'; $('prog').style.width = (clamp(S.pz / LV.goal, 0, 1) * 100).toFixed(1) + '%'; }
   // speed over the ground in mph (belts included); a race has no score, only time and place
-  $('prog').parentElement.hidden = !!S.endless; $('prog').parentElement.classList.toggle('race', !!S.race);   // endless runs have no finish line: just score and distance travelled
+  $('prog').parentElement.hidden = !!S.endless || !!S.lesson; $('prog').parentElement.classList.toggle('race', !!S.race);   // endless runs have no finish line: just score and distance travelled
   const sc = Math.floor(S.score);
   if (sc !== last.score || last.race !== !!S.race) {
     last.score = sc; last.race = !!S.race;
@@ -129,9 +141,9 @@ export function hud() {
 // Race mode: your place, the gap to the next racer, and a dot for each racer on the progress bar.
 const dotsKey = { n: -1, k: '' };
 function raceHud() {
-  syncCoach();
+  syncCoach(); syncLesson();
   const pl = $('place');
-  if (!S.race) { if (!pl.hidden) pl.hidden = true; if (dotsKey.n !== 0) { dotsKey.n = 0; dotsKey.k = ''; $('raceDots').innerHTML = ''; } return; }
+  if (!S.race || S.lesson) { if (!pl.hidden) pl.hidden = true; if (dotsKey.n !== 0) { dotsKey.n = 0; dotsKey.k = ''; $('raceDots').innerHTML = ''; } return; }
   pl.hidden = false;
   const rows = standings(), me = rows.findIndex(r => r.me), n = rows.length;
   let gap = '';
@@ -278,6 +290,7 @@ export function init() {
     shareRun(text);
   });
   $('playBtn').addEventListener('click', () => { buildPlay(); go('play'); });
+  $('practiceBtn').addEventListener('click', () => { buildPractice(); go('practice'); });
   initProfile();
   $('chalBtn').addEventListener('click', () => { go('chal'); buildChallenges(); });
   $('boardsBtn').addEventListener('click', openBoards);
@@ -310,7 +323,11 @@ export function init() {
   $('pauseBtn').addEventListener('pointerdown', e => e.stopPropagation());
   $('resume').addEventListener('click', resumeGame);
   $('holdPause').addEventListener('click', pauseGame);
-  $('restart').addEventListener('click', () => { $('pause').hidden = true; Music.ambStop(); start(lastDaily, lastMode); });
+  $('restart').addEventListener('click', () => { if (S.lesson) { lessonRetry(); resumeGame(); return; } $('pause').hidden = true; Music.ambStop(); start(lastDaily, lastMode); });
+  for (const id of ['lessonRetry', 'lessonNext', 'lessonExit']) $(id).addEventListener('pointerdown', e => e.stopPropagation());
+  $('lessonRetry').addEventListener('click', e => { e.stopPropagation(); lessonRetry(); });
+  $('lessonNext').addEventListener('click', e => { e.stopPropagation(); lessonNext(); });
+  $('lessonExit').addEventListener('click', e => { e.stopPropagation(); Music.stop(); Music.ambStop(); toMenu(); });
   $('pmenu').addEventListener('click', () => { quitRun(); Music.stop(); Music.ambStop(); toMenu(); });
   window.addEventListener('keydown', e => { const k = e.key.toLowerCase(); if (k === 'escape' || k === 'p') { if (state === 'play') pauseGame(); else if (state === 'paused') resumeGame(); } });
   document.querySelectorAll('.vibt').forEach(el => {

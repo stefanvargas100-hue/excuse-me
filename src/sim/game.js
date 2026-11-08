@@ -29,6 +29,7 @@ import { hideMenus } from '../ui/screens.js';
 import { ghostSave, ghostStart, ghostStep } from './replay.js';
 import { makeRun, recordKey } from './runopts.js';
 import { cleanBonusFor, cleanMedal } from './clean.js';
+import { LESSONS, PRACTICE_OUTFIT, beginLesson, lessonIndex, lessonTick, restartLesson } from './practice.js';
 import { flushScores, showRunBoard, submitBestRun, submitRun } from '../online/online.js';
 
 
@@ -105,12 +106,13 @@ export function tick(dt) {
       tutTick(dt);
       if (S.tut) { updPeople(dt); S.people = S.people.filter(p => !p.dead && p.z > S.pz - 16); return; }
     }
-    while (S.nextChunk < leadZ() + SPAWN_FAR && S.nextChunk < goalOf() - 15) { genChunk(S.nextChunk); S.nextChunk += 4; }
+    const crowd = !S.lesson;   // practice lessons have only their own people
+    while (crowd && S.nextChunk < leadZ() + SPAWN_FAR && S.nextChunk < goalOf() - 15) { genChunk(S.nextChunk); S.nextChunk += 4; }
     const prog = clamp(S.pz / LV.goal, 0, 1);
     S.fastT -= dt;
-    if (S.fastT <= 0 && !S.duel) { spawnFast(true); if (R() < 0.3) spawnFast(true); S.fastT = rnd(LV.fastEvery[0], LV.fastEvery[1]) * (1.3 - 0.6 * prog); }
+    if (S.fastT <= 0 && !S.duel && crowd) { spawnFast(true); if (R() < 0.3) spawnFast(true); S.fastT = rnd(LV.fastEvery[0], LV.fastEvery[1]) * (1.3 - 0.6 * prog); }
     S.rivalT -= dt;
-    if (S.rivalT <= 0 && !S.duel && S.pz > 25 && S.pz < goalOf() - 40) { spawnRival(); S.rivalT = rnd(LV.rivalEvery[0], LV.rivalEvery[1]) * (1.2 - 0.5 * prog); }
+    if (S.rivalT <= 0 && !S.duel && crowd && S.pz > 25 && S.pz < goalOf() - 40) { spawnRival(); S.rivalT = rnd(LV.rivalEvery[0], LV.rivalEvery[1]) * (1.2 - 0.5 * prog); }
     if (LV.id === 'nyc') updXings();
     // clock
     S.timeLeft -= dt;
@@ -119,9 +121,9 @@ export function tick(dt) {
     if (S.timeLeft <= 0 && !S.race) { loseTime(); return; }
     // scripted crowd moments
     S.eventT -= dt;
-    if (S.eventT <= 0 && !S.duel && S.pz < goalOf() - 60) { seeded(':e' + (S.evN++), () => runEvent(pick(LV.events))); S.eventT = S.endless && S.pz > LV.goal ? rnd(11, 17) : rnd(16, 24); }   // past the old finish line, surprises come more often
+    if (S.eventT <= 0 && !S.duel && crowd && S.pz < goalOf() - 60) { seeded(':e' + (S.evN++), () => runEvent(pick(LV.events))); S.eventT = S.endless && S.pz > LV.goal ? rnd(11, 17) : rnd(16, 24); }   // past the old finish line, surprises come more often
     // rush hour surges
-    if (!S.duel && S.pz < goalOf() - 50) {
+    if (!S.duel && crowd && S.pz < goalOf() - 50) {
       S.rushT -= dt;
       if (S.rushT <= 0) {
         if (!S.rush) { S.rush = true; S.rushT = 10; banner('RUSH HOUR', '#ff9f43'); Music.sfx('combo'); }
@@ -135,7 +137,7 @@ export function tick(dt) {
       }
     }
     for (const p of S.people) if (p.prop === 'spill' && !p.slipped && Math.hypot(S.px - p.x, (S.pz - p.z) * 0.8) < 1.0) { p.slipped = true; S.slipT = 0.7; addPop('SLIPPERY!', '#c8a165', 26); buzz([10, 20, 10]); }
-    if (LV.id === 'shibuya') { S.waveT -= dt; if (S.waveT <= 0 && !S.duel && S.pz < goalOf() - 60) { scramble(); S.waveT = rnd(8, 11); } }
+    if (LV.id === 'shibuya') { S.waveT -= dt; if (S.waveT <= 0 && !S.duel && crowd && S.pz < goalOf() - 60) { scramble(); S.waveT = rnd(8, 11); } }
     updPeople(dt);
     if (S.race) updRace(dt);
     S.people = S.people.filter(p => !p.dead && p.z > rearZ() - 16);
@@ -146,6 +148,7 @@ export function tick(dt) {
       if (!p.passed && p.prevDz > 0 && dz <= 0) { p.passed = true; onPass(p); }
       p.prevDz = dz;
     }
+    if (S.lesson) lessonTick(dt);
     if (S.chain > 0 && S.time - S.lastPassT > CHAIN_WINDOW) {
       if (S.chain >= 3) { S.breakFlash = 0.35; addPop('CHAIN OF ' + S.chain + ' ENDED', '#9ca3af', 17); }
       S.chain = 0; S.snake = 0; S.oncRun = 0; S.multPrev = 1;
@@ -348,7 +351,8 @@ export function start(a, b, opts) {
   if (S.endless) S.timeLeft = Infinity;
   ghostStart();
   if (mode === 'race') {
-    initRace(duel ? 0 : 3);
+    initRace(duel || opts && opts.lesson ? 0 : 3);
+    if (opts && opts.lesson) beginLesson(opts.lesson);
     if (duel) {
       const spot = k => startSlot(duel.slotOf[k], duel.count, LV.half);   // everyone on one line, in the order of the room list
       duel.order.forEach((id, i) => { const b = addRemoteRacer(duel.peers[id].look, duel.peers[id].name, id, i), at = spot(id); b.x = at.x; b.z = at.z; });
@@ -366,10 +370,18 @@ export function start(a, b, opts) {
   Music.start(LV.music); Music.ambStart(LV.id);
 }
 
+// Practice: a lesson on a bare street, as a practice-category run (nothing is paid or recorded).
+export function startPractice(id) {
+  setLevel(0);
+  start('race', undefined, { run: { category: 'practice', seed: 'practice-' + id, outfit: PRACTICE_OUTFIT }, lesson: id });
+}
+export function lessonRetry() { if (S && S.lesson) restartLesson(); }
+export function lessonNext() { if (S && S.lesson) startPractice(LESSONS[Math.min(LESSONS.length - 1, lessonIndex(S.lesson.id) + 1)].id); }
+
 function showPauseMenu() {
   touches.clear(); keys.l = keys.r = false; setPendingDash(null);
   Music.suspend();
-  $('pauseEyebrow').textContent = (S.duel ? 'Room paused - ' : S.race ? 'Race - ' : '') + LV.city + ' - ' + LV.name + ' - ' + Math.floor(S.pz) + ' m';
+  $('pauseEyebrow').textContent = (S.duel ? 'Room paused - ' : S.lesson ? 'Practice - ' : S.race ? 'Race - ' : '') + LV.city + ' - ' + LV.name + ' - ' + Math.floor(S.pz) + ' m';
   $('restart').hidden = !!(S.daily || S.weekly || S.duel);
   $('pmenu').textContent = S.duel ? 'Leave race' : S.daily || S.weekly ? 'End run' : 'Main menu';
   const waiting = S.duel && !S.duel.pausers.has(S.duel.meId);
@@ -418,7 +430,7 @@ export function quitRun() {
 
 export function toMenu() {
   if (S?.duel) leaveRoom();
-  setR(Math.random); $('tut').hidden = true;
+  setR(Math.random); $('tut').hidden = true; $('lesson').hidden = true;
   hideMenus();
   setState('ready'); reset(); $('hud').hidden = true; $('start').hidden = false; buildLevels();
 }
