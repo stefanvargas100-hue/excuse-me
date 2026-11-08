@@ -370,3 +370,8 @@ Protocol (written before the client code, as the plan required):
 - Reproduced a trigger-order validation bypass before fixing it: changing a challenge row's submitted board to classic skipped challenge validation before keep_best restored its original board. The validation trigger now retains the original board/user before checking; the failing regression now passes.
 - Production build passes. Live migration and submission activation await an authenticated Supabase dashboard session; the game flag stays false.
 - Follow-up validation: all 416 game tests pass; production build and isolated SQL checks pass. No live database changes or submission activation performed.
+
+### B6 follow-up - Live weekly leaderboard enabled, 2026-11-08
+- Applied migration 0002 to production through the authenticated Supabase SQL editor. Transactional tests under the authenticated role passed insert, improve, slower retry, invalid time/week/name, board-rename bypass and ownership checks; fixtures rolled back.
+- The real anonymous game leaderboard client successfully submitted, improved, retained the best and read the ranked challenge result through the live REST API. Its temporary score and account were removed.
+- Enabled CHALLENGE_SUBMIT_ENABLED after live checks. The test requiring submissions off was deliberately updated for the new release requirement, failed first, then passed after enabling. Disable the flag and deploy before rolling back the database migration.

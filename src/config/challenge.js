@@ -8,9 +8,9 @@ import { randomLoadout } from './stats.js';
    supplied-outfit recipe change, which starts a separate board and separate personal bests. */
 export const CHALLENGE_RULES = 1;
 
-// Submission to the online board stays off until supabase/migrations/0002_weekly_challenge.sql has been applied and checked
-// against the real database (the SQL could not be run during development). The time trial itself works offline either way.
-export const CHALLENGE_SUBMIT_ENABLED = false;
+// Migration 0002 was applied and verified against the live database on 2026-11-08.
+// Disable this before rolling back the migration. The time trial also works offline.
+export const CHALLENGE_SUBMIT_ENABLED = true;
 
 // The ISO week (Thursday rule) of a moment, in UTC: '2026-W46'.
 export const utcWeekKey = date => {

@@ -1,5 +1,5 @@
--- Weekly challenge boards (rules version 1). Locally checked with PostgreSQL/PGlite; NOT YET APPLIED OR TESTED against the live Supabase project.
--- Until this has been run and checked, the game keeps CHALLENGE_SUBMIT_ENABLED = false (src/config/challenge.js) and never sends challenge times.
+-- Weekly challenge boards (rules version 1). Applied and verified on the live project 2026-11-08.
+-- Live SQL role/ownership checks and anonymous game-client insert/improve/read checks passed before enabling submissions.
 --
 -- Board names look like  wchal:2026-W46:r1  (UTC ISO week, rules version).
 -- The score is  2000000 - finish time in milliseconds, so a faster time is a higher score and the existing "highest first" boards,

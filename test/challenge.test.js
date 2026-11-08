@@ -98,12 +98,12 @@ test('a run is filed under the week it started, even if the finish is after the 
   assert.strictEqual(week, E.utcWeekKey(D(MON)), 'the starting week is the one that ended');
 });
 
-test('server score encoding: lower time is a higher score; implausible times are refused; submission is off until the database update is applied', () => {
+test('server score encoding: lower time is a higher score; implausible times are refused; submission is enabled after live database verification', () => {
   const E = load();
   assert.ok(E.encodeChallengeTime(48230) > E.encodeChallengeTime(51000));
   assert.strictEqual(E.decodeChallengeTime(E.encodeChallengeTime(48230)), 48230);
   assert.strictEqual(E.validChallengeTime(48230), true);
   for (const ms of [0, 5000, 19999, 600001, NaN, -3]) assert.strictEqual(E.validChallengeTime(ms), false, String(ms));
-  assert.strictEqual(E.challengeSubmitEnabled, false);
+  assert.strictEqual(E.challengeSubmitEnabled, true);
   assert.strictEqual(E.boardNameFor('2026-W46', 1), 'wchal:2026-W46:r1');
 });
