@@ -128,11 +128,11 @@ function makeBot(i, diff, name) {
 }
 
 // Called by start() when a race begins.
-export function initRace(botCount) {
+export function initRace(botCount, names) {
   const diff = DIFFICULTIES[raceDifficulty()], n = botCount === 0 ? 0 : clamp(botCount || 3, 1, BOTS.length);   // 0 bots: a live race against a friend
   S.race = { diff, bots: [], countT: COUNTDOWN, countLast: 99, rng: mulberry32(0x5eed + n), finished: false, place: 0, board: [], elapsed: 0 };
   const pool = BOT_NAMES.slice();   // each race draws its racers' names at random, no repeats within a race
-  for (let i = 0; i < n; i++) S.race.bots.push(makeBot(i, diff, pool.splice((Math.random() * pool.length) | 0, 1)[0]));
+  for (let i = 0; i < n; i++) S.race.bots.push(makeBot(i, diff, names && names[i] || pool.splice((Math.random() * pool.length) | 0, 1)[0]));
   S.race.pickups = n > 0 ? placePowerups(LV.goal) : [];   // live races against friends have none: pickups are not shared between phones yet
   S.puZ0 = 0;
   S.race.me = effects(statsOf(lookOf()));   // your build and gear, race mode only

@@ -10,7 +10,7 @@ import { account, TITLES, PICS } from '../save/level.js';
 import { myName } from '../online/online.js';
 import { ITEM_STATS, statHint } from '../config/stats.js';
 import { setVibOn, store, vibOn } from '../save/store.js';
-import { dailyLevel, fmt, hasPlayed, lastDaily, lastMode, challengeBest, startChallenge, restartRun, lessonNext, lessonRetry, pauseGame, quitRun, resumeGame, start, startDaily, startPractice, startWeekly, toMenu, weeklyLevel } from '../sim/game.js';
+import { nextCupRound, startCup, cupBest, dailyLevel, fmt, hasPlayed, lastDaily, lastMode, challengeBest, startChallenge, restartRun, lessonNext, lessonRetry, pauseGame, quitRun, resumeGame, start, startDaily, startPractice, startWeekly, toMenu, weeklyLevel } from '../sim/game.js';
 import { draftMul, fmtTime, ordinal, raceBest, racePace, raceDifficulty, standings } from '../sim/race.js';
 import { S, bestOf, calm, camBob, cues, reset, setCalm, setCamBob, setCues, setShowHB, showHB, state } from '../sim/state.js';
 import { endTut } from '../sim/tutorial.js';
@@ -97,6 +97,13 @@ function buildStages() {
     $('stagePager').hidden = true;
     x.style.maxHeight = '150px'; x.addEventListener('click', openChallenge); box.appendChild(x); return;
   }
+  if (race && raceFormat() === 'cup') {
+    const best = cupBest(), x = menuCard('lvl daily');
+    x.children[0].textContent = 'NYC Cup · 3 rounds'; x.children[1].textContent = 'Fifth Avenue, Central Park, Brooklyn Bridge'; x.children[2].textContent = best ? 'Best ' + best.points + ' pts · ' + fmtTime(best.time) : 'Win rounds for points';
+    x.children[3].textContent = 'Same three bots all the way: 10, 7, 5 or 3 points per round. Leaving the cup early records nothing.';
+    $('stagePager').hidden = true;
+    x.style.maxHeight = '170px'; x.addEventListener('click', startCup); box.appendChild(x); return;
+  }
   LEVELS.forEach((L, i) => {
     const x = menuCard('lvl');
     const best = bestOf(L.id), rb = raceBest(L.id);
@@ -117,7 +124,7 @@ function openStages(mode) {
   syncFormat(); syncBots(); buildStages(); go('stages'); layoutStages();
 }
 
-const FORMATS = ['race', 'elim', 'weekly'];
+const FORMATS = ['race', 'elim', 'weekly', 'cup'];
 const raceFormat = () => { const f = store.get('excuseme_raceformat', 'race'); return FORMATS.includes(f) ? f : 'race'; };
 function syncFormat() {
   document.querySelectorAll('#raceFormat .chip').forEach((c, i) => c.setAttribute('aria-pressed', String(FORMATS[i] === raceFormat())));
@@ -358,7 +365,7 @@ export function init() {
   $('tutBtn').addEventListener('click', () => { store.set('excuseme_tut', '0'); start('classic'); });
   $('tutSkip').addEventListener('click', e => { e.stopPropagation(); if (S.tut) endTut(); else endCoach(); });
   $('tutSkip').addEventListener('pointerdown', e => e.stopPropagation());
-  $('next').addEventListener('click', () => { setLevel(Math.min(LEVELS.length - 1, LVI + 1)); start(false); });
+  $('next').addEventListener('click', () => { if (S.cup) { nextCupRound(); return; } setLevel(Math.min(LEVELS.length - 1, LVI + 1)); start(false); });
   $('menu').addEventListener('click', () => { Music.ambStop(); leaveRoom(); toMenu(); });
   $('pauseBtn').addEventListener('click', e => { e.stopPropagation(); pauseGame(); });
   $('pauseBtn').addEventListener('pointerdown', e => e.stopPropagation());
