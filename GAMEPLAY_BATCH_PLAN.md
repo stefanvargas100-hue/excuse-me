@@ -19,7 +19,7 @@ Make clean driving, crowd management, learning, route selection and different ra
 | B3 | Replayable practice course | B0, B1, B2 | Four short local lessons | Validated (headless + browser) |
 | B4 | Stage-specific route choices | B0-B3 | Airport pilot, then NYC and Tokyo | Validated (headless + browser) |
 | B5 | Elimination races | B0, B3, B4 | Bots first; friend rooms second | B5a, B5b Validated (headless; no live two-phone test) |
-| B6 | Weekly challenge race with a supplied outfit | B0, B3-B5 | Solo timed race and dedicated board | Validated offline; online board switched off pending the DB migration |
+| B6 | Weekly challenge race with a supplied outfit | B0, B3-B5 | Solo timed race and dedicated board | Complete: live migration verified and online submissions enabled |
 | B7 | Combined balance, compatibility and release check | B1-B6 | All supported modes | Complete: automated checks and user-reported release testing |
 
 Order: B0 -> B1 -> B2 -> B3 -> B4 -> B5 -> B6 -> B7.
@@ -375,3 +375,4 @@ Protocol (written before the client code, as the plan required):
 - Applied migration 0002 to production through the authenticated Supabase SQL editor. Transactional tests under the authenticated role passed insert, improve, slower retry, invalid time/week/name, board-rename bypass and ownership checks; fixtures rolled back.
 - The real anonymous game leaderboard client successfully submitted, improved, retained the best and read the ranked challenge result through the live REST API. Its temporary score and account were removed.
 - Enabled CHALLENGE_SUBMIT_ENABLED after live checks. The test requiring submissions off was deliberately updated for the new release requirement, failed first, then passed after enabling. Disable the flag and deploy before rolling back the database migration.
+- Release validation after merging current main: 465/465 tests and production build pass.
