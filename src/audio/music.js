@@ -1,3 +1,4 @@
+import { TRACKS, scoreStep, trackForMap, gameplayMix, createPerformance } from './soundtrack.js';
 import { LEVELS, LV } from '../config/levels.js';
 import { store } from '../save/store.js';
 import { pauseGame } from '../sim/game.js';
@@ -5,11 +6,14 @@ import { state } from '../sim/state.js';
 
 
 
-/* ---------- music: a procedural 148-158 BPM track whose energy follows your chain and close calls ---------- */
+/* Six original instrumental club tracks with gameplay-responsive percussion. */
 export const Music = (() => {
   let windO = null, windG = null, musicOut = null, sfxOut = null, musicVol = parseFloat(store.get('excuseme_musicvol', '1')), sfxVol = parseFloat(store.get('excuseme_sfxvol', '1'));
   let ac = null, master = null, sfxBus = null, noiseBuf = null, playing = false, next = 0, step = 0, I = 0.15, target = 0.15;
-  let enabled = store.get('excuseme_snd', '1') !== '0', song = LEVELS[0].music;
+  let enabled = store.get('excuseme_snd', '1') !== '0', song = TRACKS[0];
+  const visits = new Map();
+  let hasSong = false, trackIndex = 0, echo = null, mapId = 'airport', playlistTurn = 0;
+  let performance = createPerformance();
   const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
   function init() {
     if (ac) return true;
@@ -21,6 +25,10 @@ export const Music = (() => {
       musicOut = ac.createGain(); musicOut.gain.value = musicVol; musicOut.connect(comp);
       sfxOut = ac.createGain(); sfxOut.gain.value = sfxVol; sfxOut.connect(comp);
       master = ac.createGain(); master.gain.value = 0; master.connect(musicOut);
+      echo = ac.createDelay(1); echo.delayTime.value = 60 / song.bpm * 0.75;
+      const echoGain = ac.createGain(), echoFilter = ac.createBiquadFilter();
+      echoGain.gain.value = 0.22; echoFilter.type = 'lowpass'; echoFilter.frequency.value = 2400;
+      echo.connect(echoFilter); echoFilter.connect(echoGain); echoGain.connect(master);
       sfxBus = ac.createGain(); sfxBus.gain.value = 0.55; sfxBus.connect(sfxOut);
       noiseBuf = ac.createBuffer(1, Math.floor(ac.sampleRate * 0.5), ac.sampleRate);
       const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
@@ -52,16 +60,40 @@ export const Music = (() => {
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
     o.connect(f); f.connect(g); g.connect(out || master); o.start(t); o.stop(t + dur + 0.05);
   }
+  function voice(t, e) {
+    const o = ac.createOscillator(), f = ac.createBiquadFilter(), g = ac.createGain();
+    const bass = e.kind === 'bass', pad = e.kind === 'pad', tom = e.kind === 'tom';
+    o.type = tom ? 'sine' : bass ? 'sawtooth' : pad ? 'triangle' : e.kind === 'arp' ? 'sine' : song.color;
+    o.frequency.value = mtof(e.note);
+    if (tom) o.frequency.exponentialRampToValueAtTime(mtof(e.note) * 0.5, t + e.duration);
+    f.type = 'lowpass'; f.Q.value = bass ? 0.7 : 0.5;
+    f.frequency.setValueAtTime(bass ? 650 + 900 * I : pad ? 1600 : 4200, t);
+    f.frequency.exponentialRampToValueAtTime(bass ? 180 : 700, t + e.duration);
+    const attack = pad ? 0.15 : bass ? 0.025 : 0.009;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(e.gain, t + Math.min(attack, e.duration / 3));
+    if (pad) {
+      g.gain.setValueAtTime(e.gain * 0.75, t + e.duration * 0.65);
+    }
+    g.gain.exponentialRampToValueAtTime(0.0001, t + e.duration);
+    o.connect(f); f.connect(g);
+    const pan = ac.createStereoPanner();
+    pan.pan.value = pad ? (e.note % 2 ? -0.4 : 0.4) : e.kind === 'arp' ? (step % 4 < 2 ? -0.25 : 0.25) : 0;
+    g.connect(pan); pan.connect(master);
+    if (e.kind === 'lead' || e.kind === 'arp') g.connect(echo);
+    o.start(t); o.stop(t + e.duration + 0.02);
+    o.onended = () => { o.disconnect(); f.disconnect(); g.disconnect(); pan.disconnect(); };
+  }
   function schedule(st, t) {
-    const s16 = 60 / song.bpm / 4, bar = Math.floor(st / 16) % 4, s = st % 16, ch = song.prog[bar];
-    if (s % 4 === 0) kick(t, 0.85);
-    if (s % 4 === 2) noise(t, 0.05, 0.1 + 0.1 * I, 'highpass', 8000);
-    if (I > 0.4 && s % 2 === 1) noise(t, 0.03, 0.04 + 0.06 * I, 'highpass', 9000);
-    if (I > 0.3 && (s === 4 || s === 12)) noise(t, 0.14, 0.05 + 0.2 * I, 'bandpass', 1800, 0.8);
-    if (s % 4 === 2) tone(t, ch[0] - 24, s16 * 1.8, 0.2, 'sawtooth', 260 + 2400 * I);
-    if (s % 4 === 3 && I > 0.5) tone(t, ch[0] - 24, s16 * 0.9, 0.1, 'sawtooth', 260 + 2400 * I);
-    if (I > 0.55) { const arp = [0, 1, 2, 1]; tone(t, ch[arp[s % 4]] + 12 + (s >= 8 && I > 0.85 ? 12 : 0), s16 * 0.8, 0.045 * I, 'square', 1800 + 2000 * I); }
-    if (s === 0) for (const n of ch) tone(t, n, s16 * 15, 0.022, 'triangle', 1200);
+    if (st % 16 === 0) performance.bar();
+    for (const e of scoreStep(song, st, I, performance.mode)) {
+      if (e.kind === 'kick') kick(t, e.gain);
+      else if (e.kind === 'hat') noise(t, e.duration, e.gain, 'highpass', 7800);
+      else if (e.kind === 'clap') {
+        noise(t, e.duration, e.gain, 'bandpass', 1700, 0.7);
+        noise(t + 0.012, 0.07, e.gain * 0.45, 'highpass', 2600);
+      } else voice(t, e);
+    }
   }
   // Background ambience per level: crowd murmur, plus announcements, traffic, horns or crossing chirps.
   let amb = [], ambLevel = null, ambT = 0, ambT2 = 0;
@@ -102,22 +134,38 @@ export const Music = (() => {
     ambStop() { if (ac) ambStop(); },
     chirp() { if (!ac || !enabled || ac.state !== 'running') return; const t = ac.currentTime; for (let i = 0; i < 8; i++) tone(t + i * 0.16, i % 2 ? 98 : 101, 0.09, 0.025, 'sine', 6000, sfxBus); },
     start(m) {
-      song = m || song;
-      if (!enabled || !init()) return;
+      if (!enabled) return;
+      mapId = (LEVELS.find(l => l.music === m) || LV).id;
+      playlistTurn = visits.get(mapId) || 0;
+      trackIndex = trackForMap(mapId, playlistTurn);
+      song = TRACKS[trackIndex];
+      if (!init()) return;
+      visits.set(mapId, playlistTurn + 1);
+      performance = createPerformance();
       if (ac.resume) ac.resume();
-      playing = true; next = ac.currentTime + 0.08; step = 0; I = 0.15; target = 0.15;
+      echo.delayTime.setValueAtTime(60 / song.bpm * 0.75, ac.currentTime);
+      hasSong = true; playing = true; next = ac.currentTime + 0.08; step = 0; I = 0.15; target = 0.15;
       master.gain.cancelScheduledValues(ac.currentTime); master.gain.setTargetAtTime(0.24, ac.currentTime, 0.3);
     },
     stop() { if (!ac) return; playing = false; master.gain.cancelScheduledValues(ac.currentTime); master.gain.setTargetAtTime(0, ac.currentTime, 0.25); },
     update(dt) {
       if (ac && ac.state === 'running') ambEvents(dt);
-      if (!ac || !playing) return;
+      if (!ac || !playing || ac.state !== 'running') return;
       I += (target - I) * Math.min(1, dt * 1.5);
       if (next < ac.currentTime - 0.2) next = ac.currentTime + 0.05;
-      const s16 = 60 / song.bpm / 4;
-      while (next < ac.currentTime + 0.12) { schedule(step, next); next += s16; step++; }
+      while (next < ac.currentTime + 0.12) {
+        if (step >= song.bars * 16) {
+          trackIndex = trackForMap(mapId, ++playlistTurn);
+          song = TRACKS[trackIndex]; step = 0;
+          echo.delayTime.setValueAtTime(60 / song.bpm * 0.75, next);
+        }
+        schedule(step, next); next += 60 / song.bpm / 4; step++;
+      }
     },
-    target(v) { target = v; },
+    gameplay(snapshot, goal) {
+      const mix = gameplayMix(snapshot, goal);
+      target = mix.energy; performance.set(mix);
+    },
     sfx(kind) {
       if (!ac || !enabled || ac.state !== 'running') return;
       const t = ac.currentTime;
@@ -134,7 +182,16 @@ export const Music = (() => {
       else if (kind === 'slow') { const o = ac.createOscillator(), g = ac.createGain(); o.frequency.setValueAtTime(420, t); o.frequency.exponentialRampToValueAtTime(110, t + 0.5); g.gain.setValueAtTime(0.08, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.55); o.connect(g); g.connect(sfxBus); o.start(t); o.stop(t + 0.6); }
       else if (kind === 'win') [69, 73, 76, 81].forEach((m, i) => tone(t + i * 0.1, m, 0.35, 0.07, 'triangle', 3000, sfxBus));
     },
-    setEnabled(v) { enabled = v; store.set('excuseme_snd', v ? '1' : '0'); if (!v) { this.stop(); this.ambStop(); } else if (state === 'play' || state === 'paused') { this.start(LV.music); this.ambStart(LV.id); } },
+    setEnabled(v) { enabled = v; store.set('excuseme_snd', v ? '1' : '0'); if (!v) { this.stop(); this.ambStop(); } else if (state === 'play' || state === 'paused') {
+      if (hasSong && ac) {
+        playing = true; next = ac.currentTime + 0.08;
+        if (state === 'play') ac.resume();
+        master.gain.cancelScheduledValues(ac.currentTime); master.gain.setTargetAtTime(0.24, ac.currentTime, 0.3);
+      } else this.start(LV.music);
+      this.ambStart(LV.id);
+    } },
+    get track() { return song.name; },
+    get mode() { return performance.mode; },
     get enabled() { return enabled; },
     get musicVol() { return musicVol; },
     get sfxVol() { return sfxVol; },
