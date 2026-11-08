@@ -17,7 +17,7 @@ import { genChunk, runEvent, scramble, seeded, spawnFast, spawnRival, updXings, 
 import { STREAK_SPEED, addPop, nearMul, onPass } from './scoring.js';
 import { S, bestOf, endShown, goalOf, reset, setEndShown, setNextRun, setRaceBuild, setState, state } from './state.js';
 import { startSlot } from './startgrid.js';
-import { BUMP_SPEED, addRemoteRacer, draftMul, finishRace, fmtTime, initRace, leadZ, ordinal, raceBest, raceCollide, raceCountdown, racePace, rearZ, standings, updRace } from './race.js';
+import { BUMP_SPEED, stepRemotes, addRemoteRacer, draftMul, finishRace, fmtTime, initRace, leadZ, ordinal, raceBest, raceCollide, raceCountdown, racePace, rearZ, standings, updRace } from './race.js';
 import { updCars } from './traffic.js';
 import { beginTut, tutTick } from './tutorial.js';
 import { powerMul } from './powerups.js';
@@ -29,7 +29,7 @@ import { hideMenus } from '../ui/screens.js';
 import { ghostSave, ghostStart, ghostStep } from './replay.js';
 import { makeRun, recordKey } from './runopts.js';
 import { cleanBonusFor, cleanMedal } from './clean.js';
-import { initElim, stepElim } from './elim.js';
+import { applyElimList, initElim, stepElim } from './elim.js';
 import { LESSONS, PRACTICE_OUTFIT, beginLesson, lessonIndex, lessonTick, restartLesson } from './practice.js';
 import { flushScores, showRunBoard, submitBestRun, submitRun } from '../online/online.js';
 
@@ -165,6 +165,8 @@ export function tick(dt) {
   } else {
     S.overT += dt;
     if (!endShown && S.overT > (state === 'won' ? 0.5 : 0.8)) showEnd();
+    // an eliminated host is still the one who decides for everybody else, so their game keeps following the others
+    if (S.duel && S.duel.elimHost && S.race && S.race.elim && S.race.elim.meOut && !S.race.elim.over && S.race.countT <= 0) { stepRemotes(dt); const ev = stepElim(); if (ev) elimEnd(ev); refreshDuelResults(); }
   }
 }
 
@@ -214,8 +216,25 @@ function elimEnd(ev) {
   setState(won ? 'won' : 'lost'); S.live = false; S.overT = 0; S.pz = Math.min(S.pz, LV.goal); touches.clear();
   R.board = standings(); R.place = R.board.findIndex(r => r.me) + 1;
   banner(won ? 'LAST ONE STANDING' : 'ELIMINATED', won ? '#27c27a' : '#ff4d4f');
-  track('races'); payRun();   // counts as a race played, not as a race win: elimination wins are shorter and do not feed the win unlocks
+  if (!S.duel) track('races');   // friend rooms keep their usual exclusion from unlock progress
+  payRun();   // counts as a race played, not as a race win: elimination wins are shorter and do not feed the win unlocks
   Music.sfx(won ? 'win' : 'bump'); Music.stop(); Music.ambStop(); buzz(won ? [20, 60, 20, 60, 80] : [60, 40, 140]);
+}
+
+// Friend room: the host's list of eliminated racers arrived.
+export function elimReceive(ids) {
+  if (!S || !S.duel || !S.race || !S.race.elim || S.race.finished && !S.race.elim.meOut) return;
+  const ev = applyElimList(ids);
+  if (ev) elimEnd(ev); else refreshDuelResults();
+}
+// Friend room: the host left, so nobody can decide any more. The race ends for everyone with no winner.
+export function elimAbort() {
+  const R = S && S.race;
+  if (!R || !R.elim || R.elim.over || R.finished) return;
+  R.elim.over = true; R.finished = true; R.elimOut = -1;
+  setState('lost'); S.live = false; S.overT = 0; touches.clear();
+  R.board = standings(); R.place = R.board.findIndex(r => r.me) + 1;
+  Music.stop(); Music.ambStop();
 }
 
 function winRace() {
@@ -307,15 +326,15 @@ function showRaceEnd() {
   const R = S.race, n = R.board.length, place = R.place, EL = R.elim;
   $('endEyebrow').textContent = (EL ? 'Elimination · ' : 'Race · ') + LV.city + ' · ' + LV.name + ' · ' + (S.duel ? 'live vs ' + S.duel.title : R.diff.name + ' bots');
   const t = $('endTitle'); t.textContent = place === 1 ? 'You win!' : ordinal(place) + ' of ' + n; t.className = place === 1 ? 'good' : 'bad';
-  if (EL) t.textContent = place === 1 ? 'Last one standing!' : 'Eliminated · ' + ordinal(place) + ' of ' + n;
+  if (EL) t.textContent = R.elimOut === -1 ? 'Race ended · host left' : place === 1 && EL.over ? 'Last one standing!' : EL.meOut ? 'Eliminated · ' + ordinal(place) + ' of ' + n : 'Still racing';
   if (S.duel && S.duel.dnf) { t.textContent = 'Did not finish'; t.className = 'bad'; }
-  else if (S.duel && R.board.some(r => !r.done && !r.dnf)) t.textContent = 'Finished · waiting for racers';
+  else if (!EL && S.duel && R.board.some(r => !r.done && !r.dnf)) t.textContent = 'Finished · waiting for racers';
   $('endLead').hidden = true;   // the standings say it all
   $('endLead').textContent = place === 1 ? 'First to ' + LV.goalText + '. Bumps cost you time, so a clean run wins.' : 'Not first this time. Every bump costs about a second and a half, so stay clean and look for gaps.';
   $('sScoreLabel').textContent = EL ? 'Race time' : 'Finish time'; $('sScore').textContent = fmtTime(S.time);
   if (S.duel && S.duel.dnf) $('sScore').textContent = 'DNF';
   const best = raceBest(LV.id, S.run);
-  if (EL) setStat('sBest', 'Checkpoints survived', (R.elimOut ? R.elimOut - 1 : EL.cps.length) + ' of ' + EL.cps.length);
+  if (EL) setStat('sBest', 'Checkpoints survived', (R.elimOut > 0 ? R.elimOut - 1 : EL.next) + ' of ' + EL.cps.length);
   else setStat('sBest', R.newBest ? 'Best time · new best' : 'Best win time', best ? fmtTime(best) : '-');
   setStat('sDist', 'Place', ordinal(place) + ' of ' + n);
   setStat('sChain', 'Bumps', String(S.bumps));
@@ -325,7 +344,7 @@ function showRaceEnd() {
   const lead = R.board[0];
   R.board.forEach((r, i) => {
     const li = document.createElement('li'); if (r.me) li.className = 'me';
-    const gap = r.out ? 'Eliminated at checkpoint ' + r.out : r.dnf ? 'DNF · left / lost connection' : r.done ? (i === 0 ? fmtTime(r.finishT) : '+' + (r.finishT - lead.finishT).toFixed(1) + ' s') : Math.max(1, Math.round(LV.goal - r.z)) + ' m to go';
+    const gap = r.out ? 'Eliminated at checkpoint ' + r.out : EL && EL.over && !r.dnf && i === 0 && R.elimOut !== -1 ? 'Last one standing' : r.dnf ? 'DNF · left / lost connection' : r.done ? (i === 0 ? fmtTime(r.finishT) : '+' + (r.finishT - lead.finishT).toFixed(1) + ' s') : Math.max(1, Math.round(LV.goal - r.z)) + ' m to go';
     li.textContent = (i + 1) + '. ' + r.name + ' · ' + gap;
     bd.appendChild(li);
   });
@@ -368,13 +387,13 @@ export function start(a, b, opts) {
   ghostStart();
   if (mode === 'race') {
     initRace(duel || opts && opts.lesson ? 0 : 3);
-    if (opts && opts.elim && !duel) initElim(LV.goal);
     if (opts && opts.lesson) beginLesson(opts.lesson);
     if (duel) {
       const spot = k => startSlot(duel.slotOf[k], duel.count, LV.half);   // everyone on one line, in the order of the room list
       duel.order.forEach((id, i) => { const b = addRemoteRacer(duel.peers[id].look, duel.peers[id].name, id, i), at = spot(id); b.x = at.x; b.z = at.z; });
       const me = spot('me'); S.px = me.x; S.pz = me.z; S.me.x = me.x; S.me.z = me.z;
     }
+    if (opts && opts.elim || duel && duel.elim) initElim(LV.goal);   // after the remote racers are in, so the field size is right
   }
   S.daily = daily; S.weekly = weekly; S.dailyKey = key; for (const k in last) last[k] = k === 'low' ? null : -1; S.live = true; setState('play'); setEndShown(false);
   hideMenus(); $('hud').hidden = false;

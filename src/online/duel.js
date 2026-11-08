@@ -6,7 +6,7 @@ import { LEVELS, LV, setLevel } from '../config/levels.js';
 import { $ } from '../dom.js';
 import { LOOK, LOOK_OPTS } from '../save/progress.js';
 import { store } from '../save/store.js';
-import { start, syncDuelPause, forfeitDuel, refreshDuelResults } from '../sim/game.js';
+import { start, syncDuelPause, forfeitDuel, refreshDuelResults, elimReceive, elimAbort } from '../sim/game.js';
 import { S, state } from '../sim/state.js';
 import { packGhost, saveFriendGhost } from '../sim/ghostshare.js';
 import { createRoom, cleanCode, makeCode } from './room.js';
@@ -46,6 +46,7 @@ let generation = 0, sessionId = '', rosterRev = 0, receivedRev = -1, disconnecte
 const retired = new Set(), started = new Set();
 let hiddenAt = null;
 let outcomeRev = 0, receivedOutcome = -1;
+let raceElim = false;     // elimination format: the host picks it, guests learn it from the roster
 let myId = '', hostId = '', roster = [];        // roster: [{ id, name, look }], the host first, me included
 let inRoster = false, raced = false, hostGone = false, lastStatus = '', joinWaiter = null;
 let wantMe = false; const wants = new Set();    // rematch: everyone still in the room has to ask
@@ -73,7 +74,7 @@ function receiveGhost(from, data) {
 }
 
 /* ---- one race at a time ---- */
-export function startDuel({ seed, level, friends, friend, send, roster: ids, meId }) {
+export function startDuel({ seed, level, friends, friend, send, roster: ids, meId, elim }) {
   setLevel(level);
   const list = friends || (friend ? [{ id: 'friend', ...friend }] : []);
   const peers = {}, order = [];
@@ -83,7 +84,7 @@ export function startDuel({ seed, level, friends, friend, send, roster: ids, meI
   const lineUp = ids && ids.length ? ids : ['me', ...order], slotOf = {};
   lineUp.forEach((id, i) => { slotOf[id === meId ? 'me' : id] = i; });
   // ten reports a second for one friend; five with more (measured 2026-11-07: a full room of 8 at 5 a second lost nothing on the free plan)
-  const d = { pausers: new Set(), pauseSeq: 0, refresh: showRematch, seed, peers, order, slotOf, meId: meId || 'me', count: lineUp.length, title: names.length === 1 ? names[0] : names.length + ' friends', send, n: 0, sendT: 0, sendEvery: order.length > 1 ? 0.2 : 0.1 };
+  const d = { elim: !!elim, elimHost: false, pausers: new Set(), pauseSeq: 0, refresh: showRematch, seed, peers, order, slotOf, meId: meId || 'me', count: lineUp.length, title: names.length === 1 ? names[0] : names.length + ' friends', send, n: 0, sendT: 0, sendEvery: order.length > 1 ? 0.2 : 0.1 };
   start('race', null, { duel: d });
   return d;
 }
@@ -120,7 +121,7 @@ function closeRoom() {
     if (raced && d && !S.race.finished) forfeitDuel();
   }
   sessionId = ''; rosterRev = 0; receivedRev = -1; outcomeRev = 0; receivedOutcome = -1; disconnectedAt = null; retrying = false; hiddenAt = null; retired.clear(); started.clear();
-  room = null; role = null; code = ''; hostId = ''; myId = ''; roster = []; inRoster = false; raced = false; hostGone = false; wantMe = false; wants.clear();
+  room = null; role = null; code = ''; hostId = ''; myId = ''; roster = []; inRoster = false; raced = false; hostGone = false; wantMe = false; wants.clear(); raceElim = false;
   for (const k in seenAt) delete seenAt[k];
   if (joinWaiter) { const w = joinWaiter; joinWaiter = null; w(false); }
   ui.roster([]);
@@ -128,7 +129,7 @@ function closeRoom() {
   showRematch();
 }
 const sendRoster = () => room && room.send('roster', { id: myId, session: sessionId, rev: ++rosterRev, level: levelIdx, players: roster,
-  activeRace: raced && S?.duel ? { seed: S.duel.seed, level: levelIdx, countT: S.race.countT } : null });
+  elim: raceElim, activeRace: raced && S?.duel ? { seed: S.duel.seed, level: levelIdx, countT: S.race.countT, elim: !!S.duel.elim } : null });
 const changed = () => { ui.roster(lobbyPlayers()); ui.status(lastStatus, !!room && raced && !S?.race?.finished); showRematch(); };
 
 // While present, the existing lobby host settles terminal results. Retain them even after
@@ -185,12 +186,13 @@ function onMessage(ev, data) {
     if (Number.isInteger(data.rev)) receivedRev = data.rev;
     if (disconnectedAt === null && !raced) say('Connected. Waiting for the host.');
     if (Number.isInteger(data.level) && LEVELS[data.level]) levelIdx = data.level;
+    raceElim = data.elim === true;
     for (const id of [...wants]) if (!roster.some(p => p.id === id)) wants.delete(id);
     if (joinWaiter) { const w = joinWaiter; joinWaiter = null; w(true); }
     const active = data.activeRace;
     if (active && typeof active.seed === 'string' && Number.isInteger(active.level) && LEVELS[active.level] &&
         (!raced || wantMe) && !started.has(active.seed)) {
-      beginRace(active.level, active.seed.slice(0, 40));
+      beginRace(active.level, active.seed.slice(0, 40), active.elim === true);
       if (Number.isFinite(active.countT) && active.countT > 0) S.race.countT = Math.min(S.race.countT, active.countT);
       else { forfeitDuel(); S.duel.send('dnf', {}); say('Missed the start · DNF. Create a new room to race again.'); }
     }
@@ -211,8 +213,8 @@ function onMessage(ev, data) {
     if (raced && from === hostId) applyOutcomes(data.outcomes);
     if (from === hostId && role === 'guest') {
       if (!raced) { closeRoom(); say('The host left the room.'); return; }
-      hostGone = true;
-      say('Host left. Finish this race; create a new room for another.');
+      hostGone = true; elimAbort();
+      say(S?.duel?.elim ? 'Host left. The elimination race is over.' : 'Host left. Finish this race; create a new room for another.');
     }
     roster = roster.filter(p => p.id !== from); wants.delete(from);
     retired.add(from);
@@ -224,7 +226,12 @@ function onMessage(ev, data) {
     if (role !== 'guest' || from !== hostId || !inRoster || (raced && !wantMe)) return;
     if (typeof data.seed !== 'string' || !Number.isInteger(data.level) || !LEVELS[data.level]) return;
     if (started.has(data.seed)) return;
-    beginRace(data.level, data.seed.slice(0, 40));
+    beginRace(data.level, data.seed.slice(0, 40), data.elim === true);
+  } else if (ev === 'elim') {
+    // the host's ordered list of eliminated racers: only the host, only for this race. Applying it is idempotent (known entries are
+    // skipped), so repeated, late or reordered copies change nothing and a lost copy is repaired by the next one.
+    if (role !== 'guest' || from !== hostId || !S?.duel?.elim || data.race !== S.duel.seed) return;
+    elimReceive(Array.isArray(data.out) ? data.out.slice(0, MAX_PLAYERS) : []); changed();
   } else if (ev === 'dnf') {
     if (!S || !S.duel || data.race !== S.duel.seed) return;
     duelReceive('bye', data); say((S.duel.peers[from]?.name || 'Racer') + ' did not finish.'); refreshDuelResults(); changed(); publishOutcomes();
@@ -239,19 +246,19 @@ function onMessage(ev, data) {
 }
 export const injectRoomMessage = onMessage;
 
-function beginRace(level, seed) {
+function beginRace(level, seed, elim = false) {
   started.add(seed);
   receivedOutcome = -1;
   wantMe = false; wants.clear(); raced = true;
   const id = myId;
   const epoch = generation;
-  const d = startDuel({ seed, level, friends: others(), roster: roster.map(p => p.id), meId: id, send: (ev, payload) => {
+  const d = startDuel({ seed, level, elim, friends: others(), roster: roster.map(p => p.id), meId: id, send: (ev, payload) => {
     if (epoch !== generation) return;
     if (ev === 'fin' && !S.duel.dnf && S.duel.finish == null) S.duel.finish = payload.ft;
     if (room) room.send(ev, { id, ...payload, race: seed, session: sessionId });
     if (ev === 'fin') { refreshDuelResults(); publishOutcomes(); }
   } });
-  d.managed = true; d.beganAt = Date.now();
+  d.managed = true; d.beganAt = Date.now(); d.elimHost = role === 'host';
   for (const p of roster) seenAt[p.id] = Date.now();
   sendMyGhosts(level);
   changed();
@@ -289,11 +296,12 @@ function heartbeat() {
       forfeitDuel(); d.send('dnf', {}); say('Race timed out · DNF.');
     }
     publishOutcomes();
+    if (d.elim && d.elimHost && S.race.elim && S.race.elim.out.length) d.send('elim', { rev: ++S.race.elim.rev, out: S.race.elim.out.map(o => o.id) });
   }
   if (role === 'guest') {
     room.send('hello', { id: myId, name: myName(), look: LOOK });
     if (inRoster && !hostGone && seenAt[hostId] && now - seenAt[hostId] > STALE_MS) {
-      if (!raced) { closeRoom(); say('Lost contact with the host.'); } else { hostGone = true; say('Host lost connection. Finish this race; create a new room for another.'); changed(); }
+      if (!raced) { closeRoom(); say('Lost contact with the host.'); } else { hostGone = true; elimAbort(); say(S?.duel?.elim ? 'Host lost connection. The elimination race is over.' : 'Host lost connection. Finish this race; create a new room for another.'); changed(); }
     }
   } else if (role === 'host') {
     const gone = others().filter(p => seenAt[p.id] && now - seenAt[p.id] > STALE_MS);
@@ -371,6 +379,9 @@ export const roomLevel = () => levelIdx;
 // The host can change the stage any time before Start; everyone sees it on the next roster.
 export function setRoomLevel(i) { if (role !== 'host' || !room || raced || !LEVELS[i]) return; levelIdx = i; sendRoster(); changed(); }
 export const isHost = () => role === 'host';
+// Format of the next race: the host picks it before Start; guests learn it from the roster.
+export const roomElim = () => raceElim;
+export function setRoomElim(v) { if (role !== 'host' || !room || raced) return; raceElim = !!v; sendRoster(); changed(); }
 
 // After a race everyone presses Rematch; the host then starts a new race on the same stage.
 export function rematchCounts() { const o = others(); return { asked: o.filter(p => wants.has(p.id)).length, total: o.length }; }
@@ -391,7 +402,7 @@ function maybeRematch() {
   const o = others();
   if (role === 'host' && room && disconnectedAt === null && wantMe && o.length && o.every(p => wants.has(p.id)) && rematchState() !== 'gone') {
     const seed = code + ':' + (++raceNo);
-    room.send('start', { id: myId, session: sessionId, level: levelIdx, seed }); beginRace(levelIdx, seed);
+    room.send('start', { id: myId, session: sessionId, level: levelIdx, seed, elim: raceElim }); beginRace(levelIdx, seed, raceElim);
   }
 }
 export function requestRematch() {
@@ -401,8 +412,8 @@ export function requestRematch() {
 export function hostStart() {
   if (role !== 'host' || !room || disconnectedAt !== null || others().length < 1 || raced) return;
   const seed = code + ':' + (++raceNo);
-  room.send('start', { id: myId, session: sessionId, level: levelIdx, seed });
-  beginRace(levelIdx, seed);
+  room.send('start', { id: myId, session: sessionId, level: levelIdx, seed, elim: raceElim });
+  beginRace(levelIdx, seed, raceElim);
 }
 export function leaveRoom() { closeRoom(); }
 export const inviteLink = () => location.origin + location.pathname + '?room=' + code;

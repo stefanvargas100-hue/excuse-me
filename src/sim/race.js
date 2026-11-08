@@ -21,7 +21,7 @@ import { ghostSave } from './replay.js';
 import { recordKey } from './runopts.js';
 import { breakClean, stepClean } from './clean.js';
 import { courseTag, openingX, zonesOf } from '../config/routes.js';
-import { elimRows } from './elim.js';
+import { duelElimRows, elimRows } from './elim.js';
 import { collectPowerups, placePowerups, powerMul, stepPowerups } from './powerups.js';
 
 /* ---------- race mode: A to B against bots; a bump slows you down instead of ending the run ---------- */
@@ -181,7 +181,7 @@ function duelTick(dt) {
   if (D.sendT <= 0) {
     D.sendT = D.sendEvery;
     const r = v => Math.round(v * 100) / 100;
-    D.send('pos', { n: ++D.n, x: r(S.px), z: r(S.pz), vx: r(S.vx), s: r(S.speed) });
+    if (!(S.race.elim && S.race.elim.meOut)) D.send('pos', { n: ++D.n, x: r(S.px), z: r(S.pz), vx: r(S.vx), s: r(S.speed) });
   }
   for (const f of S.race.bots.filter(b => b.remote)) {
     const P = D.peers[f.peerId];
@@ -294,6 +294,7 @@ export function raceCollide(dt) {
 
 // Current standings, front to back: [{ name, z, me, color, done, finishT }]
 export function standings() {
+  if (S.duel && S.race.elim) return duelElimRows();
   if (S.duel) {
     const D = S.duel;
     const rows = [{ id: D.meId, name: 'You', z: S.pz, me: true, color: '#ffcf1f', done: !D.dnf && S.race.finished, dnf: !!D.dnf, finishT: D.finish ?? (S.race.finished && !D.dnf ? S.time : null) }];
@@ -456,6 +457,12 @@ function stepBot(b, dt) {
   b.phase += dt * (2.2 + sp * 2.0);
   b.walkA += (1 - b.walkA) * Math.min(1, dt * 8);
   if (!b.done && b.z >= LV.goal) { b.done = true; b.finishT = S.time; b.z = LV.goal; }
+}
+
+// A friend-room host who has been eliminated no longer runs, but still follows the others so they can be eliminated in turn.
+export function stepRemotes(dt) {
+  for (const b of S.race.bots) if (b.remote) stepRemote(b, dt);
+  if (S.duel) duelTick(dt);
 }
 
 export function updRace(dt) {

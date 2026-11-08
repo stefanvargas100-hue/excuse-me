@@ -18,7 +18,7 @@ Make clean driving, crowd management, learning, route selection and different ra
 | B2 | Bots use Excuse me | B0, B1 validation | Bot races | Validated (headless + browser) |
 | B3 | Replayable practice course | B0, B1, B2 | Four short local lessons | Validated (headless + browser) |
 | B4 | Stage-specific route choices | B0-B3 | Airport pilot, then NYC and Tokyo | Validated (headless + browser) |
-| B5 | Elimination races | B0, B3, B4 | Bots first; friend rooms second | B5a Validated; B5b Planned |
+| B5 | Elimination races | B0, B3, B4 | Bots first; friend rooms second | B5a, B5b Validated (headless; no live two-phone test) |
 | B6 | Weekly challenge race with a supplied outfit | B0, B3-B5 | Solo timed race and dedicated board | Planned |
 | B7 | Combined balance, compatibility and release check | B1-B6 | All supported modes | Planned |
 
@@ -324,3 +324,18 @@ Later expansion ideas, not required for this queue: public matchmaking, bots fil
 - Adjustment found: "Clean race medal" now needs at least one clean segment, so being cut at 0 m no longer shows a medal.
 - Known limitations / deferred: no spectate (an eliminated player sees the results immediately; "watch the rest" needs a follower camera); no checkpoint ticks on the progress bar; no sound cue for the elimination beyond the existing effects.
 - Not published. Next: B5b (friend rooms), which needs the protocol list below before any client code.
+
+### B5b - Elimination in friend rooms - Validated (simulated room), 2026-11-07
+Protocol (written before the client code, as the plan required):
+- `start` (host to guests) and `roster.activeRace` carry `elim: true`; the roster also carries the host's chosen `elim`, so guests see the format in the lobby and a late-starting guest begins the same format. Only the host's messages count (existing rule).
+- New message `elim` (host to guests): `{ id, session, race, rev, out: [id, ...] }`, the ordered list of eliminated racer ids; entry i is checkpoint i+1. The host sends it on every decision and repeats it on every keepalive (2 s). A guest applies only messages from the host id for the current race seed and only entries beyond what it already knows; entries must be strings naming a racer, never a duplicate, never more than the checkpoint count. Applying is idempotent, so repeated, late, reordered or partly lost copies cannot make phones disagree (a copy that skips an earlier one still applies in order). `rev` is informational only.
+- The host decides: when the lead racer it can see (its own runner plus the interpolated remote runners) crosses the next checkpoint, it removes last place. Guests never decide. Ties: greatest progress survives; exact tie keeps the lower start slot (the room list order).
+- Pause: nothing is decided while anyone in the room is paused (the host's elimination step is skipped while any pauser exists, and a paused phone does not run).
+- Leaving/DNF: a racer who left is removed from the field by the existing bye/DNF handling and is shown as DNF, never as eliminated; the checkpoint then cuts the next-last still racing. If a decision names someone this phone already dropped, it still uses up that checkpoint.
+- Host eliminated: their phone keeps following the other racers and keeps deciding (no host migration). Host lost or left: guests end the race ("Race ended · host left"), no winner.
+- Results: eliminated racers get their results at once with their final place (n - k + 1); the board stays live behind the results screen. The last racer standing wins at the final checkpoint. Friend rooms keep their XP and unlock-progress rules (no 'races'/'wins' tally); XP is paid as for a finished friend race.
+- Rematch keeps the format. Host picks it with the Race | Elimination chips in the room screen.
+- Tests: test/elimroom.test.js 11/11 with 3 and 4 simulated phones (format and identical checkpoints on every phone, one decision converging everywhere, forged/duplicate/old/foreign/unknown decisions, never more cuts than checkpoints, pause, a racer leaving at the checkpoint, eliminated host continues to a winner with correct places, host leaving, no tallies, rematch keeps format, normal rooms unchanged). Full suite 393/393.
+- Browser: host room screen with the format chips fits at 320x568. The room logic was tested only through the in-memory fake room; there was no live two-phone test over the real Supabase channel.
+- Known limitations: host-coordinated beta, not server-authoritative; the host sees others slightly late, so a near-tie can be decided on slightly stale positions; if an eliminated host backgrounds the game, decisions pause until they return (guests are not told); no spectate view; no build-version handshake, so a phone on an older build would not understand `elim` and would race normally.
+- Not published. Next: B6.
