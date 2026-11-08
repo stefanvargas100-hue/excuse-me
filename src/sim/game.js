@@ -8,6 +8,7 @@ import { R, clamp, hashStr, mulberry32, pick, rnd, setR, todayKey, weekKey } fro
 import { $ } from '../dom.js';
 import { COST_DASH, DASH_V, action, holdTick, keys, pendingDash, setPendingDash, touches } from '../input/input.js';
 import { radarTop, setRadarTop } from '../render/hud.js';
+import { clearPodium, setPodium } from '../render/podium.js';
 import { nextGoal, tallySnapshot, track, trackMax } from '../save/challenges.js';
 import { account, gainXp, runXp } from '../save/level.js';
 import { buzz, store } from '../save/store.js';
@@ -243,6 +244,7 @@ const END_LABELS = { sScore: 'Score', sBest: 'Best score', sDist: 'Distance', sC
 function setStat(id, label, value) { $(id).textContent = value; const dt = $(id).previousElementSibling; if (dt) dt.textContent = label; }
 function setExtraStats(show) { for (const id of ['sClose', 'sPassed', 'sRival']) { const d = $(id).parentElement; if (d) d.hidden = !show; } }
 function resetEndLabels() {
+  clearPodium();
   setExtraStats(true);
   $('endLead').hidden = false;
   for (const id in END_LABELS) { const dt = $(id).previousElementSibling; if (dt) dt.textContent = END_LABELS[id]; }
@@ -276,6 +278,7 @@ export function forfeitDuel() {
 
 function showRaceEnd() {
   const R = S.race, n = R.board.length, place = R.place;
+  setPodium(R.board, S.me, R.bots);
   $('endEyebrow').textContent = 'Race · ' + LV.city + ' · ' + LV.name + ' · ' + (S.duel ? 'live vs ' + S.duel.title : R.diff.name + ' bots');
   const t = $('endTitle'); t.textContent = place === 1 ? 'You win!' : ordinal(place) + ' of ' + n; t.className = place === 1 ? 'good' : 'bad';
   if (S.duel && S.duel.dnf) { t.textContent = 'Did not finish'; t.className = 'bad'; }
