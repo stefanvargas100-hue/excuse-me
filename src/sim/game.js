@@ -158,8 +158,7 @@ export function tick(dt) {
       S.chain = 0; S.snake = 0; S.oncRun = 0; S.multPrev = 1;
     }
     S.heat = Math.max(0, S.heat - dt * 0.16);
-    const mult = comboLevel(S.chain);
-    Music.target(clamp(0.15 + (mult - 1) * 0.12 + S.heat + (S.timeLeft < 15 ? 0.3 : 0), 0, 1));
+    Music.gameplay(S, LV.goal);
     if (S.pz >= goalOf()) { if (S.race) winRace(); else win(); }
   } else if (state === 'ready') {
     updPeople(dt);
