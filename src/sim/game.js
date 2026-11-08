@@ -29,6 +29,7 @@ import { hideMenus } from '../ui/screens.js';
 import { ghostSave, ghostStart, ghostStep } from './replay.js';
 import { makeRun, recordKey } from './runopts.js';
 import { cleanBonusFor, cleanMedal } from './clean.js';
+import { initElim, stepElim } from './elim.js';
 import { LESSONS, PRACTICE_OUTFIT, beginLesson, lessonIndex, lessonTick, restartLesson } from './practice.js';
 import { flushScores, showRunBoard, submitBestRun, submitRun } from '../online/online.js';
 
@@ -140,6 +141,7 @@ export function tick(dt) {
     if (LV.id === 'shibuya') { S.waveT -= dt; if (S.waveT <= 0 && !S.duel && crowd && S.pz < goalOf() - 60) { scramble(); S.waveT = rnd(8, 11); } }
     updPeople(dt);
     if (S.race) updRace(dt);
+    if (S.race && S.race.elim) { const ev = stepElim(); if (ev) { elimEnd(ev); return; } }
     S.people = S.people.filter(p => !p.dead && p.z > rearZ() - 16);
     if (S.race) raceCollide(dt);   // race: people are solid, you are stopped and slowed
     else { const hit = collide(); if (hit) { lose(hit); return; } }
@@ -203,6 +205,17 @@ function win() {
   S.score += 1000 + S.timeBonus;
   Music.sfx('win'); Music.stop(); Music.ambStop(); buzz([20, 60, 20, 60, 80]);
   recordBest(); payRun();
+}
+
+// An elimination decided the race for you: you were cut at a checkpoint, or you are the last one standing.
+function elimEnd(ev) {
+  const R = S.race, won = ev.type === 'win';
+  R.finished = true; R.elimOut = won ? 0 : ev.k;
+  setState(won ? 'won' : 'lost'); S.live = false; S.overT = 0; S.pz = Math.min(S.pz, LV.goal); touches.clear();
+  R.board = standings(); R.place = R.board.findIndex(r => r.me) + 1;
+  banner(won ? 'LAST ONE STANDING' : 'ELIMINATED', won ? '#27c27a' : '#ff4d4f');
+  track('races'); payRun();   // counts as a race played, not as a race win: elimination wins are shorter and do not feed the win unlocks
+  Music.sfx(won ? 'win' : 'bump'); Music.stop(); Music.ambStop(); buzz(won ? [20, 60, 20, 60, 80] : [60, 40, 140]);
 }
 
 function winRace() {
@@ -291,17 +304,19 @@ export function forfeitDuel() {
 }
 
 function showRaceEnd() {
-  const R = S.race, n = R.board.length, place = R.place;
-  $('endEyebrow').textContent = 'Race · ' + LV.city + ' · ' + LV.name + ' · ' + (S.duel ? 'live vs ' + S.duel.title : R.diff.name + ' bots');
+  const R = S.race, n = R.board.length, place = R.place, EL = R.elim;
+  $('endEyebrow').textContent = (EL ? 'Elimination · ' : 'Race · ') + LV.city + ' · ' + LV.name + ' · ' + (S.duel ? 'live vs ' + S.duel.title : R.diff.name + ' bots');
   const t = $('endTitle'); t.textContent = place === 1 ? 'You win!' : ordinal(place) + ' of ' + n; t.className = place === 1 ? 'good' : 'bad';
+  if (EL) t.textContent = place === 1 ? 'Last one standing!' : 'Eliminated · ' + ordinal(place) + ' of ' + n;
   if (S.duel && S.duel.dnf) { t.textContent = 'Did not finish'; t.className = 'bad'; }
   else if (S.duel && R.board.some(r => !r.done && !r.dnf)) t.textContent = 'Finished · waiting for racers';
   $('endLead').hidden = true;   // the standings say it all
   $('endLead').textContent = place === 1 ? 'First to ' + LV.goalText + '. Bumps cost you time, so a clean run wins.' : 'Not first this time. Every bump costs about a second and a half, so stay clean and look for gaps.';
-  $('sScoreLabel').textContent = 'Finish time'; $('sScore').textContent = fmtTime(S.time);
+  $('sScoreLabel').textContent = EL ? 'Race time' : 'Finish time'; $('sScore').textContent = fmtTime(S.time);
   if (S.duel && S.duel.dnf) $('sScore').textContent = 'DNF';
   const best = raceBest(LV.id, S.run);
-  setStat('sBest', R.newBest ? 'Best time · new best' : 'Best win time', best ? fmtTime(best) : '-');
+  if (EL) setStat('sBest', 'Checkpoints survived', (R.elimOut ? R.elimOut - 1 : EL.cps.length) + ' of ' + EL.cps.length);
+  else setStat('sBest', R.newBest ? 'Best time · new best' : 'Best win time', best ? fmtTime(best) : '-');
   setStat('sDist', 'Place', ordinal(place) + ' of ' + n);
   setStat('sChain', 'Bumps', String(S.bumps));
   $('sClose').textContent = S.close; $('sPassed').textContent = S.passed; $('sRival').textContent = S.dodged;
@@ -310,7 +325,7 @@ function showRaceEnd() {
   const lead = R.board[0];
   R.board.forEach((r, i) => {
     const li = document.createElement('li'); if (r.me) li.className = 'me';
-    const gap = r.dnf ? 'DNF · left / lost connection' : r.done ? (i === 0 ? fmtTime(r.finishT) : '+' + (r.finishT - lead.finishT).toFixed(1) + ' s') : Math.max(1, Math.round(LV.goal - r.z)) + ' m to go';
+    const gap = r.out ? 'Eliminated at checkpoint ' + r.out : r.dnf ? 'DNF · left / lost connection' : r.done ? (i === 0 ? fmtTime(r.finishT) : '+' + (r.finishT - lead.finishT).toFixed(1) + ' s') : Math.max(1, Math.round(LV.goal - r.z)) + ' m to go';
     li.textContent = (i + 1) + '. ' + r.name + ' · ' + gap;
     bd.appendChild(li);
   });
@@ -333,6 +348,7 @@ export function startWeekly() { if (hasPlayed('weekly')) return; setLevel(weekly
 
 // start('classic' | 'race' | 'daily' | 'weekly'); the older start(true) and start(false, 'race') forms still work.
 export function start(a, b, opts) {
+  lastOpts = opts && opts.elim ? { run: opts.run, elim: true } : undefined;
   const duel = opts && opts.duel || null;   // a live race against a friend: { seed, friend, send, remote }
   const mode = a === true ? 'daily' : typeof a === 'string' ? a : (b || lastMode);
   const daily = mode === 'daily', weekly = mode === 'weekly', key = daily || weekly ? periodKey(mode) : null;
@@ -352,6 +368,7 @@ export function start(a, b, opts) {
   ghostStart();
   if (mode === 'race') {
     initRace(duel || opts && opts.lesson ? 0 : 3);
+    if (opts && opts.elim && !duel) initElim(LV.goal);
     if (opts && opts.lesson) beginLesson(opts.lesson);
     if (duel) {
       const spot = k => startSlot(duel.slotOf[k], duel.count, LV.half);   // everyone on one line, in the order of the room list
@@ -375,6 +392,9 @@ export function startPractice(id) {
   setLevel(0);
   start('race', undefined, { run: { category: 'practice', seed: 'practice-' + id, outfit: PRACTICE_OUTFIT }, lesson: id });
 }
+// Race again / Restart keeps the format (elimination) of the run being repeated.
+let lastOpts;
+export function restartRun() { start(lastDaily, lastMode, lastOpts); }
 export function lessonRetry() { if (S && S.lesson) restartLesson(); }
 export function lessonNext() { if (S && S.lesson) startPractice(LESSONS[Math.min(LESSONS.length - 1, lessonIndex(S.lesson.id) + 1)].id); }
 

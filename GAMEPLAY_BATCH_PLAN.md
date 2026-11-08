@@ -18,7 +18,7 @@ Make clean driving, crowd management, learning, route selection and different ra
 | B2 | Bots use Excuse me | B0, B1 validation | Bot races | Validated (headless + browser) |
 | B3 | Replayable practice course | B0, B1, B2 | Four short local lessons | Validated (headless + browser) |
 | B4 | Stage-specific route choices | B0-B3 | Airport pilot, then NYC and Tokyo | Validated (headless + browser) |
-| B5 | Elimination races | B0, B3, B4 | Bots first; friend rooms second | Planned |
+| B5 | Elimination races | B0, B3, B4 | Bots first; friend rooms second | B5a Validated; B5b Planned |
 | B6 | Weekly challenge race with a supplied outfit | B0, B3-B5 | Solo timed race and dedicated board | Planned |
 | B7 | Combined balance, compatibility and release check | B1-B6 | All supported modes | Planned |
 
@@ -315,3 +315,12 @@ Later expansion ideas, not required for this queue: public matchmaking, bots fil
 - Tuning (first guess, to be playtested): headless crude-controller timing for the Airport first zone, 12 seeds: direct 16.5 s / 3.3 bumps vs detour 17.3 s / 2.9 bumps (direct 0.8 s faster, slightly more bumps). Later zones were noisy and roughly even. The controller is not a person, so treat as a sanity check only.
 - Known limitations: no signage or floor arrows tell a new player what the two openings mean; NYC/Tokyo fences are only visually distinguished by colour; friend rooms have no build-version handshake (see B7), so phones on different versions would see different layouts.
 - Not published. Next: B5a (elimination vs bots).
+
+### B5a - Elimination vs bots - Validated, 2026-11-07
+- Playable behaviour: Play > Race vs bots has a Format chip (Race | Elimination; remembered). An elimination race has the usual four racers and three red checkpoint gates at 25/50/75% of the course (n-1 checkpoints at k/n for n racers). When the lead racer crosses a gate, exactly one racer, the one furthest behind at that moment, is out; a step handles at most one checkpoint. 25 m before a gate a banner names who is last ("ELIMINATION AHEAD · CATO IS LAST" or "YOU ARE LAST") and the HUD shows "cut in N m". Eliminated bots are removed from the field (no movement, collisions, drafting, pickups). If you are last you get the results at once ("Eliminated · 4th of 4", checkpoints survived, "Eliminated at checkpoint 1" in the standings). When one racer is left they win immediately, so the race ends at the third gate and the finish line is not used. Ties: greatest progress survives, an exact tie keeps the lower start slot (you are slot 0).
+- Rewards: category `elimination` (B0): XP 6 for being cut, 11 for winning, plus the B1 clean bonus; counts as a race played ('races' tally) but not as a race win, and writes no race best, ghost or board entry, so it cannot be farmed for win unlocks. Race again / pause > Restart keep the format (restartRun).
+- Tests: test/elim.test.js 13/13 (checkpoint spacing for 2-8 racers, tie rules, one elimination per checkpoint and per step, warning, pause/countdown, removed bots stay out, player cut with right place/XP once, winner, no records/win credit, format kept, normal races unchanged); full suite 382/382. All new tests failed before implementation (no elimination module).
+- Browser: format chips and stage list fit at 320x568; gate, banner, "cut in" HUD text and the Eliminated results screen checked at 390x844. The gate's "CHECKPOINT n" label is not clearly legible in the render (the red frame is).
+- Adjustment found: "Clean race medal" now needs at least one clean segment, so being cut at 0 m no longer shows a medal.
+- Known limitations / deferred: no spectate (an eliminated player sees the results immediately; "watch the rest" needs a follower camera); no checkpoint ticks on the progress bar; no sound cue for the elimination beyond the existing effects.
+- Not published. Next: B5b (friend rooms), which needs the protocol list below before any client code.

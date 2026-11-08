@@ -25,5 +25,5 @@ export function breakClean() { const C = S.clean; if (C) { C.dist = 0; C.streak 
 
 // XP to add when the race is finished: bot races only, and only where the run may pay XP.
 export const cleanBonusFor = s => (s.clean && !s.duel && s.run.policy.xp ? s.clean.bonus : 0);
-// Medal: finished without a single bump.
-export const cleanMedal = s => !!s.clean && s.bumps === 0;
+// Medal: no bumps, and at least one clean segment walked.
+export const cleanMedal = s => !!s.clean && s.clean.segs > 0 && s.bumps === 0;

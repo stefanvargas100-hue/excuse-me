@@ -417,5 +417,6 @@ export function genChunk(z0) {
   const n0 = S.people.length;
   seeded(':c' + z0, () => { genChunkInner(z0); beltRiders(z0); });
   if (raceBuild) seeded(':r' + z0, () => placeRoute(z0));
+  if (S.race && S.race.elim) seeded(':g' + z0, () => { for (const [i, c] of S.race.elim.cps.entries()) if (c >= z0 && c < z0 + 4) mk(0, c, { prop: 'cpgate', span: LV.half - 0.5, num: i + 1, circles: [] }); });
   if (S.seed) { let sum = 0; for (let i = n0; i < S.people.length; i++) { const q = S.people[i]; sum += q.x * 7 + q.z; } S.chunkSum[z0] = Math.round(sum * 100); }
 }

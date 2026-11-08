@@ -666,6 +666,14 @@ function drawProp(p, s, bx, fy) {
       }
       break;
     }
+    case 'cpgate': {
+      const h = p.span || 4, red = hex('#ff4d4f');
+      box3D(x - h, x + h, 0, 0.03, z - 0.25, z + 0.25, red);
+      box3D(x - h - 0.1, x - h + 0.1, 0, 3.3, z - 0.1, z + 0.1, red); box3D(x + h - 0.1, x + h + 0.1, 0, 3.3, z - 0.1, z + 0.1, red);
+      box3D(x - h, x + h, 3.0, 3.3, z - 0.08, z + 0.08, red);
+      { const q = W3(x, 3.15, z - 0.1); label('CHECKPOINT ' + (p.num || ''), q[0], q[1], Math.round(0.2 * F / q[2]), '#ffffff'); }
+      break;
+    }
     case 'rope': {
       const h = p.span || 1, sk = p.skin === 'fence' ? ['#ff8a1f', '#2b2a33', 0.1, 0.95, 0.06] : p.skin === 'crowdbar' ? ['#b8c0cc', '#4b5563', 0.08, 0.95, 0.05] : ['#d6336c', '#2b2a33', 0.82, 0.9, 0.03];
       const bar = hex(sk[0]), post = hex(sk[1]);

@@ -21,6 +21,7 @@ import { ghostSave } from './replay.js';
 import { recordKey } from './runopts.js';
 import { breakClean, stepClean } from './clean.js';
 import { courseTag, openingX, zonesOf } from '../config/routes.js';
+import { elimRows } from './elim.js';
 import { collectPowerups, placePowerups, powerMul, stepPowerups } from './powerups.js';
 
 /* ---------- race mode: A to B against bots; a bump slows you down instead of ending the run ---------- */
@@ -303,8 +304,10 @@ export function standings() {
     rows.sort((a, b) => Number(b.done) - Number(a.done) || Number(a.dnf) - Number(b.dnf) || (a.done && b.done ? a.finishT - b.finishT : b.z - a.z) || a.id.localeCompare(b.id));
     return rows;
   }
-  const R = S.race, rows = [{ name: 'You', z: S.pz, me: true, color: '#ffcf1f', done: R.finished, finishT: R.finished ? S.time : null }];
+  const R = S.race, rows = [];
+  if (!R.elim || !R.elim.out.some(o => o.me)) rows.push({ name: 'You', z: S.pz, me: true, color: '#ffcf1f', done: R.finished, finishT: R.finished ? S.time : null });
   for (const b of R.bots) rows.push({ name: b.name, z: b.z, me: false, color: b.color, done: b.done, finishT: b.finishT });
+  if (R.elim) return elimRows(rows);   // eliminated racers rank below everyone still in, latest out first
   rows.sort((a, b) => (b.done - a.done) || (a.done && b.done ? a.finishT - b.finishT : b.z - a.z));
   return rows;
 }

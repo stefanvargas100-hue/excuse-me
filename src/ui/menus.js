@@ -10,7 +10,7 @@ import { account, TITLES, PICS } from '../save/level.js';
 import { myName } from '../online/online.js';
 import { ITEM_STATS, statHint } from '../config/stats.js';
 import { setVibOn, store, vibOn } from '../save/store.js';
-import { dailyLevel, fmt, hasPlayed, lastDaily, lastMode, lessonNext, lessonRetry, pauseGame, quitRun, resumeGame, start, startDaily, startPractice, startWeekly, toMenu, weeklyLevel } from '../sim/game.js';
+import { dailyLevel, fmt, hasPlayed, lastDaily, lastMode, restartRun, lessonNext, lessonRetry, pauseGame, quitRun, resumeGame, start, startDaily, startPractice, startWeekly, toMenu, weeklyLevel } from '../sim/game.js';
 import { draftMul, fmtTime, ordinal, raceBest, racePace, raceDifficulty, standings } from '../sim/race.js';
 import { S, bestOf, calm, camBob, cues, reset, setCalm, setCamBob, setCues, setShowHB, showHB, state } from '../sim/state.js';
 import { endTut } from '../sim/tutorial.js';
@@ -75,7 +75,7 @@ function buildStages() {
     x.children[1].textContent = L.name;
     x.children[2].textContent = race ? L.goal + ' m' + (rb ? ' · ' + fmtTime(rb) : '') : best ? 'Best ' + fmt(best) : 'Endless';
     x.children[3].textContent = L.blurb;
-    x.addEventListener('click', () => { setLevel(i); start(stageMode); });
+    x.addEventListener('click', () => { setLevel(i); start(stageMode, undefined, stageMode === 'race' && raceFormat() === 'elim' ? { run: { category: 'elimination' }, elim: true } : undefined); });
     box.appendChild(x);
   });
 }
@@ -83,9 +83,12 @@ function buildStages() {
 function openStages(mode) {
   stageMode = mode;
   $('stagesTitle').textContent = mode === 'race' ? 'Race vs bots' : 'Classic';
-  $('raceOpts').hidden = mode !== 'race';
-  syncBots(); buildStages(); go('stages');
+  $('raceOpts').hidden = mode !== 'race'; $('raceFormat').hidden = mode !== 'race';
+  syncFormat(); syncBots(); buildStages(); go('stages');
 }
+
+const raceFormat = () => (store.get('excuseme_raceformat', 'race') === 'elim' ? 'elim' : 'race');
+function syncFormat() { document.querySelectorAll('#raceFormat .chip').forEach((c, i) => c.setAttribute('aria-pressed', String((i === 1) === (raceFormat() === 'elim')))); }
 
 function syncBots() {
   const d = raceDifficulty();
@@ -151,7 +154,9 @@ function raceHud() {
   else if (rows.length === 1) gap = 'Racing solo';
   else if (me > 0) gap = Math.max(1, Math.round(rows[me - 1].z - S.pz)) + ' m behind ' + rows[me - 1].name;
   else gap = Math.max(1, Math.round(S.pz - rows[1].z)) + ' m ahead';
-  const txt = ordinal(me + 1) + ' of ' + n + ' · ' + gap + (S.bumpT > 0 ? ' · BUMPED' : '');
+  let cut = '';
+  if (S.race.elim && !S.race.elim.over && S.race.elim.next < S.race.elim.cps.length) { const lead = Math.max(S.pz, ...S.race.bots.map(b => b.z)); cut = ' · cut in ' + Math.max(1, Math.round(S.race.elim.cps[S.race.elim.next] - lead)) + ' m' + (me === n - 1 ? ' · LAST' : ''); }
+  const txt = ordinal(me + 1) + ' of ' + n + ' · ' + gap + cut + (S.bumpT > 0 ? ' · BUMPED' : '');
   if (pl.textContent !== txt) { pl.textContent = txt; pl.classList.toggle('bumped', S.bumpT > 0); }
   const box = $('raceDots'), bots = S.race.bots, key = bots.map(r => r.color).join();
   if (dotsKey.k !== key) {   // one dot per racer, you last so your dot is drawn on top
@@ -301,6 +306,7 @@ export function init() {
   document.querySelectorAll('[data-back]').forEach(b => b.addEventListener('click', back));
   document.querySelectorAll('#howTabs .chip').forEach(c => c.addEventListener('click', () => showHowTab(c.dataset.tab)));
   document.querySelectorAll('#raceOpts .chip').forEach((c, i) => c.addEventListener('click', () => { store.set('excuseme_botlvl', String(i)); syncBots(); }));
+  document.querySelectorAll('#raceFormat .chip').forEach((c, i) => c.addEventListener('click', () => { store.set('excuseme_raceformat', i === 1 ? 'elim' : 'race'); syncFormat(); }));
   const flag = (id, on, set, key) => { const el = $(id); el.checked = on; el.addEventListener('change', e => { set(e.target.checked); store.set(key, e.target.checked ? '1' : '0'); }); };
   flag('calmT', calm, setCalm, 'excuseme_calm');
   flag('cuesT', cues, setCues, 'excuseme_cues');
@@ -311,7 +317,7 @@ export function init() {
     if (S && S.duel) {
       if (rematchState() === 'gone') { leaveRoom(); toMenu(); openFriend(); }
       else requestRematch();
-    } else start(lastDaily, lastMode);
+    } else restartRun();
   });
   $('dbgBtn').addEventListener('click', () => { if (!window.__dbgOn) { window.__dbgOn = true; import('../dev/debugview.js').then(m => m.openDebug()); } });   // temporary: shows the sizes the phone reports
   $('tutBtn').addEventListener('click', () => { store.set('excuseme_tut', '0'); start('classic'); });
@@ -323,7 +329,7 @@ export function init() {
   $('pauseBtn').addEventListener('pointerdown', e => e.stopPropagation());
   $('resume').addEventListener('click', resumeGame);
   $('holdPause').addEventListener('click', pauseGame);
-  $('restart').addEventListener('click', () => { if (S.lesson) { lessonRetry(); resumeGame(); return; } $('pause').hidden = true; Music.ambStop(); start(lastDaily, lastMode); });
+  $('restart').addEventListener('click', () => { if (S.lesson) { lessonRetry(); resumeGame(); return; } $('pause').hidden = true; Music.ambStop(); restartRun(); });
   for (const id of ['lessonRetry', 'lessonNext', 'lessonExit']) $(id).addEventListener('pointerdown', e => e.stopPropagation());
   $('lessonRetry').addEventListener('click', e => { e.stopPropagation(); lessonRetry(); });
   $('lessonNext').addEventListener('click', e => { e.stopPropagation(); lessonNext(); });
