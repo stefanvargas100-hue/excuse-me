@@ -87,3 +87,9 @@ Design notes so new maps fit it later:
 - Validation: all 336 tests passed; production build passed; focused scenery/landmark checks passed (16 tests), including render determinism.
 - Browser checks: desktop and 390 x 844 phone views inspected. Full landmark framing and 4x CPU performance review remain pending; tutorial overlays affected the browser walkthrough. The screens currently use GO text rather than the proposed walking figure.
 - Central Park (Batch 7) remains unstarted.
+## Central Park continuation (2026-11-07)
+- Planned in CENTRAL_PARK_PLAN.md before implementation, then built in four batches: stage/landscape, crowd/furniture, bridge/carriage, integration/review.
+- Central Park is now the fourth stage: 540 m race to Bethesda Terrace, endless classic/daily/weekly; day, autumn and golden-hour looks.
+- Park-specific crowd, fitted furniture, artist easel, pretzel cart, carriage crossing, bridge containment for player/bots/crowd, and autumn footstep leaves are implemented.
+- Test and visual-review results, including remaining real-phone/CPU checks, are recorded in CENTRAL_PARK_PLAN.md.
+- NYC Cup remains design-only.

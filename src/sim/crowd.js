@@ -1,6 +1,6 @@
 import { RIVAL_LINES } from '../config/colour.js';
 import { beltAt, beltHasZ, beltInfo, beltSpeedAt, contain } from '../config/strips.js';
-import { LV } from '../config/levels.js';
+import { LV, halfAt } from '../config/levels.js';
 import { R_PLAYER, walkSpeed } from '../config/tuning.js';
 import { R, clamp, pick, rnd, sgn } from '../config/util.js';
 import { addPop } from './scoring.js';
@@ -129,7 +129,8 @@ export function updPeople(dt) {
       p.z += beltSpeedAt(LV.id, p.x, p.z) * dt;   // moving walkway carries everyone on it
       if (!p.free) { const cx = contain(LV.id, px0, p.x, p.z); if (cx !== p.x) { p.x = cx; p.vx = 0; } }   // and the glass keeps them on it, or off it
     }
-    if (!p.free && Math.abs(p.x) > lim) { p.x = clamp(p.x, -lim, lim); if (p.locked) p.vx = 0; }
+    const pathLim = Math.min(lim, halfAt(p.z) - 0.35);
+    if (!p.free && Math.abs(p.x) > pathLim) { p.x = clamp(p.x, -pathLim, pathLim); if (p.locked) p.vx = 0; }
     if (p.exit && Math.abs(p.x) > (LV.id === 'shibuya' ? 14.5 : LV.half + 0.2)) p.dead = true;
     if (p.z > goalOf() - 1.5 && p.hz > 0) { p.hz = -p.hz; p.dirz = -1; }
     const sp = Math.hypot(p.vx, p.vz);

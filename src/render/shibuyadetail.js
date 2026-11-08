@@ -4,7 +4,7 @@ import { TAU, clamp, mod } from '../config/util.js';
 import { ctx } from '../dom.js';
 import { F, H, HOR, VX, VZ, W } from './camera.js';
 import { P, cq, fq, label, poly, sub, wq } from './draw.js';
-import { hsh, makeLod, padd, pfill, pfq, pwq, rgba, wallText } from './scenery.js';
+import { hsh, makeLod, padd, pfill, pfq, pwq, rgba } from './scenery.js';
 import { scrambleFlash } from './landmarks.js';
 import { S, calm } from '../sim/state.js';
 
@@ -33,7 +33,17 @@ function screen(k, za, zb, da, side, bi) {
   if (flash > 0) {   // the lights just changed: every screen says GO
     wq(x, y0, y1, a, b, mixc(hex('#0d5c35'), a * 0.5));
     const on = calm || Math.floor(t() * 6) % 2 === 0 || flash < 0.5;
-    if (on) wallText('GO', x - side * 0.02, (y0 + y1) / 2, (za + zb) / 2, 5.5, '#7dffb0', side);
+    if (on) {
+      // A walking signal built from polygons, so it needs no emoji font.
+      const zc = (za + zb) / 2, width = (zb - za) * 0.32, face = x - side * 0.02;
+      const shape = pts => { if (za - VZ > 0.2) poly(pts.map(([u, v]) => [face, 16.5 + v * 6.5, zc + u * width - VZ]), '#7dffb0'); };
+      shape([[-0.18, 0.78], [0.18, 0.78], [0.18, 1], [-0.18, 1]]);
+      shape([[-0.2, 0.72], [0.2, 0.72], [0.35, 0.4], [0.05, 0.38], [-0.2, 0.52]]);
+      shape([[-0.1, 0.65], [-0.55, 0.42], [-0.7, 0.48], [-0.25, 0.75]]);
+      shape([[0.1, 0.67], [0.65, 0.55], [0.7, 0.42], [0.12, 0.5]]);
+      shape([[-0.1, 0.45], [0.12, 0.35], [-0.45, 0], [-0.65, 0.06]]);
+      shape([[0.1, 0.45], [0.32, 0.42], [0.68, 0.04], [0.45, 0]]);
+    }
     return;
   }
   const bars = 3, tt = calm ? 0 : t();

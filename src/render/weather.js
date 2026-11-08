@@ -13,7 +13,8 @@ import { hsh } from './scenery.js';
 export const VARIANTS = {
   airport: [['day', 5], ['sunrise', 2], ['night', 2]],
   nyc: [['day', 5], ['golden', 3]],
-  shibuya: [['night', 5], ['rain', 3]]
+  shibuya: [['night', 5], ['rain', 3]],
+  park: [['day', 5], ['autumn', 3], ['golden', 2]]
 };
 
 let cur = 'day', curLevel = '', curRun = null, forced = null;
@@ -34,7 +35,7 @@ export function pickVariant(levelId, seed, rnd) {
 // Not Math.random: the simulation may draw from it, and drawing a frame must never shift what the simulation sees.
 const clockRnd = () => (Date.now() % 9973) / 9973;
 
-function refresh() {
+export function refreshWeather() {
   if (forced) { cur = forced; return; }
   if (LV.id !== curLevel || S !== curRun) { curLevel = LV.id; curRun = S; cur = pickVariant(LV.id, S.seed, clockRnd); }   // every run has its own state object, so this catches every restart
 }
@@ -42,7 +43,7 @@ function refresh() {
 const wash = (a, b, c, alpha) => { ctx.fillStyle = 'rgba(' + a + ',' + b + ',' + c + ',' + alpha + ')'; ctx.fillRect(0, 0, W, H); };
 
 export function weatherGrade() {
-  refresh();
+  refreshWeather();
   if (cur === 'day' || (cur === 'night' && LV.id === 'shibuya')) return;   // the usual looks
   const u = Math.min(W, H) / 390, t = S.clock || 0;
   ctx.save();

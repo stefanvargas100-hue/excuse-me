@@ -1,7 +1,7 @@
 import { leaveRoom } from '../online/duel.js';
 import { comboLevel } from '../config/combo.js';
 import { Music } from '../audio/music.js';
-import { LEVELS, LV, LVI, SPAWN_FAR, setLevel } from '../config/levels.js';
+import { LEVELS, LV, LVI, SPAWN_FAR, halfAt, setLevel } from '../config/levels.js';
 import { STRIP_SPEED, beltAt, beltFor, contain, onStrip, stripLane } from '../config/strips.js';
 import { BASE, BOOST, CHAIN_WINDOW, LAT_ACC, LAT_MAX, REGEN } from '../config/tuning.js';
 import { R, clamp, hashStr, mulberry32, pick, rnd, setR, todayKey, weekKey } from '../config/util.js';
@@ -67,7 +67,7 @@ function movePlayer(dt) {
   const px0 = S.px;
   S.px += S.vx * dt;
   if (S.race) { const cx = contain(LV.id, px0, S.px, S.pz); if (cx !== S.px) { S.px = cx; S.vx = 0; } }   // glass railings on the airport walkway
-  const lim = LV.half - 0.5;
+  const lim = halfAt(S.pz + S.speed * dt) - 0.5;
   if (Math.abs(S.px) > lim) { S.px = clamp(S.px, -lim, lim); S.vx = 0; }
   S.pz += S.speed * dt;
   // moving walkway (airport races): the belt carries you along, or back

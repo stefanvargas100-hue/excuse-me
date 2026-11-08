@@ -150,6 +150,8 @@ function spawnUnit(z, d) {
     if (d > 0.08) pool.push(['speedster', 1.5], ['luggage', 0.5]);
     if (d > 0.2) pool.push(['swerver', 1]);
     if (d > 0.4) pool.push(['trio', 1]);
+  } else if (id === 'park') {
+    pool = [['walker', 3], ['oncoming', 3], ['pair', 2], ['dog', 2], ['joggers', 2], ['tourist', 0.5]];
   } else {
     pool = [['oncoming', 5], ['walker', 3], ['pair', 2], ['phone', 1.5], ['diagonal', 2], ['luggage', 0.5]];
     if (d > 0.15) pool.push(['trio', 1], ['swerver', 1], ['speedster', 0.5]);
@@ -157,6 +159,10 @@ function spawnUnit(z, d) {
   let type = wpick(pool); const dirv = R() < 0.5 ? 1 : -1;
   if (raceBuild && (type === 'crosser' || type === 'diagonal') && beltInfo(id) && beltHasZ(beltInfo(id), z)) type = 'walker';   // nobody cuts across the glass walls
   switch (type) {
+    case 'joggers': {
+      for (let i=0;i<2;i++) mk(2.4+i*0.8, z+i*0.3, { jogger: true, fast: true, hx: 0, hz: 1, v0: rnd(3.3,4.1), shirtType: 'tank', pantsType: 'shorts', yieldP: 0.7 });
+      break;
+    }
     case 'walker': walker(z, 1); break;
     case 'oncoming': walker(z, -1, { lug: id === 'airport' && R() < 0.35 ? pick([-1, 1]) : 0 }); break;
     case 'luggage': walker(z, dirv, { lug: pick([-1, 1]) }); break;
@@ -284,11 +290,23 @@ function airportProps(z0) {
   else if (n % 5 === 2) { const side = race ? -1 : pick([-1, 1]); shape(n % 2 ? 'bin' : 'plant', side * 6.1, z0 + 1); }
 }
 
+function parkProps(z0) {
+  if (z0 < 24 || (z0 >= 232 && z0 <= 284)) return;
+  const n = Math.floor(z0 / 4), side = n % 2 ? -1 : 1, z = z0 + 2;
+  if (n % 6 === 0) mk(side * 5.1, z, { prop: 'bench', circles: rowC([-0.5,-0.17,0.17,0.5],0.2) });
+  else if (n % 6 === 1) mk(side * 5.4, z, { prop: 'lamp', circles: rowC([0],0.13) });
+  else if (n % 6 === 2) mk(side * 5.3, z, { prop: 'trash', circles: rowC([0],0.27) });
+  else if (n % 12 === 3) mk(side * 4.5, z, { prop: 'pretzel', circles: [-0.6,0,0.6].map(oz=>({ox:0,oz,r:0.4})) });
+  else if (n % 12 === 9) mk(side * 3.4, z, { prop: 'easel', circles: rowC([-0.2,0,0.2],0.15) });
+  else if (n % 6 === 4) mk(side * 4.6, z, { prop: 'bikes', rack: [-0.6,0,0.6], circles: RACK([-0.6,0,0.6]) });
+}
+
 function genChunkInner(z0) {
   const d = clamp(z0 / LV.goal, 0, 1);
   if (LV.id === 'nyc') { nycProps(z0); nycStreet(z0); }
   if (LV.id === 'airport') airportProps(z0);
   if (LV.id === 'shibuya') tokyoStreet(z0);
+  if (LV.id === 'park') parkProps(z0);
   if (inXing(z0 + 2)) return;   // the crosswalk crowds come from the signal waves instead
   const k = LV.base + (R() < 0.4 + 0.4 * d ? 1 : 0) + (d > 0.25 && R() < 0.55 ? 1 : 0) + (d > 0.6 && R() < 0.6 ? 1 : 0);
   for (let i = 0; i < k; i++) spawnUnit(z0 + R() * 4, d);
@@ -381,11 +399,12 @@ export function runEvent(kind) {
     }
     S.flows.push({ kind: 'weave', rows });
     banner('WEAVE AHEAD: FOLLOW THE GAPS', '#5ee6a8');
-  } else if (kind === 'cart' || kind === 'van' || kind === 'taxi') {
+  } else if (kind === 'cart' || kind === 'van' || kind === 'taxi' || kind === 'carriage') {
     // A vehicle crosses the walkway from one side to the other, beeping as it starts. Beat it across or wait for it to pass.
-    const dir = kind === 'van' ? 1 : pick([-1, 1]), x0 = -dir * (h + 3), cz = z - 4;
+    const dir = kind === 'van' ? 1 : pick([-1, 1]), x0 = -dir * (h + 3);
+    const cz = kind === 'carriage' && z - 4 >= 225 && z - 4 <= 290 ? 300 : z - 4;
     // [prop, speed, trigger distance, circles, spacing, radius, banner, colour, first circle back from the front, length]
-    const spec = { cart: ['cart2', 2.6, 24, 3, 1.25, 0.5, 'BAGGAGE CART CROSSING', '#ffd166', 0, 3.05], van: ['van', 3.2, 24, 4, 3.2 / 3, 0.7, 'DELIVERY VAN CUTTING ACROSS', '#c8a165', 0.7, 4.6], taxi: ['taxi', 4.0, 30, 4, 1.0, 0.7, 'TAXI CUTTING THROUGH', '#ffcf1f', 0.7, 4.4] }[kind];
+    const spec = { carriage: ['carriage', 2.5, 30, 6, 0.8, 0.4, 'HORSE CARRIAGE CROSSING', '#c8a165', 0.5, 5], cart: ['cart2', 2.6, 24, 3, 1.25, 0.5, 'BAGGAGE CART CROSSING', '#ffd166', 0, 3.05], van: ['van', 3.2, 24, 4, 3.2 / 3, 0.7, 'DELIVERY VAN CUTTING ACROSS', '#c8a165', 0.7, 4.6], taxi: ['taxi', 4.0, 30, 4, 1.0, 0.7, 'TAXI CUTTING THROUGH', '#ffcf1f', 0.7, 4.4] }[kind];
     const v = mk(x0, cz, { prop: spec[0], drive: dir * spec[1], driveAt: spec[2], len: spec[9], circles: [...Array(spec[3]).keys()].map(i => ({ ox: -dir * (spec[8] + i * spec[4]), oz: 0, r: spec[5] })) });
     v.rad = 3.4; v.dirx = dir;
     banner(spec[6], spec[7]);

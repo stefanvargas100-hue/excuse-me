@@ -667,13 +667,35 @@ function drawProp(p, s, bx, fy) {
       ball(b[0], b[1], 0.15 * s, '#d4a017', '#ffe08a', '#8a6a0c');
       break;
     }
+    case 'carriage': {
+      const dir=p.dirx||1, seg=(a,b,y0,y1,depth,c)=>box3D(Math.min(x-dir*a,x-dir*b),Math.max(x-dir*a,x-dir*b),y0,y1,z-depth,z+depth,hex(c));
+      seg(0.3,1.9,0.8,1.5,0.35,'#88603c'); // horse
+      seg(0,0.65,1.25,2.05,0.24,'#88603c');
+      for(const a of [0.55,1.55])for(const side of [-1,1])box3D(x-dir*a-0.08,x-dir*a+0.08,0,0.9,z+side*0.25-0.06,z+side*0.25+0.06,hex('#59402c'));
+      seg(1.8,3.2,0.65,0.72,0.12,'#403728'); // shafts
+      seg(2.6,4.9,0.55,1.35,0.7,'#284a35');
+      seg(3.1,4.9,1.8,2.1,0.75,'#f0e7d3'); // canopy
+      for(const a of [3.1,4.7])for(const side of [-1,1]){
+        box3D(x-dir*a-0.04,x-dir*a+0.04,1.2,1.9,z+side*0.6-0.04,z+side*0.6+0.04,hex('#403728'));
+        const q=W3(x-dir*a,0.42,z+side*0.7);ctx.strokeStyle='#3a332b';ctx.lineWidth=Math.max(1,0.08*F/q[2]);ctx.beginPath();ctx.arc(q[0],q[1],0.4*F/q[2],0,TAU);ctx.stroke();
+      }
+      break;
+    }
+    case 'easel': {
+      for (const side of [-1,1]) box3D(x+side*0.35-0.07,x+side*0.35+0.07,0,1.45,z-0.3,z+0.3,hex('#956b43'));
+      box3D(x-0.45,x+0.45,0.65,1.55,z-0.08,z+0.08,hex('#eee1be'));
+      box3D(x-0.38,x+0.38,0.72,1.48,z-0.09,z-0.08,hex('#a4c8b5'));
+      box3D(x-0.25,x+0.2,0.72,1.02,z-0.1,z-0.09,hex('#639264'));
+      break;
+    }
+    case 'pretzel':
     case 'cart': {
       box3D(x - 0.45, x + 0.45, 0.25, 1.1, z - 1.0, z + 1.0, hex('#c9ced6'));
       const a = W3(x, 1.1, z), b = W3(x, 2.25, z);
       capsule([a, b], 0.05 * s, '#6b7280', '#374151', null);
       ctx.fillStyle = '#2f80ed'; ctx.beginPath(); ctx.ellipse(b[0], b[1], 1.2 * F / b[2], 0.5 * F / b[2], 0, Math.PI, TAU); ctx.fill();
       ctx.fillStyle = '#ffcf1f'; ctx.beginPath(); ctx.ellipse(b[0], b[1], 0.6 * F / b[2], 0.5 * F / b[2], 0, Math.PI, TAU); ctx.fill();
-      const fq0 = W3(x, 0.7, z - 1.01); label('HOT DOGS', fq0[0], fq0[1], Math.round(0.2 * F / fq0[2]), '#c0392b');
+      const fq0 = W3(x, 0.7, z - 1.01); label(p.prop === 'pretzel' ? 'PRETZELS' : 'HOT DOGS', fq0[0], fq0[1], Math.round(0.2 * F / fq0[2]), '#c0392b');
       break;
     }
     case 'board': box3D(x - 0.3, x + 0.3, 0, 0.95, z - 0.12, z + 0.12, hex('#1f2937')); { const q = W3(x, 0.6, z - 0.13); label('SALE', q[0], q[1], Math.round(0.18 * F / q[2]), '#f4f6f8'); } break;
