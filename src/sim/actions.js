@@ -39,6 +39,7 @@ export function shoutReact(near, who, perfect, rng) {
 }
 
 export function shout() {
+  if (S.duel?.startRemaining && S.race.countT > 0) return;
   if (S.shoutCD > 0) return;
   S.shoutCD = SHOUT_CD; track('shouts');
   const who = { x: S.px, z: S.pz }, perfect = wellTimed(who);

@@ -1,7 +1,7 @@
 // B5b: elimination races in friend rooms. The host decides; every phone applies the same ordered list. Pretend room, no network. node --test
 const test = require('node:test');
 const assert = require('node:assert');
-const { load } = require('./harness.js');
+const { load, readyPlayers } = require('./harness.js');
 
 const DT = 1 / 30;
 const settle = () => new Promise(r => setTimeout(r, 5));
@@ -35,6 +35,7 @@ const hostId = g => g.lobbyPlayers().find(p => p.host).id;
 async function elimRace(n, level = 1) {
   const L = await lobby(n, level);
   L.host.setRoomElim(true); await settle();
+  await readyPlayers(L.games);
   L.host.hostStart(); await settle();
   for (const g of L.games) { g.S.race.countT = 0; g.S.people.length = 0; g.S.nextChunk = Infinity; }
   L.ids = L.games.map(idOf);
@@ -56,6 +57,7 @@ test('the host picks the format; guests see it; everyone starts the same elimina
   const { games, host } = await lobby(4);
   assert.strictEqual(host.roomElim(), false);
   host.setRoomElim(true); await settle();
+  await readyPlayers(games);
   for (const g of games) assert.strictEqual(g.roomElim(), true, 'every phone knows the format');
   host.hostStart(); await settle();
   for (const g of games) { assert.strictEqual(g.state, 'play'); assert.ok(g.S.race.elim, 'elimination race'); assert.strictEqual(g.S.race.elim.cps.length, 3); }
@@ -64,6 +66,7 @@ test('the host picks the format; guests see it; everyone starts the same elimina
 
 test('a normal room is unchanged: no checkpoints', async () => {
   const { games, host } = await lobby(3);
+  await readyPlayers(games);
   host.hostStart(); await settle();
   for (const g of games) assert.ok(!g.S.race.elim);
 });

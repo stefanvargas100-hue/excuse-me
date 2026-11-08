@@ -27,8 +27,11 @@ function load(sourceFile, opts) {
   function element(id) {
     if (!elements.has(id)) {
       const values = { hidden: id !== 'start', disabled: false, textContent: '' }, events = new Map();
-      values.addEventListener = (type, fn) => { if (!events.has(type)) events.set(type, []); events.get(type).push(fn); };
-      values.click = async () => { if (!values.disabled) for (const fn of events.get('click') || []) await fn({ preventDefault() {} }); };
+      values.addEventListener = (type, fn, options) => { if (!events.has(type)) events.set(type, []); events.get(type).push({ fn, options }); };
+      values.dispatchEvent = ev => { for (const { fn, options } of events.get(ev.type) || []) { ev.passive = options?.passive === true; fn(ev); } return !ev.defaultPrevented; };
+      values.focus = () => { sandbox.document.activeElement = element(id); };
+      values.blur = () => { if (sandbox.document.activeElement === element(id)) sandbox.document.activeElement = sandbox.document.body; };
+      values.click = async () => { if (!values.disabled) for (const { fn } of events.get('click') || []) await fn({ preventDefault() {} }); };
       elements.set(id, new Proxy(stub(), { get: (target, key) => key in values ? values[key] : target[key], set: (_, key, value) => { values[key] = value; return true; } }));
     }
     return elements.get(id);
@@ -65,10 +68,21 @@ function load(sourceFile, opts) {
   vm.runInContext(code, sandbox, { filename: 'game-bundle.js' });
   const E = sandbox.window.__excuse || win.__excuse;
   E.storage = store;   // the fake localStorage, so tests can pick settings such as bot difficulty
+  let lobbyTime = opts?.lobbyOffset || 0;
+  if (E.useLobbyClock) E.useLobbyClock(() => lobbyTime);
+  const gameTick = E.tick;
+  E.tick = dt => { if (!opts?.manualLobbyClock && E.S?.duel?.startRemaining && E.S.race.countT > 0) lobbyTime += dt * 1000; gameTick(dt); };
   E.fire = (type, ev) => { for (const [t, fn] of listeners) if (t === type) fn(Object.assign({ preventDefault() {}, repeat: false }, ev)); };
-  E.advance = ms => { now += ms; for (const fn of [...intervals.values()]) fn(); };
+  E.advance = ms => { now += ms; lobbyTime += ms; for (const fn of [...intervals.values()]) fn(); };
   E.visibility = hidden => { sandbox.document.hidden = hidden; for (const [t, fn] of docListeners) if (t === 'visibilitychange') fn(); };
   E.element = element;
   return E;
 }
-module.exports = { load, stub };
+async function readyPlayers(games) {
+  for (let i = 0; i < 80; i++) await Promise.resolve();
+  for (const g of games) {
+    if (!g.setRoomReady(true)) throw new Error('Fixture could not ready a player: ' + JSON.stringify(g.roomLobbyState()));
+  }
+  for (let i = 0; i < 80; i++) await Promise.resolve();
+}
+module.exports = { load, stub, readyPlayers };

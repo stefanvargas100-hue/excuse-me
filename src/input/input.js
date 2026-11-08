@@ -52,6 +52,7 @@ export function holdTick(dt) {
 
 export function action(z) {
   if (state !== 'play') return;
+  if (S.duel?.startRemaining && S.race.countT > 0) return;
   if (z === 'M') tryBurst(); else tryDash(z === 'L' ? -1 : 1);
 }
 
@@ -63,6 +64,11 @@ export function setLastBoth(v) { lastBoth = v; }
 export function setPendingDash(v) { pendingDash = v; }
 
 export function init() {
+  // Some WebKit versions still interpret rapid taps on a positioned canvas as browser
+  // gestures despite touch-action. Pointer events remain the sole game-input source.
+  const blockNativeGesture = e => { if (state === 'play' && e.cancelable) e.preventDefault(); };
+  for (const type of ['touchstart', 'touchmove', 'touchend'])
+    cv.addEventListener(type, blockNativeGesture, { passive: false });
   cv.addEventListener('pointerdown', e => {
     if (state !== 'play') return;
     const z = zoneOf(e.clientX);

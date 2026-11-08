@@ -1,7 +1,7 @@
 // Rematch after a live race: two games joined by a pretend room. node --test
 const test = require('node:test');
 const assert = require('node:assert');
-const { load } = require('./harness.js');
+const { load, readyPlayers } = require('./harness.js');
 
 const DT = 1 / 30;
 const tick = (...Es) => { for (const E of Es) E.tick(DT); };
@@ -27,6 +27,7 @@ async function pair() {
   host.useRoomFactory(H); guest.useRoomFactory(H);
   const code = await host.hostRoom(1);
   await guest.joinRoom(code); await settle();
+  await readyPlayers([host, guest]);
   host.hostStart(); await settle();
   return { host, guest, code };
 }

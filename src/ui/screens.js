@@ -5,7 +5,12 @@ const SCREENS = ['start', 'play', 'practice', 'challenge', 'stages', 'friend', '
 let stack = [];
 let onResize = null;
 
-export function hideMenus() { for (const id of SCREENS) $(id).hidden = true; stack = []; onResize = null; }
+export function hideMenus() {
+  // iOS can keep a hidden form control focused and pan the page around its keyboard.
+  document.activeElement?.blur?.();
+  for (const id of SCREENS) $(id).hidden = true;
+  stack = []; onResize = null;
+}
 
 // Open a screen on top of the one showing now.
 export function go(id) {
