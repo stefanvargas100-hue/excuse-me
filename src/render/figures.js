@@ -649,8 +649,9 @@ function drawProp(p, s, bx, fy) {
       break;
     }
     case 'tree': {
-      ctx.strokeStyle = 'rgba(30,30,30,0.6)'; ctx.lineWidth = Math.max(1, 0.04 * s);
-      ctx.beginPath(); ctx.ellipse(bx, fy, 0.55 * s, 0.55 * s * Math.min(0.6, VY / (z - VZ)), 0, 0, TAU); ctx.stroke();
+      // a soil pit at the foot: ground you can step on, only the trunk is solid
+      ctx.fillStyle = 'rgba(74,56,38,0.5)'; ctx.strokeStyle = 'rgba(30,30,30,0.45)'; ctx.lineWidth = Math.max(1, 0.03 * s);
+      ctx.beginPath(); ctx.ellipse(bx, fy, 0.45 * s, 0.45 * s * Math.min(0.6, VY / (z - VZ)), 0, 0, TAU); ctx.fill(); ctx.stroke();
       const a = W3(x, 0, z), b = W3(x, 2.8, z);
       capsule([a, b], 0.22 * s, '#6b4a2b', '#3b2a1e', '#8a6a46');
       const c1 = W3(x, 3.7, z), c2 = W3(x + 0.6, 3.3, z + 0.3), c3 = W3(x - 0.5, 3.4, z - 0.3);
@@ -695,11 +696,23 @@ function drawProp(p, s, bx, fy) {
       const q = W3(x, 1.2, z - 0.56); label('NEWS', q[0], q[1], Math.round(0.26 * F / q[2]), '#ffffff');
       break;
     }
-    case 'bikes': {
-      for (const dx of [-0.6, 0, 0.6]) {
-        box3D(x + dx - 0.04, x + dx + 0.04, 0.05, 0.62, z - 0.45, z + 0.45, hex(dx < 0 ? '#c0392b' : dx > 0 ? '#2f80ed' : '#2aa56a'));
-        box3D(x + dx - 0.04, x + dx + 0.04, 0.62, 0.7, z - 0.25, z + 0.1, hex('#1f2937'));
-      }
+    case 'bikes': {   // a bike at each spot in the rack (the same spots the hitbox uses), parked along a low rail
+      const os = p.rack || [-0.6, 0, 0.6], cols = ['#c0392b', '#2aa56a', '#2f80ed', '#f2994a', '#9b51e0'], lw = Math.max(1.4, 0.045 * s);
+      box3D(x + os[0] - 0.12, x + os[os.length - 1] + 0.12, 0, 0.07, z - 0.03, z + 0.03, hex('#6b7280'));
+      const line = (pts, col, w) => { ctx.strokeStyle = col; ctx.lineWidth = w; ctx.beginPath(); pts.forEach((q, i) => { const c = W3(q[0], q[1], q[2]); if (i) ctx.lineTo(c[0], c[1]); else ctx.moveTo(c[0], c[1]); }); ctx.stroke(); };
+      ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      os.forEach((ox, i) => {
+        const bx0 = x + ox, col = cols[(i + Math.abs(Math.round(x * 3))) % cols.length];
+        for (const wz of [0.3, -0.3]) {   // wheels, far one first
+          const ring = []; for (let k = 0; k <= 14; k++) { const a = k / 14 * TAU; ring.push([bx0, 0.3 + 0.28 * Math.sin(a), z + wz + 0.28 * Math.cos(a)]); }
+          line(ring, INK, lw * 1.3);
+        }
+        const back = [bx0, 0.3, z + 0.3], front = [bx0, 0.3, z - 0.3], bb = [bx0, 0.33, z + 0.02], seat = [bx0, 0.82, z + 0.16], head = [bx0, 0.86, z - 0.2];
+        line([back, bb, head, front], col, lw); line([bb, seat, back], col, lw); line([seat, head], col, lw);
+        line([[bx0 - 0.03, 0.86, z + 0.24], [bx0 + 0.03, 0.86, z + 0.08]], INK, lw * 1.6);           // saddle
+        line([[bx0 - 0.2, 0.95, z - 0.22], [bx0 + 0.2, 0.95, z - 0.22]], INK, lw * 1.2);             // handlebars
+        line([head, [bx0, 0.95, z - 0.22]], col, lw);
+      });
       break;
     }
     case 'bench': {
@@ -711,6 +724,8 @@ function drawProp(p, s, bx, fy) {
       for (const dz of [-1.4, 1.4]) box3D(x - 0.35, x - 0.27, 0, 2.3, z + dz - 0.05, z + dz + 0.05, hex('#374151'));
       box3D(x - 0.5, x + 0.5, 2.3, 2.42, z - 1.5, z + 1.5, hex('#1f2937'));
       box3D(x - 0.35, x - 0.3, 0.6, 2.2, z - 1.4, z + 1.4, hex('#9fc7e6'));
+      for (const dz of [-0.75, 0.75]) box3D(x - 0.25, x - 0.2, 0, 0.42, z + dz - 0.04, z + dz + 0.04, hex('#374151'));
+      box3D(x - 0.3, x + 0.0, 0.42, 0.5, z - 0.95, z + 0.95, hex('#8a6a46'));   // the seat (the hitbox stops at its front edge)
       break;
     }
     case 'trashbags': {

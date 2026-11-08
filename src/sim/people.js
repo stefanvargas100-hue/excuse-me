@@ -17,6 +17,14 @@ import { S, goalOf, raceBuild, state } from './state.js';
 
 
 
+/* ---------- obstacle shapes ----------
+   Collision circles fitted inside what is drawn (render/figures.js drawProp), so passing close beside something never counts as a hit.
+   test/hitboxes.test.js checks every kind against its drawn size. */
+const rowC = (os, r) => os.map(ox => ({ ox, oz: 0, r }));
+const WET = () => rowC([-0.13, 0.13], 0.12);                               // wet-floor sign: thin, as wide as the board
+const BARRIER = () => rowC([-0.8, -0.4, 0, 0.4, 0.8], 0.14);              // crowd barrier: a thin rail 1.9 m wide
+const RACK = os => os.flatMap(ox => [{ ox, oz: -0.22, r: 0.15 }, { ox, oz: 0.22, r: 0.15 }]);   // a bike at each spot, front and back wheel
+
 /* ---------- people ---------- */
 export function dress(p) {
   p.bald = p.hairStyle === 'bald' || p.hairStyle === 'mohawk';
@@ -183,7 +191,7 @@ function spawnUnit(z, d) {
       ctx.fillStyle = '#f4f1ea'; ctx.fillRect(cup[0] - 0.06 * s, cup[1] - 0.05 * s, 0.16 * s, 0.1 * s);
       break;
     }
-    case 'wetfloor': mk(rnd(-4, 4), z, { prop: 'wetfloor', circles: [{ ox: 0, oz: 0, r: 0.28 }] }); break;
+    case 'wetfloor': mk(rnd(-4, 4), z, { prop: 'wetfloor', circles: WET() }); break;
   }
 }
 
@@ -210,11 +218,11 @@ function nycProps(z0) {
   for (let z = Math.ceil(z0); z < z0 + 4; z++) {
     if (inXing(z) || inXing(z + 2) || inXing(z - 2) || z < 8) continue;
     if (z % 30 === 6) mk(-3.95, z, { prop: 'lamp', circles: [{ ox: 0, oz: 0, r: 0.14 }] });
-    else if (z % 15 === 12) mk(-3.7, z, { prop: 'tree', circles: [{ ox: 0, oz: 0, r: 0.55 }] });
+    else if (z % 15 === 12) mk(-3.7, z, { prop: 'tree', circles: [{ ox: 0, oz: 0, r: 0.18 }] });
     else if (z % 45 === 21) mk(-3.85, z, { prop: 'trash', circles: [{ ox: 0, oz: 0, r: 0.3 }] });
     else if (z % 60 === 39) mk(-4.0, z, { prop: 'hydrant', circles: [{ ox: 0, oz: 0, r: 0.18 }] });
     else if (z % 90 === 52 && R() < 0.6) mk(-3.35, z, { prop: 'cart', circles: [{ ox: 0, oz: -0.6, r: 0.45 }, { ox: 0, oz: 0, r: 0.45 }, { ox: 0, oz: 0.6, r: 0.45 }] });
-    if (z % 36 === 30 && R() < 0.6) mk(3.95, z, { prop: 'board', circles: [{ ox: 0, oz: 0, r: 0.3 }] });
+    if (z % 36 === 30 && R() < 0.6) mk(3.95, z, { prop: 'board', circles: rowC([-0.18, 0.18], 0.12) });
   }
 }
 
@@ -227,11 +235,11 @@ function nycStreet(z0) {
   const row = (k, x, z, os, r) => mk(x, z, { prop: k, circles: os.map(ox => ({ ox, oz: 0, r })) });
   if (n % 9 === 4) {
     const kind = NYC_ISLANDS[Math.floor(n / 9) % NYC_ISLANDS.length], x = rnd(-2.2, 2.4), z = z0 + 2;
-    if (kind === 'barrier') row(kind, x, z, [-0.6, 0, 0.6], 0.3);
+    if (kind === 'barrier') mk(x, z, { prop: kind, circles: BARRIER() });
     else if (kind === 'newsstand') row(kind, x, z, [-0.4, 0.4], 0.55);
-    else if (kind === 'bikes') row(kind, x, z, [-0.6, 0, 0.6], 0.28);
-    else row(kind, x, z, [-0.6, -0.2, 0.2, 0.6], 0.3);
-  } else if (n % 27 === 20) mk(-3.5, z0 + 2, { prop: 'shelter', circles: [-1.2, -0.4, 0.4, 1.2].map(oz => ({ ox: 0, oz, r: 0.45 })) });
+    else if (kind === 'bikes') mk(x, z, { prop: kind, rack: [-0.6, 0, 0.6], circles: RACK([-0.6, 0, 0.6]) });
+    else row(kind, x, z, [-0.5, -0.17, 0.17, 0.5], 0.21);
+  } else if (n % 27 === 20) mk(-3.5, z0 + 2, { prop: 'shelter', circles: [-1.25, -0.625, 0, 0.625, 1.25].map(oz => ({ ox: -0.18, oz, r: 0.19 })) });   // the back wall and the seat; the roof is overhead
   else if (n % 11 === 7) mk(-3.75, z0 + 1, { prop: 'trashbags', circles: [{ ox: 0, oz: 0, r: 0.45 }] });
 }
 
@@ -243,8 +251,9 @@ function tokyoStreet(z0) {
   if (n % 6 === 1) mk((n % 12 === 1 ? -1 : 1) * 10.0, z0 + 1, { prop: 'vending', circles: [{ ox: 0, oz: 0, r: 0.4 }] });
   if (n % 11 === 5) {
     const kind = TOKYO_ISLANDS[Math.floor(n / 11) % TOKYO_ISLANDS.length], x = rnd(-7.5, 7.5), z = z0 + 2;
-    const os = kind === 'asign' ? [0] : kind === 'bikes' ? [-1.0, -0.5, 0, 0.5, 1.0] : [-0.9, -0.3, 0.3, 0.9];
-    mk(x, z, { prop: kind, circles: os.map(ox => ({ ox, oz: 0, r: kind === 'asign' ? 0.3 : 0.28 })) });
+    if (kind === 'asign') mk(x, z, { prop: kind, circles: rowC([-0.17, 0.17], 0.13) });
+    else if (kind === 'bikes') { const os = [-1.0, -0.5, 0, 0.5, 1.0]; mk(x, z, { prop: kind, rack: os, circles: RACK(os) }); }
+    else mk(x, z, { prop: kind, circles: BARRIER() });
   }
 }
 
@@ -266,7 +275,7 @@ function airportProps(z0) {
   }
   const race = raceBuild && beltInfo(LV.id);
   const shape = (kind, x, z) => {
-    const cs = o => o.map(ox => ({ ox, oz: 0, r: kind === 'desk' ? 0.45 : kind === 'chairs' ? 0.28 : kind === 'trolleys' ? 0.3 : kind === 'plant' ? 0.38 : 0.3 }));
+    const cs = o => o.map(ox => ({ ox, oz: 0, r: kind === 'desk' ? 0.45 : kind === 'chairs' ? 0.28 : kind === 'trolleys' ? 0.26 : kind === 'plant' ? 0.38 : 0.3 }));
     const circles = kind === 'desk' ? cs([-0.9, -0.3, 0.3, 0.9]) : kind === 'chairs' ? cs([-0.75, -0.25, 0.25, 0.75]) : kind === 'trolleys' ? cs([-0.5, 0, 0.5]) : cs([0]);
     mk(x, z, { prop: kind, circles });
   };
@@ -331,7 +340,7 @@ export function runEvent(kind) {
     banner(kind === 'parade' ? 'PARADE COMING THROUGH' : 'QUEUE ACROSS THE WALKWAY', '#ff9f43');
   } else if (kind === 'cleaners') {
     const lim = LV.half - 0.5, gapW = 2.2, gapX = rnd(-lim + gapW / 2 + 0.2, lim - gapW / 2 - 0.2);
-    for (let x = -lim; x <= lim; x += 1.0) if (Math.abs(x - gapX) >= gapW / 2) mk(x, z, { prop: 'wetfloor', circles: [{ ox: 0, oz: 0, r: 0.28 }] });
+    for (let x = -lim; x <= lim; x += 1.0) if (Math.abs(x - gapX) >= gapW / 2) mk(x, z, { prop: 'wetfloor', circles: WET() });
     banner('CLEANING CREW AHEAD', '#ffd166');
   } else if (kind === 'arrivals') {
     for (let i = 0; i < 13; i++) walker(S.pz + rnd(SPAWN_FAR, SPAWN_FAR + 28), -1, { lug: pick([-1, 1]) });
@@ -339,7 +348,7 @@ export function runEvent(kind) {
   } else if (kind === 'spill') {
     const x = clamp(S.px + rnd(-1.5, 1.5), -h + 1.4, h - 1.4), sz = z - 10;
     const sp = mk(x, sz, { prop: 'spill', circles: [] }); sp.rad = 1.0;
-    mk(x + (x > 0 ? -1.4 : 1.4), sz, { prop: 'wetfloor', circles: [{ ox: 0, oz: 0, r: 0.28 }] });
+    mk(x + (x > 0 ? -1.4 : 1.4), sz, { prop: 'wetfloor', circles: WET() });
     const dropper = mk(x + 0.6, sz + 0.8, { v0: 0, fx: 0, fz: -1 });
     dropper.react = { t: -1.2, text: 'My latte!', up: true };
     banner('SPILL AHEAD: NO GRIP', '#c8a165');
@@ -375,8 +384,9 @@ export function runEvent(kind) {
   } else if (kind === 'cart' || kind === 'van' || kind === 'taxi') {
     // A vehicle crosses the walkway from one side to the other, beeping as it starts. Beat it across or wait for it to pass.
     const dir = kind === 'van' ? 1 : pick([-1, 1]), x0 = -dir * (h + 3), cz = z - 4;
-    const spec = { cart: ['cart2', 2.6, 24, 3, 1.25, 0.5, 'BAGGAGE CART CROSSING', '#ffd166'], van: ['van', 3.2, 24, 3, 1.5, 0.7, 'DELIVERY VAN CUTTING ACROSS', '#c8a165'], taxi: ['taxi', 4.0, 30, 3, 1.4, 0.7, 'TAXI CUTTING THROUGH', '#ffcf1f'] }[kind];
-    const v = mk(x0, cz, { prop: spec[0], drive: dir * spec[1], driveAt: spec[2], circles: [...Array(spec[3]).keys()].map(i => ({ ox: -dir * i * spec[4], oz: 0, r: spec[5] })) });
+    // [prop, speed, trigger distance, circles, spacing, radius, banner, colour, first circle back from the front, length]
+    const spec = { cart: ['cart2', 2.6, 24, 3, 1.25, 0.5, 'BAGGAGE CART CROSSING', '#ffd166', 0, 3.05], van: ['van', 3.2, 24, 4, 3.2 / 3, 0.7, 'DELIVERY VAN CUTTING ACROSS', '#c8a165', 0.7, 4.6], taxi: ['taxi', 4.0, 30, 4, 1.0, 0.7, 'TAXI CUTTING THROUGH', '#ffcf1f', 0.7, 4.4] }[kind];
+    const v = mk(x0, cz, { prop: spec[0], drive: dir * spec[1], driveAt: spec[2], len: spec[9], circles: [...Array(spec[3]).keys()].map(i => ({ ox: -dir * (spec[8] + i * spec[4]), oz: 0, r: spec[5] })) });
     v.rad = 3.4; v.dirx = dir;
     banner(spec[6], spec[7]);
   } else if (kind === 'selfie') {
