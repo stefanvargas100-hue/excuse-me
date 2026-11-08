@@ -53,3 +53,14 @@ test('a release delivered after the scheduled deadline is explicitly marked late
 test('losing a connection immediately clears local readiness, before a host acknowledgement',()=>{
  const s=setup();ready(s);s.nodes[1].setConnected(false);assert.equal(s.nodes[1].view().ready,false);assert.equal(s.nodes[1].view().players.find(p=>p.id==='p1').ready,false);
 });
+test('temporary packet loss clears stale readiness and permits a fresh confirmation after recovery',()=>{
+ const s=setup();ready(s);s.setFilter(i=>i!==1);s.advance(7000);s.setFilter(()=>true);s.advance(2500);
+ assert.equal(s.nodes[1].view().ready,false);assert.equal(s.nodes[1].view().pending,false,'a host-cleared confirmation is not permanently pending');
+ assert.equal(s.nodes[0].canStart(),false);assert.equal(s.nodes[1].setReady(true),true);s.flush();assert.equal(s.nodes[0].canStart(),true);
+});
+test('an older host confirmation cannot overwrite a newer local not-ready request',()=>{
+ const s=setup();ready(s);s.setFilter((i,j,event)=>!(i===1&&event==='ready'));
+ s.nodes[1].setReady(false);s.nodes[0].setReady(true);s.flush();
+ assert.equal(s.nodes[1].view().ready,false);assert.equal(s.nodes[1].view().pending,true);
+ s.setFilter(()=>true);s.advance(2500);assert.equal(s.nodes[1].view().pending,false);assert.equal(s.nodes[0].canStart(),false);
+});

@@ -63,3 +63,11 @@ test('a guest rejects an older host cleanly instead of occupying a room it canno
   }}));
   assert.equal(await g.joinRoom('ABCD'),false);assert.equal(g.lobbyPlayers().length,0);assert.match(g.lobbyStatus(),/update.*game/i);assert.equal(bye,true);
 });
+test('Ready becomes usable after a silent network gap without a socket close event',async()=>{
+  let blocked=false,guestId;const {games:[h,g]}=await pair({drop:(ev,data)=>blocked&&data.id===guestId});
+  guestId=g.lobbyPlayers().find(p=>p.me).id;h.setRoomReady(true);g.setRoomReady(true);await settle();
+  blocked=true;h.advance(7000);g.advance(7000);await settle();
+  blocked=false;h.advance(2000);g.advance(2000);await settle();
+  assert.equal(g.roomLobbyState().pending,false);assert.equal(g.element('friendReady').disabled,false);
+  assert.equal(g.setRoomReady(true),true);await settle();assert.equal(h.canStartRoom(),true);
+});

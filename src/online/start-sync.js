@@ -106,6 +106,12 @@ export function createStartCoordinator({ id, hostId, now, send, onStart = () => 
     const reset = config !== s.config;
     config = s.config; level = s.level; players = s.players.map(p => ({ ...p }));
     if (reset) { wish = false; readySeq = 0; if (busy()) { plan = null; phase = 'idle'; } }
+    else {
+      // A host can clear an acknowledged ready state after silence. Accept that
+      // decision, but never overwrite a newer local request still in flight.
+      const confirmed = member(id);
+      if (Number.isInteger(confirmed.n) && confirmed.n >= readySeq) { wish = confirmed.ready === true; readySeq = confirmed.n; }
+    }
     if (s.phase === 'idle' && busy()) { plan = null; phase = 'idle'; wish = false; }
     if (s.plan) {
       if (s.phase === 'preparing') acceptPlan('prepare', s.plan);

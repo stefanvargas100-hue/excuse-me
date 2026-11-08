@@ -49,3 +49,11 @@ Use the same updated test build on both phones. An older main build is intention
 5. Pause/resume a race, request a rematch, then have the host leave. Confirm shared pause and the enabled new-room recovery action still work.
 
 The milestone is complete as a development candidate. Main has not been published with these changes; physical-phone verification is pending.
+
+## Continued integration and interruption review
+
+Integrated origin/main `1f41ac9`, preserving the newer character, weather, crowd, podium, Customize and narrow-phone HUD updates. No main push or live database change was made.
+
+The review reproduced a new failure before fixing it: after a silent packet gap, the host cleared a guest's acknowledged readiness but the guest kept its earlier local ready request and remained stuck on Confirming. A host acknowledgement now settles that matching request; an older acknowledgement still cannot overwrite a newer local Not ready request. Coordinator and actual-button regression tests cover recovery without a socket close event.
+
+The updated combined suite passed **353/353 tests**, the production build passed, and the whitespace check passed. The actual-relay browser check blocked all guest broadcasts while allowing the socket heartbeat to continue: the host cleared readiness, the same still-open socket recovered, Ready became usable, and a new confirmation allowed Start. Both clients then started again and received identical final results with the latest visuals. Calculated deadlines differed by about 1.35 ms on this computer. Browser checks used the same controlled simulation/finish hooks described above and do not substitute for physical-phone timing or performance verification.
