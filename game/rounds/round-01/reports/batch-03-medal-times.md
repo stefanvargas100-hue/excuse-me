@@ -1,9 +1,10 @@
-Outcome:     done
-Branch:      stefanvargas100-hue/r1-medal-times; implementation 37eaaea
-Changed:     Fixed medal targets, existing-best stage badges, ordinary bot-race medals and next targets; no storage or reward changes.
-Checks:      47 focused tests passed after red checks against placeholders; full suite 551/551; build passed; test:fit 46 checks/0 problems; diff check against ca7c1fe passed.
-Measured:    Median seconds Easy/Medium/Hard -> rounded Bronze/Silver/Gold: airport 151.9/133.2/106.9 -> 152/134/107; nyc 217.7/169.1/130.7 -> 218/170/131; shibuya 108.7/81.3/75.4 -> 109/82/76; park 172.9/141.0/111.1 -> 173/141/112; bridge 184.0/153.5/123.5 -> 184/154/124.
-Method:      Throwaway harness script (removed), seeds 11/22/33, 0.1-second steps, default idle player, three bots/run; nine completed bot times per cell except Park Easy and Bridge Easy (seven before player finished); all orders strict.
-Not checked: Real phone play, perceived target fairness, manual visual review; fit checks use browser automation.
+Outcome:     done (lead-review follow-up; results layout deliberately left for the Director)
+Branch:      stefanvargas100-hue/r1-medal-times; follow-up implementation ed156d7; base 13fbd8d
+Changed:     Replaced targets using 60 Hz measurements; added saved-best picker and ordinary race results with an Unlocked message at S.time=120; detect visible text overflow and unreachable controls; Elimination-only chip CSS at <=360px, no wording changes.
+Checks:      Two new fit-rule tests failed first, then all 10 passed; medal tests 47/47; full suite 553/553; build passed; diff check against 13fbd8d passed; test:fit exits 1 as permitted (52 screen checks, 20 findings); browser self-test catches injected faults at 3/3 sizes.
+Measured:    Single uninterrupted background run, seeds 11/22/33, dt=1/60, default idle player, three bots/run; median Easy/Medium/Hard seconds -> ceil Bronze/Silver/Gold: airport 164.483/124.250/117.650 -> 165/125/118; nyc 210.117/180.533/133.600 -> 211/181/134; shibuya 106.583/91.267/74.767 -> 107/92/75; park 177.708/142.233/114.667 -> 178/143/115; bridge 207.225/175.417/135.133 -> 208/176/136. Nine completed finishes per cell except Park Easy and Bridge Easy (eight before player finished; average middle pair for median); every target set strictly ordered.
+Findings:    Final run, all at 320x568: start #profName (reproducible valid name Breezy Commuter 37) horizontal overflow 13px; boards Challenge chip text outside control 9.73px; Weekly chip text outside control 3.77px on stages, stages saved best, and NYC Cup (three findings). Elimination no longer flagged; 390x844 and 1280x800 had no findings.
+Findings:    Race end: #end vertical overflow 93px; div.btns, div.btnrow, #endLook, #shareBtn, #menu vertical overflow 92.84px each; #again vertical overflow and off-screen 46.84px each, outside panel 62.84px; #endLook, #shareBtn, #menu off-screen 92.84px each and outside panel 108.84px each. Buttons are unreachable through the clipped, non-scrolling path. Earlier runs also exposed intermittent #xpNote vertical overflow 12.23px and result/action overflow up to 108.23px; retained for Director review.
+Not checked: Real-phone target fairness, touch usability and manual visual review; automated browser checks are not phone evidence. Remaining layout decisions belong to the Director.
 Off plan:    none
-Trouble:     Slow initial 30 Hz measurements; restarted at 10 Hz, so targets need Director play tuning.
+Trouble:     Slow 60 Hz simulation completed without restart; PowerShell UTF-16 log decoding corrected during analysis; old clipped self-test probe could flex-collapse to zero height, now fixed-size and detected at every size.
