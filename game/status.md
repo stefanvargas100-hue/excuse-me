@@ -8,7 +8,7 @@
 - **Round:** 1. Ideas 1-3 are live. On `develop`, not yet `main`: NYC Cup at 8 racers, Friend Cup rules, Subway Platform (not yet in NYC Cup), clothing fixes, the matchmaking spec and the performance tool.
 - **Friend Cup online is built:** the Claude Opus worker resumed after the usage reset and finished on `stefanvargas100-hue/friend-cup-online` at `8300da7`. It reports 611/611 tests, the build and fit check passing, and 10.2 messages a second from the host with 7 bots. The "Resuming" section of its plan is obsolete.
 - **Workers running, both Codex:**
-  - `review-friend-cup`: second review of Friend Cup online, findings only (plan: `round-01/review-friend-cup-online.md`). After it, merge with `PROTO` set to 5 and update the tests that hard-code it.
+  - `friend-cup-departures`: fixes the review's two findings (report at `3ebcc6c` on `stefanvargas100-hue/review-friend-cup`): a Cup stuck paused after a pausing guest leaves, and a late takeover bot. Plan: `round-01/hotfix-friend-cup-departures.md`. Then merge both branches with `PROTO` set to 5, and update the tests that hard-code it.
   - `slipstream-lines`: applies fix B, sets `DRAFT_COOL` to 6 and re-measures medal times (plan: `round-02/batch-03`). Both it and Friend Cup online touch `race.js`, so expect a merge conflict.
 - **Next:** the two worker reports, then the QA worker trial.
 - **Waiting on the Director:** phone test, and the 5 decisions in `game/rounds/round-02/matchmaking-spec.md`.
