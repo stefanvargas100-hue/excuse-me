@@ -4,6 +4,8 @@ Older entries name documents that now live in `game/archive/`.
 
 - 2026-11-08: Studio setup. Stefan is Game Director; a lead agent reviews and plans; temporary Orca workers on Claude or Codex build one batch each, with the lead choosing the model. Work runs in rounds of 5 Director-approved ideas on the lead branch `stefanvargas100-hue/Update-Test`, and only the Director approves merges to `main`. This replaces "work on main, push directly" below. Process: `studio/lead-playbook.md`.
 - 2026-11-08: Vision set: competitive speed walking, for anyone who likes skill-based games, with single-player and multiplayer modes (`game/vision.md`).
+- 2026-11-08 (Director): No performance analysis or advice on results. Players work out how to improve themselves, so the game shows measurements, not diagnoses. Teaching controls and mechanics is still fine. Race skill report rejected for this reason.
+- 2026-11-08 (Director): A series of matches is called a Cup. A friend-room Cup is 5 races with at least 8 racers. If there are fewer than 8 friends, bots fill the lobby and the host chooses their difficulty.
 - Keep the web codebase and wrap it later (Capacitor) instead of rewriting; see ROADMAP.md.
 - GitHub repo will be private at first; can go public when hosting on GitHub Pages.
 - Solo project: work on main, push directly.

@@ -1,41 +1,57 @@
 # Round 1 proposal
 
-**Status:** waiting for Director approval. Nothing here has been built.
+**Status:** ideas 1, 3, 4 and 5 approved by the Director. The replacement for idea 2 and the open Cup decisions are waiting for an answer. Nothing has been built.
 
-| # | Idea | Why it fits the vision | Builder | Risk |
+| # | Idea | Status | Builder | Risk |
 |---|---|---|---|---|
-| 1 | **Automatic screen-fit check** (pilot) | Protects every mode on every phone size, and closes the checks NYC Cup still lacks | Codex | Low |
-| 2 | **Race skill report** on the results screen | Shows where time was lost, so players can improve | Codex | Low |
-| 3 | **Medal times for each stage** | Gives solo players clear skill targets to beat | Codex | Medium |
-| 4 | **Friend-room series** with points across rematches | Turns one-off races into a real multiplayer contest | Claude Opus | Medium |
-| 5 | **Race time boards for each stage** | Lets players compete on race times worldwide | Claude Opus | High |
+| 1 | **Automatic screen-fit check** (pilot) | Approved | Codex | Low |
+| 2 | **Live splits against your best** | Proposed, replaces the rejected race skill report | Codex | Low |
+| 3 | **Medal times for each stage** | Approved | Codex | Medium |
+| 4 | **Friend-room Cups** | Approved, details changed by the Director | Claude Opus | High |
+| 5 | **Race time boards for each stage** | Approved | Claude Opus | High |
 
 ## 1. Automatic screen-fit check
-Today this is checked by hand, and clipped menus have come back more than once. Add a separate `npm run test:fit` that opens the built game in a headless browser at 320 x 568, 390 x 844 and desktop, then fails if a menu overflows or a button is off-screen.
+Add a separate `npm run test:fit` that opens the built game in a headless browser at 320 x 568, 390 x 844 and desktop, then fails if a menu overflows or a button is off-screen.
 - **Needs:** one new development dependency (Playwright), kept out of the normal `npm test`.
 - **Also proves:** that Codex works through the whole studio process.
 
-## 2. Race skill report
-Add a short breakdown to race results using numbers the game already tracks, such as bumps, clean segments and drafting, plus a best-versus-now time and one suggestion. The report never changes scoring.
-- **Open point:** the worker confirms which numbers are tracked, and any new ones must not change the simulation.
+## 2. Live splits against your best
+At fixed points in a race against bots, briefly show how far ahead or behind your best run you are, such as `-0.4` or `+1.2`. It gives a measurement and no advice, so working out why is left to the player.
+- **Source:** your saved best-run ghost already records position over time, so old saves can get splits without a data change.
+- **Limits:** only appears when a ghost exists for that course. Does not change scoring or the simulation.
 
 ## 3. Medal times
 Bronze, Silver and Gold race times per stage, shown on the stage card and results, with the best medal saved. Medals pay nothing at first. Existing race bests award their medal automatically.
-- **Open point:** the times are a guess until tuned. The Director's real best times on Hard would give a much better starting point.
+- **Open point:** the times are a guess until tuned. The Director's real best times on Hard would give a better start.
 
-## 4. Friend-room series
-A room keeps a running points table across rematches, using NYC Cup's scoring (10, 7, 5, 3). It resets when the room closes and saves nothing.
-- **Risk to manage:** each phone must end up with the same table. It may need a protocol version bump, which older builds handle with an update message.
+## 4. Friend-room Cups
+**Director's rules:** a Cup is 5 races with at least 8 racers. Bots fill empty places, and the host chooses their difficulty.
+
+**Proposed details, for Director review:**
+- **Stages:** the 5 existing stages, one per race, in an order the host can change.
+- **Points:** 10, 8, 6, 5, 4, 3, 2, 1 for 1st to 8th, then round wins and the final race as tie-breaks.
+- **Players who leave:** a bot takes their place, and the points they earned stay on the table.
+- **Rewards:** none at first. Nothing goes on boards or records.
+
+**Technical risks:**
+- **Bots have to be run by the host.** Each phone simulates its own crowd, so bots simulated on each phone would drift apart. The host simulates them and sends their positions.
+- **Bot roster:** `src/sim/race.js` has 5 bots and caps a race at that number. A room with one or two friends needs 6-7, so the roster has to grow.
+- **Host leaving:** there is no host transfer yet, so the Cup ends if the host leaves.
+- **Load:** a full room has 8 racers on every phone. Older-phone performance and message limits need checking on real devices.
+- **Protocol:** needs a version bump, and older builds get an update message.
+
+**Suggested batches:** Cup model and points, then host-run bots, then lobby and results screens.
 
 ## 5. Race time boards
 Add a Race tab to the Leaderboards screen, with a best time for each stage.
-- **Needs from the Director:** a live database migration, like the Weekly Challenge one. Workers write it, and it is applied only with your approval.
-- **Known limit:** times are reported by the client, so these are friendly boards rather than proof of legitimate play. The Weekly Challenge board has the same limit.
+- **Needs from the Director:** a live database migration, like the Weekly Challenge one. Workers write it, and it is applied only with approval.
+- **Known limit:** times are reported by the client, so these are friendly boards rather than proof of legitimate play.
 
 ## Suggested order
 1. Idea 1 alone, as the pilot. Review how it went before starting anything else.
-2. Ideas 2 and 3 next. They both touch the results screen, so one after the other.
-3. Idea 4, then idea 5. I would split idea 5 off if the round runs long, because it needs the most from you.
+2. Ideas 2 and 3, one after the other. They both touch race screens.
+3. Idea 4, the largest piece of work. It may need more than this round.
+4. Idea 5, which could move to Round 2 so idea 4 gets full attention.
 
-## What the Director can test now
-Play a full NYC Cup on a phone (Race vs bots > NYC Cup). Real phone layout, calm mode and performance are still unchecked. Any problems found become fixes in the pilot.
+## Rejected
+- **Race skill report (2026-11-08):** the Director felt that analysis and tips on results defeat the human side of improvement.

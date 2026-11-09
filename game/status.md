@@ -7,7 +7,7 @@
 ## Now
 - **Round:** 1, at step 4 of the playbook.
 - **In progress:** nothing. No workers are running.
-- **Waiting on the Director:** approval of the 5 ideas in `rounds/round-01/proposal.md`, the branch cleanup list, and merging the studio setup to `main`.
+- **Waiting on the Director:** the replacement for idea 2 and the open Cup details in `rounds/round-01/proposal.md`, the branch cleanup list, and merging the studio setup to `main`.
 
 ## Next action
 Once ideas are approved, write batch plans. Run the Codex pilot first (idea 1) and review it before starting anything else.

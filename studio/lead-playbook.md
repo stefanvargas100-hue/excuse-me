@@ -49,6 +49,18 @@ A problem seen twice across batches gets a permanent fix. An expensive or danger
 5. **Add a line to `AGENTS.md`** only if every worker on every task needs it.
 
 ## Skills
+Use what exists before writing anything new. These are installed on the machine rather than stored in this repo, so a new machine needs them installed:
+
+| Skill | Use it to |
+|---|---|
+| `orchestration` | Start workers and handle their reports |
+| `orca-cli` | Use Orca's embedded browser and manage workspaces |
+| `code-review` | Review a batch's diff (Claude only) |
+| `skill-creator` | Write and test a new skill |
+| `run` | Launch the game to see a change working (Claude only) |
+
+`studio/skills/test-first/` is a copy of the installed `test-first`, so every worker can read it by path. Change this copy, then bring the installed one in line.
+
 - Update an existing skill before creating a new one.
 - Also create one when the same instructions appear in three batch plans, even if nothing failed.
 - Store skills in `studio/skills/<name>/SKILL.md`, outside the folders tools scan automatically. Batch plans name the ones they need.

@@ -8,4 +8,6 @@ Judge every idea with these questions:
 2. **Skill-based:** does better play earn the result, rather than luck, grinding or spending?
 3. **Both modes:** does it strengthen single-player or multiplayer without weakening the other?
 
+4. **Human improvement:** does it leave the player to work out how to improve? Show measurements, not diagnoses or advice. Teaching controls and mechanics is fine.
+
 The Director has the final say on anything these questions do not settle.
