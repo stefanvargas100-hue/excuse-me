@@ -3,6 +3,7 @@
   2. Numbers: did I measure each target against what it really has to fit, not just the first limit I thought of?
   3. Claims: did I check every file, flag and fact I name, instead of assuming it?
   4. Scope: can the worker finish using only the files listed?
+  5. Fairness: for each game rule, did I say what it must keep fair for players, not just its limits?
   Delete this comment in the real plan. -->
 # Round NN, batch NN: <title>
 

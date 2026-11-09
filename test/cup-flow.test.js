@@ -133,3 +133,11 @@ test('previous rules best remains stored under its old key', () => {
   assert.equal(E.storage['excuseme_cup_nyc:r1'], '30:1.00');
   assert.match(E.storage['excuseme_cup_nyc:r2'], /^30:/);
 });
+
+test('nobody gets a head start: every Cup racer starts level with the player', () => {
+  const E = begin();
+  for (let round = 0; round < 3; round++) {
+    for (const b of E.S.race.bots) assert.ok(Math.abs(b.z - E.S.pz) <= 0.3, b.name + ' starts ' + (E.S.pz - b.z) + ' m behind');
+    finish(E); if (round < 2) E.nextCupRound();
+  }
+});

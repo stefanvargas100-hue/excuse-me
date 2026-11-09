@@ -135,13 +135,6 @@ export function initRace(botCount, names) {
   S.race = { diff, bots: [], countT: COUNTDOWN, countLast: 99, rng: mulberry32(0x5eed + n), finished: false, place: 0, board: [], elapsed: 0 };
   const pool = BOT_NAMES.slice();   // each race draws its racers' names at random, no repeats within a race
   for (let i = 0; i < n; i++) S.race.bots.push(makeBot(i, diff, names && names[i] || pool.splice((Math.random() * pool.length) | 0, 1)[0]));
-  // Larger Cup grids use two staggered columns behind the player. Keep the
-  // ordinary race grid and random draws unchanged.
-  if (n > 5) S.race.bots.forEach((b, i) => {
-    b.z = S.pz - 2 - 2 * Math.floor(i / 2);
-    b.x = (i % 2 ? 1 : -1) * Math.min(1.3, halfAt(b.z) - 0.5);
-    b.target = b.x;
-  });
   S.race.pickups = n > 0 ? placePowerups(LV.goal) : [];   // live races against friends have none: pickups are not shared between phones yet
   S.puZ0 = 0;
   S.race.me = effects(statsOf(lookOf()));   // your build and gear, race mode only

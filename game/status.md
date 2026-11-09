@@ -5,7 +5,7 @@
 **Live version:** `main` at `30d0cd4`, with splits, medals, screen fixes and the playtest pipeline
 
 ## Now
-- **Round:** 1. Ideas 1-3 are live. Cups spec approved; batch 4 of the round (NYC Cup at 8 racers) is with a Codex worker.
+- **Round:** 1. Ideas 1-3 are live. Cups spec approved. NYC Cup at 8 racers is merged into `develop`, not `main`.
 - **Next:** Friend Cup rules, then Friend Cup online, then the QA worker trial.
 - **Waiting on the Director:** nothing blocking.
 - **At the playtest:** splits may sit low and overlap the stamina bars; medal fairness; results without the podium.
@@ -20,7 +20,7 @@
 | Real-phone checks are still open | Medium | High | Director playtest each round, using the playtest link | Director |
 
 ## Next action
-Review the NYC Cup worker's result when it reports. Hand over to a fresh lead session when Round 1 ends.
+Plan Friend Cup rules; see `game/todo.md`. Hand over to a fresh lead session when Round 1 ends.
 
 ## Worth knowing
 - Playtest link: `https://stefanvargas100-hue.github.io/excuse-me/playtest/`. It keeps its own save, seeded once from the live save, with all gear, titles and pictures open. It stays off the live boards, separate from live rooms and outside the offline cache. A refresh can take up to 10 minutes to show a new build; the red tag shows the build's commit.
