@@ -40,6 +40,8 @@ orca orchestration worker-start --spec "Read AGENTS.md, then do game/rounds/roun
 
 `--effort` only works together with `--model`. Leave both out to use the agent's defaults.
 
+Save every brief as a file in the round folder before sending it, including follow-ups and fix requests sent with `send`. The next lead only sees the repo.
+
 End your turn after starting workers: Orca wakes you when they report. Do not poll. Once a batch is merged into the lead branch, confirm that and delete its branch and workspace without asking.
 
 ## Controlling tokens
