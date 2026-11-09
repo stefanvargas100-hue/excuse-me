@@ -47,6 +47,8 @@ Total tokens are roughly model calls times average context, so fewer calls usual
 
 - Worker reports stay at 10 lines. Details belong in the commit or the round folder.
 - Use the strongest model only where the risk justifies it.
+- **Codex builds by default.** All Claude sessions, the lead included, share one account limit. Run at most one Claude worker at a time, and check Claude use in `~/.claude/projects/*/*.jsonl` before starting one.
+- **Keep the lead's context small.** Hand over to a fresh lead session once the context passes about 100K tokens. Workers describe screenshots; open only the ones that matter.
 - A second review is only for risky batches, such as online, save data or anything live.
 - Record token use (where the tool shows it), files opened, retries and fix requests in the round report. Use those numbers to tighten or restore context.
 
@@ -83,7 +85,7 @@ Use what exists before writing anything new. These are installed on the machine 
 - Every few rounds, merge overlapping skills and remove unused ones.
 
 ## Handing over the lead
-If limits run low, write `game/status.md` from `studio/templates/handoff.md`, commit it and tell the Director. Either model can continue from the repo.
+When the lead's context passes about 100K tokens, or limits run low, write `game/status.md` from `studio/templates/handoff.md`, commit it and tell the Director. Either model can continue from the repo. In the same Orca terminal, the Director runs `/clear` and types "You are the lead. Read AGENTS.md." Running workers still report to that terminal.
 
 ## Always ask the Director first
 Merging to `main` (an S1 fix can ship alone once verified, if the Director has approved that fix), changing the live database, spending money, deleting unmerged branches, and any creative decision that changes the vision.

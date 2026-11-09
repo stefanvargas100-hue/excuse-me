@@ -66,6 +66,8 @@ With a simulated connection and 7 host-run bots, report messages per second sent
 Two real phones: smoothness with 8 racers, whether bots look natural on guests' phones, and whether host setup is clear.
 
 ## Resuming (2026-11-09)
+**Obsolete:** the first worker resumed after the usage reset and finished the batch itself, so this was never used.
+
 The first worker, Claude Opus, stopped at the Claude usage limit. The lead saved its unfinished work as commit `75146ca` on `stefanvargas100-hue/friend-cup-online`. It changes `duel.js`, `game.js`, `race.js` and `friend.js`, and adds `test/friendcup-room.test.js`. It has not been reviewed, and the lead does not know whether its tests pass.
 
 **Builder now:** codex, defaults. Why: Claude usage is the bottleneck, and Codex has room.
