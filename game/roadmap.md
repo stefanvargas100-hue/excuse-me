@@ -14,7 +14,7 @@ Rule from the original roadmap: one feature at a time, and cut anything that doe
 Give players clearer goals, feedback and rivals. Round 1 ideas are in `rounds/round-01/proposal.md`.
 
 ## Next: Round 2
-Race time boards, and a fourth New York stage so NYC Cup can reach 4 races.
+Race time boards, and a subway platform stage so NYC Cup can reach 4 races.
 
 ## Before launch
 - **Real-device checks:** older-phone frame rate and heat, calm mode in motion, 2-8 phone sessions, and saves surviving an update. The checklist is in `archive/RELEASE_CHECKPOINT.md`.
@@ -26,5 +26,5 @@ Race time boards, and a fourth New York stage so NYC Cup can reach 4 races.
 
 ## Later
 - **Online:** host transfer, synced power-ups, race history, public matchmaking, then a dedicated server if needs justify it (see `archive/INTERNET_MULTIPLAYER_PLAN.md`).
-- **Content:** subway platform, music festival, Black Friday mall and train station stages, with crowd behaviour per stage.
+- **Content:** music festival, Black Friday mall and train station stages, with crowd behaviour per stage.
 - **Business model:** still open. Any choice should be cosmetic-only or a paid app, with no ads during runs.

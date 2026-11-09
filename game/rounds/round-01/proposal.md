@@ -57,7 +57,7 @@ Add a Race tab to the Leaderboards screen, with a best time for each stage.
 
 ## Moved to Round 2
 - **Race time boards** (idea 5).
-- **A fourth New York stage,** then NYC Cup at 4 races. Candidate: a subway platform, which is already on the roadmap and follows on from Fifth Avenue's `42 ST · SUBWAY` finish. The Director picks the place.
+- **A subway platform stage** (Director's choice), then NYC Cup at 4 races: Fifth Avenue, Subway, Central Park, Brooklyn Bridge. It follows on from Fifth Avenue's `42 ST · SUBWAY` finish.
 
 ## Order
 1. Idea 1 alone, as the pilot. Review how it went before starting anything else.
