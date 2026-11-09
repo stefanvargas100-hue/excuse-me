@@ -264,6 +264,14 @@ button.big.huge { min-height: 84px; font-size: 38px; margin-bottom: 18px; }
 #raceOpts, #raceFormat { flex-wrap: nowrap; gap: 6px; }
 #raceOpts .chip, #raceFormat .chip { min-width: 0; padding: 0 7px; font-size: 14px; flex: 1 1 auto; }
 @media (max-height: 650px) {
+  #end #podium { display: none; }
+  #end .card { margin-top: 0; }
+  #end .stats { gap: 3px; margin-bottom: 4px; }
+  #end .stats div { padding-top: 2px; padding-bottom: 2px; }
+  #end .board { gap: 3px; margin-bottom: 4px; }
+  #end .board li { padding-top: 2px; padding-bottom: 2px; }
+  #end .unlock { margin-bottom: 4px; padding-top: 3px; padding-bottom: 3px; }
+  #end .card .btns { gap: 4px; margin-top: 2px; }
   #stages .lvl .lb { display: none; }
   #stages .lvl { padding: 7px 10px; }
 }
