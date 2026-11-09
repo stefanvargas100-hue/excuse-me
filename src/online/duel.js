@@ -1,3 +1,5 @@
+import { courseTag } from '../config/routes.js';
+import { sideRoutes } from '../config/side-routes.js';
 /* ---------- live race with 1 to 7 friends (a room of up to 8 phones) ----------
    The host makes a room code, friends join with the code or a link, the host presses Start. All phones then build the same
    seeded crowd and send each other their position several times a second. Nothing is stored; the room disappears when everyone leaves.
@@ -62,7 +64,7 @@ const cupLooks = {};      // id -> look, kept so a bot taking over from a player
 const RACE_SEED = /:race\d+$/;
 // Room protocol version. Race layouts and the start handshake must be identical on every phone, so phones on different builds
 // refuse each other instead of racing on different crowds. Raise it whenever a change would make layouts or rules differ.
-export const PROTO = 5;
+export const PROTO = 6;
 let myId = '', hostId = '', roster = [];        // roster: [{ id, name, look }], the host first, me included
 let inRoster = false, raced = false, hostGone = false, lastStatus = '', joinWaiter = null;
 let wantMe = false; const wants = new Set();    // rematch: everyone still in the room has to ask
@@ -79,7 +81,7 @@ const others = () => roster.filter(p => p.id !== myId);
 function sendMyGhosts(level) {
   const L = LEVELS[level]; if (!L || !room) return;
   for (const kind of ['classic', 'race']) {
-    let pts = null; try { pts = JSON.parse(store.get((kind === 'race' ? 'excuseme_ghost_race_' : 'excuseme_ghost_') + L.id, 'null')); } catch (e) {}
+    let pts = null; try { pts = JSON.parse(store.get((kind === 'race' ? 'excuseme_ghost_race_' : 'excuseme_ghost_') + L.id + (kind === 'race' && sideRoutes(L.id).length ? courseTag(L.id) : ''), 'null')); } catch (e) {}
     const g = packGhost(pts); if (g) room.send('ghost', { id: myId, kind, level, ghost: g });
   }
 }
@@ -119,7 +121,7 @@ export function duelReceive(ev, data) {
   } else if (ev === 'pos') {
     const n = num(data.n, 1e9), x = num(data.x, 20), z = num(data.z, LV.goal + 20), vx = num(data.vx, 20), s = num(data.s, 20);
     if ([n, x, z, vx, s].some(v => v === null)) return;
-    P.remote.push({ n, x, z, vx, s: Math.max(0, s) }, S.clock);
+    P.remote.push({ n, x, z, vx, s: Math.max(0, s), route: sideRoutes(LV.id).some(r => r.id === data.route && z >= r.entrance && z < r.exit) ? data.route : "" }, S.clock);
   } else if (ev === 'fin') {
     const ft = num(data.ft, 3600);
     if (ft !== null && ft > 0 && P.fin == null) { P.fin = ft; d.pausers.delete(id); syncDuelPause(); }
@@ -326,15 +328,15 @@ function receiveBots(data) {
   if (n === null || n < 1 || !Number.isInteger(n) || !Array.isArray(rows) || rows.length >= CUP_RACERS) return;
   const clean = [];
   for (const row of rows) {
-    if (!Array.isArray(row) || row.length !== 6 || !d.order.includes(row[0])) return;
+    if (!Array.isArray(row) || (row.length !== 6 && row.length !== 7) || !d.order.includes(row[0])) return;
     const x = num(row[1], 20), z = num(row[2], LV.goal + 20), vx = num(row[3], 20), s = num(row[4], 20), ft = row[5] === null ? null : num(row[5], 3600);
     if ([x, z, vx, s].some(v => v === null) || (row[5] !== null && (ft === null || ft <= 0))) return;
-    clean.push({ P: d.peers[row[0]], x, z, vx, s: Math.max(0, s), ft });
+    clean.push({ P: d.peers[row[0]], x, z, vx, s: Math.max(0, s), ft, route: sideRoutes(LV.id).some(r => r.id === row[6] && z >= r.entrance && z < r.exit) ? row[6] : "" });
   }
   let finished = false;
-  for (const { P, x, z, vx, s, ft } of clean) {
+  for (const { P, x, z, vx, s, ft, route } of clean) {
     if (!P.ai || P.bye) continue;
-    P.remote.push({ n, x, z, vx, s }, S.clock);
+    P.remote.push({ n, x, z, vx, s, route }, S.clock);
     if (ft !== null && P.fin == null) { P.fin = ft; finished = true; }
   }
   if (finished) refreshDuelResults();

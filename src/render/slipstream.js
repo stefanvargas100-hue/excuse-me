@@ -1,3 +1,4 @@
+import { sameRoute } from '../config/side-routes.js';
 import { LV } from '../config/levels.js';
 import { BELT_BACK, BELT_SPEED, beltInfo, stripHasZ, stripLane } from '../config/strips.js';
 import { clamp } from '../config/util.js';
@@ -41,7 +42,7 @@ function windFor(r, x0, z0, scale) {
 
 export function drawSlipstream() {
   if (!S.race || state !== 'play') return;
-  for (const b of S.race.bots) if (!b.done && b.z - VZ > 2 && b.z - VZ < 45) windFor(b, b.x, b.z, 0.5);
+  for (const b of S.race.bots) if (sameRoute(S,b) && !b.done && b.z - VZ > 2 && b.z - VZ < 45) windFor(b, b.x, b.z, 0.5);
   windFor(S, S.px, S.pz, 1);
   const age = S.draftT > 0 ? S.draftFull - S.draftT : 99;
   if (age < BURST_LEN) {   // the moment it fires: a ring of wind bursts outward from you

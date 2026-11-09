@@ -1,3 +1,4 @@
+import { updateRoute } from '../config/side-routes.js';
 import { LV } from '../config/levels.js';
 import { store } from '../save/store.js';
 import { fetchTopGhosts } from '../online/online.js';
@@ -63,7 +64,7 @@ function stepOne(g, dt, own) {
     return false;
   }
   const t = f - Math.floor(f), nx = P[i] + (P[i + 2] - P[i]) * t, nz = P[i + 1] + (P[i + 3] - P[i + 1]) * t;
-  g.vx = (P[i + 2] - P[i]) / g.step; g.vz = (P[i + 3] - P[i + 1]) / g.step; g.x = nx; g.z = nz;
+  g.vx = (P[i + 2] - P[i]) / g.step; g.vz = (P[i + 3] - P[i + 1]) / g.step; const oldZ = g.z; g.x = nx; g.z = nz; if (S.race) updateRoute(LV.id, g, oldZ);
   const sp = Math.hypot(g.vx, g.vz) || 1; g.fx = g.vx / sp; g.fz = g.vz / sp; g.phase += dt * (2.2 + sp * 2);
   return true;
 }

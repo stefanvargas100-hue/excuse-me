@@ -527,7 +527,7 @@ test('repeated and late results change nothing', async () => {
 /* ---- bad input ---- */
 test('mismatched versions: the update message, and Cup messages from another version are ignored', async () => {
   const L = await room(2), { host, guests, H } = L;
-  assert.strictEqual(host.PROTO, 5);
+  assert.strictEqual(host.PROTO, 6);
   const newer = load(); newer.useRoomFactory(H.factory);
   const before = host.lobbyPlayers().length;
   host.injectRoomMessage('hello', { id: 'oldphone', proto: host.PROTO - 1, name: 'Old' }); await settle();

@@ -408,6 +408,7 @@ button:disabled.big, button:disabled.ghost { opacity: .5; cursor: default; }
 #friendHost.cup .friendroster li small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 #friendHost.cup #friendStages { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
 #friendHost.cup #friendStages .chip { white-space: normal; line-height: 1.05; font-size: 13px; padding: 2px 3px; min-height: 36px; }
+#friendHost.cup #friendStages .chip:disabled { display: none; }
 #friendFormat .chip, #friendCupLevel .chip { flex: 1 1 0; padding: 0 4px; min-width: 0; font-size: 15px; }
 /* eight slots plus the status line have to fit a small phone without scrolling */
 @media (max-height: 640px) {

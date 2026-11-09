@@ -1,3 +1,4 @@
+import { sameRoute } from '../config/side-routes.js';
 import { Music } from '../audio/music.js';
 import { LV } from '../config/levels.js';
 import { glassBetween } from '../config/strips.js';
@@ -20,7 +21,7 @@ export const SHOUT_CD = 5.5;       // recharge; a well-timed call gets 2 s back
 // "Excuse me": up to four people ahead step aside, enough to open a gap in a big crowd. Rivals refuse; phone zombies may not hear.
 // The player and the bots share these three steps, so a bot gets no bigger range, shorter recharge or surer timing than you.
 // who is anyone with an x and a z. People on the other side of the airport glass cannot hear or reach you.
-const reach = (who, p) => !p.prop && !p.dead && !glassBetween(LV.id, who.x, who.z, p.x, p.z);
+const reach = (who, p) => sameRoute(who, p) && !p.prop && !p.dead && !glassBetween(LV.id, who.x, who.z, p.x, p.z);
 // Timing: calling right before you would hit someone works better. More people move, they move further,
 // even people on their phones hear you, and the recharge is shorter.
 export const wellTimed = who => S.people.some(p => reach(who, p) && !p.rival && p.z - who.z > 0.2 && p.z - who.z < PERFECT_SHOUT_M && Math.abs(p.x - who.x) < 0.7);
@@ -42,7 +43,7 @@ export function shout() {
   if (S.duel?.startRemaining && S.race.countT > 0) return;
   if (S.shoutCD > 0) return;
   S.shoutCD = SHOUT_CD; track('shouts');
-  const who = { x: S.px, z: S.pz }, perfect = wellTimed(who);
+  const who = { x: S.px, z: S.pz, route: S.route }, perfect = wellTimed(who);
   if (perfect) { S.shoutCD -= 2; S.score += 100; track('perfectShouts'); S.tutPerfectShout = true; addPop('PERFECT EXCUSE ME', '#ff6b9d', 28); buzz([10, 20, 10]); Music.sfx('perfect'); }
   S.me.react = { t: 0, text: 'Excuse me!', up: false };
   Music.sfx('shout'); buzz(8);

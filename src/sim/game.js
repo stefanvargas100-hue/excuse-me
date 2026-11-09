@@ -1,3 +1,4 @@
+import { sameRoute, updateRoute, routeSpeed } from '../config/side-routes.js';
 import { medalFor, nextMedal } from '../config/medals.js';
 import { leaveRoom } from '../online/duel.js';
 import { comboLevel } from '../config/combo.js';
@@ -79,7 +80,10 @@ function movePlayer(dt) {
   if (S.race) { const cx = contain(LV.id, px0, S.px, S.pz); if (cx !== S.px) { S.px = cx; S.vx = 0; } }   // glass railings on the airport walkway
   const lim = halfAt(S.pz + S.speed * dt) - 0.5;
   if (Math.abs(S.px) > lim) { S.px = clamp(S.px, -lim, lim); S.vx = 0; }
-  S.pz += S.speed * dt;
+  if (S.race) { const r = { x: S.px, z: S.pz, route: S.route }; updateRoute(LV.id, r, S.pz); S.route = r.route; S.me.route = r.route; }
+  const routeZ0 = S.pz;
+  S.pz += S.speed * (S.race ? routeSpeed(LV.id, { route: S.route, z: S.pz }) : 1) * dt;
+  if (S.race) { const r = { x: S.px, z: S.pz, route: S.route }; updateRoute(LV.id, r, routeZ0); S.route = S.me.route = r.route; }
   // moving walkway (airport races): the belt carries you along, or back
   const bd = S.race ? beltAt(LV.id, S.px, S.pz) : 0;
   S.belt = S.race ? beltFor(LV.id, S.px, S.pz, S.speed) : 0; S.pz += S.belt * dt;
@@ -154,7 +158,7 @@ export function tick(dt) {
     else { const hit = collide(); if (hit) { lose(hit); return; } }
     for (const p of S.people) {
       const dz = p.z - S.pz;
-      if (!p.passed && p.prevDz > 0 && dz <= 0) { p.passed = true; onPass(p); }
+      if (sameRoute(S, p) && !p.passed && p.prevDz > 0 && dz <= 0) { p.passed = true; onPass(p); }
       p.prevDz = dz;
     }
     if (S.lesson) lessonTick(dt);

@@ -1,3 +1,4 @@
+import { sameRoute } from '../config/side-routes.js';
 import { RIVAL_LINES } from '../config/colour.js';
 import { beltAt, beltHasZ, beltInfo, beltSpeedAt, contain } from '../config/strips.js';
 import { LV, halfAt } from '../config/levels.js';
@@ -62,7 +63,7 @@ function behaviours(p, dt) {
 
 export function updPeople(dt) {
   const ppl = S.people, n = ppl.length, me = S.meProxy;
-  me.x = S.px; me.z = S.pz; me.vx = state === 'play' ? S.vx : 0; me.vz = state === 'play' ? S.speed : 0;
+  me.route = S.race ? S.route : ""; me.x = S.px; me.z = S.pz; me.vx = state === 'play' ? S.vx : 0; me.vz = state === 'play' ? S.speed : 0;
   const lim = LV.half - 0.35, wallLim = LV.half - 0.75;
   for (let i = 0; i < n; i++) {
     const p = ppl[i];
@@ -80,7 +81,7 @@ export function updPeople(dt) {
       const rgX = p.hz, rgZ = -p.hx;   // right-hand side of the walking direction
       for (let j = 0; j <= n; j++) {
         const q = j < n ? ppl[j] : me;
-        if (q === p || q.dead) continue;
+        if (!sameRoute(p,q) || q === p || q.dead) continue;
         const rx = q.x - p.x, rz = q.z - p.z;
         if (rx > 4 || rx < -4 || rz > 7 || rz < -7) continue;
         if (rx * p.hx + rz * p.hz < -0.2) continue;               // people mostly ignore what's behind them
