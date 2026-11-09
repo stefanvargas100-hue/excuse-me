@@ -5,7 +5,7 @@ import { BOT_NAMES } from '../config/names.js';
 export const FRIEND_CUP_RULES = 1, CUP_RACES = 4, CUP_RACERS = 8, BOT_LEVELS = 3;
 const text = x => typeof x === 'string' && x.trim().length > 0 && x.length <= 24;
 const object = x => x !== null && typeof x === 'object' && !Array.isArray(x);
-const stagesOK = x => Array.isArray(x) && x.length === CUP_RACES && new Set(x).size === CUP_RACES && Array.from(x).every(s => Number.isInteger(s) && s >= 0 && s <= 4);
+const stagesOK = x => Array.isArray(x) && x.length === CUP_RACES && new Set(x).size === CUP_RACES && Array.from(x).every(s => Number.isInteger(s) && s >= 0 && s <= 5);
 const difficultyOK = x => Number.isInteger(x) && x >= 0 && x < BOT_LEVELS;
 
 // Copy only protocol fields. Network input is untrusted, including property access.

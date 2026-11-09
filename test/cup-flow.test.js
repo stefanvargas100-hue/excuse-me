@@ -10,7 +10,7 @@ const finish = (E, ahead = 0) => {
   for (let i = 0; i < 4; i++) E.tick(DT);
   E.S.pz = E.LV.goal + 1; for (let i = 0; i < 90; i++) E.tick(DT);
 };
-const playCup = (E, aheads = [0, 0, 0]) => { finish(E, aheads[0]); E.nextCupRound(); finish(E, aheads[1]); E.nextCupRound(); finish(E, aheads[2]); };
+const playCup = (E, aheads = [0, 0, 0, 0]) => { finish(E, aheads[0]); E.nextCupRound(); finish(E, aheads[1]); E.nextCupRound(); finish(E, aheads[2]); E.nextCupRound(); finish(E, aheads[3]); };
 
 test('a cup starts a bot race on Fifth Avenue as a cup run with seven bots and a countdown', () => {
   const E = begin();
@@ -29,37 +29,37 @@ test('finishing a round scores it but pays, records and tallies nothing', () => 
   assert.ok(!Object.keys(E.storage).some(k => /race_best|ghost|cup/.test(k)), Object.keys(E.storage).join());
 });
 
-test('rounds run Fifth Avenue, Central Park, Brooklyn Bridge with the same bots and the same outfit', () => {
+test('rounds run Fifth Avenue, Subway Platform, Central Park, Brooklyn Bridge with the same bots and the same outfit', () => {
   const E = begin(), ids = [], names = [], outfits = [];
   const note = () => { ids.push(E.LV.id); names.push(E.S.race.bots.map(b => b.name).join()); outfits.push(JSON.stringify(E.S.run.outfit)); };
-  note(); finish(E); E.nextCupRound(); note(); finish(E); E.nextCupRound(); note();
-  assert.deepEqual(ids, ['nyc', 'park', 'bridge']);
+  note(); finish(E); E.nextCupRound(); note(); finish(E); E.nextCupRound(); note(); finish(E); E.nextCupRound(); note();
+  assert.deepEqual(ids, ['nyc', 'subway', 'park', 'bridge']);
   assert.equal(new Set(names).size, 1, names.join(' | ')); assert.equal(new Set(outfits).size, 1);
-  assert.equal(E.S.cup.round, 2);
+  assert.equal(E.S.cup.round, 3);
 });
 
 test('a completed cup pays XP once by final place and keeps a separate personal best', () => {
   const E = begin(), xp0 = E.xp(), races0 = E.tallyOf('races');
   playCup(E);
   const c = E.cupState();
-  assert.equal(c.rounds.length, 3); assert.equal(c.done, true); assert.equal(c.place, 1);
+  assert.equal(c.rounds.length, 4); assert.equal(c.done, true); assert.equal(c.place, 1);
   assert.equal(E.xp() - xp0, 60); assert.equal(E.S.xpGained, 60);
   assert.equal(E.tallyOf('races'), races0, 'rounds do not feed ordinary unlock progress');
-  const key = 'excuseme_cup_nyc:r2', saved = E.storage[key];
-  assert.match(saved, /^30:\d+\.\d\d$/);
+  const key = 'excuseme_cup_nyc:r3', saved = E.storage[key];
+  assert.match(saved, /^40:\d+\.\d\d$/);
   assert.ok(!Object.keys(E.storage).some(k => /race_best|ghost/.test(k)));
-  E.nextCupRound(); E.tick(DT);   // no fourth round, and nothing more is paid
-  assert.equal(E.xp() - xp0, 60); assert.equal(E.cupState().rounds.length, 3);
+  E.nextCupRound(); E.tick(DT);   // no fifth round, and nothing more is paid
+  assert.equal(E.xp() - xp0, 60); assert.equal(E.cupState().rounds.length, 4);
 });
 
 test('a worse cup does not replace the best; a better one does', () => {
   const E = begin();
-  E.storage['excuseme_cup_nyc:r2'] = '30:1.00';
+  E.storage['excuseme_cup_nyc:r3'] = '40:1.00';
   playCup(E);
-  assert.equal(E.storage['excuseme_cup_nyc:r2'], '30:1.00', 'same points but slower');
-  const F = begin(); F.storage['excuseme_cup_nyc:r2'] = '12:999.00';
-  playCup(F, [1, 1, 1]);   // second every round: 24 points
-  assert.match(F.storage['excuseme_cup_nyc:r2'], /^24:/);
+  assert.equal(E.storage['excuseme_cup_nyc:r3'], '40:1.00', 'same points but slower');
+  const F = begin(); F.storage['excuseme_cup_nyc:r3'] = '12:999.00';
+  playCup(F, [1, 1, 1, 1]);   // second every round: 32 points
+  assert.match(F.storage['excuseme_cup_nyc:r3'], /^32:/);
   assert.equal(F.cupState().newBest, true);
 });
 
@@ -73,7 +73,7 @@ test('abandoning a cup at any point records and pays nothing and leaves no cup b
 test('there is no restart inside a cup, and Race again after a finished cup starts a fresh one', () => {
   const E = begin(); finish(E);
   E.restartRun(); assert.equal(E.cupState().rounds.length, 1, 'mid-cup restart does nothing');
-  E.nextCupRound(); finish(E); E.nextCupRound(); finish(E);
+  E.nextCupRound(); finish(E); E.nextCupRound(); finish(E); E.nextCupRound(); finish(E);
   assert.equal(E.cupState().done, true);
   E.restartRun();
   assert.equal(E.cupState().rounds.length, 0); assert.equal(E.LV.id, 'nyc'); assert.equal(E.state, 'play');
@@ -98,10 +98,10 @@ const levels = require('node:vm').runInNewContext(levelCode + '; levels');
 test('every Cup round has seven consistent bots', () => {
   const E = begin(), names = E.S.race.bots.map(b => b.name);
   assert.equal(names.length, 7); assert.equal(new Set(names).size, 7);
-  for (let round = 0; round < 3; round++) {
+  for (let round = 0; round < 4; round++) {
     assert.deepEqual(E.S.race.bots.map(b => b.name), names);
     assert.equal(E.S.race.bots.length, 7);
-    if (round < 2) { finish(E); E.nextCupRound(); }
+    if (round < 3) { finish(E); E.nextCupRound(); }
   }
 });
 test('Cup standings contain all eight racers', () => {
@@ -110,8 +110,8 @@ test('Cup standings contain all eight racers', () => {
 });
 test('all eight starters fit and do not overlap on every Cup stage', () => {
   const E = begin();
-  for (let round = 0; round < 3; round++) {
-    levels.setLevel([1, 3, 4][round]);
+  for (let round = 0; round < 4; round++) {
+    levels.setLevel([1, 5, 3, 4][round]);
     const racers = [{ x: E.S.px, z: E.S.pz, circles: E.S.me.circles }, ...E.S.race.bots];
     assert.equal(racers.length, 8);
     for (const r of racers) assert.ok(Math.abs(r.x) <= levels.halfAt(r.z) - 0.5);
@@ -121,7 +121,7 @@ test('all eight starters fit and do not overlap on every Cup stage', () => {
         assert.ok(Math.hypot(a.x + ac.ox - b.x - bc.ox, a.z + (ac.oz || 0) - b.z - (bc.oz || 0)) >= ac.r + bc.r, 'starter collision');
       }
     }
-    if (round < 2) { finish(E); E.nextCupRound(); }
+    if (round < 3) { finish(E); E.nextCupRound(); }
   }
 });
 test('ordinary Race vs bots retains three bots', () => {
@@ -129,15 +129,15 @@ test('ordinary Race vs bots retains three bots', () => {
   assert.equal(E.S.race.bots.length, 3);
 });
 test('previous rules best remains stored under its old key', () => {
-  const E = begin(); E.storage['excuseme_cup_nyc:r1'] = '30:1.00'; playCup(E);
-  assert.equal(E.storage['excuseme_cup_nyc:r1'], '30:1.00');
-  assert.match(E.storage['excuseme_cup_nyc:r2'], /^30:/);
+  const E = begin(); E.storage['excuseme_cup_nyc:r2'] = '30:1.00'; playCup(E);
+  assert.equal(E.storage['excuseme_cup_nyc:r2'], '30:1.00');
+  assert.match(E.storage['excuseme_cup_nyc:r3'], /^40:/);
 });
 
 test('nobody gets a head start: every Cup racer starts level with the player', () => {
   const E = begin();
-  for (let round = 0; round < 3; round++) {
+  for (let round = 0; round < 4; round++) {
     for (const b of E.S.race.bots) assert.ok(Math.abs(b.z - E.S.pz) <= 0.3, b.name + ' starts ' + (E.S.pz - b.z) + ' m behind');
-    finish(E); if (round < 2) E.nextCupRound();
+    finish(E); if (round < 3) E.nextCupRound();
   }
 });
