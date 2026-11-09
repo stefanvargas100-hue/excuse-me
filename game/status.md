@@ -1,17 +1,20 @@
 # Status
 
-**Updated:** 2026-11-09, by Claude Opus 5.5, at a lead handover
-**Lead branch:** `develop`
-**Live version:** `main` at `30d0cd4`, with splits, medals, screen fixes and the playtest pipeline
+**Updated:** 2026-11-09, by Claude Opus 5.5, at a lead handover (context past 100K)
+**Lead branch:** `develop` at `4b7d08b`, pushed, so the playtest link updates
+**Live version:** `main` at `30d0cd4`
 
 ## Now
-- **Round:** 1. Ideas 1-3 are live. On `develop`, not yet `main`: NYC Cup at 8 racers, Friend Cup rules, Subway Platform (not yet in NYC Cup), clothing fixes, the matchmaking spec and the performance tool.
-- **Friend Cup online is merged into `develop`** (`e45d19f`, `PROTO` 5): built by Claude Opus, reviewed by Codex, two departure bugs fixed by Codex. 631 tests pass. Needs a two-phone test on the playtest link.
-- **Worker running, Codex:**
-  - `slipstream-lines`: applies fix B, sets `DRAFT_COOL` to 6 and re-measures medal times (plan: `round-02/batch-03`). It branched before Friend Cup online, which also changed `race.js`, so expect a merge conflict.
-- **Next:** the two worker reports, then the QA worker trial.
-- **Waiting on the Director:** phone test, and the 5 decisions in `game/rounds/round-02/matchmaking-spec.md`.
-- **At the playtest:** splits may sit low and overlap the stamina bars; medal fairness; results without the podium.
+- **Round:** 2, at step 7 of the playbook (reviewing results). Plan: `game/rounds/round-02/proposal.md`. Merge order: 03, 08 (done), 05, 06, 07.
+- **Merged:** batch 08, Subway in the Cups (NYC Cup is 4 races, `CUP_RULES` 3; Friend Cups allow stage 5). 632 tests and the build pass. Branch and workspace deleted.
+- **Done, waiting for lead review:**
+  - 05 `time-boards` (`6c43f74`): Race tab and name rules. Name cap is 24 for all names; there is no name form. Migration `0003` is written but **not applied**: it needs Director approval. Review it and the playtest separation.
+  - 04 `cups-qa` (`193d974`): partial, no confirmed bugs. Forced finishes, not full player-driven Cups. Judge whether a QA worker earned its cost.
+- **Running:**
+  - 03 `slipstream-lines` (Codex): second cycle under a brief from an earlier lead that is lost. "Within 10 points of the floor" means an upper bound.
+  - 06b `host-handover-2` (**Claude Opus, high**, the Director chose it): finishing the stopped Codex draft from `host-handover` `b5e751a`. Plan `batch-06b`. Needs a Codex second review before merging. It is the only Claude worker; start no other.
+  - 07 `side-routes` (Codex): Subway routes done in `1cf85eb` (partial). It stopped on a build error that looks local; real cause found by the lead: `src/render/side-routes.js` saved in the Windows code page. Follow-up `batch-07c` sent: merge develop (new `test/utf8.test.js`), re-save as UTF-8, then Subway medals and Takeshita Street.
+- **Waiting on the Director:** playtest Subway in the Cups and the checks in `game/todo.md`; approval to apply migration 0003 once reviewed.
 
 ## Risks
 | Risk | Likelihood | Impact | Mitigation | Owner |
@@ -23,7 +26,7 @@
 | Real-phone checks are still open | Medium | High | Director playtest each round, using the playtest link | Director |
 
 ## Next action
-Review the two workers' reports as they arrive; see `game/todo.md`. Codex builds by default; at most one Claude worker at a time.
+Review batch 05 with `studio/skills/process-review/SKILL.md`, then merge it. Then handle the other workers as they report.
 
 ## Worth knowing
 - Playtest link: `https://stefanvargas100-hue.github.io/excuse-me/playtest/`. It keeps its own save, seeded once from the live save, with all gear, titles and pictures open. It stays off the live boards, separate from live rooms and outside the offline cache. A refresh can take up to 10 minutes to show a new build; the red tag shows the build's commit.

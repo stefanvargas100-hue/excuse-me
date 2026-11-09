@@ -6,9 +6,9 @@ import { go } from './screens.js';
 
 /* ---------- Race friends: make a room or join one, see who is in, then the host starts ---------- */
 let stage = 0;
-// Cup setup on the host's phone: stages in race order, and the bots' difficulty. Friend Cups use stages 0-4 for now.
+// Cup setup on the host's phone: stages in race order, and the bots' difficulty. Friend Cups use stages 0-5 for now.
 let cupStages = [], cupLevel = 1;
-const CUP_STAGE_MAX = 4, CUP_RACES = 4;
+const CUP_STAGE_MAX = 5, CUP_RACES = 4;
 const stageName = i => (LEVELS[i] ? LEVELS[i].name : '?');
 const cupLine = c => {
   const named = c && c.valid ? c.stages.map(stageName).join(', ') : null, diff = c && DIFFICULTIES[c.difficulty];

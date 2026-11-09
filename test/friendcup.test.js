@@ -53,7 +53,7 @@ test('setup rejects malformed network values without throwing and strips extra f
   const c = make(), raw = { ...c, extra: 'discard' };
   const clean = C.cleanSetup(raw);
   assert.deepEqual(Object.keys(clean).sort(), ['difficulty','racers','seed','stages']);
-  const bad = [{ ...raw, stages: [0, 1, 2, ,] }, null, undefined, true, 4, 'bad', [], {}, { ...raw, seed: 4 }, { ...raw, seed: 'x'.repeat(25) }, { ...raw, stages: [0,0,1,2] }, { ...raw, stages: [0,1,2,5] }, { ...raw, difficulty: 3 }, { ...raw, racers: [] }];
+  const bad = [{ ...raw, stages: [0, 1, 2, ,] }, null, undefined, true, 4, 'bad', [], {}, { ...raw, seed: 4 }, { ...raw, seed: 'x'.repeat(25) }, { ...raw, stages: [0,0,1,2] }, { ...raw, stages: [0,1,2,6] }, { ...raw, difficulty: 3 }, { ...raw, racers: [] }];
   for (const key of ['id', 'name']) for (const value of [null, 4, '', 'x'.repeat(25)]) bad.push({ ...raw, racers: raw.racers.map((r,i) => i ? r : { ...r, [key]: value }) });
   bad.push({ ...raw, racers: raw.racers.map(r => ({ ...r, id: 'same' })) }, { ...raw, racers: raw.racers.map(r => ({ ...r, bot: true })) }, { ...raw, racers: raw.racers.map(r => ({ ...r, left: 'yes' })) });
   for (const value of bad) assert.equal(C.cleanSetup(value), null);
@@ -69,4 +69,12 @@ test('invalid local setups and race rows are rejected without changing inputs', 
   for (const place of [0,9,1.5,'1']) bad.push(good.map((r,i) => i ? r : {...r,place}));
   for (const board of bad) assert.equal(C.addRace(c, board), null);
   assert.ok(C.addRace(c, good.map((r,i) => ({ ...r, time: i ? 3600 : 0 }))));
+});
+
+test('Subway Platform is valid in a shared Friend Cup setup and race order', () => {
+  let c = C.newFriendCup({ ...setup(), stages: [1, 5, 3, 4] });
+  assert.ok(c);
+  assert.deepEqual(C.cleanSetup(c).stages, [1, 5, 3, 4]);
+  c = C.addRace(c, rows(c));
+  assert.equal(C.currentStage(c), 5);
 });
