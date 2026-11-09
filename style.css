@@ -403,7 +403,12 @@ button:disabled.big, button:disabled.ghost { opacity: .5; cursor: default; }
 .friendroster li { min-height: 30px; padding: 3px 8px; border: 3px solid var(--ink); border-radius: var(--wob-s); background: var(--paper); font: 400 17px var(--body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-shadow: 2px 3px 0 var(--ink); }
 .friendroster li.me { background: var(--sign); font-weight: 700; }
 .friendroster li.empty { opacity: .45; box-shadow: none; border-style: dashed; }
-#friendStages { flex-wrap: nowrap; } #friendStages .chip { flex: 1 1 0; padding: 0 4px; min-width: 0; }
+#friendStages { gap: 6px; } #friendStages .chip { flex: 1 1 auto; padding: 0 8px; min-width: 0; font-size: 15px; }
+#friendHost.cup #friendCode, #friendHost.cup .friendroster li.empty, #friendHost.cup.full #friendShare { display: none; }   /* in a Cup, bots fill the empty seats */
+#friendHost.cup .friendroster li small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#friendHost.cup #friendStages { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
+#friendHost.cup #friendStages .chip { white-space: normal; line-height: 1.05; font-size: 13px; padding: 2px 3px; min-height: 36px; }
+#friendFormat .chip, #friendCupLevel .chip { flex: 1 1 0; padding: 0 4px; min-width: 0; font-size: 15px; }
 /* eight slots plus the status line have to fit a small phone without scrolling */
 @media (max-height: 640px) {
   .roomcode { font-size: 34px; padding: 4px 0 4px .18em; }
@@ -415,6 +420,12 @@ button:disabled.big, button:disabled.ghost { opacity: .5; cursor: default; }
   #friend button.ghost { min-height: 38px; }
   #friendReady { margin-top: 6px; flex-shrink: 0; }
   .friendroster li small { font-size: 10px; line-height: 1.1; }
+  #friend .modes { gap: 5px; }
+  #friend .modes .chip { min-height: 32px; font-size: 14px; }
+  /* a Cup setup adds stage and bot rows, so it packs tighter */
+  #friendHost.cup { gap: 5px; }
+  #friendHost.cup .modes .chip { min-height: 30px; }
+  #friendHost.cup ~ .friendstatus { margin-top: 4px; font-size: 14px; min-height: 0; }
 }
 /* ---- profile chip, profile screen ---- */
 .profchip { position: relative; display: flex; align-items: center; gap: 10px; width: 100%; margin-top: 12px; padding: 6px 10px 12px; border: 3px solid var(--ink); border-radius: var(--wob-s); background: var(--paper); color: var(--ink); box-shadow: 3px 4px 0 var(--ink); cursor: pointer; text-align: left; }

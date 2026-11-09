@@ -393,7 +393,7 @@ function showFriendCupEnd() {
   t.textContent = m.ended ? 'Host left' : over ? (cp === 1 ? 'Cup winner!' : ordinal(cp) + ' in the Cup') : !mine ? 'Finished · waiting for racers' : D.dnf ? 'Did not finish' : place === 1 ? 'Race won' : ordinal(place) + ' of ' + CUP_RACERS;
   t.className = (over && !m.ended ? cp === 1 : place === 1 && !D.dnf) ? 'good' : 'bad';
   $('endLead').hidden = true;
-  $('sScoreLabel').textContent = 'Race time'; $('sScore').textContent = D.dnf || D.finish == null ? 'DNF' : fmtTime(D.finish);
+  $('sScoreLabel').textContent = 'Race time'; $('sScore').textContent = D.dnf ? 'DNF' : fmtTime(D.finish ?? S.time);
   setStat('sBest', over ? 'Cup points' : 'Cup points so far', String(pts));
   setStat('sDist', 'Race place', mine ? ordinal(place) + ' of ' + CUP_RACERS : '-'); setStat('sChain', 'Bumps', String(S.bumps));
   setExtraStats(false);

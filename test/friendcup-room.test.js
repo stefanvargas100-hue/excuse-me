@@ -88,6 +88,17 @@ test('the host sets up a Cup and guests see what was chosen; stages show their n
   assert.deepStrictEqual(Array.from(host.friendCup().racers.slice(0, 3).map(r => r.id)), ids);
 });
 
+test('guests are told which stages and bots the host picked; the host is told what is missing', async () => {
+  const { host, guests, games } = await room(2);
+  host.setRoomCup({ stages: [0, 1], difficulty: 2 }); await settle();
+  assert.match(host.lobbyStatus(), /pick 4 different stages/);
+  assert.match(guests[0].lobbyStatus(), /host is choosing/);
+  host.setRoomCup({ stages: STAGES, difficulty: 2 }); await settle();
+  await readyPlayers(games);
+  assert.match(guests[0].lobbyStatus(), /Friend Cup: Shibuya Crossing, Terminal B, Brooklyn Bridge, Fifth Avenue · Hard bots/);
+  assert.match(host.lobbyStatus(), /Friend Cup · Hard bots/);
+});
+
 test('the room status names the stage rather than the city', async () => {
   const { host, games } = await room(2);
   host.setRoomLevel(3); await settle();

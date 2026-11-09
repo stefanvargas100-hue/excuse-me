@@ -8,7 +8,7 @@ import { LOOK, LOOK_OPTS } from '../save/progress.js';
 import { store } from '../save/store.js';
 import { start, syncDuelPause, forfeitDuel, refreshDuelResults, elimReceive, elimAbort } from '../sim/game.js';
 import { CUP_RACES, CUP_RACERS, addRace, cleanSetup, currentStage, friendCupOver, hostLeft, newFriendCup, playerLeft, raceSeed, standings as cupTable } from '../sim/friendcup.js';
-import { cupBotLook, cupTakeOver, standings as raceRows } from '../sim/race.js';
+import { DIFFICULTIES, cupBotLook, cupTakeOver, standings as raceRows } from '../sim/race.js';
 import { S, state } from '../sim/state.js';
 import { packGhost, saveFriendGhost } from '../sim/ghostshare.js';
 import { createRoom, cleanCode, makeCode } from './room.js';
@@ -158,8 +158,8 @@ const sendRoster = () => {
 const changed = () => {
   ui.roster(lobbyPlayers());
   if (room && inRoster && !raced && lobby && disconnectedAt === null) {
-    const view = lobby.view(), stage = cupCfg ? 'Friend Cup' : LEVELS[levelIdx].name;
-    lastStatus = lobbyNotice || (!view.compatible ? 'Update the game on every phone before joining.' : view.busy ? 'Preparing race. Keep the game open.' :
+    const view = lobby.view(), stage = cupCfg ? cupSummary() : LEVELS[levelIdx].name;
+    lastStatus = lobbyNotice || (cupCfg && !validCup(cupCfg) ? (role === 'host' ? 'Friend Cup: pick 4 different stages, in race order.' : 'Friend Cup · the host is choosing stages.') :!view.compatible ? 'Update the game on every phone before joining.' : view.busy ? 'Preparing race. Keep the game open.' :
       roster.length < 2 ? 'Waiting for friends to join...' : lobby.canStart() || view.players.every(p => p.ready) ? stage + ' · Everyone is ready. ' + (role === 'host' ? 'Press Start race.' : 'Waiting for the host.') :
       'Connected · ' + stage + ' · Choose Ready when you are set.');
   }
@@ -218,6 +218,11 @@ function publishOutcomes() {
 // Is this phone up to date for the next race? A phone that missed the last results refuses, so the start is cancelled rather than half-run.
 const cupCanRun = () => !!cup && !friendCupOver(cup) && !hostGone && !started.has(raceSeed(cup));
 const validCup = c => !!c && !!newFriendCup({ seed: 'check', stages: c.stages, difficulty: c.difficulty, players: [{ id: 'a', name: 'a' }, { id: 'b', name: 'b' }], rand: () => 0 });
+// What the room says about the Cup being set up. The host sees the stages on the buttons; guests need them spelled out.
+function cupSummary() {
+  const diff = DIFFICULTIES[cupCfg.difficulty], bots = diff ? ' · ' + diff.name + ' bots' : '';
+  return role === 'host' || !validCup(cupCfg) ? 'Friend Cup' + bots : 'Friend Cup: ' + cupCfg.stages.map(s => LEVELS[s].name).join(', ') + bots;
+}
 const leftIds = c => c.racers.filter(r => r.left).map(r => r.id);
 // The whole Cup so far. The setup goes as first agreed: cleanSetup refuses racers marked as left, so they travel in their own list.
 function cupMessage() {
