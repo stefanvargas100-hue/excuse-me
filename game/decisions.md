@@ -9,6 +9,8 @@ Older entries name documents that now live in `game/archive/`.
 - 2026-11-08 (Director): Friend-room Cup details: host picks 4 of the 5 stages and their order; points 10, 8, 6, 5, 4, 3, 2, 1; a bot replaces a player who leaves and their points stay; no rewards, boards or records at first. Race time boards moved to Round 2.
 - 2026-11-08 (Director): NYC Cup gets a new fourth stage, a subway platform, and 8 racers. Race order: Fifth Avenue, Subway, Central Park, Brooklyn Bridge. The 8 racers come first; it stays at 3 races until the stage exists.
 - 2026-11-08 (Director): Race results hide the podium on short screens, so the buttons stay reachable without scrolling.
+- 2026-11-08 (Director): Adopted game-studio-producer as a lead-only guide, with the playbook winning conflicts. Current phase: Production, heading to Alpha.
+- 2026-11-08 (Director): Alpha means 3 Cups (New York, Tokyo, Airports) and online matchmaking with player-chosen names. The results-screen S1 fix can ship to `main` alone once verified. Trial a separate QA worker on Cups.
 - 2026-11-08: Old branches deleted with Director approval. Unmerged tips, recoverable by hash until Git cleans them up: online-ready-start-impl 13e2a33, Online-Play 50bf6a6, origin/multiplayer-lobby e619bf9, backup-local-main-2026-11-06 8b86a96.
 - Keep the web codebase and wrap it later (Capacitor) instead of rewriting; see ROADMAP.md.
 - GitHub repo will be private at first; can go public when hosting on GitHub Pages.

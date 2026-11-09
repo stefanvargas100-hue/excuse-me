@@ -6,8 +6,18 @@
 
 ## Now
 - **Round:** 1, at step 6 of the playbook.
-- **In progress:** batch 3 follow-up on Codex: re-measuring medal times and extending the fit tool. Batches 1 and 2 are merged into the lead branch but not `main`.
+- **In progress:** batch 3 follow-up on Codex (medal times, fit tool), and the results-screen S1 hotfix on Codex. Batches 1 and 2 are merged into the lead branch but not `main`.
 - **Waiting on the Director:** nothing blocking. At the playtest: splits appear low on screen and overlap the stamina bars.
+
+## Risks
+| Risk | Likelihood | Impact | Mitigation | Owner |
+|---|---|---|---|---|
+| S1: results buttons unreachable at 320 x 568, probably live | High | High | Podium hidden on short screens, shipping alone | Lead |
+| Alpha's 7 new stages are the largest work ahead | High | High | Director to confirm scope. Placeholder art allowed, and a reusable stage recipe first | Lead |
+| Matchmaking needs 6 real players at once, so a small player base may never fill a lobby | High | High | Director to decide before planning | Director |
+| Matchmaking may need a server and has cost and security decisions | High | High | Revisit `archive/INTERNET_MULTIPLAYER_PLAN.md` in a spec | Lead |
+| Player-chosen names need moderation | Medium | Medium | Filter and reporting in the spec | Lead |
+| Real-phone checks are still open | Medium | High | Director playtest each round | Director |
 
 ## Next action
 Review the batch 3 follow-up using `studio/skills/process-review/SKILL.md`, merge it, and hide the podium on short screens (the Director's chosen fix for unreachable results buttons). Then plan Cups.

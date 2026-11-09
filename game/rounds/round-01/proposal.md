@@ -48,6 +48,8 @@ Bronze, Silver and Gold race times per stage, shown on the stage card and result
 - **Load:** a full room has 8 racers on every phone. Older-phone performance and message limits need checking on real devices.
 - **Protocol:** needs a version bump, and older builds get an update message.
 
+**QA trial:** a separate QA worker reviews the Cups work with fresh context, and we compare what it finds and costs against lead review.
+
 **Suggested batches:** shared Cup model, larger bot roster and 8-racer NYC Cup, then host-run bots, then lobby and results screens.
 
 ## 5. Race time boards

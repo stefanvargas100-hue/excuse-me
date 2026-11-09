@@ -2,6 +2,15 @@
 
 The Director owns the vision, approves ideas, playtests and approves merges to `main`. The lead turns that into reviewed work. Workers build one batch each.
 
+## Producer guide
+Read `studio/skills/game-studio-producer/SKILL.md` at the start of each round for phases, gates, QA severity, risks and status reports. Lead only: workers do not load it. Where it conflicts with this playbook, this playbook wins:
+- The lead may fix small, clear bugs itself, because restarting a worker costs more.
+- The lead's batch plan is the spec for small work. Big features get a one-page spec the Director approves.
+- Use the files in `game/` instead of the skill's folder layout.
+- Workers are Orca workers on Claude or Codex, not subagents.
+
+**Reports lead with decisions needed.** Every proposal states what it delays. Every bug gets a severity (S1-S4) and an owner. After two fix cycles on one issue, escalate to the Director with options.
+
 ## Each round
 1. **Start fresh.** Open a new lead session and read `game/status.md`. Do not carry one long session across rounds.
 2. **Review what changed** since the last round, not the whole game. Fix small bugs on the lead branch.
@@ -77,4 +86,4 @@ Use what exists before writing anything new. These are installed on the machine 
 If limits run low, write `game/status.md` from `studio/templates/handoff.md`, commit it and tell the Director. Either model can continue from the repo.
 
 ## Always ask the Director first
-Merging to `main`, changing the live database, spending money, deleting branches, and any creative decision that changes the vision.
+Merging to `main` (an S1 fix can ship alone once verified, if the Director has approved that fix), changing the live database, spending money, deleting branches, and any creative decision that changes the vision.
