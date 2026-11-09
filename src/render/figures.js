@@ -681,6 +681,14 @@ function drawProp(p, s, bx, fy) {
       }
       break;
     }
+    case 'train': {   // one subway car beside the platform edge, with its doors open
+      const x0 = x - 1.4, x1 = x + 1.4, hl = (p.len || 8.5) / 2;
+      box3D(x0, x1, 0.35, 3.7, z - hl, z + hl, hex('#aeb6bd'));
+      box3D(x0 - 0.02, x0 + 0.01, 1.5, 2.5, z - hl + 0.4, z + hl - 0.4, hex('#2c3a47'));
+      box3D(x0 - 0.04, x0, 0.35, 0.6, z - hl, z + hl, hex('#3f6fb5'));
+      box3D(x0 - 0.05, x0, 0.25, 2.6, z - 0.9, z + 0.9, hex('#f5e7a8'));
+      break;
+    }
     case 'tripod': {
       for(const side of [-1,1])box3D(x+side*0.3-0.07,x+side*0.3+0.07,0,1.15,z-0.3,z+0.3,hex('#56616a'));
       box3D(x-0.25,x+0.25,1.1,1.4,z-0.15,z+0.15,hex('#273744'));

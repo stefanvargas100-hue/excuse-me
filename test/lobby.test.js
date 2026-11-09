@@ -229,6 +229,6 @@ test('a lost pauser removed by the host roster also releases the pause on other 
   const host=games[0].lobbyPlayers().find(p=>p.me).id;
   const gone=games[2].lobbyPlayers().find(p=>p.me).id;
   const players=games[0].lobbyPlayers().filter(p=>p.id!==gone);
-  games[1].injectRoomMessage('roster',{proto:3,id:host,level:1,players});
+  games[1].injectRoomMessage('roster',{proto:4,id:host,level:1,players});
   assert.equal(games[1].state,'play');
 });

@@ -15,6 +15,7 @@ import { drawCars, paintAirport, paintNYC, paintShibuya } from './world.js';
 import { S, calm, camBob, state } from '../sim/state.js';
 import { paintBridge } from './bridge.js';
 import { paintPark } from './park.js';
+import { paintSubway } from './subway.js';
 import { visibleGhosts } from '../sim/replay.js';
 
 
@@ -30,7 +31,7 @@ export function render() {
   ctx.save();
   const shake = shakeOffset(); if (shake) ctx.translate(shake[0], shake[1]);
   ctx.fillStyle = FOGCSS; ctx.fillRect(-W, -H, 3 * W, 3 * H);
-  if (LV.id === 'airport') paintAirport(); else if (LV.id === 'nyc') paintNYC(); else if (LV.id === 'park') paintPark(); else if (LV.id === 'bridge') paintBridge(); else paintShibuya();
+  if (LV.id === 'airport') paintAirport(); else if (LV.id === 'nyc') paintNYC(); else if (LV.id === 'park') paintPark(); else if (LV.id === 'bridge') paintBridge(); else if (LV.id === 'subway') paintSubway(); else paintShibuya();
   if (LV.id === 'nyc') { drawCars(); nycSteam(); }
   drawBelts();
   drawStrips();

@@ -15,7 +15,8 @@ export const VARIANTS = {
   nyc: [['day', 5], ['golden', 3]],
   shibuya: [['night', 5], ['rain', 3]],
   park: [['day', 5], ['autumn', 3], ['golden', 2]],
-  bridge: [['day', 5], ['golden', 3], ['mist', 2]]
+  bridge: [['day', 5], ['golden', 3], ['mist', 2]],
+  subway: [['day', 1]]
 };
 
 let cur = 'day', curLevel = '', curRun = null, forced = null;

@@ -151,6 +151,9 @@ function spawnUnit(z, d) {
     if (d > 0.08) pool.push(['speedster', 1.5], ['luggage', 0.5]);
     if (d > 0.2) pool.push(['swerver', 1]);
     if (d > 0.4) pool.push(['trio', 1]);
+  } else if (id === 'subway') {
+    pool = [['walker', 4], ['oncoming', 4], ['pair', 2], ['phone', 2], ['luggage', 1]];
+    if (d > 0.3) pool.push(['speedster', 1]);
   } else if (id === 'bridge') {
     pool = [['walker',4],['oncoming',4],['pair',2],['tourist',3],['joggers',1]];
   } else if (id === 'park') {
@@ -421,6 +424,16 @@ export function runEvent(kind) {
     const v = mk(x0, cz, { prop: spec[0], drive: dir * spec[1], driveAt: spec[2], len: spec[9], circles: [...Array(spec[3]).keys()].map(i => ({ ox: -dir * (spec[8] + i * spec[4]), oz: 0, r: spec[5] })) });
     v.rad = 3.4; v.dirx = dir;
     banner(spec[6], spec[7]);
+  } else if (kind === 'train') {
+    // A train pulls in on the track side. Its doors are 9 m apart, and each door lets out a tight group that crosses to the wall side,
+    // so between doors there is always a clear stretch of platform. Nothing here depends on where any racer is.
+    const doors = 4, spacing = 9, edge = h + 0.3;
+    for (let c = 0; c < doors; c++) mk(edge + 1.4, z + c * spacing + spacing / 2, { prop: 'train', len: spacing - 0.5, door: true, circles: [] });
+    for (let c = 0; c < doors; c++) {
+      const dz = z + c * spacing + spacing / 2, n = 2 + ((R() * 3) | 0);
+      for (let i = 0; i < n; i++) mk(h - 0.35 + i * 0.6, dz + rnd(-0.3, 0.3), { commuter: true, hx: -1, hz: 0, v0: walkSpeed(1.1, 0.15), free: true, turnX: rnd(-h + 1.0, 0.5), turnDir: pick([1, -1]), space: 0.05 });
+    }
+    banner('TRAIN ARRIVING', '#ffd166');
   } else if (kind === 'selfie') {
     const cx0 = rnd(-6, 6), n = 4 + ((R() * 3) | 0);
     for (let i = 0; i < n; i++) { const a = i / n * TAU; mk(cx0 + Math.cos(a) * 0.55, z + Math.sin(a) * 0.55, { v0: 0, fx: Math.cos(a), fz: Math.sin(a), phone: true }); }
