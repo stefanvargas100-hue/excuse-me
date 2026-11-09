@@ -1,6 +1,6 @@
 import { LEVELS } from '../config/levels.js';
 import { $ } from '../dom.js';
-import { MAX_PLAYERS, duelUi, hostRoom, hostStart, inviteLink, isHost, joinRoom, leaveRoom, roomCode, roomElim, setRoomElim, roomLevel, setRoomLevel, setRoomReady, roomLobbyState, canStartRoom } from '../online/duel.js';
+import { MAX_PLAYERS, duelUi, hostRoom, hostStart, inviteLink, isHost, joinRoom, leaveRoom, roomCode, roomElim, setRoomElim, roomLevel, setRoomLevel, setRoomReady, roomLobbyState, canStartRoom, setRoomCup, roomCup, friendCup, friendCupStandings, friendCupIsOver, PROTO } from '../online/duel.js';
 import { go } from './screens.js';
 
 /* ---------- Race friends: make a room or join one, see who is in, then the host starts ---------- */
@@ -57,6 +57,7 @@ async function invite() {
 }
 
 export function initFriend() {
+  Promise.resolve().then(() => { if (window.__excuse) Object.assign(window.__excuse, { setRoomCup, roomCup, friendCup, friendCupStandings, friendCupOver: friendCupIsOver, PROTO }); });
   const stBox = $('friendStages');
   LEVELS.forEach((L, i) => {
     const c = document.createElement('button'); c.type = 'button'; c.className = 'chip'; c.textContent = L.city; c.setAttribute('aria-pressed', String(i === 0));

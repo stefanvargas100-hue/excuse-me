@@ -7,6 +7,8 @@ import { $ } from '../dom.js';
 import { LOOK, LOOK_OPTS } from '../save/progress.js';
 import { store } from '../save/store.js';
 import { start, syncDuelPause, forfeitDuel, refreshDuelResults, elimReceive, elimAbort } from '../sim/game.js';
+import { CUP_RACES, CUP_RACERS, addRace, cleanSetup, currentStage, friendCupOver, hostLeft, newFriendCup, playerLeft, raceSeed, standings as cupTable } from '../sim/friendcup.js';
+import { cupBotLook, cupTakeOver, standings as raceRows } from '../sim/race.js';
 import { S, state } from '../sim/state.js';
 import { packGhost, saveFriendGhost } from '../sim/ghostshare.js';
 import { createRoom, cleanCode, makeCode } from './room.js';
@@ -51,9 +53,16 @@ let lobbyNotice = '';
 export const useLobbyClock = f => { lobbyNow = f; };
 let outcomeRev = 0, receivedOutcome = -1;
 let raceElim = false;     // elimination format: the host picks it, guests learn it from the roster
+/* Friend Cup. As with elimination, the host decides and sends the whole list: the setup, every finished race and who has left.
+   Every phone rebuilds its copy from that one message, so a lost, repeated or late copy heals by itself on the next one. */
+let cup = null;           // the Cup being played: the host's own, or the copy rebuilt from the host's last good message
+let cupCfg = null;        // what the host has picked so far: { stages, difficulty }, null when the format is not Cup
+let cupRev = 0, cupReceived = -1;
+const cupLooks = {};      // id -> look, kept so a bot taking over from a player still looks like them
+const RACE_SEED = /:race\d+$/;
 // Room protocol version. Race layouts and the start handshake must be identical on every phone, so phones on different builds
 // refuse each other instead of racing on different crowds. Raise it whenever a change would make layouts or rules differ.
-export const PROTO = 3;
+export const PROTO = 4;
 let myId = '', hostId = '', roster = [];        // roster: [{ id, name, look }], the host first, me included
 let inRoster = false, raced = false, hostGone = false, lastStatus = '', joinWaiter = null;
 let wantMe = false; const wants = new Set();    // rematch: everyone still in the room has to ask
@@ -81,17 +90,17 @@ function receiveGhost(from, data) {
 }
 
 /* ---- one race at a time ---- */
-export function startDuel({ seed, level, friends, friend, send, roster: ids, meId, elim }) {
+export function startDuel({ seed, level, friends, friend, send, roster: ids, meId, elim, cup: cupRun }) {
   setLevel(level);
   const list = friends || (friend ? [{ id: 'friend', ...friend }] : []);
   const peers = {}, order = [];
-  for (const f of list) { peers[f.id] = { name: cleanName(f.name), look: cleanLook(f.look), remote: createRemote(), fin: null, bye: false }; order.push(f.id); }
+  for (const f of list) { peers[f.id] = { name: cleanName(f.name), look: cleanLook(f.look), remote: createRemote(), fin: null, bye: false, ai: !!f.ai }; order.push(f.id); }
   const names = order.map(i => peers[i].name);
   // start line: the room list says who stands where (me first when no list is given)
   const lineUp = ids && ids.length ? ids : ['me', ...order], slotOf = {};
   lineUp.forEach((id, i) => { slotOf[id === meId ? 'me' : id] = i; });
   // ten reports a second for one friend; five with more (measured 2026-11-07: a full room of 8 at 5 a second lost nothing on the free plan)
-  const d = { elim: !!elim, elimHost: false, pausers: new Set(), pauseSeq: 0, refresh: showRematch, seed, peers, order, slotOf, meId: meId || 'me', count: lineUp.length, title: names.length === 1 ? names[0] : names.length + ' friends', send, n: 0, sendT: 0, sendEvery: order.length > 1 ? 0.2 : 0.1 };
+  const d = { cup: cupRun || null, botN: 0, elim: !!elim, elimHost: false, pausers: new Set(), pauseSeq: 0, refresh: showRematch, seed, peers, order, slotOf, meId: meId || 'me', count: lineUp.length, title: names.length === 1 ? names[0] : names.length + ' friends', send, n: 0, sendT: 0, sendEvery: order.length > 1 || cupRun ? 0.2 : 0.1 };
   start('race', null, { duel: d });
   return d;
 }
@@ -101,7 +110,7 @@ export function duelReceive(ev, data) {
   const d = S && S.duel; if (!d || !data || typeof data !== 'object') return;
   const id = cleanId(data.id) || (d.order.length === 1 ? d.order[0] : null), P = id && d.peers[id];
   if (!P || (data.race !== undefined && data.race !== d.seed)) return;
-  if (P.bye && P.fin == null && ev !== 'bye') return;
+  if (P.ai || (P.bye && P.fin == null && ev !== 'bye')) return;   // bots only ever move through the host's combined message
   if (ev === 'pause') {
     if (data.seed !== d.seed || !Number.isInteger(data.n) || data.n < 0 || data.n <= (P.pauseSeq ?? -1) || typeof data.paused !== 'boolean' || P.bye) return;
     P.pauseSeq = data.n;
@@ -126,10 +135,12 @@ function closeRoom() {
   if (tick) { clearInterval(tick); tick = null; }
   if (old) {
     const d = S && S.duel;
-    try { old.send('bye', { id: myId, session: sessionId, race: raced && d ? d.seed : undefined, ft: raced && d ? d.finish : undefined, outcomes: role === 'host' && raced ? outcomeRows() : undefined }); } catch (e) {}
+    try { old.send('bye', { id: myId, session: sessionId, race: raced && d ? d.seed : undefined, ft: raced && d ? d.finish : undefined, outcomes: role === 'host' && raced ? outcomeRows() : undefined, ...(role === 'host' && raced && cup ? { cup: cupMessage() } : {}) }); } catch (e) {}
     old.leave();
+    if (raced && d && d.cup) { d.cup.host = false; d.cup.model = hostLeft(d.cup.model); }   // this phone is out of the room: the Cup is over here
     if (raced && d && !S.race.finished) forfeitDuel();
   }
+  cup = null; cupCfg = null; cupRev = 0; cupReceived = -1; for (const k in cupLooks) delete cupLooks[k];
   sessionId = ''; rosterRev = 0; receivedRev = -1; outcomeRev = 0; receivedOutcome = -1; disconnectedAt = null; retrying = false; hiddenAt = null; retired.clear(); started.clear();
   room = null; role = null; code = ''; hostId = ''; myId = ''; roster = []; inRoster = false; raced = false; hostGone = false; wantMe = false; wants.clear(); raceElim = false;
   for (const k in seenAt) delete seenAt[k];
@@ -138,15 +149,16 @@ function closeRoom() {
   ui.status(lastStatus, false);
   showRematch();
 }
+const lobbyMembers = () => roster.map(p => ({ id: p.id, protocol: p.protocol || 0 }));
 const sendRoster = () => {
   if (!room) return;
-  ensureLobby(); lobby.setPlayers(roster.map(p => ({ id: p.id, protocol: p.protocol || 0 })), levelIdx, raceElim);
-  room.send('roster', { proto: PROTO, elim: raceElim, id: myId, session: sessionId, rev: ++rosterRev, level: levelIdx, players: roster, lobby: lobby.snapshot() });
+  ensureLobby(); lobby.setPlayers(lobbyMembers(), levelIdx, raceElim);
+  room.send('roster', { proto: PROTO, elim: raceElim, id: myId, session: sessionId, rev: ++rosterRev, level: levelIdx, players: roster, lobby: lobby.snapshot(), ...(cupCfg ? { cupCfg: { stages: cupCfg.stages, difficulty: cupCfg.difficulty } } : {}) });
 };
 const changed = () => {
   ui.roster(lobbyPlayers());
   if (room && inRoster && !raced && lobby && disconnectedAt === null) {
-    const view = lobby.view(), stage = LEVELS[levelIdx].city;
+    const view = lobby.view(), stage = cupCfg ? 'Friend Cup' : LEVELS[levelIdx].name;
     lastStatus = lobbyNotice || (!view.compatible ? 'Update the game on every phone before joining.' : view.busy ? 'Preparing race. Keep the game open.' :
       roster.length < 2 ? 'Waiting for friends to join...' : lobby.canStart() || view.players.every(p => p.ready) ? stage + ' · Everyone is ready. ' + (role === 'host' ? 'Press Start race.' : 'Waiting for the host.') :
       'Connected · ' + stage + ' · Choose Ready when you are set.');
@@ -159,8 +171,8 @@ function ensureLobby() {
   const epoch = generation;
   lobby = createStartCoordinator({ id: myId, hostId, now: () => lobbyNow(),
     send: (ev, payload) => { if (room && epoch === generation) room.send('lobby:' + ev, { ...payload, id: myId, session: sessionId }); },
-    allowStart: () => !document.hidden && (!raced || wantMe),
-    allowAgreed: () => raced && wantMe,
+    allowStart: () => !document.hidden && (cup || cupCfg ? cupCanRun() : !raced || wantMe),
+    allowAgreed: () => raced && (cup ? cupCanRun() : wantMe),
     onExpired: plan => {
       if (epoch !== generation) return;
       if (room) room.send('bye', { id: myId, session: sessionId, race: plan.seed });
@@ -170,6 +182,7 @@ function ensureLobby() {
       if (epoch !== generation) return;
       lobbyNotice = '';
       beginRace(plan.level, plan.seed, plan);
+      if (epoch !== generation) return;
       if (plan.late) { forfeitDuel(); S.duel.send('dnf', {}); say('Missed the start · DNF. Create a new room.'); }
     },
     onNotice: text => {
@@ -202,6 +215,125 @@ function outcomeRows() {
 function publishOutcomes() {
   if (room && role === 'host' && raced) room.send('outcomes', { id: myId, session: sessionId, race: S.duel.seed, rev: ++outcomeRev, outcomes: outcomeRows() });
 }
+// Is this phone up to date for the next race? A phone that missed the last results refuses, so the start is cancelled rather than half-run.
+const cupCanRun = () => !!cup && !friendCupOver(cup) && !hostGone && !started.has(raceSeed(cup));
+const validCup = c => !!c && !!newFriendCup({ seed: 'check', stages: c.stages, difficulty: c.difficulty, players: [{ id: 'a', name: 'a' }, { id: 'b', name: 'b' }], rand: () => 0 });
+const leftIds = c => c.racers.filter(r => r.left).map(r => r.id);
+// The whole Cup so far. The setup goes as first agreed: cleanSetup refuses racers marked as left, so they travel in their own list.
+function cupMessage() {
+  const racers = cup.racers.map(r => (r.left ? { ...r, bot: false, left: false } : r));
+  return { id: myId, session: sessionId, proto: PROTO, rev: ++cupRev, setup: { seed: cup.seed, stages: cup.stages, difficulty: cup.difficulty, racers }, rounds: cup.rounds, left: leftIds(cup) };
+}
+const publishCup = () => { if (room && role === 'host' && cup) room.send('cup', cupMessage()); };
+const rememberLooks = () => { for (const p of roster) cupLooks[p.id] = p.look; };
+function syncCupRun() {
+  const d = S?.duel;
+  if (d?.cup && cup) d.cup.model = cup;
+  if (d?.cup) refreshDuelResults();
+  changed();
+}
+// Rebuilds a Cup from a message, or returns null. Nothing is kept from a message with anything wrong in it.
+function cupFromMessage(m) {
+  try {
+    if (!m || m.proto !== PROTO || !Array.isArray(m.rounds) || m.rounds.length > CUP_RACES || !Array.isArray(m.left)) return null;
+    const setup = cleanSetup(m.setup);
+    if (!setup || setup.racers[0].id !== hostId || !setup.racers.some(r => r.id === myId && !r.bot)) return null;
+    if (setup.racers.some(r => !r.bot && (cleanId(r.id) !== r.id || cleanName(r.name) !== r.name))) return null;
+    let c = { ...setup, rounds: [], ended: false };
+    for (const rows of m.rounds) { c = addRace(c, rows); if (!c) return null; }
+    for (const id of m.left) {
+      if (id === hostId || !setup.racers.some(r => r.id === id && !r.bot)) return null;
+      c = playerLeft(c, id);
+    }
+    return c;
+  } catch (e) { return null; }
+}
+function receiveCup(data) {
+  if (role !== 'guest' || !Number.isInteger(data.rev) || data.rev <= cupReceived) return;
+  const next = cupFromMessage(data);
+  if (!next) return;
+  if (raced && cup) {
+    // Once racing, the setup is settled and results only ever grow.
+    const fixed = c => JSON.stringify([c.seed, c.stages, c.difficulty, c.racers.map(r => [r.id, r.name])]);
+    if (fixed(next) !== fixed(cup) || next.rounds.length < cup.rounds.length) return;
+  }
+  cupReceived = data.rev;
+  cup = hostGone ? hostLeft(next) : next;
+  if (leftIds(cup).includes(myId)) { closeRoom(); say('You were removed from the room.'); return; }
+  for (const id of leftIds(cup)) cupRacerGone(id);
+  if (!friendCupOver(cup)) levelIdx = currentStage(cup);
+  syncCupRun();
+}
+// A player has gone. Their name and points stay, and a bot runs for them: straight away if they were mid-race.
+function cupRacerGone(id) {
+  if (!cup) return;
+  cup = playerLeft(cup, id); retired.add(id);
+  const d = S?.duel, P = d?.cup && d.order.includes(id) ? d.peers[id] : null;
+  if (!P || P.ai) return;
+  P.ai = true;
+  if (P.fin != null || P.bye) return;   // already finished or out of this race
+  const b = cupTakeOver(id, P.look);
+  if (b && role !== 'host') { P.remote = createRemote(); P.remote.push({ n: 0, x: b.x, z: b.z, vx: b.vx, s: b.speed }, S.clock); }
+}
+// The host has gone. Guests finish this race among themselves; only finished races count, and the bots stop with the host.
+function cupHostGone() {
+  if (!cup) return;
+  cup = hostLeft(cup);
+  const d = S?.duel;
+  if (d?.cup) for (const id of d.order) if (d.peers[id].ai && d.peers[id].fin == null) d.peers[id].bye = true;
+  syncCupRun();
+}
+// Everyone real has finished or dropped out: the host settles the places. A bot still walking is placed by how far it got.
+function cupDecide() {
+  const d = S?.duel;
+  if (role !== 'host' || !cup || !d?.cup || friendCupOver(cup) || d.seed !== raceSeed(cup)) return;
+  if (d.finish == null && !d.dnf) return;
+  if (!d.order.every(id => d.peers[id].ai || d.peers[id].fin != null || d.peers[id].bye)) return;
+  const next = addRace(cup, raceRows().map((r, i) => ({ id: r.id, place: i + 1, time: r.done && r.finishT != null ? r.finishT : null })));
+  if (!next) return;
+  cup = next;
+  if (!friendCupOver(cup)) levelIdx = currentStage(cup);
+  publishCup(); sendRoster();
+  syncCupRun();
+}
+function cupNextRace() {
+  const a = cupAction();
+  if (a.state !== 'idle') return;
+  if (!others().length) { beginRace(currentStage(cup), raceSeed(cup), null); return; }   // the start handshake needs two phones; alone, there is nobody to agree with
+  publishCup();
+  if (!lobby.start(raceSeed(cup), { agreed: true })) say('A phone is not connected yet. Try again in a moment.');
+  showRematch();
+}
+// What the end screen's button does in a Cup. A finished Cup never offers a rematch.
+function cupAction() {
+  const C = S?.duel?.cup, m = C?.model;
+  if (!m || !room || hostGone || friendCupOver(m)) return { state: 'gone', label: 'Set up a new Cup', disabled: false };
+  if (m.rounds.length < C.race) return { state: 'waiting', label: 'Waiting for racers', disabled: true };
+  if (role !== 'host') return { state: 'waiting', label: 'Waiting for host', disabled: true };
+  if (disconnectedAt !== null) return { state: 'waiting', label: 'Reconnecting...', disabled: true };
+  if (lobby?.view().busy) return { state: 'starting', label: 'Starting...', disabled: true };
+  return { state: 'idle', label: 'Start race ' + (m.rounds.length + 1) + ' · ' + LEVELS[currentStage(m)].name, disabled: false };
+}
+// Bot positions from the host, all or nothing. Rows about someone not yet known to be a bot wait for the Cup message that says so.
+function receiveBots(data) {
+  const d = S.duel, n = num(data.n, 1e9), rows = data.rows;
+  if (n === null || n < 1 || !Number.isInteger(n) || !Array.isArray(rows) || rows.length >= CUP_RACERS) return;
+  const clean = [];
+  for (const row of rows) {
+    if (!Array.isArray(row) || row.length !== 6 || !d.order.includes(row[0])) return;
+    const x = num(row[1], 20), z = num(row[2], LV.goal + 20), vx = num(row[3], 20), s = num(row[4], 20), ft = row[5] === null ? null : num(row[5], 3600);
+    if ([x, z, vx, s].some(v => v === null) || (row[5] !== null && (ft === null || ft <= 0))) return;
+    clean.push({ P: d.peers[row[0]], x, z, vx, s: Math.max(0, s), ft });
+  }
+  let finished = false;
+  for (const { P, x, z, vx, s, ft } of clean) {
+    if (!P.ai || P.bye) continue;
+    P.remote.push({ n, x, z, vx, s }, S.clock);
+    if (ft !== null && P.fin == null) { P.fin = ft; finished = true; }
+  }
+  if (finished) refreshDuelResults();
+}
+
 function applyOutcomes(rows) {
   const d = S.duel;
   for (const row of (Array.isArray(rows) ? rows : []).slice(0, MAX_PLAYERS)) {
@@ -209,7 +341,7 @@ function applyOutcomes(rows) {
     const ft = num(row.ft, 3600);
     if (row.id === myId) {
       if (row.dnf === true) { forfeitDuel(); d.dnf = true; d.finish = null; refreshDuelResults(); say('DNF · the host could not confirm this finish. Create a new room.'); }
-    } else if (d.peers[row.id]) {
+    } else if (d.order.includes(row.id)) {
       const p = d.peers[row.id];
       if (ft !== null && ft > 0) { p.fin = ft; p.bye = false; }
       else if (row.dnf === true) { p.fin = null; p.bye = true; }
@@ -243,7 +375,7 @@ function onMessage(ev, data) {
       .map(p => ({ id: cleanId(p && p.id), name: cleanName(p && p.name), look: cleanLook(p && p.look), protocol: p?.protocol || 0 })).filter(p => p.id);
     if (!players.length || players[0].id !== from) return;
     if (!players.some(p => p.id === myId)) { if (inRoster) { closeRoom(); say('You were removed from the room.'); } return; }
-    if (raced) for (const p of roster) if (!players.some(next => next.id === p.id)) duelReceive('bye', { id: p.id });
+    if (raced) for (const p of roster) if (!players.some(next => next.id === p.id)) { if (S?.duel?.cup) cupRacerGone(p.id); else duelReceive('bye', { id: p.id }); }
     hostId = from; roster = players; inRoster = true; hostGone = false;
     seenAt[from] = Date.now();
     if (data.session) sessionId = data.session;
@@ -251,6 +383,11 @@ function onMessage(ev, data) {
     if (disconnectedAt === null && !raced) say('Connected. Waiting for the host.');
     if (Number.isInteger(data.level) && LEVELS[data.level]) levelIdx = data.level;
     raceElim = data.elim === true;
+    if (!raced) {
+      const c = data.cupCfg;
+      cupCfg = c ? { stages: Array.isArray(c.stages) ? c.stages.slice(0, 8) : [], difficulty: c.difficulty } : null;
+      if (!cupCfg) cup = null; else rememberLooks();
+    }
     for (const id of [...wants]) if (!roster.some(p => p.id === id)) wants.delete(id);
     if (joinWaiter) { const w = joinWaiter; joinWaiter = null; w(true); }
     ensureLobby(); lobby.acceptSnapshot(data.lobby);
@@ -269,16 +406,18 @@ function onMessage(ev, data) {
     if (raced && data.race && data.race !== S.duel.seed) return;
     if (raced && data.ft) duelReceive('fin', data);
     if (raced && from === hostId) applyOutcomes(data.outcomes);
+    if (raced && from === hostId && data.cup) receiveCup(data.cup);   // the host's last word heals a result this phone missed
     if (from === hostId && role === 'guest') {
       if (!raced) { closeRoom(); say('The host left the room.'); return; }
       hostGone = true; elimAbort();
-      say(S?.duel?.elim ? 'Host left. The elimination race is over.' : 'Host left. Finish this race; create a new room for another.');
+      say(S?.duel?.elim ? 'Host left. The elimination race is over.' : S?.duel?.cup ? 'Host left. Finish this race to see the standings.' : 'Host left. Finish this race; create a new room for another.');
+      if (S?.duel?.cup) cupHostGone();
     }
     roster = roster.filter(p => p.id !== from); wants.delete(from);
     retired.add(from);
-    duelReceive(ev, data);
+    if (raced && S?.duel?.cup && from !== hostId) { cupRacerGone(from); if (role === 'host') publishCup(); } else duelReceive(ev, data);
     refreshDuelResults();
-    if (role === 'host') { sendRoster(); maybeRematch(); }
+    if (role === 'host') { sendRoster(); maybeRematch(); cupDecide(); }
     changed();
   } else if (ev === 'start') {
     if (role === 'guest' && from === hostId && !raced) say('Update the game on every phone before starting.');
@@ -287,36 +426,49 @@ function onMessage(ev, data) {
     elimReceive(Array.isArray(data.out) ? data.out.slice(0, MAX_PLAYERS) : []); changed();
   } else if (ev === 'dnf') {
     if (!S || !S.duel || data.race !== S.duel.seed) return;
-    duelReceive('bye', data); say((S.duel.peers[from]?.name || 'Racer') + ' did not finish.'); refreshDuelResults(); changed(); publishOutcomes();
+    duelReceive('bye', data); say((S.duel.peers[from]?.name || 'Racer') + ' did not finish.'); refreshDuelResults(); changed(); publishOutcomes(); cupDecide();
   } else if (ev === 'outcomes') {
     if (role !== 'guest' || from !== hostId || !S?.duel || data.race !== S.duel.seed || !Number.isInteger(data.rev) || data.rev <= receivedOutcome) return;
     receivedOutcome = data.rev; applyOutcomes(data.outcomes);
-  } else if (ev === 'ghost') receiveGhost(from, data);
+  } else if (ev === 'cup') {
+    if (from !== hostId) return;
+    receiveCup(data);
+  } else if (ev === 'bots') {
+    if (role !== 'guest' || from !== hostId || !S?.duel?.cup || data.race !== S.duel.seed) return;
+    receiveBots(data);
+  } else if (ev === 'ghost') { if (!cup && !cupCfg) receiveGhost(from, data); }
   else {
     if ((ev === 'pos' || ev === 'fin') && S && S.duel && data.race !== S.duel.seed) return;
-    duelReceive(ev, data); if (ev === 'fin') { refreshDuelResults(); publishOutcomes(); }
+    duelReceive(ev, data); if (ev === 'fin') { refreshDuelResults(); publishOutcomes(); cupDecide(); }
   }
 }
 export const injectRoomMessage = onMessage;
 
 function beginRace(level, seed, schedule) {
   if (started.has(seed)) return;
+  // The stage and seed of a Cup race come from the Cup. A start that disagrees with this phone's copy is refused, never half-run.
+  if (RACE_SEED.test(seed) !== !!cup || (cup && (seed !== raceSeed(cup) || level !== currentStage(cup)))) {
+    closeRoom(); say('Start could not be confirmed. Rejoin the room.'); return;
+  }
   raceElim = schedule?.elim === true;
   started.add(seed);
   receivedOutcome = -1;
   wantMe = false; wants.clear(); raced = true;
   const id = myId;
   const epoch = generation;
-  const d = startDuel({ seed, level, elim: raceElim, friends: others(), roster: roster.map(p => p.id), meId: id, send: (ev, payload) => {
+  const cupRun = cup ? { host: role === 'host', difficulty: cup.difficulty, model: cup, race: cup.rounds.length + 1 } : null;
+  const field = cup ? cup.racers.map((r, i) => ({ id: r.id, name: r.name, ai: r.bot, look: cupLooks[r.id] || cupBotLook(i, cup.seed) })).filter(r => r.id !== id) : others();
+  const d = startDuel({ seed, level, elim: raceElim, friends: field, roster: cup ? cup.racers.map(r => r.id) : roster.map(p => p.id), meId: id, cup: cupRun, send: (ev, payload) => {
     if (epoch !== generation) return;
     if (ev === 'fin' && !S.duel.dnf && S.duel.finish == null) S.duel.finish = payload.ft;
     if (room) room.send(ev, { id, ...payload, race: seed, session: sessionId });
     if (ev === 'fin') { refreshDuelResults(); publishOutcomes(); }
+    if (ev === 'fin' || ev === 'dnf') cupDecide();
   } });
   d.managed = true; d.beganAt = Date.now(); d.elimHost = role === 'host';
   if (schedule) d.startRemaining = () => Math.max(0, (schedule.startAtLocal - schedule.now()) / 1000);
   for (const p of roster) seenAt[p.id] = Date.now();
-  sendMyGhosts(level);
+  if (!cup) sendMyGhosts(level);   // a Cup leaves no ghosts
   changed();
   say('Live race · keep this app open.');
   if (document.hidden) {
@@ -345,20 +497,27 @@ function heartbeat() {
     if (wantMe) room.send('rematch', { id: myId, session: sessionId, race: d.seed });
     for (const id of d.order) {
       const p = d.peers[id];
-      if (!p.bye && p.fin == null && (now - (seenAt[id] ?? d.beganAt) > STALE_MS || now - d.beganAt > 10 * 60 * 1000)) {
+      if (p.ai) continue;
+      const silent = now - (seenAt[id] ?? d.beganAt) > STALE_MS;
+      if (d.cup && !hostGone && p.fin == null && !p.bye) {   // in a Cup the host decides who has gone, and guests learn it from the host
+        if (role === 'host' && silent) { cupRacerGone(id); say(p.name + ' lost connection. A bot takes over.'); publishCup(); cupDecide(); continue; }
+        if (role !== 'host') continue;
+      }
+      if (!p.bye && p.fin == null && (silent || now - d.beganAt > 10 * 60 * 1000)) {
         duelReceive('bye', { id }); say(p.name + ' lost connection · DNF.'); refreshDuelResults();
       }
     }
     if (now - d.beganAt > 10 * 60 * 1000 && !S.race.finished) {
       forfeitDuel(); d.send('dnf', {}); say('Race timed out · DNF.');
     }
-    publishOutcomes();
+    publishOutcomes(); cupDecide();
     if (d.elim && d.elimHost && S.race.elim && S.race.elim.out.length) d.send('elim', { rev: ++S.race.elim.rev, out: S.race.elim.out.map(o => o.id) });
   }
+  if (role === 'host' && cup) publishCup();   // the whole Cup so far, every time: this is what heals a lost result
   if (role === 'guest') {
     room.send('hello', { proto: PROTO, id: myId, name: myName(), look: LOOK, startProtocol: START_PROTOCOL });
     if (inRoster && !hostGone && seenAt[hostId] && now - seenAt[hostId] > STALE_MS) {
-      if (!raced) { closeRoom(); say('Lost contact with the host.'); } else { hostGone = true; elimAbort(); say(S?.duel?.elim ? 'Host lost connection. The elimination race is over.' : 'Host lost connection. Finish this race; create a new room for another.'); changed(); }
+      if (!raced) { closeRoom(); say('Lost contact with the host.'); } else { hostGone = true; elimAbort(); say(S?.duel?.elim ? 'Host lost connection. The elimination race is over.' : S?.duel?.cup ? 'Host lost connection. Finish this race to see the standings.' : 'Host lost connection. Finish this race; create a new room for another.'); if (S?.duel?.cup) cupHostGone(); changed(); }
     }
   } else if (role === 'host') {
     const gone = others().filter(p => seenAt[p.id] && now - seenAt[p.id] > STALE_MS);
@@ -446,19 +605,35 @@ export function setRoomReady(ready) {
   if (!ok) lobbyNotice = previous;
   return ok;
 }
-export const canStartRoom = () => !!(!raced && lobby?.canStart());
+export const canStartRoom = () => !!(!raced && lobby?.canStart() && (!cupCfg || validCup(cupCfg)));
 export const lobbyStatus = () => lastStatus;
 export const roomLevel = () => levelIdx;
 // The host can change the stage any time before Start; everyone sees it on the next roster.
-export function setRoomLevel(i) { if (role !== 'host' || !room || raced || !LEVELS[i]) return; levelIdx = i; sendRoster(); changed(); }
+export function setRoomLevel(i) { if (role !== 'host' || !room || raced || cupCfg || !LEVELS[i]) return; levelIdx = i; sendRoster(); changed(); }
 export const isHost = () => role === 'host';
 // Format of the next race: the host picks it before Start; guests learn it from the roster.
 export const roomElim = () => raceElim;
-export function setRoomElim(v) { if (role !== 'host' || !room || raced) return; raceElim = !!v; sendRoster(); changed(); }
+export function setRoomElim(v) { if (role !== 'host' || !room || raced) return; cupCfg = null; cup = null; raceElim = !!v; sendRoster(); changed(); }
+// Format Cup: the host's choice of stages and bot difficulty, or null to leave the format. Guests see it on the roster and must ready again after any change.
+export function setRoomCup(cfg) {
+  if (role !== 'host' || !room || raced || (!cfg && !cupCfg)) return false;
+  cup = null;
+  cupCfg = cfg ? { stages: Array.isArray(cfg.stages) ? cfg.stages.slice(0, 8) : [], difficulty: cfg.difficulty } : null;
+  if (cupCfg) { raceElim = false; if (validCup(cupCfg)) levelIdx = cupCfg.stages[0]; }
+  ensureLobby();
+  lobby.setPlayers(lobbyMembers(), -1, raceElim);   // the start code clears Ready when the level changes, so step away and back
+  sendRoster(); changed();
+  return true;
+}
+export const roomCup = () => (cupCfg ? { stages: [...cupCfg.stages], difficulty: cupCfg.difficulty, valid: validCup(cupCfg) } : null);
+export const friendCup = () => cup;
+export const friendCupStandings = () => (cup ? cupTable(cup) : []);
+export const friendCupIsOver = () => !!cup && friendCupOver(cup);
 
 // After a race everyone presses Rematch; the host then starts a new race on the same stage.
 export function rematchCounts() { const o = others(); return { asked: o.filter(p => wants.has(p.id)).length, total: o.length }; }
 export function rematchState() {
+  if (S?.duel?.cup) return cupAction().state;
   const { asked, total } = rematchCounts();
   if (!room || !total || hostGone || (S && S.duel && (S.duel.dnf || others().some(p => S.duel.peers[p.id]?.bye)))) return 'gone';
   if (disconnectedAt !== null) return 'waiting';
@@ -467,6 +642,7 @@ export function rematchState() {
 }
 function showRematch() {
   const b = $('again'); if (!b || !S || !S.duel) return;
+  if (S.duel.cup) { const a = cupAction(); b.textContent = a.label; b.disabled = a.disabled; return; }
   const st = rematchState(), c = rematchCounts();
   b.textContent = st === 'gone' ? 'Create a new room to race again' : disconnectedAt !== null ? 'Reconnecting...' : st === 'waiting' ? 'Waiting for others (' + (c.asked + 1) + '/' + (c.total + 1) + ')' : st === 'asked' ? 'Accept rematch' : 'Rematch';
   b.disabled = st === 'waiting' || st === 'starting';
@@ -478,11 +654,20 @@ function maybeRematch() {
   }
 }
 export function requestRematch() {
+  if (S?.duel?.cup) { cupNextRace(); return; }
   if (!room || !others().length || hostGone || wantMe || rematchState() === 'gone' || disconnectedAt !== null) return;
   wantMe = true; room.send('rematch', { id: myId, session: sessionId, race: S.duel.seed }); maybeRematch(); showRematch();
 }
 export function hostStart() {
   if (role !== 'host' || !room || disconnectedAt !== null || !canStartRoom()) return;
+  if (cupCfg) {
+    rememberLooks();
+    cup = newFriendCup({ seed: code + '-' + newId(), stages: cupCfg.stages, difficulty: cupCfg.difficulty, players: roster.map(p => ({ id: p.id, name: cleanName(p.name) })), rand: Math.random });
+    if (!cup) return;
+    publishCup();   // guests refuse the start until they have this
+    if (!lobby.start(raceSeed(cup))) cup = null;
+    return;
+  }
   if (lobby.start(code + ':' + (raceNo + 1))) raceNo++;
 }
 export function leaveRoom() { closeRoom(); }

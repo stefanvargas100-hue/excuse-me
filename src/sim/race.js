@@ -3,7 +3,7 @@ export { comboLevel } from '../config/combo.js';
 import { Music } from '../audio/music.js';
 import { LV, halfAt } from '../config/levels.js';
 import { BASE, BOOST, CHAIN_WINDOW, LAT_ACC, LAT_MAX, REGEN, R_PLAYER } from '../config/tuning.js';
-import { clamp, mulberry32 } from '../config/util.js';
+import { clamp, hashStr, mulberry32 } from '../config/util.js';
 import { REACT } from '../config/colour.js';
 import { BOT_NAMES } from '../config/names.js';
 import { STRIP_SPEED, beltAt, beltFor, contain, glassBetween, onStrip } from '../config/strips.js';
@@ -52,7 +52,7 @@ function inDraft(r, x, z, self) {
   for (const p of S.people) if (!p.dead && !p.prop) check(p.x, p.z, p.vz, p);
   if (self !== S) check(S.px, S.pz, S.speed, S);
   for (const b of S.race.bots) if (b !== self && !b.done) check(b.x, b.z, b.speed, b);
-  if (best >= 0 && r.draftWho && r.draftWho.racer) r.draftWho.pressT = 0.4;   // a bot knows when someone is on its tail
+  if (best >= 0 && r.draftWho && r.draftWho.racer) { r.draftWho.pressT = 0.4; r.draftWho.pressX = x; }   // a bot knows when someone is on its tail
   return best;
 }
 // r is the player's state or a bot. Returns true at the moment the boost is earned.
@@ -130,8 +130,9 @@ function makeBot(i, diff, name) {
 }
 
 // Called by start() when a race begins.
-export function initRace(botCount, names) {
-  const diff = DIFFICULTIES[raceDifficulty()], n = botCount === 0 ? 0 : clamp(botCount || 3, 1, BOTS.length);   // 0 bots: a live race against a friend
+// difficulty: a Friend Cup brings its own level; everything else uses the saved one.
+export function initRace(botCount, names, difficulty) {
+  const diff = DIFFICULTIES[difficulty ?? raceDifficulty()], n = botCount === 0 ? 0 : clamp(botCount || 3, 1, BOTS.length);   // 0 bots: a live race against a friend
   S.race = { diff, bots: [], countT: COUNTDOWN, countLast: 99, rng: mulberry32(0x5eed + n), finished: false, place: 0, board: [], elapsed: 0 };
   const pool = BOT_NAMES.slice();   // each race draws its racers' names at random, no repeats within a race
   for (let i = 0; i < n; i++) S.race.bots.push(makeBot(i, diff, names && names[i] || pool.splice((Math.random() * pool.length) | 0, 1)[0]));
@@ -165,6 +166,34 @@ export function addRemoteRacer(look, name, peerId, slot = 0) {
   Object.assign(b, { remote: true, peerId, color: FRIEND_COLORS[slot % FRIEND_COLORS.length], name });
   R.bots.push(b); return b;
 }
+/* ---------- Friend Cup: the host runs the bots, every other phone draws them like a friend ---------- */
+// Every phone works out the same look from the Cup's seed, so a bot is the same person on all of them.
+export function cupBotLook(i, seed) {
+  const d = BOTS[i % BOTS.length];
+  return { body: d.hairStyle === 'long' ? 'f' : 'm', shirt: d.shirt, hair: d.hair, hairStyle: d.hairStyle, skin: d.skin, ...randomLoadout(mulberry32(hashStr(seed + ':' + i))) };
+}
+const runAsBot = (b, look) => Object.assign(b, { remote: false, aiBot: true, st: effects(statsOf(look)), target: b.x, thinkT: 0 });
+export function addCupBot(look, name, peerId, slot) { return runAsBot(addRemoteRacer(look, name, peerId, slot), look); }
+// A player left mid-race: on the host, their runner becomes a bot from where it was last seen.
+export function cupTakeOver(id, look) {
+  const b = S.race && S.race.bots.find(o => o.peerId === id);
+  if (!b) return null;
+  b.aiBot = true;
+  if (S.duel.cup.host) { runAsBot(b, look); b.vz = b.speed; }
+  return b;
+}
+// One combined message for every bot: [id, x, z, vx, speed, finish time or null]. Clamped to what a guest will accept.
+function botRows() {
+  const r = v => Math.round(v * 100) / 100, rows = [];
+  for (const b of S.race.bots) if (b.aiBot && !b.remote) rows.push([b.peerId, r(clamp(b.x, -20, 20)), r(Math.min(b.z, LV.goal + 15)), r(clamp(b.vx, -20, 20)), r(clamp(b.speed, 0, 20)), b.done ? b.finishT : null]);
+  return rows;
+}
+// Anyone on a bot's tail counts the same, host or guest. Otherwise only the host's phone would know who was drafting it.
+function cupPressure(b) {
+  const near = (x, z) => { if (b.z - z > 0.3 && b.z - z < DRAFT_LEN && Math.abs(x - b.x) < DRAFT_W) { b.pressT = 0.4; b.pressX = x; } };
+  if (!S.race.finished) near(S.px, S.pz);
+  for (const o of S.race.bots) if (o.remote && !o.done) near(o.x, o.z);
+}
 function stepRemote(b, dt) {
   const D = S.duel, P = D.peers[b.peerId], p = P.remote.sample(S.clock);
   if (P.fin != null && !b.done) { b.done = true; b.finishT = P.fin; }
@@ -183,14 +212,16 @@ function duelTick(dt) {
   if (D.sendT <= 0) {
     D.sendT = D.sendEvery;
     const r = v => Math.round(v * 100) / 100;
-    if (!(S.race.elim && S.race.elim.meOut)) D.send('pos', { n: ++D.n, x: r(S.px), z: r(S.pz), vx: r(S.vx), s: r(S.speed) });
+    if (!(S.race.elim && S.race.elim.meOut) && !(D.cup && S.race.finished)) D.send('pos', { n: ++D.n, x: r(S.px), z: r(S.pz), vx: r(S.vx), s: r(S.speed) });
+    if (D.cup && D.cup.host) { const rows = botRows(); if (rows.length) D.send('bots', { n: ++D.botN, rows }); }
   }
+  if (D.cup && D.cup.host) for (const b of S.race.bots) if (b.aiBot && !b.remote && b.done && D.peers[b.peerId].fin == null) D.peers[b.peerId].fin = b.finishT;
   for (const f of S.race.bots.filter(b => b.remote)) {
     const P = D.peers[f.peerId];
     if (!f.done && (P.bye || (!D.managed && P.remote.lastSeen() > 0 && S.clock - P.remote.lastSeen() > FRIEND_SILENT))) {
       P.bye = true;
       S.race.bots.splice(S.race.bots.indexOf(f), 1);
-      addPop(f.name.toUpperCase() + ' LEFT', '#9ca3af', 24);
+      if (!f.aiBot) addPop(f.name.toUpperCase() + ' LEFT', '#9ca3af', 24);
     }
   }
 }
@@ -252,7 +283,7 @@ function resolveRacers(t) {
   for (let iter = 0; iter < 3; iter++) {
     let moved = false;
     for (const b of S.race.bots) {
-      if (!b.remote || b.done || !givesWayTo(b) || glassBetween(LV.id, t.x, t.z, b.x, b.z)) continue;
+      if (!b.remote || b.aiBot || b.done || !givesWayTo(b) || glassBetween(LV.id, t.x, t.z, b.x, b.z)) continue;
       const dx = t.x - b.x, dz = t.z - b.z, d2 = dx * dx + dz * dz;
       if (d2 >= RACER_GAP * RACER_GAP) continue;
       const d = Math.sqrt(d2);
@@ -367,7 +398,7 @@ function think(b) {
         if (o === b) continue;
         if (o.z - b.z > 0.5 && o.z - b.z < 7 && Math.abs(tx - o.x) < 0.5) c -= 0.6 * fight;
       }
-      if (b.pressT > 0 && Math.abs(tx - S.px) < 0.8) c += 1.6 * fight;
+      if (b.pressT > 0 && Math.abs(tx - (S.duel?.cup ? b.pressX : S.px)) < 0.8) c += 1.6 * fight;
       for (const pk of S.race.pickups || []) if (!pk.taken && pk.z - b.z > 0.5 && pk.z - b.z < 12 && Math.abs(tx - pk.x) < 0.5) c -= 0.9 * fight;   // go for a pickup
       if (onStrip(LV.id, tx, b.z + 6)) c -= 1.1 * fight;
       const bd = beltAt(LV.id, tx, b.z + 10);   // airport walkway: plan the approach early (the glass is shut once you are alongside), aim for the middle of the passing lane
@@ -401,7 +432,7 @@ function stepBot(b, dt) {
   b.burstT -= dt; b.dashT -= dt; stepPowerups(b, dt);
   b.shoutCD = Math.max(0, (b.shoutCD || 0) - dt);
   if (b.react) { b.react.t += dt; if (b.react.t > 1.4) b.react = null; }
-  if (b.shoutCD <= 0 && b.bumpT <= 0 && inWay(b) && R.rng() < b.diff.excuse * dt) botExcuseMe(b);
+  if (!S.duel?.cup && b.shoutCD <= 0 && b.bumpT <= 0 && inWay(b) && R.rng() < b.diff.excuse * dt) botExcuseMe(b);
   b.energy = Math.min(100, b.energy + REGEN * b.st.regen * dt);
   if (b.chain > 0 && S.time - b.lastPassT > CHAIN_WINDOW) b.chain = 0;
   // a good player dashes round a person who is about to be hit, and bursts when the way is clear
@@ -418,6 +449,7 @@ function stepBot(b, dt) {
   }
   const weave = 1 - 0.14 * Math.min(1.4, Math.abs(b.vx) / LAT_MAX);
   b.pressT = Math.max(0, (b.pressT || 0) - dt);
+  if (S.duel?.cup) cupPressure(b);
   if (stepDraft(b, b.x, b.z, b.bumpT > 0, dt) && b.draftWho === S) addPop(b.name.toUpperCase() + ' SLIPSTREAMED YOU', b.color, 22);
   const bTarget = (bursting ? BOOST : BASE) * b.pace * b.st.speed * weave * racePace(b.chain, b.energy) * draftMul(b) * powerMul(b) * nearMul(b) * (onStrip(LV.id, b.x, b.z) ? STRIP_SPEED : 1) * (b.bumpT > 0 ? BUMP_SPEED : 1);
   b.speed += (bTarget - b.speed) * Math.min(1, dt * (bTarget > b.speed ? b.st.accel : 5));
@@ -432,7 +464,7 @@ function stepBot(b, dt) {
     const hit = resolve(t);
     b.x = t.x; b.z = t.z; b.vx = t.vx; b.speed = Math.max(0, t.speed);
     if (hit) {
-      b.blockT += dt; shove(hit, b.x); b.seen.set(hit, false);   // they notice whoever they just hit
+      b.blockT += dt; if (!S.duel?.cup) shove(hit, b.x); b.seen.set(hit, false);   // they notice whoever they just hit
       if (b.cool <= 0) { b.bumpT = b.st.bumpT; b.nearT = 0; b.draftC = 0; b.draftT = 0; b.bumps++; b.burstT = 0; b.dashT = 0; b.chain = 0; }
       b.cool = BUMP_COOL;
       if (b.blockT > STUCK_T) { b.ghostT = STUCK_GHOST; b.blockT = 0; }
@@ -468,6 +500,19 @@ export function stepRemotes(dt) {
   if (S.duel) duelTick(dt);
 }
 
+// A Friend Cup host who has finished, or dropped out, still runs the bots and follows the others until the race is decided.
+export function stepCupField(dt) {
+  stepRacers(dt);
+  duelTick(dt);
+}
+function stepRacers(dt) {
+  for (const b of S.race.bots) {
+    if (b.remote) { stepRemote(b, dt); continue; }
+    if (b.done) { b.speed *= Math.max(0, 1 - dt * 4); b.vx *= Math.max(0, 1 - dt * 6); b.vz = b.speed; b.phase += dt * b.speed * 2; b.walkA += ((b.speed > 0.15 ? 1 : 0) - b.walkA) * Math.min(1, dt * 8); b.z += b.speed * dt; continue; }
+    stepBot(b, dt);
+  }
+}
+
 export function updRace(dt) {
   const R = S.race; if (!R) return;
   R.elapsed = S.time;
@@ -478,11 +523,7 @@ export function updRace(dt) {
     track('slips');
     if (S.time - S.lastSlip < 20) { track('doubleSlip'); S.lastSlip = -99; } else S.lastSlip = S.time;
   }
-  for (const b of R.bots) {
-    if (b.remote) { stepRemote(b, dt); continue; }
-    if (b.done) { b.speed *= Math.max(0, 1 - dt * 4); b.vx *= Math.max(0, 1 - dt * 6); b.vz = b.speed; b.phase += dt * b.speed * 2; b.walkA += ((b.speed > 0.15 ? 1 : 0) - b.walkA) * Math.min(1, dt * 8); b.z += b.speed * dt; continue; }
-    stepBot(b, dt);
-  }
+  stepRacers(dt);
   stepPowerups(S, dt);
   collectPowerups(S, S.px, S.pz, S.puZ0, true); S.puZ0 = S.pz;
   if (S.duel) duelTick(dt);
@@ -497,6 +538,7 @@ export function finishRace() {
   const key = recordKey('excuseme_race_best_' + LV.id + courseTag(LV.id), S.run), prev = parseFloat(store.get(key, '0')) || 0;
   R.newBest = !S.duel && S.run.policy.records && R.place === 1 && (!prev || S.time < prev);
   if (R.newBest) { store.set(key, S.time.toFixed(2)); ghostSave(); }
+  if (S.duel && S.duel.cup) { if (R.place === 1) banner('YOU WIN', '#27c27a'); S.duel.send('fin', { ft: S.time }); S.duel.send('fin', { ft: S.time }); return; }   // pays nothing, but the host still needs the finish
   if (!S.run.policy.progress) return;   // practice and other special runs end here: no tallies, no unlock progress
   if (R.place === 1) banner('YOU WIN', '#27c27a');
   if (S.duel) { S.duel.send('fin', { ft: S.time }); S.duel.send('fin', { ft: S.time }); return; }   // races against friends do not count toward unlocks
