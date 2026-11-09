@@ -1,0 +1,10 @@
+Outcome:     done (independent review; S1 blocker, do not merge).
+Branch:      stefanvargas100-hue/countdown-review; reviewed f7f7999 plus builder report through isolated merge 6aad724.
+Changed:     only this review report; implementation and prior provider sessions untouched.
+Checks:      68/68 focused host-handover, friendcup-room and start-sync tests passed; build passed; diff check passed; full suite not repeated per brief (builder reports 679/679).
+Not checked: browser, real phones, live network; probes used existing headless harness in memory, with no test-file changes.
+Off plan:    none.
+Trouble:     none.
+S1 blocker: src/online/duel.js:509-510 calls followStart even when receiveCup rejects the envelope; :343 clears awaitingStart before matching the attempt. Reproduced with cup(3), finish race 1, nextRace(old), new host countT=.1 and guest countT=0, startRemaining=null; drop new-host Cup start messages only to guest, then old.leaveRoom(). Capture the new host's valid cancellation Cup from H.log. Inject its clone to guest with rev=-1 and start.seed='unrelated:race1', then inject the valid original. Result: host cancelled=true/state=lost, guest cancelled=false/state=play; valid cancellation cannot heal the split. Separately reproduced the same outcome with a clone using proto=-1 and start.cancel=false. Both envelopes are rejected by receiveCup but consume awaitingStart. Gate decision handling on accepted Cup state and validate attempt before consuming; add harness regressions.
+Coverage:    All four normal boundary combinations, same-seed restart/finish and race-1 restart display pass existing tests; no stale/duplicate/missing-start regressions were added by the builder. beginRace clears pending decisions on restart, but that does not address the reproduced pre-restart failure.
+Integration: PROTO 7, START_PROTOCOL 2 and courseTag ghost keys remain intact; merged implementation files match f7f7999. Delayed or missing valid decisions are not sufficient evidence of convergence while a rejected envelope can discard the pending decision.
