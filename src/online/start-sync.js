@@ -63,7 +63,8 @@ export function createStartCoordinator({ id, hostId, now, send, onStart = () => 
   }
   function start(seed, { agreed = false } = {}) {
     if (!host || busy() || !connected || closed) return false;
-    if (agreed && !launched.size) return false;
+    // An agreed start follows a race everyone ran. A coordinator new after a host handover has launched nothing yet, so the room says so.
+    if (agreed && !launched.size && !allowAgreed()) return false;
     if (agreed && (phase === 'running' || phase === 'idle')) {
       phase = 'idle'; for (const p of players) p.ready = true; wish = true;
     }
