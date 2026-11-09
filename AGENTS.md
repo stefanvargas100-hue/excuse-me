@@ -16,7 +16,7 @@ Your batch plan is your brief. Read it, the files it names, and nothing else unl
 - **Never do these unless the plan says so:** touch the live database, run `tools/loadtest.mjs`, deploy, add a dependency, or start subagents.
 - **Be exact about evidence.** Tests, browser emulation and real phones are different things. Never report a check you did not run.
 
-On Windows PowerShell, use `npm.cmd` instead of `npm`.
+On Windows PowerShell, use `npm.cmd` instead of `npm`. `python` is not available on this machine, so use Node for scripts.
 
 ## Final report
 When working under Orca, keep its three-sentence `worker_done` message. Write the report below to `reports/<batch>.md` in your batch's round folder, commit it, and pass that path with `--report-path`. Elsewhere, give the report directly. Keep it to 10 lines at most.

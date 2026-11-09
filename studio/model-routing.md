@@ -13,7 +13,7 @@ The lead picks the builder for each batch and records why in the plan. The Direc
 ## Rules
 - Set the model and effort in each batch plan.
 - A worker never gives the final approval on its own work.
-- The lead cannot reliably see remaining limits. The Director flags low limits, and the lead switches models if a worker stops because of one.
+- **Limits:** Codex session logs under `~/.codex/sessions` record `rate_limits` with used percentages for the 5-hour and weekly windows, so the lead can check Codex. Claude's limits are not visible to the lead, so the Director flags those.
 
 ## Startup load
 A Codex worker loaded about 21K tokens before any work. Two settings reduce it:
@@ -29,3 +29,4 @@ Update this table from round reports, and change the defaults when the numbers j
 |---|---|---|---|---|
 | 1 | 1, screen-fit check | Codex, defaults | In review | Stayed within its allowed files, tests failed first, and the lead reproduced its result. Its report used Orca's required three-sentence format, which conflicted with `AGENTS.md`; the rules are now fixed. Fix requests: 2. Merged as `945b2cf`. Tokens across all 3 passes: 4.62M total, of which 4.52M were cached input; 16K output; 65 tool calls. Startup context was 22K, growing to 96K. Lead caught a visual regression the tool missed. |
 | 1 | 2, live splits | Codex, defaults | Merged | One pass, fresh worker. 1.24M total, of which 1.20M cached; 4.9K output; 26 tool calls. Context 23K to 52K. Tests failed on assertions, and the report rule worked. Lead fixed one small colour bug. |
+| 1 | 3, medal times | Codex, defaults, reduced startup | In review | First pass: 2.20M total, of which 2.15M cached; 9.3K output; 47 tool calls. Context 17K to 58K. Startup settings applied (17.3K versus 22.6K). A slow measurement restart added calls. Fix requests: 1 so far. |
