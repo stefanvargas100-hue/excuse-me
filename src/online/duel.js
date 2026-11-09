@@ -62,7 +62,7 @@ const cupLooks = {};      // id -> look, kept so a bot taking over from a player
 const RACE_SEED = /:race\d+$/;
 // Room protocol version. Race layouts and the start handshake must be identical on every phone, so phones on different builds
 // refuse each other instead of racing on different crowds. Raise it whenever a change would make layouts or rules differ.
-export const PROTO = 5;
+export const PROTO = 6;
 let myId = '', hostId = '', roster = [];        // roster: [{ id, name, look }], the host first, me included
 let inRoster = false, raced = false, hostGone = false, lastStatus = '', joinWaiter = null;
 let wantMe = false; const wants = new Set();    // rematch: everyone still in the room has to ask
@@ -242,7 +242,7 @@ function cupFromMessage(m) {
   try {
     if (!m || m.proto !== PROTO || !Array.isArray(m.rounds) || m.rounds.length > CUP_RACES || !Array.isArray(m.left)) return null;
     const setup = cleanSetup(m.setup);
-    if (!setup || setup.racers[0].id !== hostId || !setup.racers.some(r => r.id === myId && !r.bot)) return null;
+    if (!setup || setup.racers[0].id !== (cup?.racers[0].id || hostId) || !setup.racers.some(r => r.id === myId && !r.bot)) return null;
     if (setup.racers.some(r => !r.bot && (cleanId(r.id) !== r.id || cleanName(r.name) !== r.name))) return null;
     let c = { ...setup, rounds: [], ended: false };
     for (const rows of m.rounds) { c = addRace(c, rows); if (!c) return null; }
@@ -281,12 +281,35 @@ function cupRacerGone(id) {
   const b = cupTakeOver(id, P.look);
   if (b && role !== 'host') { P.remote = createRemote(); P.remote.push({ n: 0, x: b.x, z: b.z, vx: b.vx, s: b.speed }, S.clock); }
 }
-// The host has gone. Guests finish this race among themselves; only finished races count, and the bots stop with the host.
+// Elect locally from the settled roster; messages cannot nominate a host.
 function cupHostGone() {
   if (!cup) return;
-  cup = hostLeft(cup);
+  const old = hostId;
+  roster = roster.filter(p => p.id !== old);
+  cupRacerGone(old);
+  const next = roster.find(p => !retired.has(p.id));
+  if (!next) { cup = hostLeft(cup); hostGone = true; syncCupRun(); return; }
+  hostId = next.id; role = myId === hostId ? 'host' : 'guest'; hostGone = false;
+  rosterRev = 0; receivedRev = -1; receivedOutcome = -1;
+  cupRev = Math.max(cupRev, cupReceived); cupReceived = -1;
+  if (startTimer) { clearInterval(startTimer); startTimer = null; }
+  if (lobby) lobby.close(); lobby = null;
   const d = S?.duel;
-  if (d?.cup) for (const id of d.order) if (d.peers[id].ai && d.peers[id].fin == null) d.peers[id].bye = true;
+  if (d?.cup) {
+    d.cup.host = role === 'host';
+    if (role === 'host') for (const id of d.order) if (d.peers[id].ai) {
+      cupTakeOver(id, d.peers[id].look);
+    }
+    // A start still counting down has not run: discard it on every phone.
+    if (S.race.countT > 0) {
+      started.delete(d.seed); d.startRemaining = null;
+      S.race.countT = 0;
+      forfeitDuel(); d.cup.race = cup.rounds.length;
+    }
+  }
+  ensureLobby();
+  say(next.name + ' is now hosting.');
+  if (role === 'host') { publishCup(); sendRoster(); }
   syncCupRun();
 }
 // Everyone real has finished or dropped out: the host settles the places. A bot still walking is placed by how far it got.
@@ -414,10 +437,10 @@ function onMessage(ev, data) {
     if (raced && from === hostId) applyOutcomes(data.outcomes);
     if (raced && from === hostId && data.cup) receiveCup(data.cup);   // the host's last word heals a result this phone missed
     if (from === hostId && role === 'guest') {
-      if (!raced) { closeRoom(); say('The host left the room.'); return; }
+      if (!raced && !cup) { closeRoom(); say('The host left the room.'); return; }
       hostGone = true; elimAbort();
       say(S?.duel?.elim ? 'Host left. The elimination race is over.' : S?.duel?.cup ? 'Host left. Finish this race to see the standings.' : 'Host left. Finish this race; create a new room for another.');
-      if (S?.duel?.cup) cupHostGone();
+      if (cup) cupHostGone();
     }
     roster = roster.filter(p => p.id !== from); wants.delete(from);
     retired.add(from);
@@ -523,7 +546,7 @@ function heartbeat() {
   if (role === 'guest') {
     room.send('hello', { proto: PROTO, id: myId, name: myName(), look: LOOK, startProtocol: START_PROTOCOL });
     if (inRoster && !hostGone && seenAt[hostId] && now - seenAt[hostId] > STALE_MS) {
-      if (!raced) { closeRoom(); say('Lost contact with the host.'); } else { hostGone = true; elimAbort(); say(S?.duel?.elim ? 'Host lost connection. The elimination race is over.' : S?.duel?.cup ? 'Host lost connection. Finish this race to see the standings.' : 'Host lost connection. Finish this race; create a new room for another.'); if (S?.duel?.cup) cupHostGone(); changed(); }
+      if (cup) { cupHostGone(); changed(); } else if (!raced) { closeRoom(); say('Lost contact with the host.'); } else { hostGone = true; elimAbort(); say(S?.duel?.elim ? 'Host lost connection. The elimination race is over.' : S?.duel?.cup ? 'Host lost connection. Finish this race to see the standings.' : 'Host lost connection. Finish this race; create a new room for another.'); if (S?.duel?.cup) cupHostGone(); changed(); }
     }
   } else if (role === 'host') {
     const gone = others().filter(p => seenAt[p.id] && now - seenAt[p.id] > STALE_MS);
