@@ -6,11 +6,11 @@
 
 ## Now
 - **Round:** 1, at step 6 of the playbook.
-- **In progress:** batch 2, live splits, on Codex. Batch 1 is merged into the lead branch but not `main`.
-- **Waiting on the Director:** nothing.
+- **In progress:** batch 3, medal times, on Codex. Batches 1 and 2 are merged into the lead branch but not `main`.
+- **Waiting on the Director:** nothing blocking. At the playtest: splits appear low on screen and overlap the stamina bars.
 
 ## Next action
-Review batch 2 using `studio/skills/process-review/SKILL.md`, including whether the new report rule worked. Then write the medal times batch, and compare its token use with live splits and the pilot. It is the first worker with the reduced startup settings, so confirm they applied.
+Review batch 3 using `studio/skills/process-review/SKILL.md`. It is the first worker with the reduced startup settings, so confirm they applied and compare its token use with batch 2. Then plan Cups.
 
 ## Worth knowing
 - Codex has not yet been run through this process. Confirm during the pilot that it follows `AGENTS.md`, reports back and stays in scope.

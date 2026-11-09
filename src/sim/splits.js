@@ -14,3 +14,6 @@ export function splitText(delta) {
   const magnitude = Math.abs(delta).toFixed(1);
   return magnitude === '0.0' ? '0.0' : (delta < 0 ? '-' : '+') + magnitude;
 }
+
+// Follows the displayed text, so a split that rounds to level is never shown as behind.
+export const splitColor = delta => (splitText(delta).startsWith('+') ? '#ff6b6b' : '#7ee081');

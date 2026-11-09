@@ -28,3 +28,4 @@ Update this table from round reports, and change the defaults when the numbers j
 | Round | Batch | Model | Result | Notes |
 |---|---|---|---|---|
 | 1 | 1, screen-fit check | Codex, defaults | In review | Stayed within its allowed files, tests failed first, and the lead reproduced its result. Its report used Orca's required three-sentence format, which conflicted with `AGENTS.md`; the rules are now fixed. Fix requests: 2. Merged as `945b2cf`. Tokens across all 3 passes: 4.62M total, of which 4.52M were cached input; 16K output; 65 tool calls. Startup context was 22K, growing to 96K. Lead caught a visual regression the tool missed. |
+| 1 | 2, live splits | Codex, defaults | Merged | One pass, fresh worker. 1.24M total, of which 1.20M cached; 4.9K output; 26 tool calls. Context 23K to 52K. Tests failed on assertions, and the report rule worked. Lead fixed one small colour bug. |

@@ -4,7 +4,7 @@ const esbuild = require('esbuild');
 const { load } = require('./harness.js');
 const code = esbuild.buildSync({ entryPoints: ['src/sim/splits.js'], bundle: true, format: 'cjs', write: false }).outputFiles[0].text;
 const mod = { exports: {} }; new Function('module', 'exports', code)(mod, mod.exports);
-const { splitPoints, timeAtZ, splitText } = mod.exports;
+const { splitPoints, timeAtZ, splitText, splitColor } = mod.exports;
 test('split distances are quarters of the goal', () => assert.deepEqual(splitPoints(180), [45, 90, 135]));
 test('ghost time interpolates the first crossing despite backtracking', () => {
   assert.equal(timeAtZ([0, 0, 2, 10, 4, 0, 6, 20], 2, 5), 1);
@@ -49,4 +49,11 @@ test('Cup, Practice, Weekly, Classic and friend rooms never show splits', () => 
   }
   E.start('classic'); assert.equal(crossing(E, 0.75).length, 0);
   begin(E); E.S.duel = {}; assert.equal(crossing(E, 0.75).length, 0, 'friend room');
+});
+
+test('split colour matches what the player reads, so a rounded level split is never red', () => {
+  assert.equal(splitColor(-0.2), '#7ee081');
+  assert.equal(splitColor(-0.04), '#7ee081');
+  assert.equal(splitColor(0.04), '#7ee081');
+  assert.equal(splitColor(0.2), '#ff6b6b');
 });

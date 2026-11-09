@@ -7,7 +7,7 @@ import { addPop } from './scoring.js';
 import { S } from './state.js';
 import { recordKey } from './runopts.js';
 import { courseTag } from '../config/routes.js';
-import { splitPoints, timeAtZ, splitText } from './splits.js';
+import { splitPoints, timeAtZ, splitText, splitColor } from './splits.js';
 
 /* ---------- ghosts: your best run, friends' best runs, the top 3 of a classic stage; and sharing a run ----------
    Each ghost only shows up when you are close to its record: within GHOST_CLOSE_M of where that run ended.
@@ -75,7 +75,7 @@ export function ghostStep(dt) {
     split.seen = true;
     if (split.time === null) continue;
     const delta = S.time - split.time;
-    addPop(splitText(delta), delta <= 0 ? '#7ee081' : '#ff6b6b', 24);
+    addPop(splitText(delta), splitColor(delta), 24);
   }
   if (S.time >= S.ghostNext && S.ghostRec.length < GHOST_MAX * 2) { S.ghostRec.push(+S.px.toFixed(2), +S.pz.toFixed(1)); S.ghostNext += OWN_STEP; }
   if (S.ghost && !stepOne(S.ghost, dt, true)) { S.ghost = null; addPop('PAST YOUR BEST RUN', '#ffd166', 24); }
