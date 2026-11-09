@@ -4,8 +4,9 @@
 - Workspace authority: develop at c33c8cd, clean before this documentation update, eight commits ahead of origin/develop. Local main is 72f05e3; deployment not verified.
 - Previous lead merged 05 (253bd46) and 07 (c33c8cd). Its saved transcript records 663/663 tests, build, diff check and UTF-8 check passing after 07; not rerun during recovery.
 - 06d stopped at Claude usage limit, with three uncommitted files in host-handover-2. Preserved as batch-06e-inherited.patch. Codex recovery brief: batch-06e-countdown-recovery.md; independent review required before merge. Original checkout and provider session preserved.
-- 09 remains queued for the Director-selected Claude model; allowance reset reported as 17:00 Denver.
+- Director moved 09 visual pass until AFTER the combined feature playtest. Do not start it beforehand.
 - 03 is failed/exited in Orca, not running; its report still needs inspection. 04 QA remains partial. Migration 0003 remains unapplied pending approval.
+- 06e recovery reported complete at f7f7999: 679/679 tests, build and room simulations reported passing. Independent review brief 06f prepared; not yet merged.
 - Older checkpoint below is historical and superseded where noted.
 
 
