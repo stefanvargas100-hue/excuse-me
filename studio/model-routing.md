@@ -20,4 +20,4 @@ Update this table from round reports, and change the defaults when the numbers j
 
 | Round | Batch | Model | Result | Notes |
 |---|---|---|---|---|
-| 1 | 1, screen-fit check | Codex, defaults | In review | Stayed within its allowed files, tests failed first, and the lead reproduced its result. Its first report was one paragraph, not the set format. Fix requests: 1 so far. |
+| 1 | 1, screen-fit check | Codex, defaults | In review | Stayed within its allowed files, tests failed first, and the lead reproduced its result. Its report used Orca's required three-sentence format, which conflicted with `AGENTS.md`; the rules are now fixed. Fix requests: 1 so far. |

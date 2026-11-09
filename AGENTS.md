@@ -18,7 +18,9 @@ Your batch plan is your brief. Read it, the files it names, and nothing else unl
 
 On Windows PowerShell, use `npm.cmd` instead of `npm`.
 
-## Final report: 10 lines at most
+## Final report
+When working under Orca, keep its three-sentence `worker_done` message. Write the report below to `reports/<batch>.md` in your batch's round folder, commit it, and pass that path with `--report-path`. Elsewhere, give the report directly. Keep it to 10 lines at most.
+
 ```text
 Outcome:     done | partial | blocked
 Branch:      name and commit
