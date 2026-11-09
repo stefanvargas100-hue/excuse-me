@@ -1,6 +1,6 @@
 # Cups: one-page spec
 
-**Status:** waiting for Director approval. **Risk:** high (online play, shared bots). **Delays:** nothing else is running. Round 2 starts after this.
+**Status:** approved by the Director, 2026-11-08. **Risk:** high (online play, shared bots). **Delays:** nothing else is running. Round 2 starts after this.
 
 ## What the player gets
 **NYC Cup (solo):** 8 racers instead of 4. Still 3 races until the subway stage exists, then 4.
@@ -17,9 +17,9 @@
 | Tie-break | Race wins, then better final-race place, then lower total time (unchanged) |
 | Player leaves | A bot at the host's difficulty takes over, and the points stay. No rejoining at first |
 
-## Decisions for the Director
-1. **Host leaves mid-Cup.** Recommended: everyone finishes the current race, then the Cup ends with the standings so far. This matches today's "Host left" behaviour. Passing the host to another phone costs roughly one extra batch and can follow later.
-2. **NYC Cup XP with 8 places.** Today 60, 40, 25, 15. Recommended: 60, 45, 35, 25, 20, 15, 10, 5. First place stays the same, and a 4th place in a larger field earns more than before.
+## Director's decisions
+1. **Host leaves mid-Cup:** everyone finishes the current race, then the Cup ends with the standings so far. Passing the host role comes later.
+2. **NYC Cup XP with 8 places:** 60, 45, 35, 25, 20, 15, 10, 5.
 
 ## How it gets built
 Each phone currently runs its own crowd and its own solo bots, so bots must become shared. The host runs them and sends all their positions in one combined message, at the rate friend positions use today. Guests draw them like remote players. `PROTO` goes from 3 to 4, so phones on different versions get the existing "update the game" message. `CUP_RULES` goes to 2, so old NYC Cup bests are kept but not compared with 8-racer ones.

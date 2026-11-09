@@ -1,3 +1,4 @@
+import { PLAYTEST } from '../config/channel.js';
 import { store } from './store.js';
 import { gainXp, XP_DAILY, XP_UNLOCK, XP_WEEKLY } from './level.js';
 import { createRotating, liveKeys, rotateAdd, setRotating } from './rotating.js';
@@ -62,7 +63,7 @@ let tally = {};
 try { tally = JSON.parse(store.get('excuseme_tally', '{}')) || {}; } catch (e) {}
 
 export const tallyOf = name => tally[name] || 0;
-export const isDone = c => tallyOf(c.tally) >= c.target;
+export const isDone = c => PLAYTEST || tallyOf(c.tally) >= c.target;   // the playtest copy opens all gear for testing
 export const isLocked = (key, val) => { const c = challengeFor(key, val); return !!c && !isDone(c); };
 // The unfinished challenge you are closest to (and have started), for the results screen.
 export const tallySnapshot = () => ({ ...tally });

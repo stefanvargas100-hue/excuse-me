@@ -78,3 +78,26 @@ test('the live offline cache leaves playtest files alone, so a refresh gets the 
 test('the playtest page does not install an offline worker', () => {
   assert.match(fs.readFileSync('index.html', 'utf8'), /"serviceWorker" in navigator && !location\.pathname\.includes\("\/playtest\/"\)/);
 });
+
+test('the playtest has all gear unlocked, without touching real tallies or paying unlock XP', () => {
+  const pt = loadSrc('save/challenges.js', '/excuse-me/playtest/').mod;
+  assert.equal(pt.doneCount(), pt.CHALLENGES.length);
+  const c = pt.CHALLENGES[0], [key, val] = c.id.split(':');
+  assert.equal(pt.isLocked(key, val), false);
+  assert.equal(pt.tallyOf(c.tally), 0, 'progress still counts from the real number');
+  const live = loadSrc('save/challenges.js', '/excuse-me/').mod;
+  assert.equal(live.doneCount(), 0);
+  assert.equal(live.isLocked(key, val), true);
+});
+
+test('the playtest has every title and picture, at the real level', () => {
+  const memory = () => { const m = new Map(); return { get: (k, d) => (m.has(k) ? m.get(k) : d), set: (k, v) => m.set(k, v) }; };
+  const pt = loadSrc('save/level.js', '/excuse-me/playtest/').mod, levels = pt.createLevels({ store: memory() });
+  assert.equal(levels.level(), 1);
+  assert.equal(pt.TITLES.every(t => pt.rewardOpen(t, levels.level())), true);
+  assert.equal(pt.PICS.every(p => pt.rewardOpen(p, levels.level())), true);
+  assert.equal(levels.setTitle('legend'), true);
+  const live = loadSrc('save/level.js', '/excuse-me/').mod, liveLevels = live.createLevels({ store: memory() });
+  assert.equal(live.rewardOpen({ level: 50 }, liveLevels.level()), false);
+  assert.equal(liveLevels.setTitle('legend'), false);
+});

@@ -1,4 +1,5 @@
 /* ---------- account level: XP from challenges and every run; levels unlock titles and playercard pictures ---------- */
+import { PLAYTEST } from '../config/channel.js';
 import { store as realStore } from './store.js';
 
 // Total XP needed to reach a level: 100 for level 2, 300 for 3, 1,000 for 5, 4,500 for 10. Each level costs a bit more than the last.
@@ -31,6 +32,9 @@ export const PICS = [
   { id: 'star', glyph: '🌟', bg: '#ffd60a', level: 35 }, { id: 'crown', glyph: '👑', bg: '#d4af37', level: 50 }
 ];
 
+// The playtest copy opens every reward for testing. The level and XP stay real.
+export const rewardOpen = (reward, level) => PLAYTEST || reward.level <= level;
+
 export function createLevels({ store, onLevelUp }) {
   const KX = 'excuseme_xp', KT = 'excuseme_title', KP = 'excuseme_pic';
   let xp = Math.max(0, parseInt(store.get(KX, '0'), 10) || 0);
@@ -43,10 +47,10 @@ export function createLevels({ store, onLevelUp }) {
     const before = level(); xp += n; store.set(KX, String(xp));
     for (let l = before + 1; l <= level(); l++) if (onLevelUp) onLevelUp(l, rewardsAt(l));
   }
-  const list = (arr, sel) => arr.map(x => ({ ...x, unlocked: x.level <= level(), selected: x.id === sel }));
+  const list = (arr, sel) => arr.map(x => ({ ...x, unlocked: rewardOpen(x, level()), selected: x.id === sel }));
   // the one you chose; until you choose, your newest unlocked one
-  const pick = (arr, key) => { const id = store.get(key, null), f = arr.find(x => x.id === id); return f && f.level <= level() ? f : arr.filter(x => x.level <= level()).pop(); };
-  const choose = (arr, key, id) => { const f = arr.find(x => x.id === id); if (!f || f.level > level()) return false; store.set(key, id); return true; };
+  const pick = (arr, key) => { const id = store.get(key, null), f = arr.find(x => x.id === id); return f && rewardOpen(f, level()) ? f : arr.filter(x => rewardOpen(x, level())).pop(); };
+  const choose = (arr, key, id) => { const f = arr.find(x => x.id === id); if (!f || !rewardOpen(f, level())) return false; store.set(key, id); return true; };
   return {
     addXp, xp: () => xp, level, rewardsAt,
     progress() { const l = level(), base = xpToReach(l), next = xpToReach(l + 1); return { level: l, into: xp - base, need: next - base, pct: (xp - base) / (next - base) }; },

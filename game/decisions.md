@@ -17,6 +17,9 @@ Older entries name documents that now live in `game/archive/`.
 - 2026-11-08 (Director): New stages should explore side routes: stairs, lower levels and locked corridors that rejoin the main path. Hard routes must reward the player; easy routes are at most equal to the main path. See `rounds/round-02/side-routes.md`.
 - 2026-11-08 (Director): Matchmaking waits 30 seconds, then bots fill the empty places. A lone searcher can start. This replaces the earlier minimum of 6 real players.
 - 2026-11-08 (Director): Splits, medals and screen fixes approved for `main`, shipped at `546dcb3`. Asked for a playtest link to test updates before they reach `main`.
+- 2026-11-08 (Director): Friend Cup: if the host leaves, everyone finishes the race and the Cup ends. Passing the host role is wanted later, with the lead choosing when. NYC Cup XP with 8 places: 60, 45, 35, 25, 20, 15, 10, 5. Locked corridors open on a visible timer shared by all racers. Cups spec approved.
+- 2026-11-08 (Director): The playtest copy has all gear, titles and pictures unlocked. Live saves are not changed.
+- 2026-11-08: Passing the host role is planned after the Cups QA trial, when real disconnect results show how often it matters, and before public matchmaking.
 - 2026-11-08: Old branches deleted with Director approval. Unmerged tips, recoverable by hash until Git cleans them up: online-ready-start-impl 13e2a33, Online-Play 50bf6a6, origin/multiplayer-lobby e619bf9, backup-local-main-2026-11-06 8b86a96.
 - Keep the web codebase and wrap it later (Capacitor) instead of rewriting; see ROADMAP.md.
 - GitHub repo will be private at first; can go public when hosting on GitHub Pages.

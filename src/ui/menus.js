@@ -7,7 +7,7 @@ import { clamp, todayKey, weekKey } from '../config/util.js';
 import { $ } from '../dom.js';
 import { CHALLENGES, doneCount, isDone, tallyOf } from '../save/challenges.js';
 import { rotatingList, rotatingTotal } from '../save/rotating.js';
-import { account, TITLES, PICS } from '../save/level.js';
+import { account, TITLES, PICS, rewardOpen } from '../save/level.js';
 import { myName } from '../online/online.js';
 import { ITEM_STATS, statHint } from '../config/stats.js';
 import { setVibOn, store, vibOn } from '../save/store.js';
@@ -314,7 +314,7 @@ function buildProfile() {
 // Cycle through every title or picture; unlocked ones are chosen as you land on them, locked ones show their level.
 function cycler(list, get, set, nameEl, label) {
   let i = Math.max(0, list.findIndex(x => x.id === get().id));
-  const show = () => { const x = list[i], ok = x.level <= account.level(); nameEl.textContent = label(x) + (ok ? '' : '  🔒 level ' + x.level); if (ok) { set(x.id); buildProfile(); } };
+  const show = () => { const x = list[i], ok = rewardOpen(x, account.level()); nameEl.textContent = label(x) + (ok ? '' : '  🔒 level ' + x.level); if (ok) { set(x.id); buildProfile(); } };
   return d => { i = (i + d + list.length) % list.length; show(); };
 }
 function initProfile() {

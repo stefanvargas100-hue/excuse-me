@@ -1,6 +1,6 @@
 # Side routes: stairs, lower passages and locked corridors
 
-**Status:** Director's idea, 2026-11-08. Design to be approved before the first stage plan.
+**Status:** Director's idea, 2026-11-08. Approved in principle; the details get settled in the subway stage plan.
 
 ## Director's rule
 Side routes rejoin the main path. **A hard route must reward the player. An easy route must be no better than equal to the main path.**
@@ -29,8 +29,8 @@ A reusable side-route system, built once and used by every new stage:
 | Baggage Claim | Behind the carousels | Easy: fewer people, longer way round |
 | Gate Change Rush | Upper walkway via escalator | Hard: get on before the surge for a big gain |
 
-## Open question
-**How locked corridors open.** Recommended: doors on a visible, shared timer, purely a skill of timing and route planning. It works identically for every racer and online. Alternatives are a key pickup, which adds an item to chase, or unlocking after clean walking, which makes corridors easier for those already ahead.
+## Locked corridors
+Approved by the Director: doors open on a visible timer shared by all racers, purely a skill of timing and route planning. It works identically for every racer and online.
 
 ## Cost
 About one extra batch for the system, and more work per stage. It does not delay Cups, but Alpha takes longer.
