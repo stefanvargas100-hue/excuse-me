@@ -1,0 +1,5 @@
+# Studio workers do not need Codex plugins or apps, so leave them out to reduce startup tokens.
+# Applies only in folders Codex trusts. Orca trusts each worker's folder.
+[features]
+plugins = false
+apps = false

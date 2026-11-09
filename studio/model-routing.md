@@ -15,6 +15,13 @@ The lead picks the builder for each batch and records why in the plan. The Direc
 - A worker never gives the final approval on its own work.
 - The lead cannot reliably see remaining limits. The Director flags low limits, and the lead switches models if a worker stops because of one.
 
+## Startup load
+A Codex worker loaded about 21K tokens before any work. Two settings reduce it:
+- **`.codex/config.toml` (repo):** turns off plugins and apps for this project. It only applies in folders Codex trusts, and Orca trusts each worker's folder.
+- **`skills.config` (`~/.codex/config.toml`):** hides individual skills. Codex ignores this in a project file, so it affects all Codex work on the machine. Each new machine needs it set.
+
+Claude workers have not been measured yet.
+
 ## Evidence so far
 Update this table from round reports, and change the defaults when the numbers justify it.
 

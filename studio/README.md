@@ -6,6 +6,7 @@ A reusable way to build a game with one human director, one lead agent and short
 | Path | Purpose | Copied to a new game? |
 |---|---|---|
 | `AGENTS.md`, `CLAUDE.md` | Rules for every agent | Yes |
+| `.codex/config.toml` | Leaves Codex plugins and apps out of worker startup | Yes |
 | `studio/` | Lead process, model routing, templates, skills | Yes |
 | `game/` | Vision, roadmap, decisions, area guides, rounds | No: start empty |
 
