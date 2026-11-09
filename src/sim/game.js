@@ -448,7 +448,7 @@ export function start(a, b, opts) {
   if (S.endless) S.timeLeft = Infinity;
   ghostStart();
   if (mode === 'race') {
-    initRace(duel || opts && (opts.lesson || opts.solo) ? 0 : 3, opts && opts.cup ? opts.cup.model.bots : undefined);
+    initRace(duel || opts && (opts.lesson || opts.solo) ? 0 : opts && opts.cup ? 7 : 3, opts && opts.cup ? opts.cup.model.bots : undefined);
     if (opts && opts.lesson) beginLesson(opts.lesson);
     if (duel) {
       const spot = k => startSlot(duel.slotOf[k], duel.count, LV.half);   // everyone on one line, in the order of the room list
@@ -493,7 +493,7 @@ function startCupRound() {
 }
 export function startCup() {
   const pool = BOT_NAMES.slice(), bots = [];
-  for (let i = 0; i < 3; i++) bots.push(pool.splice((Math.random() * pool.length) | 0, 1)[0]);
+  for (let i = 0; i < 7; i++) bots.push(pool.splice((Math.random() * pool.length) | 0, 1)[0]);
   cupRun = { model: newCup({ seed: Math.random().toString(36).slice(2, 10), bots }), round: 0, scored: -1, newBest: false, outfit: { ...LOOK } };
   startCupRound();
 }

@@ -9,8 +9,8 @@ test('the cup is Fifth Avenue, Central Park, Brooklyn Bridge in that order, on s
   assert.deepEqual([...C.CUP_STAGES], [1, 3, 4]);
 });
 
-test('round points: 10 / 7 / 5 / 3 for first to fourth, nothing for anything else', () => {
-  assert.deepEqual(J([1, 2, 3, 4, 5, 0].map(C.pointsFor)), [10, 7, 5, 3, 0, 0]);
+test('round points cover all eight places', () => {
+  assert.deepEqual(J([1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map(C.pointsFor)), [10, 8, 6, 5, 4, 3, 2, 1, 0, 0]);
 });
 
 test('a cup totals points and time, one round at a time, and is complete after three', () => {
@@ -20,7 +20,7 @@ test('a cup totals points and time, one round at a time, and is complete after t
   assert.equal(C.cupDone(c), false);
   c = C.addRound(c, round(4, 90));
   assert.equal(C.cupDone(c), true);
-  assert.deepEqual(J([C.cupPoints(c), C.cupTime(c), C.cupWins(c)]), [20, 240, 1]);
+  assert.deepEqual(J([C.cupPoints(c), C.cupTime(c), C.cupWins(c)]), [23, 240, 1]);
   assert.throws(() => C.addRound(c, round(1)), /complete/, 'a fourth round is refused');
 });
 
@@ -46,12 +46,12 @@ test('the cup table adds up every racer across rounds and ranks them', () => {
   c = C.addRound(c, { place: 1, time: 61, board: board(1, 2, 3, 4) });
   c = C.addRound(c, { place: 2, time: 62, board: board(2, 1, 3, 4) });
   const t = C.cupTable(c);
-  assert.deepEqual(J(t.map(r => [r.name, r.points])), [['Mia', 17], ['You', 17], ['Leo', 10], ['Ava', 6]]);
+  assert.deepEqual(J(t.map(r => [r.name, r.points])), [['Mia', 18], ['You', 18], ['Leo', 12], ['Ava', 10]]);
   assert.equal(t[0].name, 'Mia', 'level on points and wins: the better final round (Mia 1st, you 2nd) decides');
 });
 
 test('cup rewards: XP by final place, a completed cup only', () => {
-  assert.deepEqual(J([1, 2, 3, 4].map(C.cupXp)), [60, 40, 25, 15]);
+  assert.deepEqual(J([1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map(C.cupXp)), [60, 45, 35, 25, 20, 15, 10, 5, 0, 0]);
 });
 
 test('best cup: more points wins, then lower total time; a cup with fewer rounds never counts', () => {

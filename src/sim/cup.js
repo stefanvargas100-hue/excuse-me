@@ -1,9 +1,9 @@
 /* ---------- NYC Cup: the pure scoring model (no game state, no storage) ----------
    Three bot races in a fixed order. A cup is a plain object: { seed, bots: [names], rounds: [{ place, time, board? }] }.
    A round's board is optional: [{ name, me?, place, time? }] for every racer, so the table can score the bots too. */
-export const CUP_RULES = 1;                       // bump when the format, points or stages change: records are filed per version
+export const CUP_RULES = 2;                       // bump when the format, points or stages change: records are filed per version
 export const CUP_STAGES = [1, 3, 4];              // Fifth Avenue, Central Park, Brooklyn Bridge (indexes in LEVELS)
-const POINTS = [10, 7, 5, 3], XP = [60, 40, 25, 15];
+const POINTS = [10, 8, 6, 5, 4, 3, 2, 1], XP = [60, 45, 35, 25, 20, 15, 10, 5];
 
 export const pointsFor = place => POINTS[place - 1] || 0;
 export const cupXp = place => XP[place - 1] || 0;

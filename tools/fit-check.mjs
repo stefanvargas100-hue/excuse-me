@@ -141,12 +141,30 @@ try {
           for (let i = 0; i < 90; i++) E.tick(1 / 30);
         });
       }],
+      ['cup final', async () => {
+        await home();
+        await page.evaluate(() => {
+          const E = window.__excuse; E.startCup();
+          for (let round = 0; round < 3; round++) {
+            E.S.race.countT = 0; E.S.people.length = 0;
+            for (let i = 0; i < 14; i++) E.tick(1 / 30);
+            E.S.pz = E.LV.goal + 1;
+            for (let i = 0; i < 90; i++) E.tick(1 / 30);
+            if (round < 2) E.nextCupRound();
+          }
+        });
+      }],
     ];
     for (const [name, open] of routes) {
       try {
         await open();
-        const screen = name === 'NYC Cup' || name === 'stages saved best' ? 'stages' : name === 'race end' ? 'end' : name;
+        const screen = name === 'NYC Cup' || name === 'stages saved best' ? 'stages' : name === 'race end' || name === 'cup final' ? 'end' : name;
         const m = await measure(page, screen);
+        if (name === 'end' || name === 'cup final') {
+          const rows = await page.locator('#raceBoard li').count();
+          if (rows !== 8) line(size, name, '#raceBoard', 'expected 8 rows, got ' + rows);
+          if (viewport.width === 320) await page.screenshot({ path: (process.env.TEMP || '/tmp') + '/cup-' + (name === 'end' ? 'round' : 'final') + '-320x568.png' });
+        }
         checked++;
         for (const p of fitProblems(m, viewport)) line(size, name, p.element + ' ' + JSON.stringify(p.text), p.problem + ' (' + p.overflow.toFixed(2) + 'px)');
         if (name === 'practice') {

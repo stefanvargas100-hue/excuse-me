@@ -12,10 +12,10 @@ const finish = (E, ahead = 0) => {
 };
 const playCup = (E, aheads = [0, 0, 0]) => { finish(E, aheads[0]); E.nextCupRound(); finish(E, aheads[1]); E.nextCupRound(); finish(E, aheads[2]); };
 
-test('a cup starts a bot race on Fifth Avenue as a cup run with three bots and a countdown', () => {
+test('a cup starts a bot race on Fifth Avenue as a cup run with seven bots and a countdown', () => {
   const E = begin();
   assert.equal(E.LV.id, 'nyc'); assert.equal(E.S.mode, 'race'); assert.equal(E.S.run.category, 'cup');
-  assert.equal(E.S.race.bots.length, 3); assert.ok(E.S.race.countT > 0);
+  assert.equal(E.S.race.bots.length, 7); assert.ok(E.S.race.countT > 0);
   assert.deepEqual(JSON.parse(JSON.stringify(E.S.run.policy)), { xp: false, progress: false, records: false, scores: false, ghosts: false });
   assert.equal(E.cupState().round, 0); assert.equal(E.cupState().rounds.length, 0);
 });
@@ -45,7 +45,7 @@ test('a completed cup pays XP once by final place and keeps a separate personal 
   assert.equal(c.rounds.length, 3); assert.equal(c.done, true); assert.equal(c.place, 1);
   assert.equal(E.xp() - xp0, 60); assert.equal(E.S.xpGained, 60);
   assert.equal(E.tallyOf('races'), races0, 'rounds do not feed ordinary unlock progress');
-  const key = 'excuseme_cup_nyc:r1', saved = E.storage[key];
+  const key = 'excuseme_cup_nyc:r2', saved = E.storage[key];
   assert.match(saved, /^30:\d+\.\d\d$/);
   assert.ok(!Object.keys(E.storage).some(k => /race_best|ghost/.test(k)));
   E.nextCupRound(); E.tick(DT);   // no fourth round, and nothing more is paid
@@ -54,12 +54,12 @@ test('a completed cup pays XP once by final place and keeps a separate personal 
 
 test('a worse cup does not replace the best; a better one does', () => {
   const E = begin();
-  E.storage['excuseme_cup_nyc:r1'] = '30:1.00';
+  E.storage['excuseme_cup_nyc:r2'] = '30:1.00';
   playCup(E);
-  assert.equal(E.storage['excuseme_cup_nyc:r1'], '30:1.00', 'same points but slower');
-  const F = begin(); F.storage['excuseme_cup_nyc:r1'] = '12:999.00';
-  playCup(F, [1, 1, 1]);   // second every round: 21 points
-  assert.match(F.storage['excuseme_cup_nyc:r1'], /^21:/);
+  assert.equal(E.storage['excuseme_cup_nyc:r2'], '30:1.00', 'same points but slower');
+  const F = begin(); F.storage['excuseme_cup_nyc:r2'] = '12:999.00';
+  playCup(F, [1, 1, 1]);   // second every round: 24 points
+  assert.match(F.storage['excuseme_cup_nyc:r2'], /^24:/);
   assert.equal(F.cupState().newBest, true);
 });
 
@@ -90,4 +90,46 @@ test('the saved outfit is untouched and the cup ignores later changes to it', ()
 test('the cup is repeatable: the same seed gives the same crowd in a round', () => {
   const sig = () => { const E = begin(7); E.S.race.countT = 0; for (let i = 0; i < 30; i++) E.tick(DT); return E.S.people.slice(0, 12).map(p => p.x.toFixed(2) + ':' + p.z.toFixed(1)).join(); };
   assert.equal(sig(), sig());
+});
+
+// Bundle the real boundary helper without changing the game test entry point.
+const levelCode = require('esbuild').buildSync({ entryPoints: [require('node:path').join(__dirname, '../src/config/levels.js')], bundle: true, format: 'iife', globalName: 'levels', write: false }).outputFiles[0].text;
+const levels = require('node:vm').runInNewContext(levelCode + '; levels');
+test('every Cup round has seven consistent bots', () => {
+  const E = begin(), names = E.S.race.bots.map(b => b.name);
+  assert.equal(names.length, 7); assert.equal(new Set(names).size, 7);
+  for (let round = 0; round < 3; round++) {
+    assert.deepEqual(E.S.race.bots.map(b => b.name), names);
+    assert.equal(E.S.race.bots.length, 7);
+    if (round < 2) { finish(E); E.nextCupRound(); }
+  }
+});
+test('Cup standings contain all eight racers', () => {
+  const E = begin(); finish(E);
+  assert.equal(E.cupState().table.length, 8);
+});
+test('all eight starters fit and do not overlap on every Cup stage', () => {
+  const E = begin();
+  for (let round = 0; round < 3; round++) {
+    levels.setLevel([1, 3, 4][round]);
+    const racers = [{ x: E.S.px, z: E.S.pz, circles: E.S.me.circles }, ...E.S.race.bots];
+    assert.equal(racers.length, 8);
+    for (const r of racers) assert.ok(Math.abs(r.x) <= levels.halfAt(r.z) - 0.5);
+    for (let i = 0; i < racers.length; i++) for (let j = i + 1; j < racers.length; j++) {
+      const a = racers[i], b = racers[j];
+      for (const ac of a.circles) for (const bc of b.circles) {
+        assert.ok(Math.hypot(a.x + ac.ox - b.x - bc.ox, a.z + (ac.oz || 0) - b.z - (bc.oz || 0)) >= ac.r + bc.r, 'starter collision');
+      }
+    }
+    if (round < 2) { finish(E); E.nextCupRound(); }
+  }
+});
+test('ordinary Race vs bots retains three bots', () => {
+  const E = load(undefined, { seed: 3 }); E.start('race');
+  assert.equal(E.S.race.bots.length, 3);
+});
+test('previous rules best remains stored under its old key', () => {
+  const E = begin(); E.storage['excuseme_cup_nyc:r1'] = '30:1.00'; playCup(E);
+  assert.equal(E.storage['excuseme_cup_nyc:r1'], '30:1.00');
+  assert.match(E.storage['excuseme_cup_nyc:r2'], /^30:/);
 });
