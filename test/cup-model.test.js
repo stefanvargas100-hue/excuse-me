@@ -5,23 +5,25 @@ const C = load(path.join(__dirname, 'entries/cup-entry.js'));
 const J = x => JSON.parse(JSON.stringify(x));
 const round = (place, time = 60) => ({ place, time });
 
-test('the cup is Fifth Avenue, Central Park, Brooklyn Bridge in that order, on stable stage indexes', () => {
-  assert.deepEqual([...C.CUP_STAGES], [1, 3, 4]);
+test('the cup is Fifth Avenue, Subway Platform, Central Park, Brooklyn Bridge in that order, on stable stage indexes', () => {
+  assert.deepEqual([...C.CUP_STAGES], [1, 5, 3, 4]);
 });
 
 test('round points cover all eight places', () => {
   assert.deepEqual(J([1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map(C.pointsFor)), [10, 8, 6, 5, 4, 3, 2, 1, 0, 0]);
 });
 
-test('a cup totals points and time, one round at a time, and is complete after three', () => {
+test('a cup totals points and time, one round at a time, and is complete after four', () => {
   let c = C.newCup({ seed: 's', bots: ['Mia', 'Leo', 'Ava'] });
   assert.equal(c.rounds.length, 0); assert.equal(C.cupDone(c), false);
   c = C.addRound(c, round(1, 70)); c = C.addRound(c, round(2, 80));
   assert.equal(C.cupDone(c), false);
   c = C.addRound(c, round(4, 90));
+  assert.equal(C.cupDone(c), false);
+  c = C.addRound(c, round(1, 60));
   assert.equal(C.cupDone(c), true);
-  assert.deepEqual(J([C.cupPoints(c), C.cupTime(c), C.cupWins(c)]), [23, 240, 1]);
-  assert.throws(() => C.addRound(c, round(1)), /complete/, 'a fourth round is refused');
+  assert.deepEqual(J([C.cupPoints(c), C.cupTime(c), C.cupWins(c)]), [33, 300, 2]);
+  assert.throws(() => C.addRound(c, round(1)), /complete/, 'a fifth round is refused');
 });
 
 test('addRound does not change the cup it was given', () => {
