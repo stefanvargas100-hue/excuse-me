@@ -1,6 +1,7 @@
 # Status
 
 ## Director playtest feedback checkpoint - 2026-11-09
+- Clarified: host uses Start without separate Ready; fix clipped control. Totals concern Cup points: verify accumulation and show a clear animated +points award with a persistent numeric value. See intake clarification for acceptance criteria.
 - Director finished phone playtest of 35f4f72 and reported Subway shortcut emptiness, Friend lobby readiness/layout trouble, race totals trouble, and weak large-build balance; requested grouped tracks, group/custom-four Cups, zero-or-more bots, and finish spectating.
 - Intake and five scoped proposals: `game/rounds/round-02/playtest-followup.md`. Lead owns triage; host readiness wording and which totals fail await clarification. Bugs not yet independently reproduced.
 - Resolve this feedback before release; visual pass remains required and its Claude assignment remains capacity-blocked. Main merge still requires Director approval.

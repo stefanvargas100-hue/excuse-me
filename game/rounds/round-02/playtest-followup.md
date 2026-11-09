@@ -16,6 +16,11 @@ Director tested build 35f4f72 on phones. These findings supersede readiness to s
 
 ## Gates and evidence
 
+### Director clarification
+- Host must not need a separate Ready action. Host Start remains gated on eligible guests being ready and valid room settings. Keep Start reachable on small phones; the screenshot confirms the existing control is clipped. Guests retain Ready controls.
+- The unclear totals are Cup points, not XP/coins. Verify round awards and cumulative standings first; show an explicit `+N points` beside each relevant updated total with a brief animation. Keep the numeric award visible without relying on animation, respect calm/reduced-motion settings, and do not award points again when replaying the presentation or reconnecting.
+- These clarifications supersede the host/totals questions above. Group preset/repeat rules and spectator design remain proposals pending approval.
+
 - Requested directions are recorded; unresolved host/totals meaning and new feature details need Director answers before dependent implementation.
 - Behaviour changes use test-first; precise batch plans name allowed files before worker dispatch. No new workers dispatched by this intake.
 - Browser screenshots/fit tests, deterministic simulation checks, and real-phone playtests are distinct evidence. Current evidence is Director's screenshots/report and a narrow source inspection, not reproduced bugs.
