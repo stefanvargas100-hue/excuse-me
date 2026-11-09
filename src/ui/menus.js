@@ -58,12 +58,20 @@ function buildPlay() {
 // The practice screen: tap a lesson and it starts.
 function buildPractice() {
   const box = $('practiceList'); box.innerHTML = '';
+  let ctrl = $('practicePager');
+  if (!ctrl) {
+    ctrl = document.createElement('div'); ctrl.id = 'practicePager'; ctrl.className = 'pager';
+    box.after(ctrl);
+  }
+  const nodes = [];
   LESSONS.forEach((L, i) => {
     const x = menuCard('lvl');
     x.children[0].textContent = 'Lesson ' + (i + 1); x.children[1].textContent = L.name; x.children[2].textContent = 'Practice'; x.children[3].textContent = L.brief;
     x.addEventListener('click', () => startPractice(L.id));
-    box.appendChild(x);
+    nodes.push(x);
   });
+  const layout = () => pageInto(box, nodes, ctrl);
+  layout(); relayoutWith(layout);
 }
 
 // The stage screen: tap a stage and it starts.
@@ -336,7 +344,7 @@ export function init() {
     shareRun(text);
   });
   $('playBtn').addEventListener('click', () => { buildPlay(); go('play'); });
-  $('practiceBtn').addEventListener('click', () => { buildPractice(); go('practice'); });
+  $('practiceBtn').addEventListener('click', () => { go('practice'); buildPractice(); });
   initProfile();
   $('chalBtn').addEventListener('click', () => { go('chal'); buildChallenges(); });
   $('boardsBtn').addEventListener('click', openBoards);

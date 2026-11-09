@@ -20,3 +20,15 @@ test('content outside the viewport is reported even with clipping', async () => 
   const m = clean(); m.boxes[0].right = 330; m.boxes[0].bottom = 580;
   assert.equal((await rules).fitProblems(m, viewport).length, 2);
 });
+test('two pixel scroll rounding passes but six pixels is reported with magnitude and text', async () => {
+  const m = clean(); m.boxes[0].scrollWidth += 2; m.boxes[0].scrollHeight += 2;
+  assert.deepEqual((await rules).fitProblems(m, viewport), []);
+  m.boxes[0].scrollHeight += 4; m.boxes[0].text = 'A descriptive card title';
+  const [p] = (await rules).fitProblems(m, viewport);
+  assert.equal(p.overflow, 6); assert.equal(p.text, m.boxes[0].text);
+});
+test('controls must stay inside nearest panel even within viewport, with strict edges', async () => {
+  const m = clean();
+  m.controls = [{ element: 'button', left: 19.9, right: 300, top: 20, bottom: 40, panel: { left: 20, right: 299.9 } }];
+  assert.equal((await rules).fitProblems(m, viewport)[0].problem, 'control outside panel');
+});

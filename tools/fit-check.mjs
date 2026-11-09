@@ -29,7 +29,10 @@ async function measure(page, screen) {
     const box = el => {
       const r = el.getBoundingClientRect();
       const style = getComputedStyle(el);
+      const panel = el.parentElement?.closest('.card, .panel');
+      const bounds = panel?.getBoundingClientRect();
       return { element: el.id ? '#' + el.id : el.tagName.toLowerCase() + (el.className ? '.' + String(el.className).trim().replace(/\s+/g, '.') : ''),
+        text: el.textContent.trim().replace(/\s+/g, ' ').slice(0, 30), panel: bounds ? { left: bounds.left, right: bounds.right } : null,
         left: r.left, top: r.top, right: r.right, bottom: r.bottom,
         clientWidth: el.clientWidth, scrollWidth: style.overflowX === 'visible' ? el.clientWidth : el.scrollWidth, clientHeight: el.clientHeight, scrollHeight: style.overflowY === 'visible' ? el.clientHeight : el.scrollHeight };
     };
@@ -67,7 +70,16 @@ try {
       ['NYC Cup', async () => { await race(); await page.locator('#raceFormat button').filter({ hasText: 'NYC Cup' }).click(); await page.locator('#levels button').filter({ hasText: 'NYC Cup' }).waitFor(); }],
       ['challenge', async () => { await race(); await page.locator('#raceFormat button').filter({ hasText: 'Weekly' }).click(); await click('#levels button'); }],
       ['pause', async () => { await play(); await page.locator('#playList button').filter({ hasText: 'Classic' }).click(); await page.locator('#levels button').first().click(); await page.waitForTimeout(1000); await click('#pauseBtn'); }],
-      ['end', async () => { await click('#resume'); await page.locator('#end').waitFor({ state: 'visible', timeout: 30000 }); }],
+      ['end', async () => {
+        await home();
+        await page.evaluate(() => {
+          const E = window.__excuse; E.startCup();
+          E.S.race.countT = 0; E.S.people.length = 0;
+          for (let i = 0; i < 14; i++) E.tick(1 / 30);
+          E.S.pz = E.LV.goal + 1;
+          for (let i = 0; i < 90; i++) E.tick(1 / 30);
+        });
+      }],
     ];
     for (const [name, open] of routes) {
       try {
@@ -75,7 +87,16 @@ try {
         const screen = name === 'NYC Cup' ? 'stages' : name;
         const m = await measure(page, screen);
         checked++;
-        for (const p of fitProblems(m, viewport)) line(size, name, p.element, p.problem);
+        for (const p of fitProblems(m, viewport)) line(size, name, p.element + ' ' + JSON.stringify(p.text), p.problem + ' (' + p.overflow.toFixed(2) + 'px)');
+        if (name === 'practice') {
+          const next = page.locator('#practicePager button[aria-label="Next page"]');
+          let number = 1;
+          while (await next.isVisible() && await next.isEnabled()) {
+            await next.click(); number++; checked++;
+            for (const p of fitProblems(await measure(page, screen), viewport))
+              line(size, name + ' page ' + number, p.element + ' ' + JSON.stringify(p.text), p.problem + ' (' + p.overflow.toFixed(2) + 'px)');
+          }
+        }
         if (selfTest && name === 'start') {
           await page.evaluate(() => {
             const el = document.createElement('button'); el.id = 'fit-self-test'; el.textContent = 'Overflow probe';
