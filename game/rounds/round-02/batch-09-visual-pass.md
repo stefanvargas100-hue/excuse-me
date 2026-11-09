@@ -4,6 +4,14 @@
 **Risk:** medium: it is broad, and it touches files that other batches share. Second review: the lead reviews screenshots of every changed screen.
 **Start when:** both conditions hold (Director, 2026-11-09): the Claude host-takeover worker (06b) has reported, so only one Claude worker runs at a time; and batch 07 (side routes and Takeshita Street) has merged into `develop`, so part 1 sees those stages and part 2 does not clash in `src/render/`.
 
+## Not a normal worker (Director, 2026-11-09)
+This batch overrides `AGENTS.md` in these ways:
+- **Work through failure.** The "stop after 2 failed attempts" rule does not apply. When something fails, keep trying other approaches until it works. Report what was hard afterwards, not instead.
+- **Widen within visuals without asking.** If a visual fix needs another file that only draws, styles or lays out screens, edit it and list it under "Off plan". Ask only before touching the files under "Must not change".
+- **Read what you need.** Open whatever drawing code helps you do this well.
+
+The Director's approval of part 1's list still stands, because creative direction is the Director's call.
+
 ## Goal
 The Director wants every visual in the game improved: fix what looks wrong or inconsistent, enhance what is there, and add new visuals where they make the game look better. The game's identity stays the same: it is the Director's game, so new directions are proposed first and built after approval.
 
