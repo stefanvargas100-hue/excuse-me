@@ -36,7 +36,10 @@ Bronze, Silver and Gold race times per stage, shown on the stage card and result
 - **Players who leave:** a bot takes their place, and the points they earned stay on the table.
 - **Rewards:** none at first. Nothing goes on boards or records.
 
-**NYC Cup:** goes from 3 races to 4. Bump `CUP_RULES` so old 3-race records are never compared with new ones. Its fourth race and racer count are waiting for the Director.
+**NYC Cup (Director, 2026-11-08):**
+- **8 racers, this round:** it stays solo, so the player's phone runs 7 bots. It uses the same points table and larger bot roster as friend-room Cups.
+- **4 races, Round 2:** a new fourth New York stage gets built first. NYC Cup stays at 3 races until then.
+- **Records:** bump `CUP_RULES` with each format change, so old records are never compared with new ones.
 
 **Technical risks:**
 - **Bots have to be run by the host.** Each phone simulates its own crowd, so bots simulated on each phone would drift apart. The host simulates them and sends their positions.
@@ -45,12 +48,16 @@ Bronze, Silver and Gold race times per stage, shown on the stage card and result
 - **Load:** a full room has 8 racers on every phone. Older-phone performance and message limits need checking on real devices.
 - **Protocol:** needs a version bump, and older builds get an update message.
 
-**Suggested batches:** NYC Cup format and shared Cup model, then host-run bots, then lobby and results screens.
+**Suggested batches:** shared Cup model, larger bot roster and 8-racer NYC Cup, then host-run bots, then lobby and results screens.
 
 ## 5. Race time boards
 Add a Race tab to the Leaderboards screen, with a best time for each stage.
 - **Needs from the Director:** a live database migration, like the Weekly Challenge one. Workers write it, and it is applied only with approval.
 - **Known limit:** times are reported by the client, so these are friendly boards rather than proof of legitimate play.
+
+## Moved to Round 2
+- **Race time boards** (idea 5).
+- **A fourth New York stage,** then NYC Cup at 4 races. Candidate: a subway platform, which is already on the roadmap and follows on from Fifth Avenue's `42 ST · SUBWAY` finish. The Director picks the place.
 
 ## Order
 1. Idea 1 alone, as the pilot. Review how it went before starting anything else.

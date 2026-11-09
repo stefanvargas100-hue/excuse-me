@@ -13,6 +13,9 @@ Rule from the original roadmap: one feature at a time, and cut anything that doe
 ## Now: competitive depth
 Give players clearer goals, feedback and rivals. Round 1 ideas are in `rounds/round-01/proposal.md`.
 
+## Next: Round 2
+Race time boards, and a fourth New York stage so NYC Cup can reach 4 races.
+
 ## Before launch
 - **Real-device checks:** older-phone frame rate and heat, calm mode in motion, 2-8 phone sessions, and saves surviving an update. The checklist is in `archive/RELEASE_CHECKPOINT.md`.
 - **Tuning from real play:** bot speed, challenge targets, stats, slipstream and boosts. Most balance numbers began as guesses.

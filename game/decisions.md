@@ -7,6 +7,7 @@ Older entries name documents that now live in `game/archive/`.
 - 2026-11-08 (Director): No performance analysis or advice on results. Players work out how to improve themselves, so the game shows measurements, not diagnoses. Teaching controls and mechanics is still fine. Race skill report rejected for this reason.
 - 2026-11-08 (Director): A series of matches is called a Cup. Every Cup is 4 races (changed from 5 the same day), including NYC Cup. A friend-room Cup has at least 8 racers and needs at least 2 real players; bots fill empty places and the host chooses their difficulty. Future public online Cups try to fill the lobby before starting, with a minimum of 6 real players.
 - 2026-11-08 (Director): Friend-room Cup details: host picks 4 of the 5 stages and their order; points 10, 8, 6, 5, 4, 3, 2, 1; a bot replaces a player who leaves and their points stay; no rewards, boards or records at first. Race time boards moved to Round 2.
+- 2026-11-08 (Director): NYC Cup gets a new fourth New York stage and 8 racers. The 8 racers come first; it stays at 3 races until the stage exists.
 - 2026-11-08: Old branches deleted with Director approval. Unmerged tips, recoverable by hash until Git cleans them up: online-ready-start-impl 13e2a33, Online-Play 50bf6a6, origin/multiplayer-lobby e619bf9, backup-local-main-2026-11-06 8b86a96.
 - Keep the web codebase and wrap it later (Capacitor) instead of rewriting; see ROADMAP.md.
 - GitHub repo will be private at first; can go public when hosting on GitHub Pages.
