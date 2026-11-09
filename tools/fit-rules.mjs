@@ -9,7 +9,9 @@ export function fitProblems({ boxes = [], controls = [] }, { width, height }) {
     if (y > 1) add(b, 'vertical overflow', y);
   }
   for (const b of controls) {
-    const outside = Math.max(-b.left, -b.top, b.right - width, b.bottom - height);
+    const outside = Math.max(-b.left, b.right - width, b.canScrollY ? 0 : Math.max(-b.top, b.bottom - height));
+    const textOverflow = Math.max(b.left - (b.textLeft ?? b.left), (b.textRight ?? b.right) - b.right);
+    if (textOverflow > 1) add(b, 'text outside control', textOverflow);
     if (outside > 0) add(b, 'control off-screen', outside);
     for (const word of b.splitWords || []) add(b, 'word split across lines: ' + word, 0);
     if (b.panel) {

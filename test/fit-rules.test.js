@@ -45,3 +45,17 @@ test('top and bottom panel edges are strict for controls including profile', asy
     assert.equal(p.problem, 'control outside panel'); assert.ok(p.overflow > 0);
   }
 });
+
+test('text wider than a control is reported even with visible overflow', async () => {
+  const m = clean(); m.controls = [{ element: 'chip', text: 'Elimination', left: 20, top: 20, right: 68, bottom: 58, textLeft: 20, textRight: 77 }];
+  const [p] = (await rules).fitProblems(m, viewport);
+  assert.equal(p?.problem, 'text outside control'); assert.equal(p.overflow, 9);
+});
+
+test('a below-screen control is unreachable unless an ancestor can scroll it into view', async () => {
+  const m = clean(); const control = { element: 'again', left: 20, top: 580, right: 120, bottom: 620, canScrollY: false };
+  m.controls = [control];
+  assert.equal((await rules).fitProblems(m, viewport)[0]?.problem, 'control off-screen');
+  control.canScrollY = true;
+  assert.deepEqual((await rules).fitProblems(m, viewport), []);
+});

@@ -1,3 +1,4 @@
+import { medalFor, nextMedal } from '../config/medals.js';
 import { leaveRoom } from '../online/duel.js';
 import { comboLevel } from '../config/combo.js';
 import { Music } from '../audio/music.js';
@@ -389,6 +390,13 @@ function showRaceEnd() {
   const best = raceBest(LV.id, S.run);
   if (EL) setStat('sBest', 'Checkpoints survived', (R.elimOut > 0 ? R.elimOut - 1 : EL.next) + ' of ' + EL.cps.length);
   else setStat('sBest', R.newBest ? 'Best time · new best' : 'Best win time', best ? fmtTime(best) : '-');
+  if (!S.duel && !EL && S.run.category === 'standard') {
+    const medal = medalFor(LV.id, S.time), next = nextMedal(LV.id, S.time);
+    const label = m => m[0].toUpperCase() + m.slice(1);
+    if (medal) $('sScore').textContent += ' \u00b7 ' + label(medal);
+    $('endLead').textContent = next ? label(next.medal) + ' ' + fmtTime(next.seconds) : '';
+    $('endLead').hidden = !next;
+  }
   setStat('sDist', 'Place', ordinal(place) + ' of ' + n);
   setStat('sChain', 'Bumps', String(S.bumps));
   $('sClose').textContent = S.close; $('sPassed').textContent = S.passed; $('sRival').textContent = S.dodged;

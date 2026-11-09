@@ -3,6 +3,7 @@
 Rules, modes, scoring, progress and saves.
 
 ## Where things live
+- `src/config/medals.js`: fixed Bronze, Silver and Gold race times and pure medal lookups.
 - `src/sim/game.js`: run flow and results screens. Shared by many batches, so change it carefully.
 - `src/sim/race.js`: bots, standings, finish and race bests. `crowd.js`, `people.js`, `traffic.js`: the crowd.
 - `src/sim/runopts.js`: run categories, and what each may pay or record.
