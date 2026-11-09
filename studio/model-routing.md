@@ -36,3 +36,5 @@ Update this table from round reports, and change the defaults when the numbers j
 | 2 | 1, Subway stage | Claude Sonnet, medium | Merged | 5.88M total, of which 5.70M cached; 34.6K output; 52 model calls. One pass, and the lead changed nothing. Plan missed that tests hard-code `PROTO` |
 | 2 | 2, matchmaking spec | Claude Sonnet, medium | Merged | 0.65M total, of which 0.59M cached; 8.7K output; 10 model calls. The lead corrected its message sums, which left out host-run bots |
 | 1 | Clothing fixes | Codex, defaults | Merged | 1.39M total, of which 1.33M cached; 6.7K output; 26 tool calls. One pass. Codex at 44% of the weekly limit afterwards |
+| 1 | 7, performance tool | Codex, defaults | Merged | Tool only. 8 racers cost about 10-15% more frame work than 4 in headless Chromium |
+| 1 | 6, Friend Cup online | Claude Opus, high | Paused at Claude 5-hour limit | 3.0M in 17 model calls, averaging 179K context. WIP saved at `75146ca` on its branch |
