@@ -107,6 +107,24 @@ try {
       E.S.race.countT = 0; E.S.people.length = 0; E.S.time = 140; E.S.pz = E.LV.goal + 1;
       for (let i = 0; i < 90; i++) E.tick(1 / 60);
     });
+    // A Friend Cup end screen on one page: this phone hosts, with two long-named friends and five bots. Nothing goes on the network.
+    const friendCupEnd = races => page.evaluate(races => {
+      const E = window.__excuse, me = 'me000001';
+      const humans = [[me, 'Breezy Commuter 37'], ['fr000002', 'Hurried Tourist 12'], ['fr000003', 'Sleepy Courier 88']];
+      const bots = ['Priya', 'Mateo', 'Amara', 'Omari', 'Piper'];
+      const racers = [...humans.map(([id, name]) => ({ id, name, bot: false, left: false })), ...bots.map((name, i) => ({ id: 'bot:' + i, name, bot: true, left: false }))];
+      const rounds = Array.from({ length: races }, (_, k) => racers.map((r, i) => ({ id: r.id, place: ((i + k) % 8) + 1, time: 60 + ((i + k) % 8) })));
+      const model = { seed: 'FITC-check', stages: [2, 0, 4, 1], difficulty: 1, racers, rounds, ended: false };
+      E.setLevel(model.stages[races - 1]);
+      E.startDuel({ seed: model.seed + ':race' + races, level: model.stages[races - 1], meId: me, roster: racers.map(r => r.id), send: () => {},
+        friends: racers.slice(1).map(r => ({ id: r.id, name: r.name, ai: r.bot })), cup: { host: true, difficulty: 1, model, race: races } });
+      E.S.race.countT = 0; E.S.people.length = 0; E.S.nextChunk = 1e9;
+      for (let i = 0; i < 14; i++) E.tick(1 / 30);
+      E.S.pz = E.LV.goal + 1;
+      for (let i = 0; i < 90; i++) E.tick(1 / 30);
+      // between races the host's button is the longest label it can show
+      if (races < 4) document.getElementById('again').textContent = 'Start race 4 · Shibuya Crossing';
+    }, races);
     const routes = [
       ['start', home], ['play', play],
       ...[['practice', 'practiceBtn'], ['friend', null], ['boards', 'boardsBtn'], ['howto', 'howBtn'], ['settings', 'setBtn'], ['look', 'lookBtn'], ['chal', 'chalBtn'], ['profile', 'profBtn']].map(([id, button]) => [id, async () => {
@@ -141,6 +159,42 @@ try {
           for (let i = 0; i < 90; i++) E.tick(1 / 30);
         });
       }],
+      ['friend cup setup', async () => {
+        await play();
+        await page.evaluate(() => window.__excuse.useRoomFactory(() => ({ join: async () => {}, send: () => {}, leave: () => {}, onMessage: () => {}, onClose: () => {} })));
+        await page.locator('#playList button').filter({ hasText: 'Race friends' }).click();
+        await click('#friendMake'); await page.locator('#friendCode').filter({ hasNotText: '----' }).waitFor();
+        await page.locator('#friendFormat button').filter({ hasText: 'Cup' }).click();
+        for (const name of ['Shibuya Crossing', 'Terminal B', 'Brooklyn Bridge', 'Fifth Avenue']) await page.locator('#friendStages button').filter({ hasText: name }).click();
+        await page.locator('#friendCupLevel button').filter({ hasText: 'Hard' }).click();
+        await page.locator('#friendStages button').filter({ hasText: '4. Fifth Avenue' }).waitFor();
+      }],
+      ['friend cup setup full', async () => {
+        await routes.find(r => r[0] === 'friend cup setup')[1]();
+        await page.evaluate(() => { const E = window.__excuse; for (let i = 2; i <= 8; i++) E.injectRoomMessage('hello', { id: 'pl00000' + i, proto: E.PROTO, name: 'Hurried Tourist ' + (10 + i), look: {} }); });
+        await page.locator('#friendHost .friendroster li:not(.empty)').nth(7).waitFor();
+      }],
+      ['friend cup guest', async () => {
+        await play();
+        // a pretend host answers the join with a full room on a Cup with long stage names
+        await page.evaluate(() => {
+          const E = window.__excuse, host = 'host0001', handlers = [];
+          E.useRoomFactory(() => ({ join: async () => {}, leave: () => {}, onMessage: f => handlers.push(f), onClose: () => {},
+            send: (ev, d) => {
+              if (ev !== 'hello') return;
+              const ids = [host, ...Array.from({ length: 6 }, (_, i) => 'pl00000' + (i + 2)), d.id];
+              const players = ids.map((id, i) => ({ id, name: i ? 'Hurried Tourist ' + (10 + i) : 'Breezy Commuter 37', look: {}, protocol: 2 }));
+              const lobby = { protocol: 2, config: 1, rev: 1, level: 2, elim: false, phase: 'idle', plan: null, players: ids.map(id => ({ id, ready: false, n: -1, protocol: 2, connected: true, clock: true, rtt: null, seen: 0 })) };
+              setTimeout(() => handlers.forEach(h => h('roster', { proto: E.PROTO, id: host, session: 'fitcheck', rev: 1, level: 2, players, lobby, cupCfg: { stages: [2, 0, 4, 1], difficulty: 2 } })), 10);
+            } }));
+        });
+        await page.locator('#playList button').filter({ hasText: 'Race friends' }).click();
+        await click('#friendJoinBtn'); await page.locator('#friendInput').fill('ABCD'); await click('#friendGo');
+        await page.locator('#friendGuest .friendroster li:not(.empty)').nth(7).waitFor();
+        await page.locator('#friendStatus').filter({ hasText: 'Shibuya Crossing' }).waitFor();
+      }],
+      ['friend cup standings', async () => { await home(); await friendCupEnd(1); }],
+      ['friend cup final', async () => { await home(); await friendCupEnd(4); }],
       ['cup final', async () => {
         await home();
         await page.evaluate(() => {
@@ -158,13 +212,14 @@ try {
     for (const [name, open] of routes) {
       try {
         await open();
-        const screen = name === 'NYC Cup' || name === 'stages saved best' ? 'stages' : name === 'race end' || name === 'cup final' ? 'end' : name;
+        const screen = name === 'NYC Cup' || name === 'stages saved best' ? 'stages' : name.startsWith('friend cup setup') || name === 'friend cup guest' ? 'friend' : name === 'race end' || name === 'cup final' || name.startsWith('friend cup ') ? 'end' : name;
         const m = await measure(page, screen);
-        if (name === 'end' || name === 'cup final') {
+        if (name === 'end' || name === 'cup final' || name === 'friend cup standings' || name === 'friend cup final') {
           const rows = await page.locator('#raceBoard li').count();
           if (rows !== 8) line(size, name, '#raceBoard', 'expected 8 rows, got ' + rows);
-          if (viewport.width === 320) await page.screenshot({ path: (process.env.TEMP || '/tmp') + '/cup-' + (name === 'end' ? 'round' : 'final') + '-320x568.png' });
+          if (viewport.width === 320) await page.screenshot({ path: (process.env.TEMP || '/tmp') + '/' + (name === 'end' ? 'cup-round' : name.replace(/ /g, '-')) + '-320x568.png' });
         }
+        if ((name.startsWith('friend cup setup') || name === 'friend cup guest') && viewport.width === 320) await page.screenshot({ path: (process.env.TEMP || '/tmp') + '/' + name.replace(/ /g, '-') + '-320x568.png' });
         checked++;
         for (const p of fitProblems(m, viewport)) line(size, name, p.element + ' ' + JSON.stringify(p.text), p.problem + ' (' + p.overflow.toFixed(2) + 'px)');
         if (name === 'practice') {

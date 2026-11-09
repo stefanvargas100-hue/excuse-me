@@ -19,7 +19,7 @@ import { genChunk, runEvent, scramble, seeded, spawnFast, spawnRival, updXings, 
 import { STREAK_SPEED, addPop, nearMul, onPass } from './scoring.js';
 import { S, bestOf, endShown, goalOf, reset, setEndShown, setNextRun, setRaceBuild, setState, state } from './state.js';
 import { startSlot } from './startgrid.js';
-import { BUMP_SPEED, stepRemotes, addRemoteRacer, draftMul, finishRace, fmtTime, initRace, leadZ, ordinal, raceBest, raceCollide, raceCountdown, racePace, rearZ, standings, updRace } from './race.js';
+import { BUMP_SPEED, stepRemotes, stepCupField, addCupBot, addRemoteRacer, draftMul, finishRace, fmtTime, initRace, leadZ, ordinal, raceBest, raceCollide, raceCountdown, racePace, rearZ, standings, updRace } from './race.js';
 import { updCars } from './traffic.js';
 import { beginTut, tutTick } from './tutorial.js';
 import { powerMul } from './powerups.js';
@@ -36,6 +36,7 @@ import { LESSONS, PRACTICE_OUTFIT, beginLesson, lessonIndex, lessonTick, restart
 import { flushScores, showRunBoard, submitBestRun, submitChallenge, submitRun } from '../online/online.js';
 import { BOT_NAMES } from '../config/names.js';
 import { LOOK } from '../save/progress.js';
+import { CUP_RACERS, CUP_RACES, FRIEND_CUP_RULES, friendCupOver, standings as friendCupTable } from './friendcup.js';
 import { CUP_RULES, CUP_STAGES, addRound, betterCup, cupDone, cupPlace, cupPoints, cupTable, cupTime, cupXp, decodeCup, encodeCup, newCup } from './cup.js';
 import { CHALLENGE_SUBMIT_ENABLED, challengeFor, utcWeekKey, validChallengeTime } from '../config/challenge.js';
 
@@ -172,6 +173,15 @@ export function tick(dt) {
     if (!endShown && S.overT > (state === 'won' ? 0.5 : 0.8)) showEnd();
     // an eliminated host is still the one who decides for everybody else, so their game keeps following the others
     if (S.duel && S.duel.elimHost && S.race && S.race.elim && S.race.elim.meOut && !S.race.elim.over && S.race.countT <= 0) { stepRemotes(dt); const ev = stepElim(); if (ev) elimEnd(ev); refreshDuelResults(); }
+    // a Friend Cup host keeps running the bots after finishing; the race clock carries on for their finish times
+    const fc = S.duel && S.duel.cup;
+    if (fc && fc.host && S.race && fc.model.rounds.length < fc.race && !S.duel.pausers.size && !(S.race.countT > 0 && (!S.duel.startRemaining || S.duel.startRemaining() > 0))) {
+      S.time += dt;
+      while (S.nextChunk < leadZ() + SPAWN_FAR && S.nextChunk < goalOf() - 15) { genChunk(S.nextChunk); S.nextChunk += 4; }
+      updPeople(dt);
+      stepCupField(dt);
+      S.people = S.people.filter(p => !p.dead && p.z > rearZ() - 16);
+    }
   }
 }
 
@@ -373,9 +383,36 @@ function showCupEnd() {
   $('end').hidden = false;
 }
 
+// Standings after a Friend Cup race. Between races the button belongs to the room: duel.js fills it in through refresh().
+function showFriendCupEnd() {
+  const D = S.duel, C = D.cup, m = C.model, R = S.race, table = friendCupTable(m), over = friendCupOver(m);
+  const mine = (m.rounds[C.race - 1] || []).find(r => r.id === D.meId), place = mine ? mine.place : R.place, cp = table.findIndex(r => r.id === D.meId) + 1, pts = cp ? table[cp - 1].points : 0;
+  setPodium(R.board, S.me, R.bots);
+  $('endEyebrow').textContent = 'Friend Cup · ' + (m.ended ? 'standings so far' : over ? 'final standings' : 'race ' + C.race + ' of ' + CUP_RACES + ' · ' + LV.name);
+  const t = $('endTitle');
+  t.textContent = m.ended ? 'Host left' : over ? (cp === 1 ? 'Cup winner!' : ordinal(cp) + ' in the Cup') : !mine ? 'Finished · waiting for racers' : D.dnf ? 'Did not finish' : place === 1 ? 'Race won' : ordinal(place) + ' of ' + CUP_RACERS;
+  t.className = (over && !m.ended ? cp === 1 : place === 1 && !D.dnf) ? 'good' : 'bad';
+  $('endLead').hidden = true;
+  $('sScoreLabel').textContent = 'Race time'; $('sScore').textContent = D.dnf ? 'DNF' : fmtTime(D.finish ?? S.time);
+  setStat('sBest', over ? 'Cup points' : 'Cup points so far', String(pts));
+  setStat('sDist', 'Race place', mine ? ordinal(place) + ' of ' + CUP_RACERS : '-'); setStat('sChain', 'Bumps', String(S.bumps));
+  setExtraStats(false);
+  const bd = $('raceBoard'); bd.hidden = false; bd.innerHTML = '';
+  table.forEach((r, i) => {
+    const li = document.createElement('li'); if (r.id === D.meId) li.className = 'me';
+    li.textContent = (i + 1) + '. ' + (r.id === D.meId ? 'You' : r.name) + ' · ' + r.points + ' pts' + (r.left ? ' · left' : '');
+    bd.appendChild(li);
+  });
+  for (const id of ['unlockNote', 'xpNote', 'nextNote', 'cleanNote', 'dayBoard', 'next']) $(id).hidden = true;
+  $('again').hidden = false; $('again').className = 'big';
+  if (D.refresh) D.refresh();
+  $('end').hidden = false;
+}
+
 function showRaceEnd() {
   if (S.challenge) { showChallengeEnd(); return; }
   if (S.cup) { showCupEnd(); return; }
+  if (S.duel && S.duel.cup) { showFriendCupEnd(); return; }
   const R = S.race, n = R.board.length, place = R.place, EL = R.elim;
   setPodium(R.board, S.me, R.bots);
   $('endEyebrow').textContent = (EL ? 'Elimination · ' : 'Race · ') + LV.city + ' · ' + LV.name + ' · ' + (S.duel ? 'live vs ' + S.duel.title : R.diff.name + ' bots');
@@ -439,7 +476,7 @@ export function start(a, b, opts) {
   lastDaily = daily; lastMode = mode;
   setMod(opts && opts.mod !== undefined ? opts.mod : daily ? modOf(key).id : null);
   setRaceBuild(mode === 'race');   // the crowd generator adds belt riders in races only
-  const run = makeRun(key || duel ? null : opts && opts.run);   // daily, weekly and friend races are always standard runs
+  const run = makeRun(duel && duel.cup ? { category: 'friendcup', rules: FRIEND_CUP_RULES, seed: duel.seed } : key || duel ? null : opts && opts.run);   // daily, weekly and friend races are always standard runs; a Friend Cup is its own category
   setR(key ? mulberry32(hashStr(key)) : duel ? mulberry32(hashStr(duel.seed)) : run.seed ? mulberry32(hashStr(run.seed)) : Math.random);
   setNextRun(run);
   reset();
@@ -449,11 +486,15 @@ export function start(a, b, opts) {
   if (S.endless) S.timeLeft = Infinity;
   ghostStart();
   if (mode === 'race') {
-    initRace(duel || opts && (opts.lesson || opts.solo) ? 0 : opts && opts.cup ? 7 : 3, opts && opts.cup ? opts.cup.model.bots : undefined);
+    initRace(duel || opts && (opts.lesson || opts.solo) ? 0 : opts && opts.cup ? 7 : 3, opts && opts.cup ? opts.cup.model.bots : undefined, duel && duel.cup ? duel.cup.difficulty : undefined);
     if (opts && opts.lesson) beginLesson(opts.lesson);
     if (duel) {
       const spot = k => startSlot(duel.slotOf[k], duel.count, LV.half);   // everyone on one line, in the order of the room list
-      duel.order.forEach((id, i) => { const b = addRemoteRacer(duel.peers[id].look, duel.peers[id].name, id, i), at = spot(id); b.x = at.x; b.z = at.z; });
+      duel.order.forEach((id, i) => {
+        const P = duel.peers[id], b = P.ai && duel.cup.host ? addCupBot(P.look, P.name, id, i) : addRemoteRacer(P.look, P.name, id, i), at = spot(id);
+        if (P.ai) b.aiBot = true;   // on a guest it is drawn like a friend, but it is not solid and it does not report for itself
+        b.x = at.x; b.z = at.z; b.target = at.x;
+      });
       const me = spot('me'); S.px = me.x; S.pz = me.z; S.me.x = me.x; S.me.z = me.z;
     }
     if (opts && opts.elim || duel && duel.elim) initElim(LV.goal);   // after the remote racers are in, so the field size is right
