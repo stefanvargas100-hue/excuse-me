@@ -146,7 +146,7 @@ test('out-of-order roster revisions cannot resurrect a player who left', async (
 test('a racer that keeps the socket alive but never finishes cannot block final results forever', async () => {
   const { games: [h, g] } = await race(); const id = me(g);
   h.S.race.finished = true; h.S.duel.send('fin', { ft: 12 });
-  for (let i = 0; i < 302; i++) { h.injectRoomMessage('hello', { id, proto: 3 }); h.advance(2000); }
+  for (let i = 0; i < 302; i++) { h.injectRoomMessage('hello', { id, proto: 4 }); h.advance(2000); }
   await settle();
   assert.equal(h.S.duel.peers[id].bye, true);
 });

@@ -53,7 +53,7 @@ let outcomeRev = 0, receivedOutcome = -1;
 let raceElim = false;     // elimination format: the host picks it, guests learn it from the roster
 // Room protocol version. Race layouts and the start handshake must be identical on every phone, so phones on different builds
 // refuse each other instead of racing on different crowds. Raise it whenever a change would make layouts or rules differ.
-export const PROTO = 3;
+export const PROTO = 4;
 let myId = '', hostId = '', roster = [];        // roster: [{ id, name, look }], the host first, me included
 let inRoster = false, raced = false, hostGone = false, lastStatus = '', joinWaiter = null;
 let wantMe = false; const wants = new Set();    // rematch: everyone still in the room has to ask

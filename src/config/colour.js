@@ -56,6 +56,7 @@ export const REACT = {
   nyc: ['Hey!', "I'm walkin' here!", 'Watch it!', 'Come ON.', 'Yo!', 'Unbelievable.'],
   shibuya: ['Sumimasen!', 'Ah!', 'Eh?!', 'Whoa!', 'Abunai!'],
   bridge: ['Watch the camera!', 'Excuse me!', 'On your right!', 'Nice view!'],
+  subway: ['Stand clear!', 'Excuse me!', 'Mind the gap!', 'Watch it!', "I'm gettin' off!"],
   park: ['On your right!', 'Watch the dog!', 'Easy!', 'Excuse me!', 'Enjoy the park!']
 };
 

@@ -29,7 +29,12 @@ export const LEVELS = [
     lane: 0.08, fastEvery: [4,6], rivalEvery: [12,18], base: 1, starScore: 17000,
     timerLabel: 'Meet-up starts', timeFail: 'Your friends left without you.', events: ['tour','weave','parade'],
     blurb: 'Wooden promenade, river views, stone towers and tourists stopping for photos.',
-    music: { bpm: 140, prog: [[60,64,67],[57,60,64],[53,57,60],[55,59,62]] } }
+    music: { bpm: 140, prog: [[60,64,67],[57,60,64],[53,57,60],[55,59,62]] } },
+  { id: 'subway', city: 'New York', name: 'Subway Platform', goal: 450, goalText: 'UPTOWN EXIT', half: 4.5, keep: 1, fog: '#222830',
+    lane: 0.08, fastEvery: [3.5, 6], rivalEvery: [10, 16], base: 1, starScore: 16000,
+    timerLabel: 'Last train', timeFail: 'The last train pulled out without you.', events: ['train', 'train', 'parade', 'queue', 'tour'],
+    blurb: 'Dim tiled platform. Every arriving train empties a wave of commuters across your path.',
+    music: { bpm: 146, prog: [[57,60,64],[53,57,60],[55,59,62],[60,64,67]] } }
 ];
 
 for (const L of LEVELS) L.limit = Math.round(L.goal / 3.0 * 1.07 + 6);

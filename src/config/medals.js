@@ -4,7 +4,8 @@ export const MEDAL_TIMES = {
   nyc: { bronze: 211, silver: 181, gold: 134 },
   shibuya: { bronze: 107, silver: 92, gold: 75 },
   park: { bronze: 178, silver: 143, gold: 115 },
-  bridge: { bronze: 208, silver: 176, gold: 136 }
+  bridge: { bronze: 208, silver: 176, gold: 136 },
+  subway: { bronze: 159, silver: 119, gold: 97 }
 };
 
 export function medalFor(stageId, seconds) {
