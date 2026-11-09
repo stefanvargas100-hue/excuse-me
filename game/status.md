@@ -7,10 +7,10 @@
 ## Now
 - **Round:** 1, at step 6 of the playbook.
 - **In progress:** batch 3 follow-up on Codex: re-measuring medal times and extending the fit tool. Batches 1 and 2 are merged into the lead branch but not `main`.
-- **Waiting on the Director:** how to fix ordinary race results at 320 x 568, where buttons cannot be reached. At the playtest: splits appear low on screen and overlap the stamina bars.
+- **Waiting on the Director:** nothing blocking. At the playtest: splits appear low on screen and overlap the stamina bars.
 
 ## Next action
-Review the batch 3 follow-up using `studio/skills/process-review/SKILL.md`, merge it, and build the Director's chosen results-screen fix. Then plan Cups.
+Review the batch 3 follow-up using `studio/skills/process-review/SKILL.md`, merge it, and hide the podium on short screens (the Director's chosen fix for unreachable results buttons). Then plan Cups.
 
 ## Worth knowing
 - Codex has not yet been run through this process. Confirm during the pilot that it follows `AGENTS.md`, reports back and stays in scope.

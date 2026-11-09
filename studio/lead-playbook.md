@@ -34,6 +34,8 @@ orca orchestration worker-start --spec "Read AGENTS.md, then do game/rounds/roun
 End your turn after starting workers: Orca wakes you when they report. Do not poll. Delete the branch and workspace once a batch is merged.
 
 ## Controlling tokens
+Total tokens are roughly model calls times average context, so fewer calls usually matters more than a smaller startup.
+
 - Worker reports stay at 10 lines. Details belong in the commit or the round folder.
 - Use the strongest model only where the risk justifies it.
 - A second review is only for risky batches, such as online, save data or anything live.

@@ -2,7 +2,7 @@
 
 Every agent reads this. Keep it short: it costs tokens on every run.
 
-**Game:** see `game/vision.md`. **Lead agents:** read `studio/lead-playbook.md`, then `game/status.md`.
+**Lead agents:** read `studio/lead-playbook.md`, then `game/status.md`.
 
 ## Workers
 Your batch plan is your brief. Read it, the files it names, and nothing else unless the task truly needs it.
@@ -10,6 +10,8 @@ Your batch plan is your brief. Read it, the files it names, and nothing else unl
 - **Edit only what the plan allows.** If the fix needs another file, stop and report rather than widening the change.
 - **Read narrowly.** Search first, then open only the relevant lines. Do not read `game/archive/` unless the plan names it.
 - **Test first** for behaviour changes: follow `studio/skills/test-first/SKILL.md`.
+- **Do not load extra guides.** Your Orca instructions already say how to report, so do not run `orca skills get` unless you are blocked. Read `game/vision.md` only if the plan names it.
+- **Wait once for slow commands.** Every check on a running command resends your whole context. Give a slow command one long wait, using the longest wait time your tool allows, and do not check on it repeatedly.
 - **Keep output small.** While working, run only related tests: `node --test test/<name>.test.js`. Run `npm test` once at the end (about 3 minutes) and show only the summary and any failures. Then run `npm run build` and `git diff --check`.
 - **Stop after 2 failed attempts** at the same problem and report what you tried. Do not keep spending tokens.
 - **Git:** commit only to your own branch. Never push to `main` or the lead branch, and never force-push.
