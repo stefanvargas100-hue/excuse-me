@@ -10,10 +10,10 @@ This batch overrides `AGENTS.md` in these ways:
 - **Widen within visuals without asking.** If a visual fix needs another file that only draws, styles or lays out screens, edit it and list it under "Off plan". Ask only before touching the files under "Must not change".
 - **Read what you need.** Open whatever drawing code helps you do this well.
 
-The Director's approval of part 1's list still stands, because creative direction is the Director's call.
+- **No approval stop.** The Director skips approving the list: build your own top 10 straight after part 1.
 
 ## Goal
-The Director wants every visual in the game improved: fix what looks wrong or inconsistent, enhance what is there, and add new visuals where they make the game look better. The game's identity stays the same: it is the Director's game, so new directions are proposed first and built after approval.
+The Director wants every visual in the game improved: fix what looks wrong or inconsistent, enhance what is there, and add new visuals where they make the game look better. The game's identity stays the same. The Director lets you pick and build your own top 10, so keep within the look the game already has.
 
 ## Read first
 - `game/vision.md`
@@ -28,10 +28,10 @@ The Director wants every visual in the game improved: fix what looks wrong or in
    - **New:** visuals that do not exist yet (stage landmarks, finish moments, weather, effects)
 
    For each item, give the screen, what changes, the files, the cost (S/M/L) and any risk to frame rate or collisions. Rank everything, and mark the 10 you would do first.
-3. Commit the proposal and a few key screenshots in `game/rounds/round-02/visual-pass/`, PNG, at most 20. Then `ask` the lead and **stop**. The Director picks what gets built.
+3. Commit the proposal and a few key screenshots in `game/rounds/round-02/visual-pass/`, PNG, at most 20. Then go straight on to part 2.
 
-## Part 2: build what the Director approved
-The lead sends the approved list as a follow-up file. Build it in that order, committing after each item.
+## Part 2: build your top 10
+Build the 10 items you marked, in your ranked order, committing after each one. The rest of the list stays in the proposal for later.
 
 ## May edit (part 2)
 - `src/render/*` (new files allowed), `src/ui/menus.js`, `src/ui/screens.js`, `style.css`, `index.html` (markup for screens only), `src/dev/lineup.js`
