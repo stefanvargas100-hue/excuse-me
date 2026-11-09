@@ -64,3 +64,13 @@ With a simulated connection and 7 host-run bots, report messages per second sent
 
 ## Left for a person
 Two real phones: smoothness with 8 racers, whether bots look natural on guests' phones, and whether host setup is clear.
+
+## Resuming (2026-11-09)
+The first worker, Claude Opus, stopped at the Claude usage limit. The lead saved its unfinished work as commit `75146ca` on `stefanvargas100-hue/friend-cup-online`. It changes `duel.js`, `game.js`, `race.js` and `friend.js`, and adds `test/friendcup-room.test.js`. It has not been reviewed, and the lead does not know whether its tests pass.
+
+**Builder now:** codex, defaults. Why: Claude usage is the bottleneck, and Codex has room.
+
+1. Your branch starts from `75146ca`. First merge `develop` into it. `develop` has since gained the Subway stage and `PROTO` 4, so set `PROTO` to 5, and update the tests that hard-code it.
+2. Run `node --test test/friendcup-room.test.js` and note what passes. Then compare the work against "How it must work" and "Must stay fair" above, and finish whatever is missing. Do not rewrite work that already meets the plan.
+3. Another worker is changing bot lane choice and `DRAFT_COOL` in `race.js`. Keep your `race.js` changes to what Friend Cup needs.
+4. In the report, say what the first worker had finished and what you added.
