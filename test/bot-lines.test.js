@@ -33,4 +33,3 @@ test('Hard bots form lines in fewer than 40% of first-third frames on Fifth Aven
   }
   assert.ok(lines / frames < 0.4, `first-third line share ${(100 * lines / frames).toFixed(2)}%`);
 });
-
