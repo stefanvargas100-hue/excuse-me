@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "node --test \"test/*.test.js\"",
-    "test:fit": "vite build && node tools/fit-check.mjs"
+    "test:fit": "vite build && node tools/fit-check.mjs",
+    "test:perf": "vite build && node tools/perf-check.mjs"
   },
   "engines": {
     "node": ">=20"
