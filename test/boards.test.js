@@ -8,7 +8,7 @@ const { BOARD_TABS, boardIdFor, boardTitle } = m.exports;
 const util = require('./harness.js');
 
 test('tabs: Daily, Weekly, Classic and Challenge', () => {
-  assert.deepStrictEqual(BOARD_TABS.map(t => t.id), ['daily', 'weekly', 'classic', 'challenge']);
+  assert.deepStrictEqual(BOARD_TABS.map(t => t.id), ['daily', 'weekly', 'classic', 'challenge', 'race']);
 });
 
 test('daily and weekly boards use today and this week; classic has one board per stage', () => {

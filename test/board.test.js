@@ -148,3 +148,11 @@ test('before the database has the new columns, scores still go through without t
   const top = await b.top('daily:2026-11-06', 3);
   assert.strictEqual(top.length, 1, 'the board still reads');
 });
+
+test('bad stored and received names fall back safely', async () => { const srv=fakeServer(), st=memStore(); st.set('excuseme_online_name', JSON.stringify('sh1t')); const b=make(srv,st); assert.notEqual(b.playerName(),'sh1t'); srv.rows.push({name:'f0ck',score:30,user_id:'other'}); assert.equal((await b.top('classic:airport',20))[0].name,'Player'); });
+
+test('race top twenty also includes your own ranked place', async () => {
+ const st=memStore(); st.set('excuseme_online_session', JSON.stringify({user_id:'me'}));
+ const fetch=async url => ({ok:true, headers:{get:()=> '0-0/25'}, json:async()=>url.includes('user_id=eq.me')?[{user_id:'me',name:'My Racer',score:1900000}]:url.includes('score=gt.')?[]:Array.from({length:20},(_,i)=>({user_id:'p'+i,name:'Other Racer',score:1990000-i}))});
+ const b=createBoard({fetch,url:'https://fake',key:'pk',store:st}); const rows=await b.top('race:airport',20);assert.equal(rows.length,21);assert.equal(rows[20].rank,26);assert.equal(rows[20].you,true);
+});

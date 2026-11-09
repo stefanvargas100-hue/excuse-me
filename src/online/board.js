@@ -1,3 +1,4 @@
+import { cleanPlayerName } from './names.js';
 /* ---------- online leaderboards (Supabase, plain web requests, no extra libraries) ----------
    Anonymous sign-in gives each phone a player id; scores are rows in the "scores" table.
    The server (see supabase/schema.sql) enforces one row per player per board, so the one-try rule is real.
@@ -13,7 +14,7 @@ export function createBoard({ fetch, url, key, store, profile }) {
   const base = { apikey: key, 'Content-Type': 'application/json' };
 
   function playerName() {
-    let n = read(KEY_NAME, null);
+    let n = cleanPlayerName(read(KEY_NAME, null));
     if (!n) { n = ADJ[Math.floor(Math.random() * ADJ.length)] + ' ' + NOUN[Math.floor(Math.random() * NOUN.length)] + ' ' + (10 + Math.floor(Math.random() * 90)); write(KEY_NAME, n); }
     return n;
   }
@@ -41,7 +42,7 @@ export function createBoard({ fetch, url, key, store, profile }) {
     const post = extra => fetch(url + '/rest/v1/scores' + (item.best ? '?on_conflict=user_id,board' : ''), {
       method: 'POST',
       headers: { ...base, Authorization: 'Bearer ' + s.access_token, Prefer: item.best ? 'resolution=merge-duplicates,return=minimal' : 'return=minimal' },
-      body: JSON.stringify({ user_id: s.user_id, board: item.board, score: item.score, name: item.name, ...extra })
+      body: JSON.stringify({ user_id: s.user_id, board: item.board, score: item.score, name: cleanPlayerName(item.name) || playerName(), ...extra })
     });
     // level, title and picture are shown next to your score; if the database does not have those columns yet, send the score without them
     const extra = profile ? profile() : null;
@@ -90,7 +91,21 @@ export function createBoard({ fetch, url, key, store, profile }) {
       if (!r.ok) r = await get('user_id,name,score');   // older database without the profile columns
       if (!r.ok) return [];
       const rows = await r.json();
-      return rows.map(x => ({ name: x.name, score: x.score, level: x.level || 1, title: x.title || '', pic: x.pic || '', you: !!me && x.user_id === me.user_id }));
+      // Race boards include your own place even outside the top twenty.
+      if (board.startsWith('race:') && me && !rows.some(x => x.user_id === me.user_id)) {
+        const headers = { ...base, Authorization: 'Bearer ' + key };
+        const own = await fetch(url + '/rest/v1/scores?select=user_id,name,score,level,title,pic&board=eq.' + encodeURIComponent(board) + '&user_id=eq.' + encodeURIComponent(me.user_id) + '&limit=1', { headers });
+        if (own.ok) {
+          const mine = (await own.json())[0];
+          if (mine) {
+            const ahead = await fetch(url + '/rest/v1/scores?select=user_id&board=eq.' + encodeURIComponent(board) + '&score=gt.' + mine.score + '&limit=0', { headers: { ...headers, Prefer: 'count=exact' } });
+            const rawCount = ahead.ok ? ahead.headers?.get('content-range')?.split('/')[1] : null;
+            const count = rawCount == null ? NaN : Number(rawCount);
+            if (Number.isFinite(count)) rows.push({ ...mine, rank: count + 1 });
+          }
+        }
+      }
+      return rows.map(x => ({ name: cleanPlayerName(x.name) || 'Player', score: x.score, level: x.level || 1, title: x.title || '', pic: x.pic || '', you: !!me && x.user_id === me.user_id, ...(x.rank ? { rank: x.rank } : {}) }));
     } catch (e) { return []; }
   }
 
@@ -121,7 +136,7 @@ export function createBoard({ fetch, url, key, store, profile }) {
       const out = [];
       for (const x of await r.json()) {
         let g = null; try { g = JSON.parse(x.path); } catch (e) {}
-        if (g && Array.isArray(g.pts)) out.push({ name: x.name, score: x.score, you: !!me && x.user_id === me.user_id, step: g.step, pts: g.pts });
+        if (g && Array.isArray(g.pts)) out.push({ name: cleanPlayerName(x.name) || 'Player', score: x.score, you: !!me && x.user_id === me.user_id, step: g.step, pts: g.pts });
       }
       return out;
     } catch (e) { return []; }
