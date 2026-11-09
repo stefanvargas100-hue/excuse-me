@@ -5,9 +5,9 @@
 **Live version:** `main` at `30d0cd4`, with splits, medals, screen fixes and the playtest pipeline
 
 ## Now
-- **Round:** 1. Ideas 1-3 are live. Cups spec approved. NYC Cup at 8 racers is merged into `develop`, not `main`. Friend Cup rules (batch 5) are merged into `develop`; nothing uses them yet. Subway Platform, first version, is with a Claude Sonnet worker (Round 2 batch 1, started early). Clothing visual fixes and the performance measurement are with Codex workers. Friend Cup online is with a Claude Opus worker, and the matchmaking spec with a Claude Sonnet worker.
+- **Round:** 1. Ideas 1-3 are live. Cups spec approved. NYC Cup at 8 racers is merged into `develop`, not `main`. Friend Cup rules, Subway Platform (first version, not yet in NYC Cup), clothing fixes and the matchmaking spec are merged into `develop`. Friend Cup online is with a Claude Opus worker, and the performance measurement with a Codex worker. On merging Friend Cup online, set `PROTO` to 5.
 - **Next:** Friend Cup rules, then Friend Cup online, then the QA worker trial.
-- **Waiting on the Director:** nothing blocking.
+- **Waiting on the Director:** phone test, and the 5 decisions in `game/rounds/round-02/matchmaking-spec.md`.
 - **At the playtest:** splits may sit low and overlap the stamina bars; medal fairness; results without the podium.
 
 ## Risks

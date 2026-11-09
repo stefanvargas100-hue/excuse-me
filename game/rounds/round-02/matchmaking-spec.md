@@ -1,6 +1,6 @@
 # Spec: public matchmaking and player names (for Director approval)
 
-Written 2026-11-09. Nothing here has been built, measured or tested; the live database and Supabase project were not touched.
+Written 2026-11-09. Nothing here has been built, measured or tested; the live database and Supabase project were not touched. The lead rechecked the Supabase prices and limits the same day, and corrected the message sums to include host-run bots.
 
 ## Recommendation
 1. **Launch in two steps.** First a small public test on Supabase Realtime only (Pro plan, $25/month), capped at about 100 players a day. Move race traffic to our own small server only if play grows past that, because Realtime's per-message bill grows with every player (see section 2).
@@ -16,20 +16,20 @@ Written 2026-11-09. Nothing here has been built, measured or tested; the live da
 5. Which Cups: **propose one rotating public Cup, changing daily** (New York, Tokyo, Airports in turn), so searchers share a Cup and queues are not split three ways. Choice per player is a later option.
 
 ## 2. Finding players: three ways
-Numbers are my estimates unless a link is given. Assumptions: each player plays one 4-race Cup a day (about 10 minutes online, race length **unconfirmed**); about 2 real players per room; positions sent 10 a second each, so about 40 billed messages a second per room (matches `INTERNET_MULTIPLAYER_PLAN.md`). That is about 14,400 messages per player per Cup, so **about 43M, 430M and 4.3 billion messages a month** at 100, 1,000 and 10,000 players a day. Real rates are not measured; a measuring batch is already planned and should replace these.
+Numbers are my estimates unless a link is given. Assumptions: each player plays one 4-race Cup a day (about 10 minutes online, race length **unconfirmed**); about 2 real players per room; positions sent 10 a second each, plus the host's one combined bot message at the same rate. Sent and received both count, so about 60 billed messages a second per room. That is about 18,000 messages per player per Cup, so **about 54M, 540M and 5.4 billion messages a month** at 100, 1,000 and 10,000 players a day. Lone searchers against bots send almost nothing, so these sums are on the high side. Real rates are not measured; a measuring batch is already planned and should replace these.
 
 | | A. Supabase Realtime only | B. Realtime + small server function | C. Dedicated server |
 |---|---|---|---|
 | How | Players join a shared "queue" channel; the first phone to hear a full group becomes host | A Supabase Edge Function (a small piece of code Supabase runs for us) puts searchers in groups and hands out a room code; races still use Realtime | Our own program on a rented machine does queueing and relays races |
-| Cost at 100 / day | About $120/month (Pro $25 + overage) | About $120 | About $7–10 (Render Starter, per our plan, unrechecked) |
-| At 1,000 / day | About $1,100/month | About $1,100 | **Unconfirmed**, probably a few machines |
-| At 10,000 / day | About $10,800/month | About $10,800 | **Unconfirmed**; needs load testing |
+| Cost at 100 / day | About $150/month (Pro $25 + overage) | About $150 | About $7–10 (Render Starter, per our plan, unrechecked) |
+| At 1,000 / day | About $1,400/month | About $1,400 | **Unconfirmed**, probably a few machines |
+| At 10,000 / day | About $13,500/month | About $13,500 | **Unconfirmed**; needs load testing |
 | Effort | 3 batches | 4 batches | 6+ batches |
 | Can go wrong | Two phones both think they are host; anyone can fake queue messages; limits below | Needs a live database change; function limits | Server down = nobody plays; we run it; restarts end rooms |
 
-Sources, all read 2026-11-09: [Realtime limits](https://supabase.com/docs/guides/realtime/limits) (Free: 200 connections, 100 messages/s; Pro: 500 connections, 500 messages/s), [Supabase pricing](https://supabase.com/pricing) (Pro from $25/month; Realtime 5M messages included, then $2.50 per million; 500 connections, then $10 per 1,000; Edge Functions 2M calls included, then $2 per million). Cost sums are mine: (messages − 5M) × $2.50 per million + $25. Render's $7 comes from the archived plan (checked 2026-11-07, not rechecked); its traffic and machine limits are **unconfirmed**.
+Sources, all read 2026-11-09: [Realtime limits](https://supabase.com/docs/guides/realtime/limits) (Free: 200 connections, 100 messages/s; Pro: 500 connections, 500 messages/s; Pro with no spend cap: 10,000 connections, 2,500 messages/s), [Supabase pricing](https://supabase.com/pricing) (Pro from $25/month; Realtime 5M messages included, then $2.50 per million; 500 connections, then $10 per 1,000; Edge Functions 2M calls included, then $2 per million). Cost sums are mine: (messages − 5M) × $2.50 per million + $25. Render's $7 comes from the archived plan (checked 2026-11-07, not rechecked); its traffic and machine limits are **unconfirmed**.
 
-**What the limits mean:** on Free, 100 messages a second allows about 2 busy rooms at once. On Pro, about 12. So option A is a test, not a launch. Cheap fix before any money: send positions less often (5 a second halves the bill); this changes feel and needs a phone test.
+**What the limits mean:** on Free, 100 messages a second allows about 1 busy room at once. On Pro, about 8, or about 40 with no spend cap. So option A is a test, not a launch. Cheap fix before any money: send positions less often (5 a second halves the bill); this changes feel and needs a phone test.
 B's function calls (searchers asking every 2 s for 30 s) are about 15 per search, roughly 45,000, 450,000 and 4.5M a month: inside Pro's 2M except at 10,000/day (about $5 extra).
 **Recommendation:** A for the test; build the queue logic so it can move behind B or C later without changing the screens.
 
