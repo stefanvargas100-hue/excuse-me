@@ -1,0 +1,5 @@
+# 06h: re-review message validation
+
+Reviewer: same independent countdown-review worker, Codex defaults. Read your f650650 report and the builder report at stefanvargas100-hue/countdown-recovery:game/rounds/round-02/reports/batch-06g-message-validation.md. Review implementation 2c4cc38 against the reproduced S1. Merge the recovery branch into your own reviewer branch if needed. May edit only game/rounds/round-02/reports/batch-06h-validation-rereview.md; no implementation edits.
+
+Re-run your stale/wrong-PROTO probes against the fixed code, verify accepted unrelated attempts do not consume pending decisions, and inspect duplicate/same-seed restart coverage. Check whether the regression-input correction preserves the original reproduction rather than weakening it. Run focused checks needed to validate this; full 682/682 suite and simulations are already reported, so repeat only for a concrete gap. Approve or report reproducible blockers, severity and evidence. Commit your report and send worker_done. No live services or prior provider-session changes.

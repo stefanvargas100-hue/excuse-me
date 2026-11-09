@@ -9,6 +9,7 @@
 - 06e recovery reported complete at f7f7999: 679/679 tests, build and room simulations reported passing. Independent review brief 06f prepared; not yet merged.
 - 06f review f650650 reproduced an S1 rejected-message countdown split. 06g assigns the focused validation fix to the recovery builder; do not merge before re-review.
 - Director clarified: features go to playtest first; visual pass follows and MUST be included in the next main update, after approval.
+- 06g implementation 2c4cc38 reports 682/682, build and simulations passing; 06h independent re-review requested. No merge until S1 is cleared.
 - Older checkpoint below is historical and superseded where noted.
 
 
