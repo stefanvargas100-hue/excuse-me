@@ -494,10 +494,15 @@ button:disabled.big, button:disabled.ghost { opacity: .5; cursor: default; }
 @media (max-height: 650px) { #levels .lvl { min-height: 78px; } }
 /* Keep home columns within their shared content width. */
 #start .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-#start .tile { min-width: 0; overflow-wrap: anywhere; }
+#start .tile { min-width: 0; }
 #playList .lvl { padding-top: 6px; padding-bottom: 6px; }
 #practiceList { overflow: hidden; padding: 2px 4px 4px; }
 #practiceList .lvl { flex: 0 0 auto; }
 @media (max-height: 650px) {
   #playList .lvl .lb { display: none; }
+}
+
+@media (max-width: 350px) {
+  #start .tiles { gap: 8px; }
+  #start .tile { min-height: 44px; padding: 6px 3px; font-size: 13px; }
 }

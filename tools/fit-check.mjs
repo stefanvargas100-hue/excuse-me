@@ -26,20 +26,34 @@ async function measure(page, screen) {
       const s = getComputedStyle(el);
       return el.getClientRects().length && s.visibility !== 'hidden' && s.visibility !== 'collapse' && s.opacity !== '0';
     };
+    const splitWords = el => {
+      const words = [];
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      for (let node; (node = walker.nextNode());) {
+        if (!visible(node.parentElement)) continue;
+        for (const match of node.textContent.matchAll(/[\p{L}\p{N}]+/gu)) {
+          const range = document.createRange();
+          range.setStart(node, match.index); range.setEnd(node, match.index + match[0].length);
+          const rects = [...range.getClientRects()].filter(r => r.width > 0 && r.height > 0);
+          if (rects.some(r => Math.abs(r.top - rects[0].top) > 1)) words.push(match[0]);
+        }
+      }
+      return [...new Set(words)];
+    };
     const box = el => {
       const r = el.getBoundingClientRect();
       const style = getComputedStyle(el);
       const panel = el.parentElement?.closest('.card, .panel');
       const bounds = panel?.getBoundingClientRect();
       return { element: el.id ? '#' + el.id : el.tagName.toLowerCase() + (el.className ? '.' + String(el.className).trim().replace(/\s+/g, '.') : ''),
-        text: el.textContent.trim().replace(/\s+/g, ' ').slice(0, 30), panel: bounds ? { left: bounds.left, right: bounds.right } : null,
+        text: el.textContent.trim().replace(/\s+/g, ' ').slice(0, 30), panel: bounds ? { left: bounds.left, right: bounds.right, top: bounds.top, bottom: bounds.bottom } : null,
         left: r.left, top: r.top, right: r.right, bottom: r.bottom,
         clientWidth: el.clientWidth, scrollWidth: style.overflowX === 'visible' ? el.clientWidth : el.scrollWidth, clientHeight: el.clientHeight, scrollHeight: style.overflowY === 'visible' ? el.clientHeight : el.scrollHeight };
     };
     return {
       boxes: [document.documentElement, document.body, root, ...root.querySelectorAll('*')]
         .filter(el => visible(el) && el.clientWidth > 0 && el.clientHeight > 0).map(box),
-      controls: [...root.querySelectorAll('button, a[href], input, select, textarea, [role="button"]')].filter(visible).map(box),
+      controls: [...root.querySelectorAll('button, a[href], input, select, textarea, [role="button"]')].filter(visible).map(el => ({ ...box(el), splitWords: splitWords(el) })),
     };
   }, screen);
 }

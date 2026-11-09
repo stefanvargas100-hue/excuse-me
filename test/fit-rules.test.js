@@ -32,3 +32,16 @@ test('controls must stay inside nearest panel even within viewport, with strict 
   m.controls = [{ element: 'button', left: 19.9, right: 300, top: 20, bottom: 40, panel: { left: 20, right: 299.9 } }];
   assert.equal((await rules).fitProblems(m, viewport)[0].problem, 'control outside panel');
 });
+test('a word broken across lines is reported, ordinary multi-word wrapping passes', async () => {
+  const m = clean(); m.controls = [{ element: 'tile', text: 'Challenges', left: 20, right: 120, top: 20, bottom: 80, splitWords: ['Challenges'] }];
+  assert.equal((await rules).fitProblems(m, viewport)[0].problem, 'word split across lines: Challenges');
+  m.controls[0].splitWords = [];
+  assert.deepEqual((await rules).fitProblems(m, viewport), []);
+});
+test('top and bottom panel edges are strict for controls including profile', async () => {
+  for (const bounds of [{ top: 19.9, bottom: 80 }, { top: 20, bottom: 80.1 }]) {
+    const m = clean(); m.controls = [{ element: '#profBtn', left: 20, right: 120, ...bounds, panel: { left: 20, right: 120, top: 20, bottom: 80 } }];
+    const [p] = (await rules).fitProblems(m, viewport);
+    assert.equal(p.problem, 'control outside panel'); assert.ok(p.overflow > 0);
+  }
+});

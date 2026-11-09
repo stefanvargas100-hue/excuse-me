@@ -11,8 +11,9 @@ export function fitProblems({ boxes = [], controls = [] }, { width, height }) {
   for (const b of controls) {
     const outside = Math.max(-b.left, -b.top, b.right - width, b.bottom - height);
     if (outside > 0) add(b, 'control off-screen', outside);
+    for (const word of b.splitWords || []) add(b, 'word split across lines: ' + word, 0);
     if (b.panel) {
-      const overflow = Math.max(b.panel.left - b.left, b.right - b.panel.right);
+      const overflow = Math.max(b.panel.left - b.left, b.right - b.panel.right, (b.panel.top ?? b.top) - b.top, b.bottom - (b.panel.bottom ?? b.bottom));
       if (overflow > 0) add(b, 'control outside panel', overflow);
     }
   }
