@@ -60,11 +60,14 @@ let raceElim = false;     // elimination format: the host picks it, guests learn
 let cup = null;           // the Cup being played: the host's own, or the copy rebuilt from the host's last good message
 let cupCfg = null;        // what the host has picked so far: { stages, difficulty }, null when the format is not Cup
 let cupRev = 0, cupReceived = -1;
+// After a host handover the new host makes one decision for the whole room about the race that was starting: { seed, cancel }.
+// It travels in every Cup message until the next race begins. Guests follow it for the race they had at the handover, never their own countdown.
+let handoverStart = null, awaitingStart = null;
 const cupLooks = {};      // id -> look, kept so a bot taking over from a player still looks like them
 const RACE_SEED = /:race\d+$/;
 // Room protocol version. Race layouts and the start handshake must be identical on every phone, so phones on different builds
 // refuse each other instead of racing on different crowds. Raise it whenever a change would make layouts or rules differ.
-export const PROTO = 6;
+export const PROTO = 7;
 let myId = '', hostId = '', roster = [];        // roster: [{ id, name, look }], the host first, me included
 let inRoster = false, raced = false, hostGone = false, lastStatus = '', joinWaiter = null;
 let wantMe = false; const wants = new Set();    // rematch: everyone still in the room has to ask
@@ -142,7 +145,7 @@ function closeRoom() {
     if (raced && d && d.cup) { d.cup.host = false; d.cup.model = hostLeft(d.cup.model); }   // this phone is out of the room: the Cup is over here
     if (raced && d && !S.race.finished) forfeitDuel();
   }
-  cup = null; cupCfg = null; cupRev = 0; cupReceived = -1; for (const k in cupLooks) delete cupLooks[k];
+  cup = null; cupCfg = null; cupRev = 0; cupReceived = -1; handoverStart = null; awaitingStart = null; for (const k in cupLooks) delete cupLooks[k];
   sessionId = ''; rosterRev = 0; receivedRev = -1; outcomeRev = 0; receivedOutcome = -1; disconnectedAt = null; retrying = false; hiddenAt = null; retired.clear(); started.clear();
   room = null; role = null; code = ''; hostId = ''; myId = ''; roster = []; inRoster = false; raced = false; hostGone = false; wantMe = false; wants.clear(); raceElim = false;
   for (const k in seenAt) delete seenAt[k];
@@ -229,7 +232,7 @@ const leftIds = c => c.racers.filter(r => r.left).map(r => r.id);
 // The whole Cup so far. The setup goes as first agreed: cleanSetup refuses racers marked as left, so they travel in their own list.
 function cupMessage() {
   const racers = cup.racers.map(r => (r.left ? { ...r, bot: false, left: false } : r));
-  return { id: myId, session: sessionId, proto: PROTO, rev: ++cupRev, setup: { seed: cup.seed, stages: cup.stages, difficulty: cup.difficulty, racers }, rounds: cup.rounds, left: leftIds(cup) };
+  return { id: myId, session: sessionId, proto: PROTO, rev: ++cupRev, setup: { seed: cup.seed, stages: cup.stages, difficulty: cup.difficulty, racers }, rounds: cup.rounds, left: leftIds(cup), ...(handoverStart ? { start: handoverStart } : {}) };
 }
 const publishCup = () => { if (room && role === 'host' && cup) room.send('cup', cupMessage()); };
 const rememberLooks = () => { for (const p of roster) cupLooks[p.id] = p.look; };
@@ -298,13 +301,16 @@ function cupHostGone() {
   if (startTimer) { clearInterval(startTimer); startTimer = null; }
   if (lobby) { lobby.close(); lobby = null; }
   lobbyNotice = '';
-  if (d?.cup) {
+  if (role === 'host' && !friendCupOver(cup)) {
+    // Decide once, from this phone alone: a race already under way here goes on; a countdown, or a start this phone never got, is cancelled.
+    const seed = raceSeed(cup), mine = d?.cup && d.seed === seed && !d.cancelled;
+    handoverStart = { seed, cancel: !(mine && S.race.countT <= 0) };
+    if (mine && handoverStart.cancel) { cancelStart(d); cancelled = true; }
+  }
+  if (role === 'guest') awaitingStart = d || null;
+  if (d?.cup && !d.cancelled) {
     d.cup.host = role === 'host';
-    if (S.race.countT > 0 && !S.race.finished) {
-      // A start still counting down has not run: it is cancelled on every phone, and the new host starts the race again.
-      d.cancelled = cancelled = true; started.delete(d.seed); d.startRemaining = null; S.race.countT = 0;
-      forfeitDuel(); d.dnf = false; d.cup.race = cup.rounds.length; refreshDuelResults();
-    } else for (const id of d.order) {
+    for (const id of d.order) {
       const P = d.peers[id];
       if (!P.ai) continue;
       if (role === 'host') {
@@ -319,9 +325,26 @@ function cupHostGone() {
     }
   }
   ensureLobby();
-  say((cancelled ? 'Start cancelled: the host left. ' : 'The host left. ') + (role === 'host' ? 'You are now hosting.' : next.name + ' is now hosting.'));
+  if (!cancelled) say('The host left. ' + (role === 'host' ? 'You are now hosting.' : next.name + ' is now hosting.'));
   if (role === 'host') { publishCup(); sendRoster(); cupDecide(); }
   syncCupRun();
+}
+// A start that had not run when the host left: nothing more is sent for it, and the new host starts the same race again.
+function cancelStart(d) {
+  d.cancelled = true; started.delete(d.seed); d.startRemaining = null; S.race.countT = 0;
+  forfeitDuel(); d.dnf = false; d.finish = null; d.cup.race = cup.rounds.length; d.cup.host = role === 'host';
+  refreshDuelResults();
+  say('Start cancelled: the host left. ' + (role === 'host' ? 'You are now hosting: start the race again.' : (roster.find(p => p.id === hostId)?.name || 'The new host') + ' is now hosting and will start it again.'));
+}
+// A guest follows the new host's decision about the race it had when the host left.
+function followStart(s) {
+  const d = awaitingStart;
+  if (!d || !s || typeof s !== 'object' || typeof s.seed !== 'string' || typeof s.cancel !== 'boolean') return;
+  awaitingStart = null;
+  if (S?.duel !== d || d.cancelled) return;   // a newer race has begun since: the decision is old news
+  if (d.seed === s.seed) { if (s.cancel) cancelStart(d); return; }
+  // The room races on, but this phone never got that start: a late release is a missed start, as in any race.
+  if (!s.cancel && s.seed === raceSeed(cup)) { closeRoom(); say('Start could not be confirmed. Rejoin the room.'); }
 }
 // Everyone real has finished or dropped out: the host settles the places. A bot still walking is placed by how far it got.
 function cupDecide() {
@@ -484,6 +507,7 @@ function onMessage(ev, data) {
     }
     if (from !== hostId) return;
     receiveCup(data);
+    if (role === 'guest' && cup) followStart(data.start);
   } else if (ev === 'bots') {
     if (role !== 'guest' || from !== hostId || !S?.duel?.cup || data.race !== S.duel.seed) return;
     receiveBots(data);
@@ -502,7 +526,7 @@ function beginRace(level, seed, schedule) {
     closeRoom(); say('Start could not be confirmed. Rejoin the room.'); return;
   }
   raceElim = schedule?.elim === true;
-  started.add(seed);
+  started.add(seed); handoverStart = null; awaitingStart = null;
   receivedOutcome = -1;
   wantMe = false; wants.clear(); raced = true;
   const id = myId;

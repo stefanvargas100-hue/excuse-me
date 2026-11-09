@@ -167,6 +167,49 @@ test('a countdown is cancelled when the host leaves, never half-run, and the new
   assert.equal(J(table(guest)), J(table(nh)));
 });
 
+// Batch 06d. Each phone's countdown ends at a slightly different moment, so the host leaving right at GO must not split the room:
+// the new host decides once for the whole room, and every phone follows, whatever its own countdown says.
+async function boundary(hostCount, guestCount) {
+  const L = await cup(3), { games } = L, [old, nh, guest] = games;
+  tickAll(games, 6); await settle();
+  await finishAll(games);
+  old.requestRematch(); await settle(); await settle();
+  const seed = old.friendCup().seed + ':race2';
+  for (const [g, t] of [[nh, hostCount], [guest, guestCount]]) { g.S.duel.startRemaining = null; g.S.race.countT = t; g.S.people.length = 0; g.S.nextChunk = 1e9; }
+  old.leaveRoom(); await settle(); await settle();   // each phone hears it with its own countdown where it was set
+  tickAll([nh, guest], 6); await settle(); tickAll([nh, guest], 6); await settle();   // a countdown still running reaches GO
+  const racing = g => g.state === 'play' && g.S.seed === seed && !g.S.duel.cancelled;
+  assert.equal(racing(nh), racing(guest), 'both race, or neither does (new host ' + hostCount + ', guest ' + guestCount + ')');
+  assert.equal(racing(nh), hostCount === 0, 'the new host decides: a race under way goes on, a countdown is cancelled');
+  if (!racing(nh)) {
+    assert.equal(nh.rematchState(), 'idle', 'the new host can start it again');
+    await nextRace(nh, [nh, guest]);
+    for (const g of [nh, guest]) assert.ok(racing(g), 'the restart runs everywhere');
+  }
+  await finishAll([nh, guest]);
+  for (const g of [nh, guest]) assert.equal(g.friendCup().rounds.length, 2, 'race 2 finishes');
+  const round = nh.friendCup().rounds[1];
+  for (const g of [nh, guest]) assert.ok(round.find(r => r.id === me(g)).time > 0, 'with a time, not a DNF');
+  assert.equal(J(table(guest)), J(table(nh)));
+}
+test('countdown boundary: new host racing, guest a frame from GO: both race on', () => boundary(0, 0.1));
+test('countdown boundary: new host a frame from GO, guest racing: both cancel and restart', () => boundary(0.1, 0));
+test('countdown boundary: both racing: both race on', () => boundary(0, 0));
+test('countdown boundary: both counting down: both cancel and restart', () => boundary(0.1, 0.1));
+
+test('after a cancelled race-1 countdown the end screen shows race 1 about to restart', async () => {
+  const L = await cup(3, { load: { dom: true } }), { games } = L, [old, nh, guest] = games;
+  for (const g of games) { g.S.duel.startRemaining = null; g.S.race.countT = 2; }
+  old.leaveRoom(); await settle(); await settle();
+  tickAll([nh, guest], 40); await settle();
+  for (const g of [nh, guest]) {
+    assert.match(g.element('endEyebrow').textContent, /race 1 of 4/);
+    assert.doesNotMatch(g.element('endEyebrow').textContent, /race 0/);
+    assert.match(g.element('endTitle').textContent, /Race 1 restarts/);
+  }
+  assert.match(nh.element('again').textContent, /Start race 1/);
+});
+
 test('a cancelled start sends no result for that race', async () => {
   const L = await cup(3, { load: { clock: true } }), { H, games } = L, [old, nh, guest] = games;
   tickAll(games, 6); await settle();
