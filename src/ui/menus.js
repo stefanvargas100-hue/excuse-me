@@ -109,7 +109,7 @@ function buildStages() {
   if (race && raceFormat() === 'cup') {
     const best = cupBest(), x = menuCard('lvl daily');
     x.children[0].textContent = 'New York'; x.children[1].textContent = 'NYC Cup'; x.children[2].textContent = best ? 'Best ' + best.points + ' pts · ' + fmtTime(best.time) : 'Win rounds for points';
-    x.children[3].textContent = 'Fifth Avenue, Central Park, Brooklyn Bridge against the same bots. 10, 7, 5 or 3 points a round.';
+    x.children[3].textContent = '3 NYC races, 8 racers: 10/8/6/5/4/3/2/1 points per round.';
     $('stagePager').hidden = true;
     x.style.maxHeight = '150px'; x.addEventListener('click', startCup); box.appendChild(x); return;
   }

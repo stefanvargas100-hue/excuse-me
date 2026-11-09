@@ -98,7 +98,9 @@ const BOTS = [
   { name: 'Jonas', color: '#9b51e0', shirt: '#9b51e0', hair: '#1c1c1c', hairStyle: 'short', skin: '#e8b98f' },
   { name: 'Kenji', color: '#f2994a', shirt: '#f2994a', hair: '#111827', hairStyle: 'short', skin: '#f0c9a0' },
   { name: 'Ava', color: '#d6336c', shirt: '#d6336c', hair: '#7a4b2a', hairStyle: 'long', skin: '#8d5a3b' },
-  { name: 'Leo', color: '#2f80ed', shirt: '#2f80ed', hair: '#3b2a1e', hairStyle: 'bald', skin: '#a8714f' }
+  { name: 'Leo', color: '#2f80ed', shirt: '#2f80ed', hair: '#3b2a1e', hairStyle: 'bald', skin: '#a8714f' },
+  { name: 'Sam', color: '#eab308', shirt: '#eab308', hair: '#171717', hairStyle: 'short', skin: '#8d5a3b' },
+  { name: 'Nora', color: '#f1f5f9', shirt: '#f1f5f9', hair: '#a54b25', hairStyle: 'long', skin: '#e8b98f' }
 ];
 
 export const ordinal = n => n + (n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th');
@@ -133,6 +135,13 @@ export function initRace(botCount, names) {
   S.race = { diff, bots: [], countT: COUNTDOWN, countLast: 99, rng: mulberry32(0x5eed + n), finished: false, place: 0, board: [], elapsed: 0 };
   const pool = BOT_NAMES.slice();   // each race draws its racers' names at random, no repeats within a race
   for (let i = 0; i < n; i++) S.race.bots.push(makeBot(i, diff, names && names[i] || pool.splice((Math.random() * pool.length) | 0, 1)[0]));
+  // Larger Cup grids use two staggered columns behind the player. Keep the
+  // ordinary race grid and random draws unchanged.
+  if (n > 5) S.race.bots.forEach((b, i) => {
+    b.z = S.pz - 2 - 2 * Math.floor(i / 2);
+    b.x = (i % 2 ? 1 : -1) * Math.min(1.3, halfAt(b.z) - 0.5);
+    b.target = b.x;
+  });
   S.race.pickups = n > 0 ? placePowerups(LV.goal) : [];   // live races against friends have none: pickups are not shared between phones yet
   S.puZ0 = 0;
   S.race.me = effects(statsOf(lookOf()));   // your build and gear, race mode only
