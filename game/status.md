@@ -1,7 +1,7 @@
 # Status
 
 **Updated:** 2026-11-08, by Claude Opus 5.5
-**Lead branch:** `stefanvargas100-hue/Update-Test`
+**Lead branch:** `develop`
 **Live version:** `main`, with the S1 results fix shipped alone. Splits, medals and fit fixes are on the lead branch only
 
 ## Now

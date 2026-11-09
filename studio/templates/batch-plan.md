@@ -1,3 +1,9 @@
+<!-- Lead checks before sending, each from a real past mistake:
+  1. Rules: does anything here conflict with AGENTS.md, this plan's other lines, or Orca's worker instructions?
+  2. Numbers: did I measure each target against what it really has to fit, not just the first limit I thought of?
+  3. Claims: did I check every file, flag and fact I name, instead of assuming it?
+  4. Scope: can the worker finish using only the files listed?
+  Delete this comment in the real plan. -->
 # Round NN, batch NN: <title>
 
 **Builder:** <claude|codex>, model, effort. Why: <one line>

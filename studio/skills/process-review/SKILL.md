@@ -36,6 +36,14 @@ Review how the work was done as well as what was built. This method comes from t
 
 When you ask, give what you found, the evidence, 2-3 options with their costs, and your recommendation. Then review it together and let the Director choose. Do not make the change first and explain later.
 
+## When a worker's problem traces back to the lead
+The Director's standing instruction: keep learning from your mistakes. If a worker struggled because of your plan, rule or target:
+1. **Say so plainly,** and do not blame the worker.
+2. **Ask why it got past you.** Name the check that would have caught it, not just the mistake.
+3. **Log it** in the "Lead mistakes" table in `game/failures.md`.
+4. **Build it in.** Update an existing skill, template or rule first. Create a new skill only if the lesson is a multi-step process nothing else covers. Prove the change on the next worker.
+5. **Ask the Director for direction** if you cannot tell why it happened or what the fix should be.
+
 ## Before relying on a process change
 - Check it against the instructions the tools add. Read them with `orca orchestration dispatch-show --task <id> --preamble`.
 - Say whether it has been tested. A rule is untested until a worker has followed it.

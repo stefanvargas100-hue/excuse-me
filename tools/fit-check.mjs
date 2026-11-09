@@ -72,7 +72,7 @@ async function measure(page, screen) {
       return { element: el.id ? '#' + el.id : el.tagName.toLowerCase() + (el.className ? '.' + String(el.className).trim().replace(/\s+/g, '.') : ''),
         text: el.textContent.trim().replace(/\s+/g, ' ').slice(0, 30), panel: bounds ? { left: bounds.left, right: bounds.right, top: bounds.top, bottom: bounds.bottom } : null,
         left: r.left, top: r.top, right: r.right, bottom: r.bottom,
-        clientWidth: el.clientWidth, scrollWidth: style.overflowX === 'visible' ? el.clientWidth : el.scrollWidth, clientHeight: el.clientHeight, scrollHeight: style.overflowY === 'visible' ? el.clientHeight : el.scrollHeight };
+        clientWidth: el.clientWidth, scrollWidth: style.overflowX === 'visible' || style.textOverflow === 'ellipsis' ? el.clientWidth : el.scrollWidth, clientHeight: el.clientHeight, scrollHeight: style.overflowY === 'visible' ? el.clientHeight : el.scrollHeight };
     };
     return {
       boxes: [document.documentElement, document.body, root, ...root.querySelectorAll('*')]

@@ -518,3 +518,9 @@ button:disabled.big, button:disabled.ghost { opacity: .5; cursor: default; }
 @media (max-width: 360px) {
   #raceFormat .chip:nth-of-type(2) { flex-shrink: 0; padding: 0; font-size: 11px; }
 }
+
+/* Keep the longest tab and format labels inside their buttons on the narrowest phones. */
+@media (max-width: 360px) {
+  #raceFormat .chip:nth-of-type(3) { flex-shrink: 0; padding: 0 2px; }
+  #boardTabs .chip { padding: 0 2px; font-size: 13px; }
+}
