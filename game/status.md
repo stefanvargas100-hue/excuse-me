@@ -2,15 +2,15 @@
 
 **Updated:** 2026-11-08, by Claude Opus 5.5
 **Lead branch:** `stefanvargas100-hue/Update-Test`
-**Live version:** `35dcb6a` on `main`, with GitHub Tests and Deploy passing
+**Live version:** see `main`; the studio setup merged there on 2026-11-08 with no game code changes
 
 ## Now
-- **Round:** 1, at step 4 of the playbook.
-- **In progress:** nothing. No workers are running.
-- **Waiting on the Director:** the replacement for idea 2 and the open Cup details in `rounds/round-01/proposal.md`, the branch cleanup list, and merging the studio setup to `main`.
+- **Round:** 1, at step 6 of the playbook.
+- **In progress:** the Codex pilot, `rounds/round-01/batch-01-fit-check.md`.
+- **Waiting on the Director:** NYC Cup's fourth race and racer count.
 
 ## Next action
-Once ideas are approved, write batch plans. Run the Codex pilot first (idea 1) and review it before starting anything else.
+Review the pilot when it reports, including how well Codex followed the process. Only then start the batch for idea 2.
 
 ## Worth knowing
 - Codex has not yet been run through this process. Confirm during the pilot that it follows `AGENTS.md`, reports back and stays in scope.
