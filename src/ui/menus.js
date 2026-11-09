@@ -216,8 +216,8 @@ function raceHud() {
     const d = document.createElement('i'); d.className = 'me'; box.appendChild(d);
   }
   const at = z => (z >= LV.goal ? 95 : clamp(z / LV.goal, 0, 1) * 88).toFixed(1) + '%';   // the pole stands at 88%; finished racers carry on past it
-  bots.forEach((b, i) => { const d = box.children[i]; if (d) d.style.left = at(b.z); });
-  const md = box.children[bots.length]; if (md) md.style.left = at(S.pz);
+  bots.forEach((b, i) => { const d = box.children[i]; if (d) { d.style.left = at(b.z); d.style.top = b.route ? "-6px" : "0"; d.title = b.route || "Main path"; } });
+  const md = box.children[bots.length]; if (md) { md.style.left = at(S.pz); md.style.top = S.route ? "-6px" : "0"; md.title = S.route || "Main path"; }
 }
 
 /* ---------- leaderboards: daily, weekly and each classic stage ---------- */

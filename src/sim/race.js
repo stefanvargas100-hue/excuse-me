@@ -1,3 +1,4 @@
+import { sideRoutes, sameRoute, updateRoute, routeSpeed } from '../config/side-routes.js';
 import { COMBO_SPEED_PER, comboLevel } from '../config/combo.js';
 export { comboLevel } from '../config/combo.js';
 import { Music } from '../audio/music.js';
@@ -45,6 +46,7 @@ export const draftCharge = r => clamp(r.draftC / DRAFT_CHARGE, 0, 1);
 function inDraft(r, x, z, self) {
   let best = -1;
   const check = (ox, oz, ov, who) => {
+    if (!sameRoute(r, who)) return;
     if (ov <= DRAFT_MIN_V || oz - z <= 0.3 || oz - z >= DRAFT_LEN || Math.abs(ox - x) >= DRAFT_W) return;
     const near = 1 - (oz - z - 0.3) / (DRAFT_LEN - 0.3);
     if (near > best) { best = near; r.draftNear = near; r.draftX = ox; r.draftZ = oz; r.draftWho = who; }
@@ -139,6 +141,7 @@ export function initRace(botCount, names, difficulty) {
   S.race.pickups = n > 0 ? placePowerups(LV.goal) : [];   // live races against friends have none: pickups are not shared between phones yet
   S.puZ0 = 0;
   S.race.me = effects(statsOf(lookOf()));   // your build and gear, race mode only
+  S.route = S.me.route = "";
   S.speed = 0;          // everyone starts from a standstill, so acceleration counts
   S.timeLeft = 99999;   // no clock in a race
 }
@@ -185,7 +188,7 @@ export function cupTakeOver(id, look) {
 // One combined message for every bot: [id, x, z, vx, speed, finish time or null]. Clamped to what a guest will accept.
 function botRows() {
   const r = v => Math.round(v * 100) / 100, rows = [];
-  for (const b of S.race.bots) if (b.aiBot && !b.remote) rows.push([b.peerId, r(clamp(b.x, -20, 20)), r(Math.min(b.z, LV.goal + 15)), r(clamp(b.vx, -20, 20)), r(clamp(b.speed, 0, 20)), b.done ? b.finishT : null]);
+  for (const b of S.race.bots) if (b.aiBot && !b.remote) rows.push([b.peerId, r(clamp(b.x, -20, 20)), r(Math.min(b.z, LV.goal + 15)), r(clamp(b.vx, -20, 20)), r(clamp(b.speed, 0, 20)), b.done ? b.finishT : null, b.route || ""]);
   return rows;
 }
 // Anyone on a bot's tail counts the same, host or guest. Otherwise only the host's phone would know who was drafting it.
@@ -199,6 +202,7 @@ function stepRemote(b, dt) {
   if (P.fin != null && !b.done) { b.done = true; b.finishT = P.fin; }
   if (b.done) { b.z = Math.min(b.z + b.speed * dt, LV.goal + 3); b.speed *= Math.max(0, 1 - dt * 4); b.vx = 0; b.vz = b.speed; b.walkA += ((b.speed > 0.15 ? 1 : 0) - b.walkA) * Math.min(1, dt * 8); b.phase += dt * b.speed * 2; return; }
   if (!p) return;
+  b.route = p.route || "";
   b.x = clamp(p.x, -(LV.half - 0.5), LV.half - 0.5); b.z = Math.min(p.z, LV.goal); b.vx = p.vx; b.speed = p.speed; b.vz = p.speed;
   const sp = Math.max(0.01, Math.hypot(b.vx, b.vz)), kk = Math.min(1, dt * 8);
   b.fx += (b.vx / sp - b.fx) * kk; b.fz += (b.vz / sp - b.fz) * kk;
@@ -212,7 +216,7 @@ function duelTick(dt) {
   if (D.sendT <= 0) {
     D.sendT = D.sendEvery;
     const r = v => Math.round(v * 100) / 100;
-    if (!(S.race.elim && S.race.elim.meOut) && !(D.cup && S.race.finished)) D.send('pos', { n: ++D.n, x: r(S.px), z: r(S.pz), vx: r(S.vx), s: r(S.speed) });
+    if (!(S.race.elim && S.race.elim.meOut) && !(D.cup && S.race.finished)) D.send('pos', { n: ++D.n, x: r(S.px), z: r(S.pz), vx: r(S.vx), s: r(S.speed), route: S.route || '' });
     if (D.cup && D.cup.host) { const rows = botRows(); if (rows.length) D.send('bots', { n: ++D.botN, rows }); }
   }
   if (D.cup && D.cup.host) for (const b of S.race.bots) if (b.aiBot && !b.remote && b.done && D.peers[b.peerId].fin == null) D.peers[b.peerId].fin = b.finishT;
@@ -239,7 +243,7 @@ function resolve(t) {
   for (let iter = 0; iter < 3; iter++) {
     let moved = false;
     for (const p of S.people) {
-      if (p.dead || p.prop === 'spill' || Math.abs(p.z - t.z) > 3 || glassBetween(LV.id, t.x, t.z, p.x, p.z)) continue;
+      if (!sameRoute(t, p) || p.dead || p.prop === 'spill' || Math.abs(p.z - t.z) > 3 || glassBetween(LV.id, t.x, t.z, p.x, p.z)) continue;
       for (const c of p.circles) {
         const dx = t.x - (p.x + c.ox), dz = t.z - (p.z + (c.oz || 0)), rr = R_PLAYER + c.r, d2 = dx * dx + dz * dz;
         if (d2 >= rr * rr) continue;
@@ -283,7 +287,7 @@ function resolveRacers(t) {
   for (let iter = 0; iter < 3; iter++) {
     let moved = false;
     for (const b of S.race.bots) {
-      if (!b.remote || b.aiBot || b.done || !givesWayTo(b) || glassBetween(LV.id, t.x, t.z, b.x, b.z)) continue;
+      if (!sameRoute(t, b) || !b.remote || b.aiBot || b.done || !givesWayTo(b) || glassBetween(LV.id, t.x, t.z, b.x, b.z)) continue;
       const dx = t.x - b.x, dz = t.z - b.z, d2 = dx * dx + dz * dz;
       if (d2 >= RACER_GAP * RACER_GAP) continue;
       const d = Math.sqrt(d2);
@@ -304,7 +308,7 @@ function resolveRacers(t) {
 export function raceCollide(dt) {
   if (S.ghostT > 0) return;
   S.bumpCool = Math.max(0, S.bumpCool - dt);
-  const t = { x: S.px, z: S.pz, vx: S.vx, speed: S.speed };
+  const t = { x: S.px, z: S.pz, vx: S.vx, speed: S.speed, route: S.route };
   const hit = resolve(t);
   resolveRacers(t);
   S.px = t.x; S.pz = t.z; S.vx = t.vx; S.speed = Math.max(0, t.speed);
@@ -414,7 +418,7 @@ function think(b) {
 export function botExcuseMe(b) {
   if (!(b.shoutCD > 0)) b.shoutCD = 0;
   if (b.shoutCD > 0) return 0;
-  const who = { x: b.x, z: b.z }, perfect = wellTimed(who), near = shoutTargets(who, perfect, true);   // anyone already stepping aside is left alone, so calls cannot stack
+  const who = { x: b.x, z: b.z, route: b.route }, perfect = wellTimed(who), near = shoutTargets(who, perfect, true);   // anyone already stepping aside is left alone, so calls cannot stack
   if (!near.length) return 0;
   b.shoutCD = SHOUT_CD - (perfect ? 2 : 0); b.calls = (b.calls || 0) + 1;
   b.react = { t: 0, text: 'Excuse me!', up: false };
@@ -422,10 +426,17 @@ export function botExcuseMe(b) {
   shoutReact(near, who, perfect, S.race.rng);
   return near.length;
 }
-const inWay = b => S.people.some(p => !p.prop && !p.dead && !p.rival && !(p.aside > 0) && p.z - b.z > 0.4 && p.z - b.z < 4.5 && Math.abs(p.x - b.x) < 0.8 && !glassBetween(LV.id, b.x, b.z, p.x, p.z));
+const inWay = b => S.people.some(p => sameRoute(b, p) && !p.prop && !p.dead && !p.rival && !(p.aside > 0) && p.z - b.z > 0.4 && p.z - b.z < 4.5 && Math.abs(p.x - b.x) < 0.8 && !glassBetween(LV.id, b.x, b.z, p.x, p.z));
 
 function stepBot(b, dt) {
   const R = S.race, lim = halfAt(b.z + b.speed * dt) - 0.5;
+  // Route choice is separate from think() lane selection.
+  for (const r of sideRoutes(LV.id)) if (b.z >= r.entrance - 14 && b.z < r.entrance + r.shape.entryLength) {
+    b.sideChoices ||= {};
+    b.sideChoices[r.id] ??= R.rng() < (b.diff.name === 'Hard' ? .85 : b.diff.name === 'Medium' ? .5 : .2);
+    if (b.sideChoices[r.id]) b.target = r.shape.entryX;
+  }
+  updateRoute(LV.id, b, b.z);
   b.thinkT -= dt;
   if (b.thinkT <= 0) { think(b); b.thinkT = 0.1 + R.rng() * 0.18; }   // people do not react instantly
   b.nearT = Math.max(0, b.nearT - dt); b.bumpT = Math.max(0, b.bumpT - dt); b.ghostT = Math.max(0, b.ghostT - dt); b.cool = Math.max(0, b.cool - dt);
@@ -436,7 +447,8 @@ function stepBot(b, dt) {
   b.energy = Math.min(100, b.energy + REGEN * b.st.regen * dt);
   if (b.chain > 0 && S.time - b.lastPassT > CHAIN_WINDOW) b.chain = 0;
   // a good player dashes round a person who is about to be hit, and bursts when the way is clear
-  const need = b.target - b.x;
+  const entry = sideRoutes(LV.id).find(r => b.sideChoices?.[r.id] && b.z >= r.entrance - 14 && b.z < r.entrance + r.shape.entryLength);
+  const need = (entry ? entry.shape.entryX : b.target) - b.x;
   if (b.dashT <= 0 && b.bumpT <= 0 && b.energy >= COST_DASH + 10 && b.danger < 2.6 && Math.abs(need) > 0.5 && R.rng() < b.diff.dash * dt * 6) {
     b.energy -= COST_DASH; b.dashT = DASH_T; b.dashDir = Math.sign(need);
   }
@@ -460,7 +472,7 @@ function stepBot(b, dt) {
   if (Math.abs(b.x) >= lim) b.vx = 0;
   // solid people
   if (b.ghostT <= 0) {
-    const t = { x: b.x, z: b.z, vx: b.vx, speed: b.speed };
+    const t = { x: b.x, z: b.z, vx: b.vx, speed: b.speed, route: b.route };
     const hit = resolve(t);
     b.x = t.x; b.z = t.z; b.vx = t.vx; b.speed = Math.max(0, t.speed);
     if (hit) {
@@ -475,7 +487,7 @@ function stepBot(b, dt) {
   collectPowerups(b, b.x, b.z, bz0, false);
   // passing people builds the bot's combo, like yours
   for (const p of S.people) {
-    if (p.dead || p.prop || Math.abs(p.z - b.z) > 3) continue;
+    if (!sameRoute(b,p) || p.dead || p.prop || Math.abs(p.z - b.z) > 3) continue;
     const was = b.ahead.get(p), now = p.z > b.z;
     if (was && !now) {
       b.chain++; b.lastPassT = S.time;

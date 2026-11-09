@@ -1,3 +1,5 @@
+import { sameRoute } from '../config/side-routes.js';
+import { drawSideRoutes } from './side-routes.js';
 import { comboLevel } from '../config/combo.js';
 import { MULT_COLS, hex } from '../config/colour.js';
 import { FOGCSS, LV } from '../config/levels.js';
@@ -33,13 +35,14 @@ export function render() {
   ctx.fillStyle = FOGCSS; ctx.fillRect(-W, -H, 3 * W, 3 * H);
   if (LV.id === 'airport') paintAirport(); else if (LV.id === 'nyc') paintNYC(); else if (LV.id === 'park') paintPark(); else if (LV.id === 'bridge') paintBridge(); else if (LV.id === 'subway') paintSubway(); else paintShibuya();
   if (LV.id === 'nyc') { drawCars(); nycSteam(); }
+  drawSideRoutes();
   drawBelts();
   drawStrips();
   drawPowerups();
   fxGround();
   for (const p of S.people) if (p.prop === 'spill') drawPerson(p);   // puddles lie under everyone
   const list = S.people.filter(p => p.prop !== 'spill').concat([S.me], S.race ? S.race.bots : [], visibleGhosts(), glassPanels()).sort((a, b) => b.z - a.z);
-  for (const p of list) { if (p.glass) drawGlass(p); else drawPerson(p); }
+  for (const p of list.filter(p => !S.race || sameRoute(S,p))) { if (p.glass) drawGlass(p); else drawPerson(p); }
   drawSlipstream();
   weatherGrade();
   chainShards();
