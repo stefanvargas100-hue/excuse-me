@@ -74,3 +74,13 @@ test('practice setup is not mistaken for a daily/weekly try and never uses one u
   const E = load(); begin(E, 'race', { category: 'practice' });
   assert.strictEqual(E.hasPlayed('daily'), false); assert.strictEqual(E.hasPlayed('weekly'), false);
 });
+
+test('friendcup explicitly isolates all ordinary rewards and records', () => {
+  const vm = require('node:vm'), esbuild = require('esbuild');
+  const source = "import { POLICIES, makeRun } from './src/sim/runopts.js'; globalThis.result = { policy: POLICIES.friendcup, run: makeRun({category:'friendcup'}) };";
+  const context = {};
+  vm.runInNewContext(esbuild.buildSync({ stdin: { contents: source, resolveDir: process.cwd() }, bundle: true, format: 'iife', write: false }).outputFiles[0].text, context);
+  const expected = { xp: false, progress: false, records: false, scores: false, ghosts: false };
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(context.result.policy)), expected);
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(context.result.run.policy)), expected);
+});

@@ -8,7 +8,7 @@ const ALL = { xp: true, progress: true, records: true, scores: true, ghosts: tru
 const NONE = { xp: false, progress: false, records: false, scores: false, ghosts: false };
 // progress: challenge tallies, rotating challenges and unlocks. records: personal bests. scores: online boards. ghosts: saved/shown ghosts.
 // elimination: pays XP and counts ordinary progress, but a different format leaves no race record, ghost or board entry.
-export const POLICIES = { standard: ALL, practice: NONE, challenge: { ...NONE }, cup: { ...NONE }, elimination: { xp: true, progress: true, records: false, scores: false, ghosts: false } };
+export const POLICIES = { standard: ALL, practice: NONE, challenge: { ...NONE }, cup: { ...NONE }, friendcup: { ...NONE }, elimination: { xp: true, progress: true, records: false, scores: false, ghosts: false } };
 
 // opts: { category, rules, seed, outfit }. Unknown categories fall back to the strictest policy, never to the permissive one.
 export function makeRun(opts) {
