@@ -34,7 +34,7 @@ const COUNTDOWN = 3;
 const DRAFT_LEN = 4, DRAFT_W = 0.6;   // the zone behind them, in metres
 const DRAFT_CHARGE = 1.2;             // seconds to earn it at middling distance; closer is quicker
 const DRAFT_T = 2.5, DRAFT_BOOST = 1.25;   // how long it lasts and how much faster you go
-const DRAFT_COOL = 3;                 // after a boost runs out, no new slipstream for this long, so they cannot be chained
+const DRAFT_COOL = 6;                 // after a boost runs out, no new slipstream for this long, so they cannot be chained
 const DRAFT_MIN_V = 0.8;              // they have to be walking your way, not standing or coming at you
 // The outfit this run uses: your saved one, or the one the run supplies. Never written back to the save.
 export const lookOf = () => (S.run && S.run.outfit ? { ...LOOK, ...S.run.outfit } : LOOK);
@@ -360,12 +360,12 @@ function think(b) {
       }
     }
     c += Math.abs(tx - wander) * 0.07 + (aim ? Math.abs(tx - aim.x) * aimW : 0);
-    // racing: tuck in behind whoever is just ahead, shake off anyone on your own tail, take the fast strip
+    // racing: avoid sitting behind whoever is just ahead, shake off anyone on your own tail, take the fast strip
     const fight = b.diff.fight;
     if (fight) {
       for (const o of [S.race.me && { x: S.px, z: S.pz }, ...S.race.bots].filter(Boolean)) {
         if (o === b) continue;
-        if (o.z - b.z > 0.5 && o.z - b.z < 7 && Math.abs(tx - o.x) < 0.5) c -= 0.6 * fight;
+        if (o.z - b.z > 0.5 && o.z - b.z < 7 && Math.abs(tx - o.x) < 0.6) c += 0.9 + 0.9 * fight;
       }
       if (b.pressT > 0 && Math.abs(tx - S.px) < 0.8) c += 1.6 * fight;
       for (const pk of S.race.pickups || []) if (!pk.taken && pk.z - b.z > 0.5 && pk.z - b.z < 12 && Math.abs(tx - pk.x) < 0.5) c -= 0.9 * fight;   // go for a pickup

@@ -1,11 +1,11 @@
-// Initial targets: median bot finishes across three seeded 60 Hz harness races, rounded up.
+// Targets: median bot finishes across three seeded 60 Hz ordinary races with lane avoidance and a 6 s slipstream cooldown, rounded up.
 export const MEDAL_TIMES = {
-  airport: { bronze: 165, silver: 125, gold: 118 },
-  nyc: { bronze: 211, silver: 181, gold: 134 },
-  shibuya: { bronze: 107, silver: 92, gold: 75 },
-  park: { bronze: 178, silver: 143, gold: 115 },
-  bridge: { bronze: 208, silver: 176, gold: 136 },
-  subway: { bronze: 159, silver: 119, gold: 97 }
+  airport: { bronze: 153, silver: 137, gold: 120 },
+  nyc: { bronze: 215, silver: 176, gold: 154 },
+  shibuya: { bronze: 103, silver: 94, gold: 82 },
+  park: { bronze: 171, silver: 148, gold: 117 },
+  bridge: { bronze: 202, silver: 166, gold: 144 },
+  subway: { bronze: 159, silver: 124, gold: 99 }
 };
 
 export function medalFor(stageId, seconds) {
