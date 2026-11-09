@@ -49,3 +49,6 @@ Use the method in batch 03, "Setting the times", with the shipped rules on all 6
 
 ## Left for a person
 Whether races still feel good, and whether the new medal times are fair, on the playtest link.
+
+## Director revision, 2026-11-09
+The Director explicitly accepted the current improvement for playtest and authorized revising the target. Replace under 40% with under 65% for this playtest: measured baseline 70.47%, accepted B/6 result 59.79%. This does not claim the original target was met. Preserve newer Subway/Takeshita medal calibration when merging; assess fairness on phone. Visual pass remains for the subsequent main update.

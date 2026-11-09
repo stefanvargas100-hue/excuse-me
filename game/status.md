@@ -1,5 +1,15 @@
 # Status
 
+## Combined playtest checkpoint ? 2026-11-09
+- All feature branches for this playtest integrated: 03, 05, 06, 07, 08. Host handover S1 cleared by independent re-review 1b4d7c5.
+- Director accepted current slipstream improvement: test limit explicitly revised to under 65% (measured 59.79%; old baseline 70.47%). Newer Subway/Takeshita medal targets retained; fairness needs phone playtest.
+- Final combined full suite 683/683, focused slipstream 5/5, build and diff check pass. Publication pending.
+- Recovery worker released and merged workspace removed; original interrupted checkout preserved.
+- Visual pass AFTER feature playtest build, included in next main update; main merge still requires Director approval.
+- Live race leaderboard migration/activation not performed. QA trial remains partial; real phones/live networking not verified.
+- This checkpoint supersedes the historical checkpoints below.
+
+
 ## Recovery checkpoint ? 2026-11-09, Codex
 - Workspace authority: develop at c33c8cd, clean before this documentation update, eight commits ahead of origin/develop. Local main is 72f05e3; deployment not verified.
 - Previous lead merged 05 (253bd46) and 07 (c33c8cd). Its saved transcript records 663/663 tests, build, diff check and UTF-8 check passing after 07; not rerun during recovery.

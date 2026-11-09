@@ -32,3 +32,5 @@ Problems the lead caused, why they got through, and what now prevents them. Upda
 
 ## Round 2 countdown review
 - S1, owner countdown-recovery builder (06g): rejected Cup envelopes consumed the pending handover decision, preventing later valid cancellation. Independently reproduced in f650650. Permanent fix: gate on accepted envelope and matching attempt, with adversarial harness regressions; pending verification.
+
+- Lead integration mistake, 2026-11-09: merged while a full suite was still reading the workspace, causing conflict-marker parse errors. Permanent rule for this workflow: settle merge before starting integration tests; replacement full suite passed 683/683.

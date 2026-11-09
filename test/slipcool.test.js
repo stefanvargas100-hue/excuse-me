@@ -23,10 +23,10 @@ test('no new slipstream straight after one ends: a short cooldown, then it works
   const E = atGo(); tail(E, 60, 0, 2.5, 3); assert.ok(E.S.draftT > 0);
   tail(E, 85, 3, 2.5, 3);                                   // step out of the draft until the boost has just run out
   assert.strictEqual(E.S.draftT, 0, 'the boost ended');
-  tail(E, 40, 0, 2.5, 3);                                   // right back behind someone, 1.3 s
+  tail(E, 130, 0, 2.5, 3);                                   // right back behind someone, 4.3 s
   assert.strictEqual(E.S.draftT, 0, 'no new boost during the cooldown');
   assert.strictEqual(E.S.draftC, 0, 'and nothing charges either');
-  tail(E, 100, 0, 2.5, 3);                                  // 3 more seconds
+  tail(E, 100, 0, 2.5, 3);                                  // 3.3 more seconds
   assert.ok(E.S.draftT > 0, 'works again after the cooldown');
 });
 
