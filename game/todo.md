@@ -14,7 +14,7 @@
 
 ## Lead (Claude)
 1. **Review** the clothing fixes' before and after screenshots, and the Subway Platform worker's result. Allow stage 5 in Friend Cups, and add Subway to NYC Cup (`CUP_STAGES`, `CUP_RULES` 3, 4 races) after the Director tries it.
-2. **Friend Cup online:** plan and send (Claude, second review, measure messages with 7 host-run bots).
+2. **Review** Friend Cup online (separate second review before merging), the performance numbers and the matchmaking spec.
 3. **QA worker trial:** an independent worker tests the Cups on the playtest link and files bugs by severity without fixing them.
 4. **End of Round 1:** write the round report, then hand over to a fresh lead session.
 5. **After that:** passing the host role, then Round 2 (race time boards, the Subway stage and the side-route system), then the other new stages and matchmaking.
