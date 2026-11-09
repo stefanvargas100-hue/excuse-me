@@ -8,7 +8,7 @@
 - **Round 2 approved** (2026-11-09) and building on Codex: `game/rounds/round-02/proposal.md`. Merge order 03, 08, 05, 06, 07. Batches 03, 06 and 07 all touch `race.js`; 06 and 07 both raise `PROTO` to 6, so reconcile at merge.
 - **Workers running, all Codex:**
   - `slipstream-lines` (batch 03, second cycle): it was given a "slipstream lines" brief that is not in the repo. Its floor run shows bots line up 67% of the first third even with slipstream off. The lead told it "within 10 points of the floor" is an upper bound.
-  - `cups-qa` (04), `time-boards` (05, boards and name rules), `host-handover` (06, plus the simulated room; needs a Claude second review), `side-routes` (07, Subway routes then Takeshita Street), `subway-cup` (08, Subway in the NYC Cup as 4 races and in Friend Cups, approved by the Director).
+  - `cups-qa` (04), `time-boards` (05, boards and name rules), `host-handover` (06) **stopped, partial, do not merge**: the next race does not start after a handover. Follow-up plan `batch-06b`; the Director picks the builder, `side-routes` (07, Subway routes then Takeshita Street), `subway-cup` (08, Subway in the NYC Cup as 4 races and in Friend Cups, approved by the Director).
   - Scope rulings already sent: 05 has no name form (names are generated; the cap is 24 characters for all names); 07 may also edit `game.js` movement and pass loop and `actions.js` reach, for routes only.
 - **On `develop`, not yet `main`:** everything from Round 1, plus Friend Cup online (`PROTO` 5). 631 tests pass.
 - **Matchmaking decisions:** recorded at the end of `matchmaking-spec.md`. No public test yet; legal advice on hold.
