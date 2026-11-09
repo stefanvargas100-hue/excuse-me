@@ -5,13 +5,13 @@
 **Live version:** `main` at `30d0cd4`, with splits, medals, screen fixes and the playtest pipeline
 
 ## Now
-- **Round:** 1. Ideas 1-3 are live. On `develop`, not yet `main`: NYC Cup at 8 racers, Friend Cup rules, Subway Platform (not yet in NYC Cup), clothing fixes, the matchmaking spec and the performance tool.
-- **Friend Cup online is merged into `develop`** (`e45d19f`, `PROTO` 5): built by Claude Opus, reviewed by Codex, two departure bugs fixed by Codex. 631 tests pass. Needs a two-phone test on the playtest link.
-- **Worker running, Codex:**
-  - `slipstream-lines`: applies fix B, sets `DRAFT_COOL` to 6 and re-measures medal times (plan: `round-02/batch-03`). It branched before Friend Cup online, which also changed `race.js`, so expect a merge conflict.
-- **Next:** the two worker reports, then the QA worker trial.
-- **Waiting on the Director:** phone test, and the 5 decisions in `game/rounds/round-02/matchmaking-spec.md`.
-- **At the playtest:** splits may sit low and overlap the stamina bars; medal fairness; results without the podium.
+- **Round 2 approved** (2026-11-09) and building on Codex: `game/rounds/round-02/proposal.md`. Merge order 03, 05, 06, 07. Batches 03, 06 and 07 all touch `race.js`; 06 and 07 both raise `PROTO` to 6, so reconcile at merge.
+- **Workers running, all Codex:**
+  - `slipstream-lines` (batch 03, second cycle): it was given a "slipstream lines" brief that is not in the repo. Its floor run shows bots line up 67% of the first third even with slipstream off. The lead told it "within 10 points of the floor" is an upper bound.
+  - `cups-qa` (04), `time-boards` (05, boards and name rules), `host-handover` (06, plus the simulated room; needs a Claude second review), `side-routes` (07, Subway routes then Takeshita Street).
+- **On `develop`, not yet `main`:** everything from Round 1, plus Friend Cup online (`PROTO` 5). 631 tests pass.
+- **Matchmaking decisions:** recorded at the end of `matchmaking-spec.md`. No public test yet; legal advice on hold.
+- **Waiting on the Director:** the phone tests in `game/todo.md`, a try of Subway, and who sent the slipstream second brief.
 
 ## Risks
 | Risk | Likelihood | Impact | Mitigation | Owner |
