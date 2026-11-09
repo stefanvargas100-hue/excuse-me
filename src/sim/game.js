@@ -391,14 +391,15 @@ function showCupEnd() {
 // Standings after a Friend Cup race. Between races the button belongs to the room: duel.js fills it in through refresh().
 function showFriendCupEnd() {
   const D = S.duel, C = D.cup, m = C.model, R = S.race, table = friendCupTable(m), over = friendCupOver(m);
-  const mine = (m.rounds[C.race - 1] || []).find(r => r.id === D.meId), place = mine ? mine.place : R.place, cp = table.findIndex(r => r.id === D.meId) + 1, pts = cp ? table[cp - 1].points : 0;
+  const restarting = D.cancelled && !over, race = restarting ? m.rounds.length + 1 : C.race;
+  const mine = (restarting ? [] : m.rounds[C.race - 1] || []).find(r => r.id === D.meId), place = mine ? mine.place : R.place, cp = table.findIndex(r => r.id === D.meId) + 1, pts = cp ? table[cp - 1].points : 0;
   setPodium(R.board, S.me, R.bots);
-  $('endEyebrow').textContent = 'Friend Cup · ' + (m.ended ? 'standings so far' : over ? 'final standings' : 'race ' + C.race + ' of ' + CUP_RACES + ' · ' + LV.name);
+  $('endEyebrow').textContent = 'Friend Cup · ' + (m.ended ? 'standings so far' : over ? 'final standings' : 'race ' + race + ' of ' + CUP_RACES + ' · ' + LV.name);
   const t = $('endTitle');
-  t.textContent = m.ended ? 'Host left' : over ? (cp === 1 ? 'Cup winner!' : ordinal(cp) + ' in the Cup') : !mine ? 'Finished · waiting for racers' : D.dnf ? 'Did not finish' : place === 1 ? 'Race won' : ordinal(place) + ' of ' + CUP_RACERS;
+  t.textContent = restarting ? 'Race ' + race + ' restarts' : m.ended ? 'Host left' : over ? (cp === 1 ? 'Cup winner!' : ordinal(cp) + ' in the Cup') : !mine ? 'Finished · waiting for racers' : D.dnf ? 'Did not finish' : place === 1 ? 'Race won' : ordinal(place) + ' of ' + CUP_RACERS;
   t.className = (over && !m.ended ? cp === 1 : place === 1 && !D.dnf) ? 'good' : 'bad';
   $('endLead').hidden = true;
-  $('sScoreLabel').textContent = 'Race time'; $('sScore').textContent = D.dnf ? 'DNF' : fmtTime(D.finish ?? S.time);
+  $('sScoreLabel').textContent = 'Race time'; $('sScore').textContent = restarting ? '-' : D.dnf ? 'DNF' : fmtTime(D.finish ?? S.time);
   setStat('sBest', over ? 'Cup points' : 'Cup points so far', String(pts));
   setStat('sDist', 'Race place', mine ? ordinal(place) + ' of ' + CUP_RACERS : '-'); setStat('sChain', 'Bumps', String(S.bumps));
   setExtraStats(false);

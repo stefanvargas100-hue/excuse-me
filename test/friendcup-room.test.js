@@ -426,50 +426,53 @@ test('a guest who goes silent is treated as leaving', async () => {
   assert.strictEqual(games[1].friendCup().racers.find(r => r.id === ids[2]).left, true);
 });
 
-test('the host leaving mid-race: guests finish, then see Host left and the completed races only', async () => {
-  const L = await cup(3, { load: { dom: true } }), { games, host, guests } = L;
+// Round 2 batch 06: the host leaving no longer ends the Cup. The next player in roster order hosts (more in host-handover.test.js).
+test('the host leaving mid-race: the next player hosts, the bots carry on, and the race counts', async () => {
+  const L = await cup(3, { load: { dom: true } }), { games, host, guests, ids } = L;
   tickAll(games, 6); await settle();
   await finishOrder(games, [1, 0, 2]);
   await next(L);
-  const table1 = J(table(guests[0]));
   tickAll(games, 6); await settle();
   host.leaveRoom(); await settle();
   for (const g of guests) {
     assert.strictEqual(g.state, 'play', 'everyone finishes the current race');
-    assert.strictEqual(g.friendCupOver(), true);
-    assert.strictEqual(g.friendCup().ended, true);
+    assert.strictEqual(g.friendCupOver(), false);
+    assert.strictEqual(g.friendCup().ended, false);
+    assert.strictEqual(g.friendCup().racers.find(r => r.id === ids[0]).left, true);
   }
   tickAll(guests, 10); await settle();
-  for (const g of guests) assert.strictEqual(botsOf(g).length, 0, 'bots stop with the host, rather than standing frozen');
+  for (const g of guests) assert.strictEqual(botsOf(g).length, 6, 'the bots, and a bot for the old host, keep running');
   await finishOrder(guests, [0, 1]);
   tickAll(guests, 40); await settle();
-  for (const g of guests) {
-    assert.strictEqual(g.element('endTitle').textContent, 'Host left');
-    assert.strictEqual(g.element('end').hidden, false);
-    assert.strictEqual(g.friendCup().rounds.length, 1, 'the unfinished race does not count');
-    assert.strictEqual(J(table(g)), table1, 'standings from completed races');
-    assert.strictEqual(g.rematchState(), 'gone');
-    assert.match(g.element('again').textContent, /new Cup/);
+  const [h, g] = guests;
+  for (const x of guests) {
+    assert.notStrictEqual(x.element('endTitle').textContent, 'Host left');
+    assert.strictEqual(x.friendCup().rounds.length, 2, 'the race counts');
   }
+  assert.strictEqual(J(table(g)), J(table(h)));
+  assert.match(h.element('again').textContent, /Start race 3/);
+  assert.strictEqual(g.element('again').textContent, 'Waiting for host');
 });
 
-test('the host leaving between races ends the Cup with the standings so far', async () => {
+test('the host leaving between races: the last guest hosts and plays on against bots', async () => {
   const L = await cup(2, { load: { dom: true } }), { games, host } = L, guest = games[1];
   tickAll(games, 6); await settle();
   await finishOrder(games, [0, 1]);
   tickAll(games, 40); await settle();
   host.leaveRoom(); await settle();
-  assert.strictEqual(guest.friendCup().ended, true);
+  assert.strictEqual(guest.friendCup().ended, false);
   assert.strictEqual(guest.friendCup().rounds.length, 1);
-  assert.strictEqual(guest.element('endTitle').textContent, 'Host left');
+  assert.notStrictEqual(guest.element('endTitle').textContent, 'Host left');
+  assert.match(guest.element('again').textContent, /Start race 2/);
 });
 
-test('the host going silent ends the Cup the same way', async () => {
+test('the host going silent hands the Cup over the same way', async () => {
   const L = await cup(2, { load: { clock: true } }), { games } = L, guest = games[1];
   tickAll(games, 6); await settle();
   L.H.drop = () => true;   // everything from now on is lost
   for (let i = 0; i < 17; i++) { guest.advance(2000); await settle(); }
-  assert.strictEqual(guest.friendCup().ended, true);
+  assert.strictEqual(guest.friendCup().ended, false);
+  assert.strictEqual(guest.lobbyPlayers().find(p => p.me).host, true);
   assert.strictEqual(guest.state, 'play');
 });
 
@@ -527,7 +530,7 @@ test('repeated and late results change nothing', async () => {
 /* ---- bad input ---- */
 test('mismatched versions: the update message, and Cup messages from another version are ignored', async () => {
   const L = await room(2), { host, guests, H } = L;
-  assert.strictEqual(host.PROTO, 6);
+  assert.strictEqual(host.PROTO, 7);
   const newer = load(); newer.useRoomFactory(H.factory);
   const before = host.lobbyPlayers().length;
   host.injectRoomMessage('hello', { id: 'oldphone', proto: host.PROTO - 1, name: 'Old' }); await settle();
