@@ -7,6 +7,8 @@
 - Director moved 09 visual pass until AFTER the combined feature playtest. Do not start it beforehand.
 - 03 is failed/exited in Orca, not running; its report still needs inspection. 04 QA remains partial. Migration 0003 remains unapplied pending approval.
 - 06e recovery reported complete at f7f7999: 679/679 tests, build and room simulations reported passing. Independent review brief 06f prepared; not yet merged.
+- 06f review f650650 reproduced an S1 rejected-message countdown split. 06g assigns the focused validation fix to the recovery builder; do not merge before re-review.
+- Director clarified: features go to playtest first; visual pass follows and MUST be included in the next main update, after approval.
 - Older checkpoint below is historical and superseded where noted.
 
 

@@ -1,0 +1,7 @@
+# 06g: countdown decision validation
+
+Builder: same countdown-recovery Codex worker, default model and effort. S1 blocker; owner builder. This is the first fix request following 06e review. Work on your existing branch, preserving all current integration.
+
+Read review commit f650650:game/rounds/round-02/reports/batch-06f-recovery-review.md. Reproduce both rejected-envelope cases first in test/host-handover.test.js: stale revision with unrelated seed, and wrong PROTO with carry-on false cancellation. Assert invalid messages cannot consume a pending handover decision and a later valid decision converges all phones. Also cover an otherwise accepted envelope with an unrelated attempt: validation must precede consuming awaitingStart. Cover duplicates and restart of the same seed so stale decisions cannot cancel a newly started attempt. Fix acceptance and attempt validation with the smallest clear change.
+
+May edit src/online/duel.js, test/host-handover.test.js and game/rounds/round-02/reports/batch-06g-message-validation.md only. Preserve PROTO 7, courseTag, and existing normal/elim behavior. Tests must fail on assertions before the fix. Run relevant focused tests, one full suite, build, diff check and room simulation. Commit and report precise evidence; independent re-review required before merging. No live database, deployments, dependencies, subagents or other checkout changes. Stop after two failed attempts per AGENTS.md.
