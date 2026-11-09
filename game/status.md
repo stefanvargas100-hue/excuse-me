@@ -1,5 +1,11 @@
 # Status
 
+## Visual pass dispatch checkpoint - 2026-11-09
+- Combined playtest checkpoint below remains authoritative for completed features and verification.
+- Batch 09 dispatched from develop at e6b7ef4 to Claude Fable 5.1 in `visual-pass`; immediately interrupted by Claude's five-hour session limit (reported reset: 5pm America/Denver). No completed visual work reported.
+- Assignment retained: task `task_4fe912dc57fc`, dispatch `ctx_df6a6bfe6536`. Resume this worker after capacity returns; do not duplicate the assignment or silently change the Director-selected model.
+- Visual pass and lead screenshot review remain required before the next main update. Main merge still requires Director approval. Live migration remains unapplied.
+
 ## Combined playtest checkpoint ? 2026-11-09
 - All feature branches for this playtest integrated: 03, 05, 06, 07, 08. Host handover S1 cleared by independent re-review 1b4d7c5.
 - Director accepted current slipstream improvement: test limit explicitly revised to under 65% (measured 59.79%; old baseline 70.47%). Newer Subway/Takeshita medal targets retained; fairness needs phone playtest.
