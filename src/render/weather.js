@@ -16,7 +16,8 @@ export const VARIANTS = {
   shibuya: [['night', 5], ['rain', 3]],
   park: [['day', 5], ['autumn', 3], ['golden', 2]],
   bridge: [['day', 5], ['golden', 3], ['mist', 2]],
-  subway: [['day', 1]]
+  subway: [['day', 1]],
+  takeshita: [['day', 5], ['golden', 2]]
 };
 
 let cur = 'day', curLevel = '', curRun = null, forced = null;

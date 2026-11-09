@@ -151,6 +151,8 @@ function spawnUnit(z, d) {
     if (d > 0.08) pool.push(['speedster', 1.5], ['luggage', 0.5]);
     if (d > 0.2) pool.push(['swerver', 1]);
     if (d > 0.4) pool.push(['trio', 1]);
+  } else if (id === 'takeshita') {
+    pool = [['shopper', 8], ['walker', 3], ['oncoming', 2], ['pair', 1], ['phone', 1]];
   } else if (id === 'subway') {
     pool = [['walker', 4], ['oncoming', 4], ['pair', 2], ['phone', 2], ['luggage', 1]];
     if (d > 0.3) pool.push(['speedster', 1]);
@@ -183,6 +185,7 @@ function spawnUnit(z, d) {
       break;
     }
     case 'phone': walker(z, dirv, { phone: true, v0: walkSpeed(0.95, 0.12), wave: 0.35, yieldP: 0, space: 0 }); break;
+    case 'shopper': walker(z, dirv, { shopper: true, photo: rnd(1.2, 4), pack: 'pack', carry: 'bag' }); break;
     case 'tourist': walker(z, dirv, { photo: rnd(1, 6), pack: 'pack' }); break;
     case 'dog': walker(z, dirv, { dog: pick([-1, 1]), v0: walkSpeed(1.15, 0.15) }); break;
     case 'speedster': spawnFast(false, z); break;

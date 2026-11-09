@@ -16,8 +16,8 @@ export function drawSideRoutes() {
     const d=r.entrance-VZ;
     if (!S.route && d>1&&d<65) {
       if (r.entrance - S.pz < 30) label(r.name+' ↑ RIGHT STAIRS · HARD',W/2,70,17,'#ffe08a');
-      for(let i=0;i<10;i++) fq(r.shape.entryX-.65,r.shape.entryX+.65,i*.06,d+i*.5,d+(i+1)*.5,i%2?'#eee0a8':'#7b796d');
-      const q=P(r.shape.entryX,2,d);label(r.name+' ?',q[0],q[1],Math.min(24,F/d*.4),'#ffe08a');
+      for(let i=0;i<10;i++) fq(r.shape.entryX-.65,r.shape.entryX+.65,r.level === 'up' ? i*.06 : .01,d+i*.5,d+(i+1)*.5,i%2?'#eee0a8':'#7b796d');
+      const q=P(r.shape.entryX,2,d);label(r.name+(r.level === 'up' ? ' ?' : ' ?'),q[0],q[1],Math.min(24,F/d*.4),'#ffe08a');
     }
   }
 }

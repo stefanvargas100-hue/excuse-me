@@ -34,7 +34,12 @@ export const LEVELS = [
     lane: 0.08, fastEvery: [3.5, 6], rivalEvery: [10, 16], base: 1, starScore: 16000,
     timerLabel: 'Last train', timeFail: 'The last train pulled out without you.', events: ['train', 'train', 'parade', 'queue', 'tour'],
     blurb: 'Dim tiled platform. Every arriving train empties a wave of commuters across your path.',
-    music: { bpm: 146, prog: [[57,60,64],[53,57,60],[55,59,62],[60,64,67]] } }
+    music: { bpm: 146, prog: [[57,60,64],[53,57,60],[55,59,62],[60,64,67]] } },
+  { id: 'takeshita', city: 'Tokyo', name: 'Takeshita Street', goal: 360, goalText: 'HARAJUKU STATION', half: 3.3, keep: -1, fog: '#e7cbdc',
+    lane: .08, fastEvery: [4,7], rivalEvery: [12,18], base: 1, starScore: 15000,
+    timerLabel: 'Meet-up starts', timeFail: 'Your friends left before you arrived.', events: ['selfie', 'tour', 'queue'],
+    blurb: 'Harajuku shops and sudden stops. Watch shoppers raise their phones; the quiet back alley takes longer.',
+    music: { bpm: 158, prog: [[66,69,73],[62,66,69],[57,61,64],[64,68,71]] } }
 ];
 
 for (const L of LEVELS) L.limit = Math.round(L.goal / 3.0 * 1.07 + 6);

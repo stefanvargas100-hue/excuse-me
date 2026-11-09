@@ -1,3 +1,4 @@
+import { courseTag } from '../config/routes.js';
 import { sideRoutes } from '../config/side-routes.js';
 /* ---------- live race with 1 to 7 friends (a room of up to 8 phones) ----------
    The host makes a room code, friends join with the code or a link, the host presses Start. All phones then build the same
@@ -80,7 +81,7 @@ const others = () => roster.filter(p => p.id !== myId);
 function sendMyGhosts(level) {
   const L = LEVELS[level]; if (!L || !room) return;
   for (const kind of ['classic', 'race']) {
-    let pts = null; try { pts = JSON.parse(store.get((kind === 'race' ? 'excuseme_ghost_race_' : 'excuseme_ghost_') + L.id, 'null')); } catch (e) {}
+    let pts = null; try { pts = JSON.parse(store.get((kind === 'race' ? 'excuseme_ghost_race_' : 'excuseme_ghost_') + L.id + (kind === 'race' && sideRoutes(L.id).length ? courseTag(L.id) : ''), 'null')); } catch (e) {}
     const g = packGhost(pts); if (g) room.send('ghost', { id: myId, kind, level, ghost: g });
   }
 }
