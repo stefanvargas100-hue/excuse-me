@@ -1,6 +1,6 @@
 <!-- Lead checks before sending, each from a real past mistake:
   1. Rules: does anything here conflict with AGENTS.md, this plan's other lines, or Orca's worker instructions?
-  2. Numbers: did I measure each target against what it really has to fit, not just the first limit I thought of?
+  2. Numbers: did I measure each target against what it really has to fit, not just the first limit I thought of? If a target comes from my own trial, is the trial script committed or its method written out, so the worker can reproduce my baseline first?
   3. Claims: did I check every file, flag and fact I name, instead of assuming it?
   4. Scope: can the worker finish using only the files listed? Search the tests for any value the plan changes.
   5. Fairness: for each game rule, did I say what it must keep fair for players, not just its limits?
