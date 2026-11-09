@@ -657,3 +657,38 @@ test('measure: the largest Cup results message stays under 8 KB', async () => {
   console.log('# measure (simulated connection, 8 phones, long names): final results message ' + largest + ' bytes');
   assert.ok(largest < 8192, 'under 8 KB: ' + largest);
 });
+
+for (const departure of ['leave', 'timeout']) {
+  test('a Cup pauser who departs by ' + departure + ' releases the remaining racers', async () => {
+    const L = await cup(3, { load: { clock: true } }), { host, games, ids } = L;
+    tickAll(games, 6); await settle();
+    games[2].pauseGame(); await settle();
+    assert.strictEqual(host.state, 'paused');
+    assert.strictEqual(games[1].state, 'paused');
+    if (departure === 'leave') { games[2].leaveRoom(); await settle(); }
+    else for (let i = 0; i < 16; i++) { host.advance(2000); games[1].advance(2000); await settle(); }
+    for (const g of [host, games[1]]) {
+      assert.strictEqual(g.S.duel.pausers.has(ids[2]), false, 'departed vote removed');
+      assert.strictEqual(g.state, 'play', 'the Cup resumes');
+      assert.strictEqual(g.friendCup().racers.find(r => r.id === ids[2]).left, true);
+    }
+  });
+}
+
+test('a finished Cup racer pruned by heartbeat is left on every phone and a bot next race', async () => {
+  const L = await cup(3, { load: { clock: true } }), { host, games, ids } = L;
+  tickAll(games, 6); await settle();
+  await finishOrder(games, [2, 0, 1]);
+  assert.strictEqual(host.friendCup().rounds.length, 1);
+  for (let i = 0; i < 16; i++) { host.advance(2000); games[1].advance(2000); await settle(); }
+  assert.ok(!host.lobbyPlayers().some(p => p.id === ids[2]), 'heartbeat pruned the silent racer');
+  for (const g of [host, games[1]]) {
+    const racer = g.friendCup().racers.find(r => r.id === ids[2]);
+    assert.strictEqual(racer.left, true, 'finished departure reaches everyone');
+    assert.strictEqual(racer.bot, true);
+  }
+  await next({ host, games: [host, games[1]] });
+  const runner = host.S.race.bots.find(b => b.peerId === ids[2]);
+  assert.ok(runner.aiBot && !runner.remote, 'host runs the takeover immediately');
+  assert.ok(games[1].S.race.bots.find(b => b.peerId === ids[2]).aiBot);
+});

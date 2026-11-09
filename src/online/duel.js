@@ -274,6 +274,7 @@ function cupRacerGone(id) {
   if (!cup) return;
   cup = playerLeft(cup, id); retired.add(id);
   const d = S?.duel, P = d?.cup && d.order.includes(id) ? d.peers[id] : null;
+  if (P) { d.pausers.delete(id); syncDuelPause(); }
   if (!P || P.ai) return;
   P.ai = true;
   if (P.fin != null || P.bye) return;   // already finished or out of this race
@@ -526,7 +527,12 @@ function heartbeat() {
     }
   } else if (role === 'host') {
     const gone = others().filter(p => seenAt[p.id] && now - seenAt[p.id] > STALE_MS);
-    if (gone.length) { roster = roster.filter(p => !gone.includes(p)); for (const p of gone) { wants.delete(p.id); retired.add(p.id); } maybeRematch(); changed(); }
+    if (gone.length) {
+      roster = roster.filter(p => !gone.includes(p));
+      for (const p of gone) { wants.delete(p.id); retired.add(p.id); if (cup) cupRacerGone(p.id); }
+      if (cup) publishCup();
+      maybeRematch(); changed();
+    }
     if (roster.length > 1) sendRoster();
   }
   if (room) changed();
