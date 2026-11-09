@@ -1,6 +1,6 @@
 # Round 1 proposal
 
-**Status:** ideas 1, 2, 3 and 4 approved by the Director. Idea 5 moved to Round 2. Ideas 1 and 2 are merged into the lead branch, and idea 3 is in progress. Idea 4 has not been built.
+**Status:** ideas 1, 2, 3 and 4 approved by the Director. Idea 5 moved to Round 2. Ideas 1, 2 and 3 are merged into the lead branch. Idea 4 has not been built.
 
 | # | Idea | Status | Builder | Risk |
 |---|---|---|---|---|
