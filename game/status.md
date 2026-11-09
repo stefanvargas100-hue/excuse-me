@@ -14,6 +14,7 @@
   - 03 `slipstream-lines` (Codex): second cycle under a brief from an earlier lead that is lost. "Within 10 points of the floor" means an upper bound.
   - 06b `host-handover-2` (**Claude Opus, high**, the Director chose it): finishing the stopped Codex draft from `host-handover` `b5e751a`. Plan `batch-06b`. Needs a Codex second review before merging. It is the only Claude worker; start no other.
   - 07 `side-routes` (Codex): Subway routes done in `1cf85eb` (partial). It stopped on a build error that looks local; real cause found by the lead: `src/render/side-routes.js` saved in the Windows code page. Follow-up `batch-07c` sent: merge develop (new `test/utf8.test.js`), re-save as UTF-8, then Subway medals and Takeshita Street. Part 1 now builds; Subway measured in `9020d04`. Ruling sent: it may also tag the race ghost key in `duel.js` `shareGhosts` with `courseTag` (that line only), which touches the same file as 06b.
+- **Queued:** 09 visual pass (`batch-09-visual-pass.md`), Claude Fable 5.1, approved by the Director. Start it once 06b has reported **and** 07 has merged. Part 1 proposes and stops; the Director picks what part 2 builds.
 - **Waiting on the Director:** playtest Subway in the Cups and the checks in `game/todo.md`; approval to apply migration 0003 once reviewed.
 
 ## Risks
