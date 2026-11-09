@@ -1,10 +1,10 @@
-Outcome:     Part 1 done; Part 2 pending, committed before beginning Takeshita.
-Branch:      stefanvargas100-hue/side-routes; foundation 1cf85eb, encoding/medals in this commit.
-Changed:     Subway mezzanine route, route isolation, bot choice, drawing/race dots, tagged records/ghosts, protocol 6 player/Cup-bot route positions; fixed painter encoding after lead diagnosis.
-Checks:      core route/ghost tests failed first; focused side-routes/Subway/UTF-8 16/16 pass; previous full suite 637/637; build and git diff --check pass.
-Timings:     clear-course scripted mezzanine about 6.2% faster, within 3-8%; easy route comes in Part 2.
-Medals:      Subway old bronze/silver/gold 159/119/97 s -> 153/138/121 s; nine bot finishes per tier, three seeds 11/22/33 at 60 Hz, player trails field; medians Easy 152.383, Medium 137.283, Hard 120.017 s, all bots finish.
-Screens:     inspected built-game Playwright captures at 390x844, C:/Users/stefa/AppData/Local/Temp/subway-entrance.png (platform/right stairs) and subway-mezzanine.png (tan isolated mezzanine/rejoin label).
-Not checked: route readability/value, medal fairness and feel on a real phone remain for a person.
-Off plan:    lead-approved game.js movement/pass loop and actions.js reach/who only; local develop merged as requested in batch 07c.
-Trouble:     single code-page 0xB7 in painter masked by offline-cache hook; UTF-8 test caught it, resaving fixed build.
+Outcome:     done; Part 1 committed before Part 2, then Takeshita reused the route system.
+Branch:      stefanvargas100-hue/side-routes; foundation 1cf85eb, completed Part 1 9020d04, Part 2 a692504.
+Changed:     isolated routes/collisions/crowd/shouts/drafting/passes/ghosts, bot route choice outside think(), route drawing/race dots, protocol 6 route positions; Takeshita shoppers, shops, Tokyo music and menus; Cup stage lists and published five-stage Daily/Weekly rotation unchanged, following batch 01.
+Checks:      core route, ghost-key and shopper checks failed first then passed; focused 16/16, full suite 654/654, UTF-8, build and git diff --check pass; fit: 70 screen checks, 0 problems at 320x568, 390x844 and desktop.
+Timings:     scripted clear-course Subway main 112.517 s / mezzanine 105.517 s = 6.221% faster; Takeshita main 90.017 s / back alley 90.483 s = 0.518% slower; both within targets.
+Medals:      Subway old bronze/silver/gold 159/119/97 s -> 153/138/121 s (Easy/Medium/Hard medians 152.383/137.283/120.017); Takeshita new 136/118/110 s (medians 135.250/117.250/109.467); each tier nine bot finishes, seeds 11/22/33 at 60 Hz, player trails field, all finish.
+Screens:     inspected staged built-game Playwright captures, 390x844, under C:/Users/stefa/AppData/Local/Temp/: subway-entrance.png (right stairs/prompt), subway-mezzanine.png (tan isolated floor/rejoin label), takeshita-main.png (Harajuku arch/pink shops), takeshita-shoppers.png (phone tells/stopped shopper), takeshita-alley.png (quiet separate corridor), takeshita-finish.png (station arch).
+Not checked: easy-to-see/worthwhile routes, Tokyo feel, medal fairness, and smoothness/touch on a real phone remain for a person on the playtest link; route timing percentages are scripted clear-course checks, not human playtests.
+Off plan:    lead-approved game.js movement/pass loop, actions.js reach/who, and duel.js race ghost sharing storage-key construction only; develop merged as requested by batch 07c.
+Trouble:     code-page 0xB7 in painter masked by offline-cache hook, fixed via UTF-8; optional fit check exposed disabled seventh Cup button adding a row, fixed by hiding unavailable Cup stages with CSS.
