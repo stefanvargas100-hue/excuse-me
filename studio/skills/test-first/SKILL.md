@@ -11,7 +11,7 @@ Write the test before the code, so the test cannot be shaped to fit what the cod
 
 1. **Pick what matters.** Test the most important behaviour: the thing that, if broken, would make the feature useless or hurt the user (core rules, scoring, saving and loading data, anything money, security or progress related, and any bug you are fixing). Do not test every line, getters, layout, or wording.
 2. **Write the test first.** Describe the expected result in plain terms from the user's goal ("a perfect dash gives a speed boost"), not from how you plan to build it.
-3. **Run it and watch it fail.** It must fail for the right reason (feature missing), not because of a typo. A test that has never failed proves nothing. If it passes before any code exists, the test is wrong.
+3. **Run it and watch it fail.** It must fail for the right reason (feature missing), not because of a typo. A test that has never failed proves nothing. If it passes before any code exists, the test is wrong. A missing file or function does not count: add an empty placeholder first, then watch each test fail on its actual check. This shows each test can catch its own kind of mistake.
 4. **Implement** the smallest change that makes it pass.
 5. **Run the full suite.** Everything must pass before committing.
 

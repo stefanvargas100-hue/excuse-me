@@ -9,7 +9,7 @@ The Director owns the vision, approves ideas, playtests and approves merges to `
 4. **Get Director approval.** Nothing is built before this.
 5. **Write batch plans** from `studio/templates/batch-plan.md`, one file per batch.
 6. **Start workers.** See "Starting a worker".
-7. **Review each result:** read the diff, confirm it stayed within the plan, and rerun checks only where the report leaves a gap. Send fixes back to the same worker.
+7. **Review each result** using `studio/skills/process-review/SKILL.md`: read the diff, confirm it stayed within the plan, look at changed screens, and rerun checks only where the report leaves a gap. Send fixes back to the same worker.
 8. **Merge into the lead branch** one batch at a time, running the tests after each.
 9. **Director playtests** and approves the merge to `main`.
 10. **Close the round:** write `round-report.md`, update `game/status.md`, handle `game/failures.md`.
@@ -60,6 +60,8 @@ Use what exists before writing anything new. These are installed on the machine 
 | `code-review` | Review a batch's diff (Claude only) |
 | `skill-creator` | Write and test a new skill |
 | `run` | Launch the game to see a change working (Claude only) |
+
+`studio/skills/process-review/` is how the lead reviews workers and changes the process.
 
 `studio/skills/test-first/` is a copy of the installed `test-first`, so every worker can read it by path. Change this copy, then bring the installed one in line.
 

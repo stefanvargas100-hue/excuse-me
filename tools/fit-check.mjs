@@ -115,17 +115,21 @@ try {
           await page.evaluate(() => {
             const el = document.createElement('button'); el.id = 'fit-self-test'; el.textContent = 'Overflow probe';
             el.style.cssText = 'position:fixed;left:calc(100vw + 20px);top:0;width:100px;height:40px';
-            document.getElementById('start').appendChild(el);
+            const clip = document.createElement('div'); clip.id = 'fit-self-clip'; clip.textContent = 'Clipped probe';
+            clip.style.cssText = 'width:100px;height:20px;overflow:hidden;line-height:120px';
+            document.getElementById('start').append(el, clip);
           });
           const injected = fitProblems(await measure(page, screen), viewport);
-          if (injected.some(p => p.element === '#fit-self-test' && p.problem === 'control off-screen')) detected++;
+          const caught = (element, problem) => injected.some(p => p.element === element && p.problem === problem);
+          if (caught('#fit-self-test', 'control off-screen') && caught('#fit-self-clip', 'vertical overflow')) detected++;
           await page.locator('#fit-self-test').evaluate(el => el.remove());
+          await page.locator('#fit-self-clip').evaluate(el => el.remove());
         }
       } catch (error) { line(size, name, '-', `could not check: ${error.message.split('\n')[0]}`); }
     }
     await context.close();
   }
-  console.log(`Summary: ${checked} screen checks, ${problems} problems${selfTest ? `; self-test detected ${detected}/${sizes.length} injected overflows` : ''}`);
+  console.log(`Summary: ${checked} screen checks, ${problems} problems${selfTest ? `; self-test detected ${detected}/${sizes.length} sizes with injected problems caught` : ''}`);
   process.exitCode = selfTest ? (detected === sizes.length ? 0 : 1) : (problems ? 1 : 0);
 } catch (error) {
   line('-', '-', '-', error.message);
@@ -135,5 +139,3 @@ try {
   await browser?.close();
   if (server) await new Promise(resolve => server.httpServer.close(resolve));
 }
-
-
