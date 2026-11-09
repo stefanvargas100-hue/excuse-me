@@ -22,7 +22,7 @@
 2. **NYC Cup XP with 8 places:** 60, 45, 35, 25, 20, 15, 10, 5.
 
 ## How it gets built
-Each phone currently runs its own crowd and its own solo bots, so bots must become shared. The host runs them and sends all their positions in one combined message, at the rate friend positions use today. Guests draw them like remote players. `PROTO` goes from 3 to 4, so phones on different versions get the existing "update the game" message. `CUP_RULES` goes to 2, so old NYC Cup bests are kept but not compared with 8-racer ones.
+Each phone currently runs its own crowd and its own solo bots, so bots must become shared. The host runs them and sends all their positions in one combined message, at the rate friend positions use today. Guests draw them like remote players. `PROTO` goes up by one (the subway stage takes it to 4, this batch to 5), so phones on different versions get the existing "update the game" message. `CUP_RULES` goes to 2, so old NYC Cup bests are kept but not compared with 8-racer ones.
 
 | Batch | Work | Builder | Second review |
 |---|---|---|---|

@@ -15,7 +15,7 @@
 ## Lead (Claude)
 1. **Ask the Director** before deleting the finished `cup-8-racers` branch and folder.
 2. **Confirm the playtest shows the 8-racer build,** by checking the red tag's commit.
-3. **Friend Cup rules:** plan and send (Codex, no networking).
+3. **Review** the Friend Cup rules and Subway Platform workers' results. Allow stage 5 in Friend Cups, and add Subway to NYC Cup (`CUP_STAGES`, `CUP_RULES` 3, 4 races) after the Director tries it.
 4. **Friend Cup online:** plan and send (Claude, second review, measure messages with 7 host-run bots).
 5. **QA worker trial:** an independent worker tests the Cups on the playtest link and files bugs by severity without fixing them.
 6. **End of Round 1:** write the round report, then hand over to a fresh lead session.
