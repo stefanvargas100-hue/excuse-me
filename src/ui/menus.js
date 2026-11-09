@@ -1,3 +1,4 @@
+import { medalFor } from '../config/medals.js';
 import { comboLevel } from '../config/combo.js';
 import { Music } from '../audio/music.js';
 import { LEVELS, LV, LVI, setLevel } from '../config/levels.js';
@@ -115,9 +116,10 @@ function buildStages() {
   LEVELS.forEach((L, i) => {
     const x = menuCard('lvl');
     const best = bestOf(L.id), rb = raceBest(L.id);
+    const medal = race && raceFormat() === 'race' ? medalFor(L.id, rb) : null;
     x.children[0].textContent = L.city;
     x.children[1].textContent = L.name;
-    x.children[2].textContent = race ? L.goal + ' m' + (rb ? ' · ' + fmtTime(rb) : '') : best ? 'Best ' + fmt(best) : 'Endless';
+    x.children[2].textContent = race ? L.goal + ' m' + (rb ? ' · ' + fmtTime(rb) : '') + (medal ? ' \u00b7 ' + medal[0].toUpperCase() + medal.slice(1) : '') : best ? 'Best ' + fmt(best) : 'Endless';
     x.children[3].textContent = L.blurb;
     x.addEventListener('click', () => { setLevel(i); start(stageMode, undefined, stageMode === 'race' && raceFormat() === 'elim' ? { run: { category: 'elimination' }, elim: true } : undefined); });
     box.appendChild(x); stageNodes.push(x);
