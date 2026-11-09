@@ -6,11 +6,11 @@
 
 ## Now
 - **Round:** 1, at step 6 of the playbook.
-- **In progress:** the Codex pilot, `rounds/round-01/batch-01-fit-check.md`.
-- **Waiting on the Director:** nothing.
+- **In progress:** batch 2, live splits, on Codex. Batch 1 is merged into the lead branch but not `main`.
+- **Waiting on the Director:** how to reduce what workers load at startup (Codex lists about 40 installed skills, plus about 22K tokens of context before work begins).
 
 ## Next action
-Review the pilot's follow-up when Codex reports, then merge it into the lead branch and start the batch for idea 2.
+Review batch 2 using `studio/skills/process-review/SKILL.md`, including whether the new report rule worked. Then write the medal times batch.
 
 ## Worth knowing
 - Codex has not yet been run through this process. Confirm during the pilot that it follows `AGENTS.md`, reports back and stays in scope.
