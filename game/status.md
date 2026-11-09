@@ -1,7 +1,7 @@
 # Status
 
 **Updated:** 2026-11-09, by Claude Opus 5.5, at a lead handover (context past 100K)
-**Lead branch:** `develop` at `d523f80`, pushed, so the playtest link updates
+**Lead branch:** `develop` at `4b7d08b`, pushed, so the playtest link updates
 **Live version:** `main` at `30d0cd4`
 
 ## Now
@@ -13,7 +13,7 @@
 - **Running:**
   - 03 `slipstream-lines` (Codex): second cycle under a brief from an earlier lead that is lost. "Within 10 points of the floor" means an upper bound.
   - 06b `host-handover-2` (**Claude Opus, high**, the Director chose it): finishing the stopped Codex draft from `host-handover` `b5e751a`. Plan `batch-06b`. Needs a Codex second review before merging. It is the only Claude worker; start no other.
-  - 07 `side-routes` (Codex): Subway routes done in `1cf85eb` (partial). It stopped on a build error that looks local; follow-up `batch-07b` sent: rebuild, then Subway medals and Takeshita Street.
+  - 07 `side-routes` (Codex): Subway routes done in `1cf85eb` (partial). It stopped on a build error that looks local; real cause found by the lead: `src/render/side-routes.js` saved in the Windows code page. Follow-up `batch-07c` sent: merge develop (new `test/utf8.test.js`), re-save as UTF-8, then Subway medals and Takeshita Street.
 - **Waiting on the Director:** playtest Subway in the Cups and the checks in `game/todo.md`; approval to apply migration 0003 once reviewed.
 
 ## Risks
