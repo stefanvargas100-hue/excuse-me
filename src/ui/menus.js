@@ -23,7 +23,7 @@ import { modOf } from '../sim/modifiers.js';
 import { back, go, pageInto, relayoutWith } from './screens.js';
 import { shareRun } from '../sim/replay.js';
 import { openFriend } from './friend.js';
-import { BOARD_TABS, boardIdFor, boardTitle } from '../online/boards.js';
+import { BOARD_TABS, boardIdFor, boardTitle, fmtRaceScore, raceBoardNotice } from '../online/boards.js';
 import { loadBoard } from '../online/online.js';
 import { leaveRoom, rematchState, requestRematch } from '../online/duel.js';
 
@@ -237,18 +237,19 @@ function openBoards() {
 
 async function showBoard() {
   document.querySelectorAll('#boardTabs .chip').forEach(c => c.setAttribute('aria-pressed', String(c.dataset.tab === boardTab)));
-  $('boardStages').hidden = boardTab !== 'classic';
+  $('boardStages').hidden = boardTab !== 'classic' && boardTab !== 'race';
   Array.from($('boardStages').children).forEach((c, i) => c.setAttribute('aria-pressed', String(i === boardStage)));
   $('boardTitle').textContent = boardTitle(boardTab, boardStage);
   const msg = text => { const li = document.createElement('li'); li.className = 'msg'; li.textContent = text; return li; };
   const draw = rows => { pageInto($('boardList'), rows, $('boardPager')); };
   const ask = ++boardAsk;   // a slow answer for an old tab must not overwrite the one now showing
+  if (boardTab === 'race' && raceBoardNotice()) { const notice = () => draw([msg(raceBoardNotice())]); notice(); relayoutWith(notice); return; }
   draw([msg('Loading...')]);
-  const rows = await loadBoard(boardIdFor(boardTab, boardStage), 30), fmtScore = s => (boardTab === 'challenge' ? fmtChallengeScore(s) : s.toLocaleString('en-US'));
+  const rows = await loadBoard(boardIdFor(boardTab, boardStage), boardTab === 'race' ? 20 : 30), fmtScore = s => (boardTab === 'race' ? fmtRaceScore(s) : boardTab === 'challenge' ? fmtChallengeScore(s) : s.toLocaleString('en-US'));
   if (ask !== boardAsk) return;
   const nodes = rows.length ? rows.map((r, i) => {
     const li = document.createElement('li'); if (r.you) li.className = 'me';
-    const rk = document.createElement('span'); rk.className = 'rk'; rk.textContent = String(i + 1);
+    const rk = document.createElement('span'); rk.className = 'rk'; rk.textContent = String(r.rank || i + 1);
     const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = (r.pic ? r.pic + ' ' : '') + r.name + (r.you ? ' (you)' : '');
     const lv = document.createElement('span'); lv.className = 'lv'; lv.textContent = 'Lv ' + r.level;
     const sc = document.createElement('span'); sc.className = 'sc'; sc.textContent = fmtScore(r.score);
@@ -349,6 +350,11 @@ export function init() {
   $('practiceBtn').addEventListener('click', () => { go('practice'); buildPractice(); });
   initProfile();
   $('chalBtn').addEventListener('click', () => { go('chal'); buildChallenges(); });
+  for (const tab of BOARD_TABS) {
+    if (document.querySelector('#boardTabs [data-tab="' + tab.id + '"]')) continue;
+    const button = document.createElement('button'); button.type = 'button'; button.className = 'chip'; button.dataset.tab = tab.id; button.textContent = tab.label;
+    $('boardTabs').appendChild(button);
+  }
   $('boardsBtn').addEventListener('click', openBoards);
   document.querySelectorAll('#boardTabs .chip').forEach(c => c.addEventListener('click', () => { boardTab = c.dataset.tab; showBoard(); }));
   $('howBtn').addEventListener('click', () => { go('howto'); showHowTab('howControls'); });

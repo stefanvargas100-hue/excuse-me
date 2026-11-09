@@ -1,3 +1,4 @@
+import { RACE_SUBMIT_ENABLED, encodeRaceTime, validRaceTime } from './boards.js';
 // Wires the leaderboard client into the game. Public values only: the "publishable" key is safe to ship in a web page.
 import { $ } from '../dom.js';
 import { PLAYTEST } from '../config/channel.js';
@@ -41,6 +42,11 @@ export function submitChallenge(week, rules, ms) {
   sending = net.submitBest(boardNameFor(week, rules), encodeChallengeTime(ms)).catch(() => {});
 }
 
+export function submitRaceTime(stageId, ms) {
+  if (!net || PLAYTEST || !RACE_SUBMIT_ENABLED || !validRaceTime(ms)) return;
+  sending = net.submitBest(boardId('race', stageId), encodeRaceTime(ms)).catch(() => {});
+}
+
 // On the results screen: once the score is sent, show the top of that board.
 export async function showRunBoard(mode, key) { await sending; return showTop(boardId(mode, key), mode === 'wchal' ? fmtChallengeScore : undefined); }
 
@@ -58,7 +64,7 @@ export async function showTop(id, fmt) {
 }
 
 // Top scores of any board, for the leaderboard screen.
-export async function loadBoard(id, limit) { return net ? net.top(id, limit || 20) : []; }
+export async function loadBoard(id, limit) { return id.startsWith('race:') && (!RACE_SUBMIT_ENABLED || PLAYTEST) ? [] : net ? net.top(id, limit || 20) : []; }
 
 export const myName = () => (net ? net.playerName() : 'Player');
 

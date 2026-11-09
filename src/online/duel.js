@@ -14,6 +14,7 @@ import { packGhost, saveFriendGhost } from '../sim/ghostshare.js';
 import { createRoom, cleanCode, makeCode } from './room.js';
 import { createRemote } from './remote.js';
 import { createBoard } from './board.js';
+import { cleanPlayerName } from './names.js';
 import { createStartCoordinator, START_PROTOCOL } from './start-sync.js';
 
 const URL = 'https://hrsbzntphratlnkrevet.supabase.co';
@@ -31,8 +32,7 @@ export function cleanLook(raw) {
   return out;
 }
 export function cleanName(raw) {
-  const s = typeof raw === 'string' ? raw.replace(/[^\p{L}\p{N} ._'-]/gu, '').trim().slice(0, 24) : '';
-  return s || 'Friend';
+  return cleanPlayerName(raw) || 'Friend';
 }
 const cleanId = v => (typeof v === 'string' && /^[a-z0-9]{4,12}$/.test(v) ? v : null);
 const newId = () => { let s = ''; while (s.length < 8) s += Math.random().toString(36).slice(2); return s.slice(0, 8); };

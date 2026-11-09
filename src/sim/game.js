@@ -33,7 +33,7 @@ import { makeRun, recordKey } from './runopts.js';
 import { cleanBonusFor, cleanMedal } from './clean.js';
 import { applyElimList, initElim, stepElim } from './elim.js';
 import { LESSONS, PRACTICE_OUTFIT, beginLesson, lessonIndex, lessonTick, restartLesson } from './practice.js';
-import { flushScores, showRunBoard, submitBestRun, submitChallenge, submitRun } from '../online/online.js';
+import { flushScores, showRunBoard, submitRaceTime, submitBestRun, submitChallenge, submitRun } from '../online/online.js';
 import { BOT_NAMES } from '../config/names.js';
 import { LOOK } from '../save/progress.js';
 import { CUP_RACERS, CUP_RACES, FRIEND_CUP_RULES, friendCupOver, standings as friendCupTable } from './friendcup.js';
@@ -265,6 +265,7 @@ export const challengeBest = c => parseFloat(store.get(recordKey('excuseme_wchal
 function winRace() {
   setState('won'); S.live = false; S.overT = 0; S.pz = LV.goal; touches.clear();
   finishRace(); payRun();
+  if (!S.challenge && !S.cup && !S.duel && !S.lesson && !S.race.elim && S.run.policy.scores) submitRaceTime(LV.id, S.time * 1000);
   if (S.challenge) challengeDone();
   if (S.cup) cupRoundDone();
   Music.sfx('win'); Music.stop(); Music.ambStop(); buzz([20, 60, 20, 60, 80]);
