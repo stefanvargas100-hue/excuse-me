@@ -40,7 +40,7 @@ orca orchestration worker-start --spec "Read AGENTS.md, then do game/rounds/roun
 
 `--effort` only works together with `--model`. Leave both out to use the agent's defaults.
 
-End your turn after starting workers: Orca wakes you when they report. Do not poll. Delete the branch and workspace once a batch is merged.
+End your turn after starting workers: Orca wakes you when they report. Do not poll. Once a batch is merged into the lead branch, confirm that and delete its branch and workspace without asking.
 
 ## Controlling tokens
 Total tokens are roughly model calls times average context, so fewer calls usually matters more than a smaller startup.
@@ -86,4 +86,4 @@ Use what exists before writing anything new. These are installed on the machine 
 If limits run low, write `game/status.md` from `studio/templates/handoff.md`, commit it and tell the Director. Either model can continue from the repo.
 
 ## Always ask the Director first
-Merging to `main` (an S1 fix can ship alone once verified, if the Director has approved that fix), changing the live database, spending money, deleting branches, and any creative decision that changes the vision.
+Merging to `main` (an S1 fix can ship alone once verified, if the Director has approved that fix), changing the live database, spending money, deleting unmerged branches, and any creative decision that changes the vision.
