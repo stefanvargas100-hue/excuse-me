@@ -22,3 +22,4 @@ Everything the player sees and hears.
 
 ## Useful tests
 `screens`, `scenery`, `landmarks`, `park`, `bridge`, `faces`, `music`, `music-playback`. Run one with `node --test test/<name>.test.js`.
+- Run `npm run test:fit` for headless screen-fit measurements at all three sizes; `npm run test:fit -- --self-test` proves overflow detection.

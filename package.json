@@ -7,13 +7,15 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node --test \"test/*.test.js\""
+    "test": "node --test \"test/*.test.js\"",
+    "test:fit": "vite build && node tools/fit-check.mjs"
   },
   "engines": {
     "node": ">=20"
   },
   "devDependencies": {
     "esbuild": "^0.28.2",
+    "playwright": "^1.65.0",
     "vite": "^8.3.6"
   },
   "type": "commonjs"
