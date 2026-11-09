@@ -72,3 +72,10 @@ Today, if the host leaves, everyone finishes the race and the Cup ends. With fri
 3. **Name review by the lead weekly**, three-report auto-hide. Recommend yes.
 4. **Block public launch until host passing is built.** Recommend yes.
 5. **Get legal advice** on age and data before any public name storage (cost unknown). Recommend yes, before batch 5 goes live.
+
+## Director decisions, 2026-11-09
+1. **No public test yet:** too few players. Measure a full room in a simulation instead (Round 2 batch 06). Revisit the plan and the $25/month Pro plan near an app store launch.
+2. **One rotating daily public Cup:** approved.
+3. **Names:** left to the lead. Rules and a word filter on the device now (batch 05). Reports with three-report auto-hiding and a weekly lead review come with the queue.
+4. **Block public launch until a new host can take over:** approved (batch 06).
+5. **Legal advice:** on hold. The Director and lead research it together before player names are stored on a server.
