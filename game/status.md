@@ -1,5 +1,10 @@
 # Status
 
+## Director playtest feedback checkpoint - 2026-11-09
+- Director finished phone playtest of 35f4f72 and reported Subway shortcut emptiness, Friend lobby readiness/layout trouble, race totals trouble, and weak large-build balance; requested grouped tracks, group/custom-four Cups, zero-or-more bots, and finish spectating.
+- Intake and five scoped proposals: `game/rounds/round-02/playtest-followup.md`. Lead owns triage; host readiness wording and which totals fail await clarification. Bugs not yet independently reproduced.
+- Resolve this feedback before release; visual pass remains required and its Claude assignment remains capacity-blocked. Main merge still requires Director approval.
+
 ## Visual pass dispatch checkpoint - 2026-11-09
 - Combined playtest checkpoint below remains authoritative for completed features and verification.
 - Batch 09 dispatched from develop at e6b7ef4 to Claude Fable 5.1 in `visual-pass`; immediately interrupted by Claude's five-hour session limit (reported reset: 5pm America/Denver). No completed visual work reported.
