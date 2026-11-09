@@ -1,9 +1,10 @@
-Outcome:     partial; Part 1 implemented, Part 2 not started after two build failures.
-Branch:      stefanvargas100-hue/side-routes code commit 1cf85eb
-Changed:     Subway mezzanine route, separate-floor collision/shout/draft/pass handling, bot route choice, drawing/race dots, tagged records/ghosts, protocol 6 player and Cup-bot route positions.
-Checks:      core tests failed first; focused side-routes 7/7 and Subway 8/8 pass; full suite 637/637 passed before final ghost-key test/change; git diff --check passed; build failed twice in offline-cache closeBundle (ENOENT scandir dist).
-Timings:     scripted clear-course mezzanine saves approximately 6.2% (required 3-8%); no easy route yet. Initial medal measurement had an unfinished bot and was rejected; corrected Easy/Medium medians 144.55/131.63 s (three seeds at 60 Hz), Hard measurement cancelled on stop; no complete calibration.
-Medals:      Subway old bronze/silver/gold 159/119/97 seconds, unchanged; Takeshita not added and no targets measured.
-Not checked: build images or 390x844 captures (two capture attempts failed: window.__excuse absent); floor readability, route value, medal fairness and real-phone feel remain for a person.
-Off plan:    lead-approved game.js movement/pass loop and actions.js reach/who changes only; no other scope expansion.
-Trouble:     build fails in existing vite.config offline-cache hook outside allowlist; stopped after two attempts per studio rules. Full-suite load and medal measurement were slow.
+Outcome:     Part 1 done; Part 2 pending, committed before beginning Takeshita.
+Branch:      stefanvargas100-hue/side-routes; foundation 1cf85eb, encoding/medals in this commit.
+Changed:     Subway mezzanine route, route isolation, bot choice, drawing/race dots, tagged records/ghosts, protocol 6 player/Cup-bot route positions; fixed painter encoding after lead diagnosis.
+Checks:      core route/ghost tests failed first; focused side-routes/Subway/UTF-8 16/16 pass; previous full suite 637/637; build and git diff --check pass.
+Timings:     clear-course scripted mezzanine about 6.2% faster, within 3-8%; easy route comes in Part 2.
+Medals:      Subway old bronze/silver/gold 159/119/97 s -> 153/138/121 s; nine bot finishes per tier, three seeds 11/22/33 at 60 Hz, player trails field; medians Easy 152.383, Medium 137.283, Hard 120.017 s, all bots finish.
+Screens:     inspected built-game Playwright captures at 390x844, C:/Users/stefa/AppData/Local/Temp/subway-entrance.png (platform/right stairs) and subway-mezzanine.png (tan isolated mezzanine/rejoin label).
+Not checked: route readability/value, medal fairness and feel on a real phone remain for a person.
+Off plan:    lead-approved game.js movement/pass loop and actions.js reach/who only; local develop merged as requested in batch 07c.
+Trouble:     single code-page 0xB7 in painter masked by offline-cache hook; UTF-8 test caught it, resaving fixed build.
