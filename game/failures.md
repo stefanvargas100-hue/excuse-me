@@ -8,6 +8,7 @@ One entry per problem. Add to its count when it happens again. The choice of per
 | The fit tool reported zero problems while a screenshot showed mid-word breaks and a box past the card edge | The tool only checked for overflow and side edges, and the fix's `overflow-wrap:anywhere` hid the overflow | 1 | Round 1 batch 1 | New rules in the tool. Until proven, the lead keeps checking screenshots of changed screens |
 | The fit tool passed while ordinary race results had unreachable buttons at 320 x 568 | The tool only used a fresh save and a Cup end screen, so it never saw a real results screen | 1 | Round 1 batch 3, older bug | New routes and rules in the tool. Fixed and shipped alone: podium hidden on short screens |
 | Worker tried `python`, which does not run here | Windows Store alias (also noted in an old handoff) | 2 | Visuals, Round 1 batch 3 | Line added to `AGENTS.md` |
+| Source files saved in the Windows code page, not UTF-8; Vite then failed with a misleading `ENOENT scandir dist` from the offline-cache hook | PowerShell `Set-Content` defaults to the code page | 2 | Round 2 batch 06 (encoding failures), batch 07 (build blocked) | `test/utf8.test.js` checks every source, test and tool file |
 
 ## Lead mistakes
 Problems the lead caused, why they got through, and what now prevents them. Update the count if one recurs.
