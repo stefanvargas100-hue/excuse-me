@@ -41,4 +41,3 @@ try {
   }
   console.log(`Saved 48 section screenshots to ${out}`);
 } finally { await browser?.close(); await server.close(); }
-

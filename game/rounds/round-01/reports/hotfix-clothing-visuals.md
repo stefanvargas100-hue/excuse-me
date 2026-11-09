@@ -1,5 +1,5 @@
 Outcome: done
-Branch: stefanvargas100-hue/clothing-fixes; implementation commit recorded in git history with this report
+Branch: stefanvargas100-hue/clothing-fixes; 95926bd (implementation; follow-up commit records whitespace cleanup)
 Changed: figures.js clothing paths and tools/lineup-shots.mjs (48 deterministic walking captures per run).
 Items: #1 fixed (leg depth); #2 not reproduced in captured front pose (reduced sway/wider hem guard); #3 fixed (narrower shaded skirt, waist join); #4 fixed (clipped shaded midriff); #5 fixed (clipped torso band, removed disconnected sleeve stripe).
 Items: #6 fixed (clipped bands); #7 fixed (sleeve-shaped pad); #8 fixed (smaller foot-aligned soles); #9 fixed (continuous shaded taper); #10 not clearly reproduced in captured pose (removed redundant pelvis ink that can protrude at hip).
