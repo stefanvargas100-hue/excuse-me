@@ -273,6 +273,7 @@ function receiveCup(data) {
   for (const id of leftIds(cup)) cupRacerGone(id);
   if (!friendCupOver(cup)) levelIdx = currentStage(cup);
   syncCupRun();
+  followStart(data.start);
 }
 // A player has gone. Their name and points stay, and a bot runs for them: straight away if they were mid-race.
 function cupRacerGone(id) {
@@ -340,6 +341,7 @@ function cancelStart(d) {
 function followStart(s) {
   const d = awaitingStart;
   if (!d || !s || typeof s !== 'object' || typeof s.seed !== 'string' || typeof s.cancel !== 'boolean') return;
+  if (s.seed !== d.seed && s.seed !== raceSeed(cup)) return;
   awaitingStart = null;
   if (S?.duel !== d || d.cancelled) return;   // a newer race has begun since: the decision is old news
   if (d.seed === s.seed) { if (s.cancel) cancelStart(d); return; }
@@ -507,7 +509,6 @@ function onMessage(ev, data) {
     }
     if (from !== hostId) return;
     receiveCup(data);
-    if (role === 'guest' && cup) followStart(data.start);
   } else if (ev === 'bots') {
     if (role !== 'guest' || from !== hostId || !S?.duel?.cup || data.race !== S.duel.seed) return;
     receiveBots(data);

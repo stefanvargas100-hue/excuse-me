@@ -298,3 +298,40 @@ test('the simulated room completes a Cup after the host leaves race 2', async ()
   }
   assert.ok(r.table.host.sent.average > 0 && r.table.guest.received.peak > 0);
 });
+
+// Rejected or unrelated updates must leave the handover decision pending.
+for (const kind of ['stale revision', 'wrong protocol', 'unrelated attempt']) {
+  test('pending countdown decision survives ' + kind, async () => {
+    const { H, games } = await cup(3), [old, nh, guest] = games;
+    tickAll(games, 6); await settle(); await finishAll(games);
+    await nextRace(old, games);
+    nh.S.duel.startRemaining = guest.S.duel.startRemaining = null;
+    nh.S.race.countT = 0.1; guest.S.race.countT = 0;
+    H.drop = (ev, d, target) => ev === 'cup' && d.id === me(nh) && !!d.start && target === 2;
+    old.leaveRoom(); await settle(); await settle();
+    const valid = H.log.filter(m => m.ev === 'cup' && m.from === 1 && m.data.start).at(-1).data;
+    const invalid = JSON.parse(J(valid));
+    if (kind === 'stale revision') { invalid.rev = -1; invalid.start.seed = 'unrelated:race1'; }
+    if (kind === 'wrong protocol') { invalid.proto = -1; invalid.start.cancel = false; }
+    if (kind === 'unrelated attempt') invalid.start.seed = 'unrelated:race1';
+    guest.injectRoomMessage('cup', invalid); await settle();
+    assert.ok(!guest.S.duel.cancelled, 'invalid decision cannot cancel the guest');
+    // An accepted unrelated envelope advances rev, so healing arrives in a newer envelope.
+    const healing = kind === 'unrelated attempt' ? { ...valid, rev: valid.rev + 1 } : valid;
+    guest.injectRoomMessage('cup', healing); await settle();
+    assert.equal(guest.S.duel.cancelled, true, 'valid decision still cancels the pending start');
+    assert.equal(guest.state, nh.state, 'all phones converge');
+    guest.injectRoomMessage('cup', healing); await settle();
+    assert.equal(guest.S.duel.cancelled, true, 'duplicate cancellation is harmless');
+    H.drop = null;
+    const seed = guest.S.duel.seed;
+    await nextRace(nh, [nh, guest]); tickAll([nh, guest], 6); await settle();
+    for (const g of [nh, guest]) { assert.equal(g.S.duel.seed, seed); assert.equal(g.state, 'play'); }
+    guest.injectRoomMessage('cup', healing);
+    await settle();
+    assert.ok(!guest.S.duel.cancelled, 'stale decision cannot cancel a restarted attempt with the same seed');
+    await finishAll([nh, guest]);
+    for (const g of [nh, guest]) assert.equal(g.friendCup().rounds.length, 2);
+    assert.equal(J(table(guest)), J(table(nh)));
+  });
+}
