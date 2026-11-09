@@ -7,6 +7,7 @@ import { addPop } from './scoring.js';
 import { S } from './state.js';
 import { recordKey } from './runopts.js';
 import { courseTag } from '../config/routes.js';
+import { splitPoints, timeAtZ, splitText } from './splits.js';
 
 /* ---------- ghosts: your best run, friends' best runs, the top 3 of a classic stage; and sharing a run ----------
    Each ghost only shows up when you are close to its record: within GHOST_CLOSE_M of where that run ended.
@@ -29,12 +30,15 @@ function makeGhost(pts, step, name, color) {
 }
 
 export function ghostStart() {
-  S.ghostRec = []; S.ghostNext = 0; S.ghost = null; S.ghostPts = null; S.closest = null; S.otherGhosts = [];
+  S.ghostRec = []; S.ghostNext = 0; S.ghost = null; S.ghostPts = null; S.closest = null; S.otherGhosts = []; S.splits = [];
   if ((S.kind !== 'classic' && !raceKind()) || !S.run.policy.ghosts) return;
   try {
     const pts = JSON.parse(store.get(ghostKey(), 'null'));
     if (Array.isArray(pts) && pts.length >= 4) { S.ghostPts = pts; S.ghost = makeGhost(pts, OWN_STEP, 'Your best', '#ffd166'); }
   } catch (e) {}
+  if (raceKind() && wantsGhost() && S.ghostPts) {
+    S.splits = splitPoints(LV.goal).map(z => ({ z, time: timeAtZ(S.ghostPts, OWN_STEP, z), seen: false }));
+  }
   friendGhosts(store, raceKind() ? 'race' : 'classic', LV.id).forEach((f, i) => S.otherGhosts.push(makeGhost(f.pts, f.step, f.name, FRIEND_COLORS[i % FRIEND_COLORS.length])));
   if (S.kind === 'classic') {
     const run = S, level = LV.id;   // an answer that arrives after this run ended is dropped
@@ -66,6 +70,13 @@ function stepOne(g, dt, own) {
 
 export function ghostStep(dt) {
   if (!wantsGhost()) return;
+  if (raceKind() && S.ghostPts) for (const split of S.splits) {
+    if (split.seen || S.pz < split.z) continue;
+    split.seen = true;
+    if (split.time === null) continue;
+    const delta = S.time - split.time;
+    addPop(splitText(delta), delta <= 0 ? '#7ee081' : '#ff6b6b', 24);
+  }
   if (S.time >= S.ghostNext && S.ghostRec.length < GHOST_MAX * 2) { S.ghostRec.push(+S.px.toFixed(2), +S.pz.toFixed(1)); S.ghostNext += OWN_STEP; }
   if (S.ghost && !stepOne(S.ghost, dt, true)) { S.ghost = null; addPop('PAST YOUR BEST RUN', '#ffd166', 24); }
   if (S.otherGhosts.length) S.otherGhosts = S.otherGhosts.filter(g => stepOne(g, dt, false));
