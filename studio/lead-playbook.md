@@ -26,8 +26,10 @@ Choose the model using `studio/model-routing.md`. Each batch gets a temporary br
 ```text
 orca orchestration worker-start --spec "Read AGENTS.md, then do game/rounds/round-NN/batch-NN.md." \
   --worktree new-top-level --repo name:<repo> --name <short-name> --base-branch <lead-branch> \
-  --agent <claude|codex> --model <id> --effort <level>
+  --agent <claude|codex> [--model <id> --effort <level>]
 ```
+
+`--effort` only works together with `--model`. Leave both out to use the agent's defaults.
 
 End your turn after starting workers: Orca wakes you when they report. Do not poll. Delete the branch and workspace once a batch is merged.
 

@@ -10,7 +10,7 @@
 - **Waiting on the Director:** nothing.
 
 ## Next action
-Review the pilot when it reports, including how well Codex followed the process. Only then start the batch for idea 2.
+Review the pilot's follow-up when Codex reports, then merge it into the lead branch and start the batch for idea 2.
 
 ## Worth knowing
 - Codex has not yet been run through this process. Confirm during the pilot that it follows `AGENTS.md`, reports back and stays in scope.
