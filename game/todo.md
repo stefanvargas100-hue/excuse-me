@@ -13,7 +13,7 @@
 3. **Approve the next merge to `main`** after those checks. It also brings the deploy queue fix.
 
 ## Lead (Claude)
-1. **Review** the Subway Platform worker's result. Allow stage 5 in Friend Cups, and add Subway to NYC Cup (`CUP_STAGES`, `CUP_RULES` 3, 4 races) after the Director tries it.
+1. **Review** the clothing fixes' before and after screenshots, and the Subway Platform worker's result. Allow stage 5 in Friend Cups, and add Subway to NYC Cup (`CUP_STAGES`, `CUP_RULES` 3, 4 races) after the Director tries it.
 2. **Friend Cup online:** plan and send (Claude, second review, measure messages with 7 host-run bots).
 3. **QA worker trial:** an independent worker tests the Cups on the playtest link and files bugs by severity without fixing them.
 4. **End of Round 1:** write the round report, then hand over to a fresh lead session.

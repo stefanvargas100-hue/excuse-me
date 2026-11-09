@@ -5,7 +5,7 @@
 **Live version:** `main` at `30d0cd4`, with splits, medals, screen fixes and the playtest pipeline
 
 ## Now
-- **Round:** 1. Ideas 1-3 are live. Cups spec approved. NYC Cup at 8 racers is merged into `develop`, not `main`. Friend Cup rules (batch 5) are merged into `develop`; nothing uses them yet. Subway Platform, first version, is with a Claude Sonnet worker (Round 2 batch 1, started early).
+- **Round:** 1. Ideas 1-3 are live. Cups spec approved. NYC Cup at 8 racers is merged into `develop`, not `main`. Friend Cup rules (batch 5) are merged into `develop`; nothing uses them yet. Subway Platform, first version, is with a Claude Sonnet worker (Round 2 batch 1, started early). Clothing visual fixes are with a Codex worker (`hotfix-clothing-visuals.md`).
 - **Next:** Friend Cup rules, then Friend Cup online, then the QA worker trial.
 - **Waiting on the Director:** nothing blocking.
 - **At the playtest:** splits may sit low and overlap the stamina bars; medal fairness; results without the podium.
