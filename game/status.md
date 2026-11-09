@@ -4,8 +4,8 @@
 - All feature branches for this playtest integrated: 03, 05, 06, 07, 08. Host handover S1 cleared by independent re-review 1b4d7c5.
 - Director accepted current slipstream improvement: test limit explicitly revised to under 65% (measured 59.79%; old baseline 70.47%). Newer Subway/Takeshita medal targets retained; fairness needs phone playtest.
 - Final combined full suite 683/683, focused slipstream 5/5, build and diff check pass. GitHub CI also passed 683/683. Playtest build 35f4f72 published; HTTP 200 and matching served bundle marker verified.
-- Slipstream workspace retained because it contains uncommitted baseline-measurement edits; merged side-routes workspace removed.
-- Recovery worker released and merged workspace removed; original interrupted checkout preserved.
+- Director-requested cleanup complete: all six remaining worker worktrees removed; only main and Studio Lead (develop) remain. Unmerged review/QA/old countdown branches retained.
+- Loose slipstream measurement edits and host-handover logs backed up and hash-verified at C:/Users/stefa/orca/worktree-backups/Excuse-Me-2026-11-09 (manifest.json). Merged host-handover and slipstream branches deleted; original saved session transcript unchanged.
 - Visual pass AFTER feature playtest build, included in next main update; main merge still requires Director approval.
 - Live race leaderboard migration/activation not performed. QA trial remains partial; real phones/live networking not verified.
 - This checkpoint supersedes the historical checkpoints below.
