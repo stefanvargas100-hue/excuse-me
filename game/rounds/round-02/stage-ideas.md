@@ -1,6 +1,6 @@
 # Stage ideas for Alpha
 
-**Status:** waiting for the Director to choose. Each Cup needs 4 different stages, so choose 3 for Tokyo and 3 for Airports. New York is complete with the subway platform.
+**Status:** chosen by the Director, 2026-11-08. **Tokyo:** Takeshita Street, Tsukiji Outer Market, Skytree Sky Walk. **Airports:** Security Lanes, Baggage Claim, Gate Change Rush. New York is complete with the subway platform. Side routes: `side-routes.md`.
 
 Each idea has one main challenge, so stages play differently rather than only looking different. Details get settled in each stage's plan.
 

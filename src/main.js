@@ -1,5 +1,6 @@
 import { Music, init as initAudio } from './audio/music.js';
 import { LEVELS, LV, setLevel } from './config/levels.js';
+import { BUILD_ID, PLAYTEST } from './config/channel.js';
 import { $ } from './dom.js';
 import { action, init as initInput, keys, onTap, touches } from './input/input.js';
 import { init as initCamera } from './render/camera.js';
@@ -85,3 +86,12 @@ requestAnimationFrame(frame);
 // Review tool: add ?lineup to the address to see every body and clothing item side by side.
 if (typeof location !== 'undefined' && location.search.includes('debug')) import('./dev/debugview.js').then(m => m.openDebug());
 if (typeof location !== 'undefined' && location.search.includes('lineup')) import('./dev/lineup.js').then(m => m.openLineup());
+
+// Shows which build is being tested. Non-interactive, and only in the playtest copy.
+if (PLAYTEST) {
+  const tag = document.createElement('div');
+  tag.id = 'playtestTag';
+  tag.textContent = 'PLAYTEST ' + BUILD_ID;
+  tag.style.cssText = 'position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:9999;padding:1px 6px;font:600 10px monospace;color:#fff;background:#b3261e;pointer-events:none';
+  document.body.appendChild(tag);
+}

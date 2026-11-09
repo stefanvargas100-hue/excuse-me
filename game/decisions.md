@@ -13,6 +13,10 @@ Older entries name documents that now live in `game/archive/`.
 - 2026-11-08 (Director): Alpha means 3 Cups (New York, Tokyo, Airports) and online matchmaking with player-chosen names. The results-screen S1 fix can ship to `main` alone once verified. Trial a separate QA worker on Cups.
 - 2026-11-08 (Director): Each Cup has 4 different stages; the Director picks them from the lead's ideas. Matchmaking waits a set time for real players, then bots of mixed Medium and Hard levels fill the empty places.
 - 2026-11-08: Lead branch renamed from `stefanvargas100-hue/Update-Test` to `develop`.
+- 2026-11-08 (Director): Stages chosen. Tokyo: Takeshita Street, Tsukiji Outer Market, Skytree Sky Walk. Airports: Security Lanes, Baggage Claim, Gate Change Rush.
+- 2026-11-08 (Director): New stages should explore side routes: stairs, lower levels and locked corridors that rejoin the main path. Hard routes must reward the player; easy routes are at most equal to the main path. See `rounds/round-02/side-routes.md`.
+- 2026-11-08 (Director): Matchmaking waits 30 seconds, then bots fill the empty places. A lone searcher can start. This replaces the earlier minimum of 6 real players.
+- 2026-11-08 (Director): Splits, medals and screen fixes approved for `main`, shipped at `546dcb3`. Asked for a playtest link to test updates before they reach `main`.
 - 2026-11-08: Old branches deleted with Director approval. Unmerged tips, recoverable by hash until Git cleans them up: online-ready-start-impl 13e2a33, Online-Play 50bf6a6, origin/multiplayer-lobby e619bf9, backup-local-main-2026-11-06 8b86a96.
 - Keep the web codebase and wrap it later (Capacitor) instead of rewriting; see ROADMAP.md.
 - GitHub repo will be private at first; can go public when hosting on GitHub Pages.

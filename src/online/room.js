@@ -1,6 +1,7 @@
 /* ---------- live rooms (Supabase Realtime, plain WebSocket, no extra libraries) ----------
    Two phones join the same channel by room code and pass small messages to each other. Nothing is stored on the server.
    The socket and timers are passed in, so tests can use a pretend server. */
+import { PLAYTEST } from '../config/channel.js';
 
 const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';   // no 0/O, 1/I/L: easy to read out loud
 export const makeCode = (rand = Math.random) => { let c = ''; for (let i = 0; i < 4; i++) c += ALPHABET[Math.floor(rand() * ALPHABET.length)]; return c; };
@@ -19,7 +20,7 @@ export function createRoom({ WebSocket, url, key, setInterval: si, clearInterval
     leave();
     const attempt = ++serial;
     return new Promise((resolve, reject) => {
-      topic = 'realtime:excuseme-' + cleanCode(code); closedFired = false;
+      topic = 'realtime:excuseme-' + (PLAYTEST ? 'playtest-' : '') + cleanCode(code); closedFired = false;
       const wsUrl = url.replace(/^http/, 'ws') + '/realtime/v1/websocket?apikey=' + encodeURIComponent(key) + '&vsn=1.0.0';
       let joinRef = null, timer = null, settled = false, heartbeatRef = null;
       const done = (ok, err) => { if (settled) return; settled = true; if (timer) clearTimeout(timer); cancelJoin = null; if (ok) resolve(); else { leave(); reject(err || new Error('could not join')); } };

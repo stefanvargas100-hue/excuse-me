@@ -10,7 +10,7 @@ self.addEventListener('activate', e => {
 });
 // Cache-first for our files; Google Fonts are cached as they are fetched.
 self.addEventListener('fetch', e => {
-  if (e.request.method !== 'GET') return;
+  if (e.request.method !== 'GET' || new URL(e.request.url).pathname.includes('/playtest/')) return;   // the playtest always comes from the network
   e.respondWith(caches.match(e.request).then(hit => hit || fetch(e.request).then(res => {
     if (res.ok || res.type === 'opaque') { const copy = res.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)); }
     return res;

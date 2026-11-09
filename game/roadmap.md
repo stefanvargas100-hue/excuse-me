@@ -21,7 +21,7 @@ Rule from the original roadmap: one feature at a time, and cut anything that doe
 Competitive depth: goals, measurements and rivals. Ideas are in `rounds/round-01/proposal.md`.
 
 ## Next: Round 2
-Race time boards, and a subway platform stage so NYC Cup can reach 4 races.
+Race time boards, and a subway platform stage so NYC Cup can reach 4 races. The subway stage also proves the side-route system (`rounds/round-02/side-routes.md`).
 
 ## Before launch
 - **Real-device checks:** older-phone frame rate and heat, calm mode in motion, 2-8 phone sessions, and saves surviving an update. The checklist is in `archive/RELEASE_CHECKPOINT.md`.

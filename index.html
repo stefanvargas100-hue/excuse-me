@@ -326,7 +326,7 @@
 
 <script type="module" src="./src/main.js"></script>
 <script>
-if ("serviceWorker" in navigator) {
+if ("serviceWorker" in navigator && !location.pathname.includes("/playtest/")) {
   const had = !!navigator.serviceWorker.controller;
   // When a newer version has been downloaded, switch to it on the menu screen (never in the middle of a run).
   navigator.serviceWorker.addEventListener("controllerchange", () => {

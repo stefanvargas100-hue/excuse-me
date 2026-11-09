@@ -1,8 +1,13 @@
 name: Deploy to GitHub Pages
-# Publishes the built game from main. Pages must be set to "GitHub Actions" as its source (Settings > Pages).
+# Publishes main at the site root and develop at /playtest/. Pages must be set to "GitHub Actions" as its source (Settings > Pages).
+# Pages only accepts deployments from main, so develop arrives through workflow_run, which runs from main after develop's tests pass.
 on:
   push:
     branches: [main]
+  workflow_run:
+    workflows: [Tests]
+    types: [completed]
+    branches: [develop]
   workflow_dispatch:
 permissions:
   contents: read
@@ -13,6 +18,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   deploy:
+    if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -25,7 +31,21 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
+        if: github.event_name != 'workflow_run'
       - run: npm run build
+      # A broken or missing develop must never stop the live game deploying, so these two steps may fail.
+      - uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          ref: develop
+          path: playtest-src
+      - name: Add the playtest build
+        continue-on-error: true
+        working-directory: playtest-src
+        run: |
+          npm ci
+          BUILD_ID=$(git rev-parse --short HEAD) npm run build
+          cp -r dist ../dist/playtest
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

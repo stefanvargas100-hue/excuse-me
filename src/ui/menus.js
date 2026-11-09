@@ -390,7 +390,7 @@ export function init() {
   window.addEventListener('keydown', e => { const k = e.key.toLowerCase(); if (k === 'escape' || k === 'p') { if (state === 'play') pauseGame(); else if (state === 'paused') resumeGame(); } });
   document.querySelectorAll('.vibt').forEach(el => {
     el.checked = vibOn;
-    el.addEventListener('change', e => { setVibOn(e.target.checked); document.querySelectorAll('.vibt').forEach(o => { o.checked = vibOn; }); try { localStorage.setItem('excuseme_vib', vibOn ? '1' : '0'); } catch (err) {} });
+    el.addEventListener('change', e => { setVibOn(e.target.checked); document.querySelectorAll('.vibt').forEach(o => { o.checked = vibOn; }); store.set('excuseme_vib', vibOn ? '1' : '0'); });
   });
   document.querySelectorAll('.hbt').forEach(el => el.addEventListener('change', e => {
     setShowHB(e.target.checked); document.querySelectorAll('.hbt').forEach(o => { o.checked = showHB; });

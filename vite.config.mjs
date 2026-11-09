@@ -31,6 +31,7 @@ function offlineCache() {
 
 export default defineConfig({
   base: './',
+  define: { __BUILD_ID__: JSON.stringify(process.env.BUILD_ID || 'dev') },
   plugins: [offlineCache()],
   build: {
     target: 'es2020',
