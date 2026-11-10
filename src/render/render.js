@@ -20,6 +20,7 @@ import { paintBridge } from './bridge.js';
 import { paintPark } from './park.js';
 import { paintSubway } from './subway.js';
 import { visibleGhosts } from '../sim/replay.js';
+import { styleBackdrop, styleBegin, styleEnd, styleFinish, styleGround } from './style.js';
 
 
 
@@ -33,7 +34,9 @@ export function render() {
   setCX(W / 2);
   ctx.save();
   const shake = shakeOffset(); if (shake) ctx.translate(shake[0], shake[1]);
+  styleBegin();   // the cup's art style recolours everything drawn from here to styleEnd
   ctx.fillStyle = FOGCSS; ctx.fillRect(-W, -H, 3 * W, 3 * H);
+  styleBackdrop();
   if (LV.id === 'airport') paintAirport(); else if (LV.id === 'nyc') paintNYC(); else if (LV.id === 'park') paintPark(); else if (LV.id === 'bridge') paintBridge(); else if (LV.id === 'subway') paintSubway(); else if (LV.id === 'takeshita') paintTakeshita(); else paintShibuya();
   if (LV.id === 'nyc') { drawCars(); nycSteam(); }
   drawSideRoutes();
@@ -41,10 +44,12 @@ export function render() {
   drawStrips();
   drawPowerups();
   fxGround();
+  styleGround();
   for (const p of S.people) if (p.prop === 'spill') drawPerson(p);   // puddles lie under everyone
   const list = S.people.filter(p => p.prop !== 'spill').concat([S.me], S.race ? S.race.bots : [], visibleGhosts(), glassPanels()).sort((a, b) => b.z - a.z);
   for (const p of list.filter(p => !S.race || sameRoute(S,p))) { if (p.glass) drawGlass(p); else drawPerson(p); }
   drawSlipstream();
+  styleEnd(); styleFinish();
   weatherGrade();
   chainShards();
   ctx.restore();

@@ -6,6 +6,7 @@ import { drawPerson } from '../render/figures.js';
 import { LOOK_OPTS } from '../save/progress.js';
 import { applyBuild, dress } from '../sim/people.js';
 import { setShowHB, showHB } from '../sim/state.js';
+import { STYLE_IDS, forceStyle, forcedStyle, styleBegin, styleEnd, styleName } from '../render/style.js';
 
 const BASE = { body: 'm', build: 'medium', shirtType: 'tee', pantsType: 'jeans', shoeType: 'sneakers', shirt: '#ffcf1f', pants: '#1e3a5f', shoe: '#f4f6f8',
   skin: '#c68863', hair: '#3b2a1e', hairStyle: 'short', hat: 'none', showHead: '1', pack: 'none', gear: '#d6336c' };
@@ -29,6 +30,7 @@ const SECTIONS = [
   { title: 'Hair colours', items: dots('hair', 'Hair') }
 ];
 
+const DARK_LOOKS = { noir: '#141127', neonpop: '#2a1052', inknoir: '#1c1c22' };   // cell backgrounds for the night-time art styles
 const VIEWS = [['back', 'Back', 0, 1], ['side', 'Side', 1, 0], ['front', 'Front', 0, -1], ['spin', 'Spin', 0, 0]];
 const SIZES = [['game', 'Game size', 0.62], ['big', 'Big', 1]];
 
@@ -41,12 +43,13 @@ export function openLineup() {
   const cv = document.createElement('canvas'); cv.style.display = 'block'; root.appendChild(cv);
   document.body.appendChild(root);
 
-  let view = 0, size = 1, walking = true, body = 'm';
+  let view = 0, size = 1, walking = true, body = 'm', look = Math.max(0, STYLE_IDS.indexOf(forcedStyle()));
   const btn = (label, on) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = label; b.style.cssText = 'font:inherit;font-size:15px;padding:4px 10px;border:2px solid #3a2a4d;border-radius:8px;background:#fff;color:inherit'; b.onclick = on; bar.appendChild(b); return b; };
   const viewBtns = VIEWS.map((v, i) => btn(v[1], () => { view = i; mark(); }));
   const sizeBtns = SIZES.map((s, i) => btn(s[1], () => { size = i; layout(); mark(); }));
   const walkBtn = btn('Walking', () => { walking = !walking; mark(); });
   const bodyBtn = btn('Items on: Male', () => { body = body === 'm' ? 'f' : 'm'; people.clear(); bodyBtn.textContent = 'Items on: ' + (body === 'm' ? 'Male' : 'Female'); });
+  const lookBtn = btn('Look: ' + styleName(STYLE_IDS[look]), () => { look = (look + 1) % STYLE_IDS.length; lookBtn.textContent = 'Look: ' + styleName(STYLE_IDS[look]); });   // the art style of each cup
   btn('Close', () => { running = false; root.remove(); });
   const mark = () => {
     viewBtns.forEach((b, i) => { b.style.background = i === view ? '#ffd84d' : '#fff'; });
@@ -91,7 +94,7 @@ export function openLineup() {
     setCtx(pctx); setShowHB(false);
     pctx.setTransform(DPR, 0, 0, DPR, 0, 0); pctx.clearRect(0, 0, cv.width, cv.height);
     const top = root.scrollTop - 300, bottom = root.scrollTop + root.clientHeight + 300;
-    const feetY = (cellH - 22) * 0.9;
+    const feetY = (cellH - 22) * 0.9, lookId = STYLE_IDS[look], keepStyle = forcedStyle();
     for (const sec of SECTIONS) {
       const head = rows.find(r => r.title === sec.title);
       pctx.fillStyle = '#3a2a4d'; pctx.font = '22px "Permanent Marker", sans-serif'; pctx.textAlign = 'left'; pctx.textBaseline = 'top';
@@ -99,7 +102,7 @@ export function openLineup() {
       for (const c of sec.cells) {
         if (c.y + cellH < top || c.y > bottom) continue;
         pctx.save(); pctx.translate(c.x, c.y);
-        pctx.fillStyle = 'rgba(58,42,77,0.06)'; pctx.fillRect(3, 3, cellW - 6, cellH - 6); pctx.beginPath(); pctx.rect(3, 3, cellW - 6, cellH - 26); pctx.clip();
+        pctx.fillStyle = DARK_LOOKS[lookId] || (lookId === 'space' ? '#cfdbea' : lookId === 'pulp' ? '#f9c46b' : null) || 'rgba(58,42,77,0.06)'; pctx.fillRect(3, 3, cellW - 6, cellH - 6); pctx.beginPath(); pctx.rect(3, 3, cellW - 6, cellH - 26); pctx.clip();
         const p = personFor(c.it), v = VIEWS[view];
         const ang = v[0] === 'spin' ? t * 0.9 : null;
         p.fx = ang === null ? v[2] : Math.sin(ang); p.fz = ang === null ? v[3] : -Math.cos(ang);
@@ -109,9 +112,9 @@ export function openLineup() {
         const f = 262 * sc * 1.2 * (sec.zoom ? 2.3 : 1), feet = sec.zoom ? (cellH - 22) * 0.42 + 1.63 * f / 3 : feetY;
         if (sec.zoom) { p.fx = 0; p.fz = -1; p.vx = 0; p.vz = 0; p.walkA = 0; }
         setW(cellW); setH(cellH); setF(f); setVX(0); setVZ(-3); setVY(1.0); setCX(cellW / 2); setHOR(feet - f / 3);
-        drawPerson(p);
+        forceStyle(lookId); styleBegin(); drawPerson(p); styleEnd(); forceStyle(keepStyle);
         pctx.restore(); pctx.save(); pctx.translate(c.x, c.y);
-        pctx.globalAlpha = 1; pctx.fillStyle = '#3a2a4d'; pctx.font = '14px "Patrick Hand", sans-serif'; pctx.textAlign = 'center'; pctx.textBaseline = 'alphabetic';
+        pctx.globalAlpha = 1; pctx.fillStyle = DARK_LOOKS[lookId] ? '#e9e4ff' : '#3a2a4d'; pctx.font = '14px "Patrick Hand", sans-serif'; pctx.textAlign = 'center'; pctx.textBaseline = 'alphabetic';
         pctx.fillText(c.it.name, cellW / 2, cellH - 10, cellW - 8);
         pctx.restore();
       }
