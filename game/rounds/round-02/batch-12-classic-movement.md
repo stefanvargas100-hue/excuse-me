@@ -4,6 +4,7 @@
 **Risk:** medium; lead review required, independent review if shared online rules change.
 
 ## Authorized compatibility extension - 2026-11-10
+- Additional authorization: src/online/boards.js, only Classic key generation in boardIdFor and corresponding board tests, must share the same Classic rules identity as submission/fetch/ghosts. Keep other boards unchanged and the key within existing schema constraints; no schema edits.
 - Lead authorizes src/online/online.js solely for versioned Classic submit/fetch/display board identity; src/sim/ghostshare.js solely for versioned Classic friend ghost storage; src/online/duel.js solely for versioning or rejecting legacy Classic ghost exchange, plus relevant tests. Independent review is now required before integration.
 - Use one consistent Classic rules identity across local records, online boards and ghosts. Preserve legacy saved data without copying it into new competitive keys. Do not disable these features as the default solution.
 - Test new-version round trips, rejection/isolation of legacy and mismatched ghosts, submit/fetch key agreement, preservation of old saves, and unchanged non-Classic behavior. Keep live/playtest separation intact.
