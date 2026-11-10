@@ -1,5 +1,9 @@
 # Status
 
+## Classic review fixes awaiting re-review - 2026-11-10
+- Batch 12c implementation 0cbb2d7/report 9ca46c5 restores original player/bot pedestrian drafting, isolates pickup lifecycle, tests current-kind wrong rules, and captures actual /playtest/ channel evidence. Builder reports final 751/751, focused 22+2, pickup repeats 20/20, build/diff pass.
+- Original independent reviewer assigned batch-12d-rereview.md. No integration yet; prior S2/S3 findings require clearance. Daily/Weekly and stage-feature parity, real phones and deployed server acceptance remain outstanding. Main unchanged.
+
 ## Classic review HOLD and targeted fixes - 2026-11-10
 - Independent review a6e23fa on classic-review found S2 ordinary-race pedestrian drafting regression with unchanged identities; restore pre-batch behavior, not widen migrations. Lead brief wording was overbroad: no invented Classic drafting did not justify changing existing races.
 - S3 gaps: browser query did not select actual playtest channel; endless pickup test intermittently fails with crowd generation. Reviewer full 749/749, focused 45/46, recheck 11/11, browser six cases/build/diff pass. cm2 compatibility passed inspection; live schema/phones unverified.
