@@ -1,0 +1,33 @@
+✔ Subway hard stairs and mezzanine save 3-8% on a scripted complete drive (9.3598ms)
+✔ route entry is local, persists until exit and then rejoins (0.1285ms)
+✔ remote interpolation carries route immediately (3.2306ms)
+✔ crowd on the platform cannot collide with a mezzanine racer (49.7004ms)
+✔ remote racers on a different floor do not push the player (21.4104ms)
+✔ a mezzanine shout cannot move shoppers on the platform (31.6364ms)
+✔ old untagged friend ghosts cannot compete on the side-route course (4.2964ms)
+✔ room sharing sends the tagged Subway ghost and receives route positions (83.209ms)
+✔ back alley scripted drive is no faster and within 1% of main (9.232ms)
+✔ spill floor isolation {"runner":"mezzanine","spill":""} (25.2113ms)
+✔ spill floor isolation {"runner":"","spill":"mezzanine"} (20.7232ms)
+✔ spill floor isolation {"runner":"mezzanine","spill":"mezzanine"} (23.3989ms)
+✔ spill floor isolation {"runner":"","spill":""} (19.2278ms)
+✔ mezzanine has deterministic real props and pedestrians with safe stairs and gaps (51.3888ms)
+✔ mezzanine population cannot collide or shout across floors in either direction (39.823ms)
+✔ mezzanine player and bot rejoin after their route exit (19.7703ms)
+✔ back-alley has deterministic real props and pedestrians with safe stairs and gaps (50.8117ms)
+✔ back-alley population cannot collide or shout across floors in either direction (35.253ms)
+✔ back-alley player and bot rejoin after their route exit (25.0756ms)
+✔ only populated route stages get new record/ghost course tags (3.0767ms)
+✔ bots get the same mezzanine cruise benefit as players (36.8052ms)
+✔ route generation repeats for race and friend-course seeds (94.178ms)
+✔ generated route barriers collide on their own floor and leave the centre traversable (43.4125ms)
+✔ sr1 friend ghosts remain saved but cannot compete on sr2 courses (3.3643ms)
+✔ unseeded offline races still repeat route-local actor identities (17.7085ms)
+ℹ tests 25
+ℹ suites 0
+ℹ pass 25
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 821.4213

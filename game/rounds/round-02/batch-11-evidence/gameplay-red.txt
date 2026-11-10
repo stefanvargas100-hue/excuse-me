@@ -1,0 +1,151 @@
+✔ Subway hard stairs and mezzanine save 3-8% on a scripted complete drive (8.6356ms)
+✔ route entry is local, persists until exit and then rejoins (0.1275ms)
+✔ remote interpolation carries route immediately (3.2502ms)
+✔ crowd on the platform cannot collide with a mezzanine racer (38.5752ms)
+✔ remote racers on a different floor do not push the player (23.3882ms)
+✔ a mezzanine shout cannot move shoppers on the platform (30.6631ms)
+✔ old untagged friend ghosts cannot compete on the side-route course (4.3709ms)
+✔ room sharing sends the tagged Subway ghost and receives route positions (91.9741ms)
+✔ back alley scripted drive is no faster and within 1% of main (10.2215ms)
+✖ spill floor isolation {"runner":"mezzanine","spill":""} (24.2434ms)
+✖ spill floor isolation {"runner":"","spill":"mezzanine"} (18.9031ms)
+✔ spill floor isolation {"runner":"mezzanine","spill":"mezzanine"} (23.263ms)
+✔ spill floor isolation {"runner":"","spill":""} (19.1653ms)
+✖ mezzanine has deterministic real props and pedestrians with safe stairs and gaps (49.1668ms)
+✔ mezzanine population cannot collide or shout across floors in either direction (41.5973ms)
+✔ mezzanine player and bot rejoin after their route exit (18.8946ms)
+✖ back-alley has deterministic real props and pedestrians with safe stairs and gaps (49.6163ms)
+✔ back-alley population cannot collide or shout across floors in either direction (36.1604ms)
+✔ back-alley player and bot rejoin after their route exit (24.9032ms)
+✖ only populated route stages get new record/ghost course tags (3.3113ms)
+✖ bots get the same mezzanine cruise benefit as players (39.4391ms)
+ℹ tests 21
+ℹ suites 0
+ℹ pass 15
+ℹ fail 6
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 661.6548
+
+✖ failing tests:
+
+test at test\side-routes.test.js:25:119
+✖ spill floor isolation {"runner":"mezzanine","spill":""} (24.2434ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0.7 !== 0
+  
+      at TestContext.<anonymous> (C:\Users\stefa\orca\workspaces\Excuse-Me\worlds-shortcuts\test\side-routes.test.js:31:9)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0.7,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\side-routes.test.js:25:119
+✖ spill floor isolation {"runner":"","spill":"mezzanine"} (18.9031ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0.7 !== 0
+  
+      at TestContext.<anonymous> (C:\Users\stefa\orca\workspaces\Excuse-Me\worlds-shortcuts\test\side-routes.test.js:31:9)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0.7,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\side-routes.test.js:36:2
+✖ mezzanine has deterministic real props and pedestrians with safe stairs and gaps (49.1668ms)
+  AssertionError [ERR_ASSERTION]: route has obstacles
+      at TestContext.<anonymous> (C:\Users\stefa\orca\workspaces\Excuse-Me\worlds-shortcuts\test\side-routes.test.js:37:50)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at test\side-routes.test.js:36:2
+✖ back-alley has deterministic real props and pedestrians with safe stairs and gaps (49.6163ms)
+  AssertionError [ERR_ASSERTION]: route has obstacles
+      at TestContext.<anonymous> (C:\Users\stefa\orca\workspaces\Excuse-Me\worlds-shortcuts\test\side-routes.test.js:37:50)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at test\side-routes.test.js:54:1
+✖ only populated route stages get new record/ghost course tags (3.3113ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  ':sr1' !== ':sr2'
+  
+      at TestContext.<anonymous> (C:\Users\stefa\orca\workspaces\Excuse-Me\worlds-shortcuts\test\side-routes.test.js:54:122)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: ':sr1',
+    expected: ':sr2',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\side-routes.test.js:55:1
+✖ bots get the same mezzanine cruise benefit as players (39.4391ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(advance('mezzanine')/advance('')>1.2)
+  
+      at TestContext.<anonymous> (C:\Users\stefa\orca\workspaces\Excuse-Me\worlds-shortcuts\test\side-routes.test.js:57:9)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

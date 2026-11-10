@@ -30,6 +30,12 @@ export function drawSideRoutes() {
           if (d < 40) wq(x, .1, 4, a, Math.min(a + .025, b), upper ? '#556c62' : '#735e7d');
         }
       }
+      const rejoin = r.exit - VZ;
+      if (rejoin > 1 && rejoin < 65) {
+        fq(-LV.half, LV.half, .01, rejoin, rejoin + .7, '#fff4ec');
+        const q = P(0, 2.4, rejoin);
+        label('REJOIN MAIN', q[0], q[1], Math.min(20, F / rejoin * .4), '#fff4ec');
+      }
       routeSign(r.name+' · REJOIN AT '+r.exit+' m', 82);
     }
     const d=r.entrance-VZ;

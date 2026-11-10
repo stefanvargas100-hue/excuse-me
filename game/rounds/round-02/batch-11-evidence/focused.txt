@@ -1,0 +1,40 @@
+✔ a race has a few pickups spread along the stage, none near the start, same every time (266.7485ms)
+✔ no pickups in classic runs (24.0009ms)
+✔ walking onto a boost pickup makes you faster for about 3.5 seconds, then it wears off (37.8281ms)
+✔ a refill pickup tops up stamina (26.7277ms)
+✔ a clear-path pickup lets you walk through people for a moment (36.6605ms)
+✔ a pickup is only collected once, and bots can grab it too (28.8476ms)
+✔ adding Brooklyn Bridge preserves the published daily and weekly course until next reset (91.9718ms)
+✔ adding Subway Platform leaves every daily and weekly stage as published (26.25ms)
+✔ route data: both openings are wide enough, the street is never closed, the detour alternates sides (116.8207ms)
+✔ zones keep clear of the stage's own features: walkway glass, crossings, fast strips (42.1568ms)
+✔ barriers and queues appear in bot races only, never in Classic or Daily (363.6836ms)
+✔ the barrier line is solid; the direct opening and the detour are passable on every stage (628.2149ms)
+✔ bots get through every zone, with its queue, on several seeds (31728.3444ms)
+✔ the same seed and inputs give the same result whether or not the scene is drawn (9902.3865ms)
+✔ every barrier draws without errors, near and far (264.0398ms)
+✔ a stage with routes keeps its race records and ghosts under a versioned key (283.7652ms)
+✔ every stage is its own world: a style of its own, from the family its cup belongs to (1.2235ms)
+✔ a new stage in a known cup starts with that cup's look until it gets a world of its own (0.1511ms)
+✔ a stage from an unknown cup keeps the classic look (0.0922ms)
+✔ the classic look leaves every colour exactly as written (0.1419ms)
+✔ a style recolours hex and rgb colours into a colour the canvas reads back unchanged (1.2122ms)
+✔ see-through colours keep their transparency, and fully clear ones are left alone (0.2297ms)
+✔ anything that is not a plain colour passes through untouched (0.1764ms)
+✔ colours stay readable: every style keeps light and dark apart, for scenery, the crowd and the player (0.4062ms)
+✔ character shapes stay within sensible limits in every style (0.2183ms)
+✔ Terminal B: drawing in its art style does not change the run (831.2921ms)
+✔ Fifth Avenue: drawing in its art style does not change the run (597.3096ms)
+✔ Shibuya Crossing: drawing in its art style does not change the run (546.0804ms)
+✔ Central Park: drawing in its art style does not change the run (360.0547ms)
+✔ Brooklyn Bridge: drawing in its art style does not change the run (476.4577ms)
+✔ Subway Platform: drawing in its art style does not change the run (626.4353ms)
+✔ Takeshita Street: drawing in its art style does not change the run (345.8101ms)
+ℹ tests 32
+ℹ suites 0
+ℹ pass 32
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 43440.41

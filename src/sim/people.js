@@ -2,6 +2,7 @@ import { Music } from '../audio/music.js';
 import { DOGS, FASTSHIRTS, GEARS, HAIRS, LUGS, PANTS, SHIRTS, SHOES, SKINS, shade } from '../config/colour.js';
 import { randomFace } from '../config/faces.js';
 import { LV, SPAWN_FAR } from '../config/levels.js';
+import { routePopulation } from '../config/route-population.js';
 import { routePieces } from '../config/routes.js';
 import { BUILDS } from '../config/stats.js';
 import { BELT_SPEED, beltHasZ, beltInfo } from '../config/strips.js';
@@ -493,7 +494,14 @@ function placeRoute(z0) {
 export function genChunk(z0) {
   const n0 = S.people.length;
   seeded(':c' + z0, () => { genChunkInner(z0); beltRiders(z0); });
-  if (raceBuild) seeded(':r' + z0, () => placeRoute(z0));
+  if (raceBuild) {
+    seeded(':r' + z0, () => placeRoute(z0));
+    const stream = R;
+    setR(mulberry32(hashStr((S.seed || LV.id) + ':sr2:' + z0)));
+    try { for (const p of routePopulation(LV.id, z0, z0 + 4))
+      mk(p.x, p.z, { ...p, hx: 0, hz: -1, dirz: -1, laneX: p.x, ...(p.prop ? { circles: BARRIER() } : {}) });
+    } finally { setR(stream); }
+  }
   if (S.race && S.race.elim) seeded(':g' + z0, () => { for (const [i, c] of S.race.elim.cps.entries()) if (c >= z0 && c < z0 + 4) mk(0, c, { prop: 'cpgate', span: LV.half - 0.5, num: i + 1, circles: [] }); });
   if (S.seed) { let sum = 0; for (let i = n0; i < S.people.length; i++) { const q = S.people[i]; sum += q.x * 7 + q.z; } S.chunkSum[z0] = Math.round(sum * 100); }
 }
