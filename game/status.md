@@ -1,5 +1,10 @@
 # Status
 
+## Remaining parity plan disposition - 2026-11-10
+- Batch 13 planning branch 04341ed integrated (source inspection only). Lead adopts shared Daily/Weekly stats/pace/pickups and competition-key audit, but defers the proposed server attempt ledger/UTC or scheduled activation changes as broader than movement parity.
+- Batch 14 brief implements new seeded mp2 score/board identities with frozen period/rules, unchanged reset clock and played markers, deterministic crowds and existing enforcement limits. Old-client scores remain isolated on legacy boards; no database work or stronger account-wide enforcement claim. Independent review required. Tutorial learning and race-only stage features remain later follow-ups.
+- Classic playtest publication 1f9faec still awaits its verification worker report; do not substitute documentation HEAD for expected build. Main remains unchanged.
+
 ## Scoped Classic integrated for playtest - 2026-11-10
 - Independent re-review 59e4b30 cleared S2 and both S3 findings. Integrated review branch (preserving all evidence and implementation 0cbb2d7) as 87c5111. Lead combined checks: 751/751 tests, build and diff pass. Lead inspected 320-small pickup and 390-large boost captures; browser evidence only.
 - Classic now has shared build stats/pace, endless existing pickups, constant combo view and cm2 record/ghost isolation. Original race drafting preserved. Merged builder/review workspaces and branches removed after clean status/ancestry checks.
