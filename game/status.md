@@ -1,5 +1,11 @@
 # Status
 
+## Approved shortcut publication and Classic parity - 2026-11-10
+- Director approved shortcut integration/publication to playtest, retaining loaded-human balance and real-phone checks. Integrated builder cad626c and independent review/tool 81f8c59 as 8e5d123. Lead integrated checks: 734/734 tests, build and diff check pass. Merged builder/reviewer workspaces and branches removed; evidence retained in develop.
+- Push to develop authorized; publication verification assigned in batch-11e-publication-check.md. Do not claim served build until that report verifies it. Main merge remains unapproved.
+- Director requests constant visuals without combo slow motion, and Classic speed increases/build stats/existing power-ups matching movement in other modes. Codex brief batch-12-classic-movement.md; review required before integration. New art worlds remain authoritative, later Fable visual review remains queued. This work takes priority over remaining lobby/spectating/custom-Cup proposals.
+- Batch 10 host/points WIP remains preserved in playtest-fixes, not integrated or claimed complete. No live migration authorized.
+
 ## Shortcut re-review cleared - 2026-11-10
 - Independent review 81f8c59 on shortcuts-review (review merge f6497e8) clears both S3 findings in worlds-shortcuts a30ed99/cad626c: neon signs readable across six actual-size captures; Cup pressure and stale costs respect floors. Reviewer reports 78/78 focused regressions, baseline reproduction 10 failures/5 positive passes, build/diff pass. Full 730-test pass remains builder evidence.
 - Implementation fixes are cleared, but batch 11 remains partial on loaded human route balance and real phones. No integration/deployment/main merge performed. Next Director decision: approve publishing this reviewed candidate to playtest for targeted main-versus-shortcut timing, retaining balance hold and main approval gate. Avoid more automated tuning against collision-heavy controllers.
