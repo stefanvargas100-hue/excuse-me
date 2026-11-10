@@ -75,4 +75,13 @@ test('a friend sending again replaces their old ghost, and four friends at most 
   assert.strictEqual(list.length, 3);
   assert.strictEqual(list.find(e => e.pts[3] === 500) !== undefined, true, 'the newer ghost of the first friend');
 });
-test('legacy and mismatched Classic ghost messages are isolated',async()=>{const [host,guest]=await room(2);const id=guest.lobbyPlayers().find(p=>p.me).id;for(const rules of [undefined,'cm1','cm3'])host.injectRoomMessage('ghost',{id,kind:'classic',level:1,rules,ghost:{step:2,pts:[0,0,0,20]}});assert.strictEqual(stored(host,'excuseme_fg_classic_nyc:cm2').length,0);});
+test('legacy kinds and current-kind wrong-rules ghosts are isolated', async () => {
+  const [host, guest] = await room(2), id = guest.lobbyPlayers().find(p => p.me).id;
+  const ghost = { step: 2, pts: [0, 0, 0, 20] };
+  for (const kind of ['classic', 'classic:cm2']) for (const rules of [undefined, 'cm1', 'cm3']) {
+    host.injectRoomMessage('ghost', { id, kind, level: 1, rules, ghost });
+    assert.strictEqual(stored(host, 'excuseme_fg_classic_nyc:cm2').length, 0, kind + '/' + rules);
+  }
+  host.injectRoomMessage('ghost', { id, kind: 'classic:cm2', level: 1, rules: 'cm2', ghost });
+  assert.strictEqual(stored(host, 'excuseme_fg_classic_nyc:cm2').length, 1, 'matching version round trip');
+});

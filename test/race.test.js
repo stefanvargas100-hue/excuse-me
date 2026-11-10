@@ -128,13 +128,13 @@ test('"Excuse me" clears a row of people ahead, not just two', () => {
 function tail(E, ticks, dx, dz, vz) {
   for (let i = 0; i < ticks; i++) {
     E.S.people.length = 0; E.S.race.bots.length = 0; E.S.nextChunk = 1e9;
-    const p = E.mkPerson(E.S.px + dx, E.S.pz + dz); p.vz = vz; p.vx = 0; p.racer = true;
+    const p = E.mkPerson(E.S.px + dx, E.S.pz + dz); p.vz = vz; p.vx = 0;
     E.tick(DT);
   }
 }
 function atGo() { const E = race(0); for (let i = 0; i < 91; i++) E.tick(DT); return E; }
 
-test('slipstream: tucking in behind a racer earns a speed boost', () => {
+test('slipstream: tucking in behind a walker earns a speed boost', () => {
   const E = atGo();
   tail(E, 60, 0, 2.5, 3);
   const plain = atGo(); tail(plain, 60, 3, 2.5, 3);   // same walker, off to the side
@@ -205,4 +205,19 @@ test('bots contest the race: Hard bots use the walkway and draft people more tha
   const sum = lvl => [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].reduce((a, s) => a + run(lvl, s), 0);
   const easy = sum(0), hard = sum(2);
   assert.ok(hard > 0 && hard > easy, 'time on the forward belt, Hard ' + hard + ' vs Easy ' + easy);
+});
+for (const who of ['player', 'bot']) test(`ordinary race ${who} retains pedestrian drafting`, () => {
+  const E = load(); E.start('race'); E.S.race.countT = 0;
+  const bot = E.S.race.bots[0]; E.S.race.bots = who === 'bot' ? [bot] : [];
+  const runner = who === 'bot' ? bot : E.S;
+  let maxBoost = 0;
+  for (let i = 0; i < 90; i++) {
+    E.S.people = []; E.S.nextChunk = 1e9;
+    const x = who === 'bot' ? bot.x : E.S.px, z = who === 'bot' ? bot.z : E.S.pz;
+    if (who === 'bot') E.S.px = -5;
+    const p = E.mkPerson(x, z + 2.5); p.vz = 3; p.vx = 0;
+    assert.ok(!p.racer, 'ordinary walker target');
+    E.tick(DT); maxBoost = Math.max(maxBoost, runner.draftT);
+  }
+  assert.ok(maxBoost > 0, 'pedestrian drafting earns the existing boost');
 });
