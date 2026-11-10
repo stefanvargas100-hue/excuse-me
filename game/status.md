@@ -1,5 +1,9 @@
 # Status
 
+## Classic implementation review and verified shortcut publication - 2026-11-10
+- Lead verified shortcut playtest 2d712c0: Tests run 42837699444 and Pages run 42839254144 succeeded; page and assets/main.js HTTP 200, served bundle contains expected build ID. Publication worker previously hit usage limit; this is direct lead verification, not its report. Human loaded balance/phone checks remain.
+- Classic batch 12 reported implementation 5c91068/report d7913b1, 748 full tests and 62 final focused checks, build/diff and Chromium evidence. Not integrated. Independent batch-12b-review.md covers cm2 compatibility, final safety fixes, race drafting regression risk, and remaining Daily/Weekly/stage movement exceptions. Main approval and later visual review remain required.
+
 ## Approved shortcut publication and Classic parity - 2026-11-10
 - Director approved shortcut integration/publication to playtest, retaining loaded-human balance and real-phone checks. Integrated builder cad626c and independent review/tool 81f8c59 as 8e5d123. Lead integrated checks: 734/734 tests, build and diff check pass. Merged builder/reviewer workspaces and branches removed; evidence retained in develop.
 - Push to develop authorized; publication verification assigned in batch-11e-publication-check.md. Do not claim served build until that report verifies it. Main merge remains unapproved.
