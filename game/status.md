@@ -1,5 +1,14 @@
 # Status
 
+## Art worlds checkpoint - 2026-11-10, Claude (design lead for the visual update)
+- Director ordered a visual update: every stage its own world, in three cup families. Built on `stefanvargas100-hue/art-styles` (35177ff) and merged into develop at 3c5e7c6 with Director approval to publish to the playtest link. 699/699 tests, build and diff check passed on the branch; the merged tree is identical.
+- Worlds: Fifth Avenue superhero comic, Central Park Sunday funnies, Brooklyn Bridge sunset pulp, Subway ink noir, Shibuya neo-noir, Takeshita neon pop, Terminal B space station. How it works and how to review: newest entry in `game/decisions.md`.
+- Not checked: real phones, phone performance of glow and rain, Japanese sign lettering on devices without those fonts. Menus, customise preview and podium still use the classic look.
+- Batch 09 visual pass has reported (`stefanvargas100-hue/visual-pass`, 243fd51) and is NOT merged. It polishes the classic look in files the art worlds also touch (`figures.js`, `render.js`, stage scenery), so review it against the art worlds before merging; some of it may be superseded.
+- Batch 10 playtest fixes: the Codex worker stopped on its usage limit with ten uncommitted files in the `playtest-fixes` workspace and no report. Still open; Director has not yet chosen who finishes it.
+- Lead work for this update was done from the Claude desktop app, which Orca cannot wake. Check workers by hand (`orca orchestration worker-list`).
+- Main merge still requires Director approval. Live migration 0003 remains unapplied.
+
 ## Director playtest feedback checkpoint - 2026-11-09
 - Clarified: host uses Start without separate Ready; fix clipped control. Totals concern Cup points: verify accumulation and show a clear animated +points award with a persistent numeric value. See intake clarification for acceptance criteria.
 - Director finished phone playtest of 35f4f72 and reported Subway shortcut emptiness, Friend lobby readiness/layout trouble, race totals trouble, and weak large-build balance; requested grouped tracks, group/custom-four Cups, zero-or-more bots, and finish spectating.
