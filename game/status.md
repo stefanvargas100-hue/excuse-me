@@ -1,5 +1,10 @@
 # Status
 
+## Classic review HOLD and targeted fixes - 2026-11-10
+- Independent review a6e23fa on classic-review found S2 ordinary-race pedestrian drafting regression with unchanged identities; restore pre-batch behavior, not widen migrations. Lead brief wording was overbroad: no invented Classic drafting did not justify changing existing races.
+- S3 gaps: browser query did not select actual playtest channel; endless pickup test intermittently fails with crowd generation. Reviewer full 749/749, focused 45/46, recheck 11/11, browser six cases/build/diff pass. cm2 compatibility passed inspection; live schema/phones unverified.
+- Fix brief batch-12c-review-fixes.md assigned to original builder; independent re-review required before integration. Daily/Weekly and race-only stage-feature parity remain outstanding, not complete. Main unchanged.
+
 ## Classic implementation review and verified shortcut publication - 2026-11-10
 - Lead verified shortcut playtest 2d712c0: Tests run 42837699444 and Pages run 42839254144 succeeded; page and assets/main.js HTTP 200, served bundle contains expected build ID. Publication worker previously hit usage limit; this is direct lead verification, not its report. Human loaded balance/phone checks remain.
 - Classic batch 12 reported implementation 5c91068/report d7913b1, 748 full tests and 62 final focused checks, build/diff and Chromium evidence. Not integrated. Independent batch-12b-review.md covers cm2 compatibility, final safety fixes, race drafting regression risk, and remaining Daily/Weekly/stage movement exceptions. Main approval and later visual review remain required.
