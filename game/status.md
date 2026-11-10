@@ -1,5 +1,9 @@
 # Status
 
+## Seeded movement partial; validation recovery assigned - 2026-11-10
+- Batch 14 worker stopped as instructed with uncommitted implementation in seeded-movement and committed partial report. Full suite 766/772; six failures (five newly added crowd comparisons and one obsolete legacy board expectation). Build/diff passed; browser/boundary/acceptance coverage unfinished. No integration.
+- Lead inspected preserved diff/logs: crowd test advances different movement states before comparing entire objects including player-relative prevDz. Recovery brief batch-14b-recovery.md directs isolated pickup-generation and explicit RNG-sentinel tests, keeps meaningful generation comparisons, updates intentional mp2 expectations and completes missing acceptance/browser evidence. Existing Classic playtest 1f9faec remains unchanged.
+
 ## Classic playtest publication verified - 2026-11-10
 - Publication worker report/evidence 950a996 verified exact develop build 1f9faec: Tests 42891258496 and downstream Pages 42892681554 succeeded; playtest HTML and referenced main.js HTTP 200, embedded ID matches. Evidence checked at 2026-11-10T20:12:12Z and retained in batch-12e-evidence/. Report integrated; documentation HEAD is not the published build ID.
 - Classic build stats, speed bonuses, existing endless pickups and constant combo view are available for phone playtest. Phone feel, installed live service-worker behavior and deployed server acceptance remain unverified. Main remains unchanged.
