@@ -1,5 +1,9 @@
 # Status
 
+## Visual reconciliation and shortcuts - 2026-11-10
+- Director confirmed new art worlds are authoritative: retain/adapt beneficial earlier polish, then improve shortcuts. Batch 11 brief: `game/rounds/round-02/batch-11-worlds-shortcuts.md`; Codex worker requested from current develop, separate from interrupted batch 10.
+- Do not wholesale merge batch 09's classic-look polish. Later Fable visual review remains planned. Main requires Director approval.
+
 ## Art worlds checkpoint - 2026-11-10, Claude (design lead for the visual update)
 - Director ordered a visual update: every stage its own world, in three cup families. Built on `stefanvargas100-hue/art-styles` (35177ff) and merged into develop at 3c5e7c6 with Director approval to publish to the playtest link. 699/699 tests, build and diff check passed on the branch; the merged tree is identical.
 - Worlds: Fifth Avenue superhero comic, Central Park Sunday funnies, Brooklyn Bridge sunset pulp, Subway ink noir, Shibuya neo-noir, Takeshita neon pop, Terminal B space station. How it works and how to review: newest entry in `game/decisions.md`.
