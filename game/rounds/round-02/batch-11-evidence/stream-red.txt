@@ -1,0 +1,58 @@
+✔ Subway hard stairs and mezzanine save 3-8% on a scripted complete drive (9.0775ms)
+✔ route entry is local, persists until exit and then rejoins (0.1275ms)
+✔ remote interpolation carries route immediately (3.1708ms)
+✔ crowd on the platform cannot collide with a mezzanine racer (47.684ms)
+✔ remote racers on a different floor do not push the player (21.2027ms)
+✔ a mezzanine shout cannot move shoppers on the platform (33.8911ms)
+✔ old untagged friend ghosts cannot compete on the side-route course (4.3863ms)
+✔ room sharing sends the tagged Subway ghost and receives route positions (85.3136ms)
+✔ back alley scripted drive is no faster and within 1% of main (9.3449ms)
+✔ spill floor isolation {"runner":"mezzanine","spill":""} (22.0175ms)
+✔ spill floor isolation {"runner":"","spill":"mezzanine"} (19.403ms)
+✔ spill floor isolation {"runner":"mezzanine","spill":"mezzanine"} (23.3112ms)
+✔ spill floor isolation {"runner":"","spill":""} (20.2449ms)
+✔ mezzanine has deterministic real props and pedestrians with safe stairs and gaps (50.5815ms)
+✔ mezzanine population cannot collide or shout across floors in either direction (42.1211ms)
+✔ mezzanine player and bot rejoin after their route exit (19.6013ms)
+✔ back-alley has deterministic real props and pedestrians with safe stairs and gaps (49.6242ms)
+✔ back-alley population cannot collide or shout across floors in either direction (37.1474ms)
+✔ back-alley player and bot rejoin after their route exit (25.7047ms)
+✔ only populated route stages get new record/ghost course tags (3.7307ms)
+✔ bots get the same mezzanine cruise benefit as players (36.6261ms)
+✔ route generation repeats for race and friend-course seeds (95.5107ms)
+✔ generated route barriers collide on their own floor and leave the centre traversable (42.9129ms)
+✔ sr1 friend ghosts remain saved but cannot compete on sr2 courses (3.3366ms)
+✖ unseeded offline races still repeat route-local actor identities (17.644ms)
+ℹ tests 25
+ℹ suites 0
+ℹ pass 24
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 824.0274
+
+✖ failing tests:
+
+test at test\side-routes.test.js:78:1
+✖ unseeded offline races still repeat route-local actor identities (17.644ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + '[[1.35,110,5.8452225277690255,"#f2994a"]]'
+  - '[[1.35,110,1.5900113988140594,"#9b51e0"]]'
+  
+      at TestContext.<anonymous> (C:\Users\stefa\orca\workspaces\Excuse-Me\worlds-shortcuts\test\side-routes.test.js:81:55)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '[[1.35,110,5.8452225277690255,"#f2994a"]]',
+    expected: '[[1.35,110,1.5900113988140594,"#9b51e0"]]',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

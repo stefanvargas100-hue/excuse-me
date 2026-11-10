@@ -193,9 +193,15 @@ function botRows() {
 }
 // Anyone on a bot's tail counts the same, host or guest. Otherwise only the host's phone would know who was drafting it.
 function cupPressure(b) {
-  const near = (x, z) => { if (b.z - z > 0.3 && b.z - z < DRAFT_LEN && Math.abs(x - b.x) < DRAFT_W) { b.pressT = 0.4; b.pressX = x; } };
-  if (!S.race.finished) near(S.px, S.pz);
-  for (const o of S.race.bots) if (o.remote && !o.done) near(o.x, o.z);
+  const source = b.pressPeer == null ? S : S.race.bots.find(o => o.remote && o.peerId === b.pressPeer);
+  if (b.pressRoute !== (b.route || '') || !source || !sameRoute(b, source)) b.pressT = 0;
+  const near = (who, x, z, peer) => {
+    if (sameRoute(b, who) && b.z - z > 0.3 && b.z - z < DRAFT_LEN && Math.abs(x - b.x) < DRAFT_W) {
+      b.pressT = 0.4; b.pressX = x; b.pressRoute = b.route || ''; b.pressPeer = peer;
+    }
+  };
+  if (!S.race.finished) near(S, S.px, S.pz, null);
+  for (const o of S.race.bots) if (o.remote && !o.done) near(o, o.x, o.z, o.peerId);
 }
 function stepRemote(b, dt) {
   const D = S.duel, P = D.peers[b.peerId], p = P.remote.sample(S.clock);
@@ -377,7 +383,7 @@ function think(b) {
     let c = Math.abs(tx - b.x) * 0.18 + (Math.abs(tx - b.target) < 0.01 ? -0.25 : 0);
     const reachBase = Math.abs(tx - b.x);
     for (const p of S.people) {
-      if (p.dead || p.prop === 'spill') continue;
+      if (!sameRoute(b, p) || p.dead || p.prop === 'spill') continue;
       const dz = p.z - b.z;
       if (dz < -0.4 || dz > look) continue;
       let ignore = b.seen.get(p);
@@ -398,12 +404,15 @@ function think(b) {
     // racing: avoid sitting behind whoever is just ahead, shake off anyone on your own tail, take the fast strip
     const fight = b.diff.fight;
     if (fight) {
-      for (const o of [S.race.me && { x: S.px, z: S.pz }, ...S.race.bots].filter(Boolean)) {
-        if (o === b) continue;
+      for (const o of [S.race.me && { x: S.px, z: S.pz, route: S.route }, ...S.race.bots].filter(Boolean)) {
+        if (o === b || !sameRoute(b, o)) continue;
         if (o.z - b.z > 0.5 && o.z - b.z < 7 && Math.abs(tx - o.x) < 0.6) c += 0.9 + 0.9 * fight;
       }
-      if (b.pressT > 0 && Math.abs(tx - (S.duel?.cup ? b.pressX : S.px)) < 0.8) c += 1.6 * fight;
-      for (const pk of S.race.pickups || []) if (!pk.taken && pk.z - b.z > 0.5 && pk.z - b.z < 12 && Math.abs(tx - pk.x) < 0.5) c -= 0.9 * fight;   // go for a pickup
+      // think() precedes cupPressure(): reject stale pressure here as well, before it can steer a lane.
+      const pressureSource = b.pressPeer == null ? S : S.race.bots.find(o => o.remote && o.peerId === b.pressPeer);
+      const pressureFloor = !S.duel?.cup || (b.pressRoute === (b.route || '') && pressureSource && sameRoute(b, pressureSource));
+      if (b.pressT > 0 && pressureFloor && Math.abs(tx - (S.duel?.cup ? b.pressX : S.px)) < 0.8) c += 1.6 * fight;
+      for (const pk of S.race.pickups || []) if (!b.route && !pk.taken && pk.z - b.z > 0.5 && pk.z - b.z < 12 && Math.abs(tx - pk.x) < 0.5) c -= 0.9 * fight;   // go for a pickup
       if (onStrip(LV.id, tx, b.z + 6)) c -= 1.1 * fight;
       const bd = beltAt(LV.id, tx, b.z + 10);   // airport walkway: plan the approach early (the glass is shut once you are alongside), aim for the middle of the passing lane
       if (bd > 0) c -= (tx >= 2.25 && tx < 2.9 ? 2.2 : tx >= 2.9 ? 0.8 : 0) * fight;   // never aim at the glass line itself: stopping a hair short of it leaves you outside
@@ -466,7 +475,8 @@ function stepBot(b, dt) {
   const bTarget = (bursting ? BOOST : BASE) * b.pace * b.st.speed * weave * racePace(b.chain, b.energy) * draftMul(b) * powerMul(b) * nearMul(b) * (onStrip(LV.id, b.x, b.z) ? STRIP_SPEED : 1) * (b.bumpT > 0 ? BUMP_SPEED : 1);
   b.speed += (bTarget - b.speed) * Math.min(1, dt * (bTarget > b.speed ? b.st.accel : 5));
   const bx0 = b.x, bz0 = b.z;
-  b.x = clamp(b.x + b.vx * dt, -lim, lim); b.z += b.speed * dt;
+  b.x = clamp(b.x + b.vx * dt, -lim, lim); b.z += b.speed * routeSpeed(LV.id, b) * dt;
+  updateRoute(LV.id, b, bz0);
   { const cx = contain(LV.id, bx0, b.x, b.z); if (cx !== b.x) { b.x = cx; b.vx = 0; } }   // glass railings lock bots on the walkway too
   b.belt = beltFor(LV.id, b.x, b.z, b.speed); b.z += b.belt * dt;   // the walkway carries bots too
   if (Math.abs(b.x) >= lim) b.vx = 0;
@@ -484,7 +494,7 @@ function stepBot(b, dt) {
   }
   if (LV.id === 'park' || LV.id === 'bridge') b.x = clamp(b.x, -halfAt(b.z) + 0.5, halfAt(b.z) - 0.5);
   b.vz = b.speed;
-  collectPowerups(b, b.x, b.z, bz0, false);
+  if (!b.route) collectPowerups(b, b.x, b.z, bz0, false);
   // passing people builds the bot's combo, like yours
   for (const p of S.people) {
     if (!sameRoute(b,p) || p.dead || p.prop || Math.abs(p.z - b.z) > 3) continue;
@@ -537,7 +547,7 @@ export function updRace(dt) {
   }
   stepRacers(dt);
   stepPowerups(S, dt);
-  collectPowerups(S, S.px, S.pz, S.puZ0, true); S.puZ0 = S.pz;
+  if (!S.route) collectPowerups(S, S.px, S.pz, S.puZ0, true); S.puZ0 = S.pz;
   if (S.duel) duelTick(dt);
   for (const p of S.people) if (p.hitT !== undefined) { p.hitT -= dt; if (p.hitT <= 0) { p.hit = false; delete p.hitT; } }
 }

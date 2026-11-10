@@ -73,6 +73,9 @@ export function updPeople(dt) {
       continue;
     }
     if (p.prop || p.dead) continue;
+    if (p.route && (p.z < p.routeMin || p.z > p.routeMax)) {
+      p.z = clamp(p.z, p.routeMin, p.routeMax); p.hz = p.z <= p.routeMin ? 1 : -1; p.dirz = p.hz; p.vz = p.hz * p.v0;
+    }
     p.t += dt;
     behaviours(p, dt);
     if (p.react) { p.react.t += dt; if (p.react.t > 1.4) p.react = null; }

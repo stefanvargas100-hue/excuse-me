@@ -1,6 +1,6 @@
 import { paintTakeshita } from './takeshita.js';
 import { sameRoute } from '../config/side-routes.js';
-import { drawSideRoutes } from './side-routes.js';
+import { drawSideRoutes, drawSideRouteMarkers } from './side-routes.js';
 import { comboLevel } from '../config/combo.js';
 import { MULT_COLS, hex } from '../config/colour.js';
 import { FOGCSS, LV } from '../config/levels.js';
@@ -39,13 +39,13 @@ export function render() {
   styleBackdrop();
   if (LV.id === 'airport') paintAirport(); else if (LV.id === 'nyc') paintNYC(); else if (LV.id === 'park') paintPark(); else if (LV.id === 'bridge') paintBridge(); else if (LV.id === 'subway') paintSubway(); else if (LV.id === 'takeshita') paintTakeshita(); else paintShibuya();
   if (LV.id === 'nyc') { drawCars(); nycSteam(); }
-  drawSideRoutes();
   drawBelts();
   drawStrips();
-  drawPowerups();
+  if (!S.route) drawPowerups();
   fxGround();
   styleGround();
-  for (const p of S.people) if (p.prop === 'spill') drawPerson(p);   // puddles lie under everyone
+  drawSideRoutes();
+  for (const p of S.people) if (p.prop === 'spill' && (!S.race || sameRoute(S, p))) drawPerson(p);   // puddles lie under everyone
   const list = S.people.filter(p => p.prop !== 'spill').concat([S.me], S.race ? S.race.bots : [], visibleGhosts(), glassPanels()).sort((a, b) => b.z - a.z);
   for (const p of list.filter(p => !S.race || sameRoute(S,p))) { if (p.glass) drawGlass(p); else drawPerson(p); }
   drawSlipstream();
@@ -82,7 +82,8 @@ export function render() {
   if (state === 'play') { zoneGuide(); pruneFlows(); }
   if (state !== 'ready') drawPops();
   if (S.banner && state === 'play') {
-    const b = S.banner, a = b.t < 0.2 ? b.t / 0.2 : b.t > 2.0 ? (2.4 - b.t) / 0.4 : 1, y = radarTop + 112;
+    // Race HUD sits at the bottom; leave the route sign and pause control above this banner.
+    const b = S.banner, a = b.t < 0.2 ? b.t / 0.2 : b.t > 2.0 ? (2.4 - b.t) / 0.4 : 1, y = S.race ? 180 : radarTop + 112;
     ctx.globalAlpha = clamp(a, 0, 1);
     ctx.font = '700 24px ' + FONT;
     const mt = ctx.measureText(b.text), tw = (mt && mt.width) || 200;
@@ -91,4 +92,5 @@ export function render() {
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(b.text, W / 2 + 2, y + 1);
     ctx.globalAlpha = 1;
   }
+  drawSideRouteMarkers();
 }

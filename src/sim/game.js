@@ -148,7 +148,7 @@ export function tick(dt) {
         if (S.rushSpawn <= 0) { S.rushSpawn = 0.45; walker(S.pz + rnd(SPAWN_FAR, SPAWN_FAR + 14), R() < 0.7 ? -1 : 1); }
       }
     }
-    for (const p of S.people) if (p.prop === 'spill' && !p.slipped && Math.hypot(S.px - p.x, (S.pz - p.z) * 0.8) < 1.0) { p.slipped = true; S.slipT = 0.7; addPop('SLIPPERY!', '#c8a165', 26); buzz([10, 20, 10]); }
+    for (const p of S.people) if (sameRoute(S, p) && p.prop === 'spill' && !p.slipped && Math.hypot(S.px - p.x, (S.pz - p.z) * 0.8) < 1.0) { p.slipped = true; S.slipT = 0.7; addPop('SLIPPERY!', '#c8a165', 26); buzz([10, 20, 10]); }
     if (LV.id === 'shibuya') { S.waveT -= dt; if (S.waveT <= 0 && !S.duel && dynamic && S.pz < goalOf() - 60) { scramble(); S.waveT = rnd(8, 11); } }
     updPeople(dt);
     if (S.race) updRace(dt);
