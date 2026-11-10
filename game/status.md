@@ -1,5 +1,10 @@
 # Status
 
+## Daily/Weekly playtest publication verified - 2026-11-10
+- Verified playtest build 11c3fde: Tests 42895513510 and downstream Pages 42896427872 succeeded; page and referenced main.js HTTP 200 with matching embedded ID at 2026-11-10T20:34:12Z. Worker report/evidence 02f326e integrated; evidence lives under reports/batch-14d-evidence/. Documentation HEAD is not the served build ID.
+- Classic, Daily and Weekly shared build stats/speed bonuses/existing pickups are available for phone playtest, with combo slowdown/zoom/tint removed. Prior integrated suite passed 816/816. Main unchanged and still requires explicit approval.
+- Open: phone feel and crowded shortcut balance, deployed schema acceptance, installed live service-worker behavior, tutorial/stage parity, inherited S3 heading clipping/later visual review, interrupted batch 10 and remaining playtest feedback. Publication verification does not resolve those checks.
+
 ## Seeded movement integrated for playtest - 2026-11-10
 - Independent review f777ca4 cleared batch 14 with 112 focused tests and 40 baseline crowd comparisons; no blocking regression. Integrated builder 55ca35b/report a6e2f6e and reviewer evidence/tests as b3941d8. Lead combined suite 816/816, build and diff checks pass.
 - Daily/Weekly now share Classic build stats, pace bonuses and endless pickups, with captured mp2 score/board identities, unchanged reset clocks/attempt markers and isolated legacy queues. Lead inspected 320 Daily results and 390 Weekly boost screenshots. Browser emulation only; phones/deployed schema remain unverified.
