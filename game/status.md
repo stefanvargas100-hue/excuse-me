@@ -1,5 +1,10 @@
 # Status
 
+## Classic playtest publication verified - 2026-11-10
+- Publication worker report/evidence 950a996 verified exact develop build 1f9faec: Tests 42891258496 and downstream Pages 42892681554 succeeded; playtest HTML and referenced main.js HTTP 200, embedded ID matches. Evidence checked at 2026-11-10T20:12:12Z and retained in batch-12e-evidence/. Report integrated; documentation HEAD is not the published build ID.
+- Classic build stats, speed bonuses, existing endless pickups and constant combo view are available for phone playtest. Phone feel, installed live service-worker behavior and deployed server acceptance remain unverified. Main remains unchanged.
+- Daily/Weekly movement parity is assigned to Codex in seeded-movement under batch-14-seeded-movement.md (dispatch ctx_bcdab82cef19); implementation and independent review pending. Later visual review, tutorial/stage parity and interrupted batch 10 remain open.
+
 ## Remaining parity plan disposition - 2026-11-10
 - Batch 13 planning branch 04341ed integrated (source inspection only). Lead adopts shared Daily/Weekly stats/pace/pickups and competition-key audit, but defers the proposed server attempt ledger/UTC or scheduled activation changes as broader than movement parity.
 - Batch 14 brief implements new seeded mp2 score/board identities with frozen period/rules, unchanged reset clock and played markers, deterministic crowds and existing enforcement limits. Old-client scores remain isolated on legacy boards; no database work or stronger account-wide enforcement claim. Independent review required. Tutorial learning and race-only stage features remain later follow-ups.
