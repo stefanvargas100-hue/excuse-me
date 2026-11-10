@@ -36,13 +36,21 @@ export function drawSideRoutes() {
         const q = P(0, 2.4, rejoin);
         label('REJOIN MAIN', q[0], q[1], Math.min(20, F / rejoin * .4), '#fff4ec');
       }
-      routeSign(r.name+' · REJOIN AT '+r.exit+' m', 82);
     }
     const d=r.entrance-VZ;
     if (!S.route && d>1&&d<65) {
-      if (r.entrance - S.pz < 30) routeSign(r.name+' · RIGHT '+(r.level === 'up' ? 'STAIRS' : 'ALLEY')+' · '+r.difficulty.toUpperCase(), 82);
       for(let i=0;i<10;i++) fq(r.shape.entryX-.65,r.shape.entryX+.65,r.level === 'up' ? i*.06 : .01,d+i*.5,d+(i+1)*.5,i%2?'#eee0a8':'#7b796d');
       const q=P(r.shape.entryX,2,d);label(r.name,q[0],q[1],Math.min(24,F/d*.4),'#ffe08a');
     }
+  }
+}
+
+// Screen-space instructions follow all world effects to keep the ink and paper opaque.
+export function drawSideRouteMarkers() {
+  if (!S.race) return;
+  for (const r of sideRoutes(LV.id)) {
+    if (S.route === r.id) routeSign(r.name + ' \u00b7 REJOIN AT ' + r.exit + ' m', 82);
+    else if (!S.route && r.entrance - VZ > 1 && r.entrance - VZ < 65 && r.entrance - S.pz < 30)
+      routeSign(r.name + ' \u00b7 RIGHT ' + (r.level === 'up' ? 'STAIRS' : 'ALLEY') + ' \u00b7 ' + r.difficulty.toUpperCase(), 82);
   }
 }

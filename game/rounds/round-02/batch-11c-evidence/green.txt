@@ -1,0 +1,23 @@
+✔ Cup pressure local bot= human= (1.6706ms)
+✔ Cup pressure local bot=mezzanine human=mezzanine (0.4564ms)
+✔ Cup pressure local bot=mezzanine human= (0.4185ms)
+✔ Cup pressure local bot= human=mezzanine (0.4466ms)
+✔ Cup pressure remote bot= human= (0.4437ms)
+✔ Cup pressure remote bot=mezzanine human=mezzanine (0.4254ms)
+✔ Cup pressure remote bot=mezzanine human= (0.4025ms)
+✔ Cup pressure remote bot= human=mezzanine (0.4293ms)
+✔ active local pressure clears on bot floor change (1.764ms)
+✔ active local pressure clears on human floor change (0.9209ms)
+✔ active local pressure clears on both floor change (0.9206ms)
+✔ active remote pressure clears on bot floor change (0.8551ms)
+✔ active remote pressure clears on human floor change (0.8465ms)
+✔ active remote pressure clears on both floor change (0.9027ms)
+✔ same-floor active Cup pressure still changes the avoidance lane (0.888ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 58.9145

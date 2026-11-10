@@ -1,0 +1,62 @@
+[
+  {
+    "phase": "after",
+    "width": 390,
+    "level": 6,
+    "scene": "entry",
+    "median": 5.5,
+    "p95": 6,
+    "actors": 50,
+    "style": "neonpop"
+  },
+  {
+    "phase": "after",
+    "width": 390,
+    "level": 6,
+    "scene": "interior",
+    "median": 4.6000000005587935,
+    "p95": 7.1000000005587935,
+    "actors": 62,
+    "style": "neonpop"
+  },
+  {
+    "phase": "after",
+    "width": 390,
+    "level": 6,
+    "scene": "rejoin",
+    "median": 6.2000000001862645,
+    "p95": 7.5,
+    "actors": 85,
+    "style": "neonpop"
+  },
+  {
+    "phase": "after",
+    "width": 320,
+    "level": 6,
+    "scene": "entry",
+    "median": 4,
+    "p95": 4.1000000005587935,
+    "actors": 50,
+    "style": "neonpop"
+  },
+  {
+    "phase": "after",
+    "width": 320,
+    "level": 6,
+    "scene": "interior",
+    "median": 3.2999999998137355,
+    "p95": 3.5,
+    "actors": 62,
+    "style": "neonpop"
+  },
+  {
+    "phase": "after",
+    "width": 320,
+    "level": 6,
+    "scene": "rejoin",
+    "median": 3.2999999998137355,
+    "p95": 5.2000000001862645,
+    "actors": 85,
+    "style": "neonpop"
+  }
+]

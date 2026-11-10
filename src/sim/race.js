@@ -193,9 +193,15 @@ function botRows() {
 }
 // Anyone on a bot's tail counts the same, host or guest. Otherwise only the host's phone would know who was drafting it.
 function cupPressure(b) {
-  const near = (x, z) => { if (b.z - z > 0.3 && b.z - z < DRAFT_LEN && Math.abs(x - b.x) < DRAFT_W) { b.pressT = 0.4; b.pressX = x; } };
-  if (!S.race.finished) near(S.px, S.pz);
-  for (const o of S.race.bots) if (o.remote && !o.done) near(o.x, o.z);
+  const source = b.pressPeer == null ? S : S.race.bots.find(o => o.remote && o.peerId === b.pressPeer);
+  if (b.pressRoute !== (b.route || '') || !source || !sameRoute(b, source)) b.pressT = 0;
+  const near = (who, x, z, peer) => {
+    if (sameRoute(b, who) && b.z - z > 0.3 && b.z - z < DRAFT_LEN && Math.abs(x - b.x) < DRAFT_W) {
+      b.pressT = 0.4; b.pressX = x; b.pressRoute = b.route || ''; b.pressPeer = peer;
+    }
+  };
+  if (!S.race.finished) near(S, S.px, S.pz, null);
+  for (const o of S.race.bots) if (o.remote && !o.done) near(o, o.x, o.z, o.peerId);
 }
 function stepRemote(b, dt) {
   const D = S.duel, P = D.peers[b.peerId], p = P.remote.sample(S.clock);
@@ -402,7 +408,10 @@ function think(b) {
         if (o === b || !sameRoute(b, o)) continue;
         if (o.z - b.z > 0.5 && o.z - b.z < 7 && Math.abs(tx - o.x) < 0.6) c += 0.9 + 0.9 * fight;
       }
-      if (b.pressT > 0 && Math.abs(tx - (S.duel?.cup ? b.pressX : S.px)) < 0.8) c += 1.6 * fight;
+      // think() precedes cupPressure(): reject stale pressure here as well, before it can steer a lane.
+      const pressureSource = b.pressPeer == null ? S : S.race.bots.find(o => o.remote && o.peerId === b.pressPeer);
+      const pressureFloor = !S.duel?.cup || (b.pressRoute === (b.route || '') && pressureSource && sameRoute(b, pressureSource));
+      if (b.pressT > 0 && pressureFloor && Math.abs(tx - (S.duel?.cup ? b.pressX : S.px)) < 0.8) c += 1.6 * fight;
       for (const pk of S.race.pickups || []) if (!b.route && !pk.taken && pk.z - b.z > 0.5 && pk.z - b.z < 12 && Math.abs(tx - pk.x) < 0.5) c -= 0.9 * fight;   // go for a pickup
       if (onStrip(LV.id, tx, b.z + 6)) c -= 1.1 * fight;
       const bd = beltAt(LV.id, tx, b.z + 10);   // airport walkway: plan the approach early (the glass is shut once you are alongside), aim for the middle of the passing lane
