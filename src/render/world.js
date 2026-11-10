@@ -12,6 +12,7 @@ import { airportAfterLoop, airportSegment } from './airportdetail.js';
 import { shibuyaAfterLoop, shibuyaSegment, shibuyaSky } from './shibuyadetail.js';
 import { nycAfterLoop, nycSegment, nycSky } from './nycdetail.js';
 import { hachiko } from './landmarks.js';
+import { styleIs } from './style.js';
 
 
 
@@ -26,22 +27,26 @@ function goalAirport(d) {
 }
 
 export function paintAirport() {
-  const Wl = LV.half;
+  const Wl = LV.half, space = styleIs('space');   // as a space station the windows and a glass roof look out on space, painted behind everything
   if (goalOf() - VZ < 84) goalAirport(goalOf() - VZ);
   // the window openings on the left, found first so the apron outside is drawn through them only
   const wins = [];
   forSegs(3, 82, (k, za, zb) => { if (mod(k, 4) !== 0) { const [wa, wb] = sub(za + 0.2, zb - 0.2); if (wb > 0.2) wins.push([wa, wb]); } });
-  if (wins.length) {
+  if (wins.length && !space) {
     ctx.save(); ctx.beginPath();
     for (const [wa, wb] of wins) for (const [i, pt] of [[0, [0.9, wa]], [1, [3.8, wa]], [1, [3.8, wb]], [1, [0.9, wb]]]) { const q = P(-Wl, pt[0], pt[1]); if (i) ctx.lineTo(q[0], q[1]); else ctx.moveTo(q[0], q[1]); }
     ctx.clip(); drawApron(); ctx.restore();
   }
   forSegs(3, 82, (k, za, zb, da, db) => {
     const par = k & 1;
-    fq(-Wl, Wl, CEIL, da, db, mixc(C.ceil, da));
+    if (space) {   // roof beams either side of a long glass strip, with a rib across it every few metres
+      fq(-Wl, -3.1, CEIL, da, db, mixc(C.ceil, da)); fq(3.1, Wl, CEIL, da, db, mixc(C.ceil, da));
+      const [ra, rb] = sub(za, za + 0.32);
+      if (rb > 0.2) fq(-3.1, 3.1, CEIL, ra, rb, mixc(C.pillar, ra));
+    } else fq(-Wl, Wl, CEIL, da, db, mixc(C.ceil, da));
     if (!par) {
       const [pa, pb] = sub(za + 0.5, zb - 0.5);
-      if (pb > 0.2) for (const r of [[-1.3, 1.3], [-5.3, -3.3], [3.3, 5.3]]) fq(r[0], r[1], CEIL, pa, pb, mixc(C.panel, pa));
+      if (pb > 0.2) for (const r of space ? [[-5.3, -3.3], [3.3, 5.3]] : [[-1.3, 1.3], [-5.3, -3.3], [3.3, 5.3]]) fq(r[0], r[1], CEIL, pa, pb, mixc(C.panel, pa));
     }
     fq(-5, 5, 0, da, db, mixc(par ? C.tileA : C.tileB, da));
     fq(-Wl, -5, 0, da, db, mixc(par ? C.carA : C.carB, da));
