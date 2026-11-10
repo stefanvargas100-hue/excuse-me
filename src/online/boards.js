@@ -1,3 +1,4 @@
+import { seededIdentity } from '../sim/seeded-rules.js';
 import { classicTag } from '../sim/classic-rules.js';
 /* ---------- which leaderboard to show ---------- */
 // Same names the game writes scores to (see online.js boardId): daily:<date>, weekly:<week>, classic:<stage id>.
@@ -15,16 +16,16 @@ export const BOARD_TABS = [
 
 export function boardIdFor(tab, stage) {
   if (tab === 'race') return 'race:' + LEVELS[stage].id;
-  if (tab === 'daily') return 'daily:' + todayKey();
-  if (tab === 'weekly') return 'weekly:' + weekKey();
+  if (tab === 'daily') return seededIdentity('daily', todayKey()).board;
+  if (tab === 'weekly') return seededIdentity('weekly', weekKey()).board;
   if (tab === 'challenge') return boardNameFor(utcWeekKey(), CHALLENGE_RULES);
   return 'classic:' + LEVELS[stage].id + classicTag;
 }
 
 export function boardTitle(tab, stage) {
   if (tab === 'race') return LEVELS[stage].city + ' - ' + LEVELS[stage].name + ' - best time - friendly board';
-  if (tab === 'daily') return 'Today · same crowd for everyone';
-  if (tab === 'weekly') return 'This week · same crowd for everyone';
+  if (tab === 'daily') return 'Today · Updated movement · same crowd for everyone';
+  if (tab === 'weekly') return 'This week · Updated movement · same crowd for everyone';
   if (tab === 'challenge') return 'Weekly challenge · best time · same course and outfit';
   return LEVELS[stage].city + ' · ' + LEVELS[stage].name + ' · best score';
 }

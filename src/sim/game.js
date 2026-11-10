@@ -1,3 +1,4 @@
+import { seededIdentity, movementEnabled } from './seeded-rules.js';
 import { classicTag } from './classic-rules.js';
 import { sameRoute, updateRoute, routeSpeed } from '../config/side-routes.js';
 import { medalFor, nextMedal } from '../config/medals.js';
@@ -198,9 +199,9 @@ function recordBest() {
   S.score = Math.floor(S.score);
   if (!S.run.policy.records) { S.newBest = false; return; }   // practice and special runs leave no record
   if (S.daily || S.weekly) {
-    const k = 'excuseme_' + (S.daily ? 'daily_' : 'weekly_') + S.dailyKey, b = parseInt(store.get(k, '0'), 10) || 0;
+    const k = S.competition.scoreKey, b = parseInt(store.get(k, '0'), 10) || 0;
     S.newBest = S.score > b; if (S.newBest) store.set(k, String(S.score));
-    if (S.run.policy.scores) submitRun(S.daily ? 'daily' : 'weekly', S.dailyKey, S.score);   // online board; the server keeps only the first try
+    if (S.run.policy.scores) submitRun(S.competition.mode, S.competition.key, S.score);   // online board; the server keeps only the first try
     return;
   }
   const b = bestOf(LV.id);
@@ -304,9 +305,9 @@ function showEnd() {
   $('sRival').textContent = S.dodged;
   if (S.closest && S.closest.gap < 0.4) $('endLead').textContent += ' Closest call: ' + Math.max(1, Math.round(S.closest.gap * 100)) + ' cm at ' + S.closest.m + ' m.';
   showUnlocks();
-  if (S.daily) { $('endEyebrow').textContent = 'Daily run · ' + S.dailyKey + ' · ' + LV.name + (S.mod ? ' · ' + MOD_NAMES[S.mod] : ''); }
-  if (S.weekly) { $('endEyebrow').textContent = 'Weekly run · ' + S.dailyKey + ' · ' + LV.name; }
-  if (seededRun) showRunBoard(S.daily ? 'daily' : 'weekly', S.dailyKey);
+  if (S.daily) { $('endEyebrow').textContent = 'Daily run · Updated movement · ' + S.competition.period + ' · ' + LV.name + (S.mod ? ' · ' + MOD_NAMES[S.mod] : ''); }
+  if (S.weekly) { $('endEyebrow').textContent = 'Weekly run · Updated movement · ' + S.competition.period + ' · ' + LV.name; }
+  if (seededRun) showRunBoard(S.competition.mode, S.competition.key);
   else if (S.kind === 'classic') showRunBoard('classic', LV.id);
   const nx = $('next');
   nx.hidden = true;
@@ -495,7 +496,8 @@ export function start(a, b, opts) {
   S.mod = activeMod;
   S.mode = mode; S.kind = mode; S.endless = mode !== 'race'; S.seed = key || (duel ? duel.seed : run.seed); S.duel = duel; S.challenge = opts && opts.challenge || null; S.cup = opts && opts.cup || null;
   if (S.endless) S.timeLeft = Infinity;
-  if (mode === 'classic') { S.moveStats = effects(statsOf({ ...LOOK, ...run.outfit })); extendClassicPickups(); }
+  S.competition = seededIdentity(mode, key);
+  if (movementEnabled(mode)) { S.moveStats = effects(statsOf({ ...LOOK, ...run.outfit })); extendClassicPickups(); }
   ghostStart();
   if (mode === 'race') {
     initRace(duel || opts && (opts.lesson || opts.solo) ? 0 : opts && opts.cup ? 7 : 3, opts && opts.cup ? opts.cup.model.bots : undefined, duel && duel.cup ? duel.cup.difficulty : undefined);
