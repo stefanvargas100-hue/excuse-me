@@ -1,5 +1,10 @@
 # Status
 
+## Shortcut independent review checkpoint - 2026-11-10
+- Review/tool committed on stefanvargas100-hue/shortcuts-review at 748c434 (tool/evidence 2fe73fd). All 48 runs completed; reviewer reports 32 focused checks/build passing, production unchanged. No S1/S2 implementation regression found by inspection.
+- HOLD integration: loaded balance unproved with 9-30 collisions per controller run. Clean controls: Subway ~4.7% faster, alley ~0.7% slower. Loaded alley -7.5%..+10.32% gain; not proof of skilled-human dominance. Director human timing/design disposition needed.
+- Two S3 findings assigned to original builder under batch-11c-review-fixes.md: faint neon route strips and existing cross-floor Friend Cup bot pressure. No balance tuning authorized. Main approval remains required.
+
 ## Shortcut implementation checkpoint - 2026-11-10
 - Batch 11 partial on stefanvargas100-hue/worlds-shortcuts at f1eb59e (polish 2797a9c, gameplay a7840d2). Reported final checks: 715 full tests, 25 focused, 32 related, fit 70/0, build/diff pass. Not integrated.
 - Lead inspected 390px screenshot sheet: route pedestrians/barriers and new worlds present. Easy-alley balance unresolved: fixed-x collision-heavy controller shows 6-11% gain and is not adequate fairness proof. Independent review/physical-input measurement brief: batch-11b-review.md. Real phones remain unchecked.
