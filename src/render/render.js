@@ -1,6 +1,6 @@
 import { paintTakeshita } from './takeshita.js';
 import { sameRoute } from '../config/side-routes.js';
-import { drawSideRoutes } from './side-routes.js';
+import { drawSideRoutes, drawSideRouteMarkers } from './side-routes.js';
 import { comboLevel } from '../config/combo.js';
 import { MULT_COLS, hex } from '../config/colour.js';
 import { FOGCSS, LV } from '../config/levels.js';
@@ -92,4 +92,5 @@ export function render() {
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(b.text, W / 2 + 2, y + 1);
     ctx.globalAlpha = 1;
   }
+  drawSideRouteMarkers();
 }

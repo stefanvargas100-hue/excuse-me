@@ -1,0 +1,247 @@
+✔ Cup pressure local bot= human= (1.6221ms)
+✔ Cup pressure local bot=mezzanine human=mezzanine (0.462ms)
+✖ Cup pressure local bot=mezzanine human= (0.848ms)
+✖ Cup pressure local bot= human=mezzanine (0.5666ms)
+✔ Cup pressure remote bot= human= (0.455ms)
+✔ Cup pressure remote bot=mezzanine human=mezzanine (0.4217ms)
+✖ Cup pressure remote bot=mezzanine human= (0.5189ms)
+✖ Cup pressure remote bot= human=mezzanine (0.4434ms)
+✖ active local pressure clears on bot floor change (1.7818ms)
+✖ active local pressure clears on human floor change (1.0055ms)
+✖ active local pressure clears on both floor change (0.9278ms)
+✖ active remote pressure clears on bot floor change (0.8852ms)
+✖ active remote pressure clears on human floor change (0.8812ms)
+✖ active remote pressure clears on both floor change (0.9351ms)
+✔ same-floor active Cup pressure still changes the avoidance lane (0.8862ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 5
+ℹ fail 10
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 61.5768
+
+✖ failing tests:
+
+test at test\cup-pressure.test.js:13:2
+✖ Cup pressure local bot=mezzanine human= (0.848ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (C:\Users\stefa\orca\workspaces\Excuse-Me\worlds-shortcuts\test\cup-pressure.test.js:14:71)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\cup-pressure.test.js:13:2
+✖ Cup pressure local bot= human=mezzanine (0.5666ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (C:\Users\stefa\orca\workspaces\Excuse-Me\worlds-shortcuts\test\cup-pressure.test.js:14:71)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\cup-pressure.test.js:13:2
+✖ Cup pressure remote bot=mezzanine human= (0.5189ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (C:\Users\stefa\orca\workspaces\Excuse-Me\worlds-shortcuts\test\cup-pressure.test.js:14:71)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\cup-pressure.test.js:13:2
+✖ Cup pressure remote bot= human=mezzanine (0.4434ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (C:\Users\stefa\orca\workspaces\Excuse-Me\worlds-shortcuts\test\cup-pressure.test.js:14:71)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\cup-pressure.test.js:17:78
+✖ active local pressure clears on bot floor change (1.7818ms)
+  AssertionError [ERR_ASSERTION]: stale pressure cannot charge a lane cost before refresh
+  + actual - expected
+  
+  + -0.8000000000000006
+  - -5.551115123125783e-16
+  
+      at TestContext.<anonymous> (C:\Users\stefa\orca\workspaces\Excuse-Me\worlds-shortcuts\test\cup-pressure.test.js:25:47)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: -0.8000000000000006,
+    expected: -5.551115123125783e-16,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\cup-pressure.test.js:17:78
+✖ active local pressure clears on human floor change (1.0055ms)
+  AssertionError [ERR_ASSERTION]: stale pressure cannot charge a lane cost before refresh
+  + actual - expected
+  
+  + -0.8000000000000006
+  - -5.551115123125783e-16
+  
+      at TestContext.<anonymous> (C:\Users\stefa\orca\workspaces\Excuse-Me\worlds-shortcuts\test\cup-pressure.test.js:25:47)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: -0.8000000000000006,
+    expected: -5.551115123125783e-16,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\cup-pressure.test.js:17:78
+✖ active local pressure clears on both floor change (0.9278ms)
+  AssertionError [ERR_ASSERTION]: stale pressure cannot charge a lane cost before refresh
+  + actual - expected
+  
+  + -0.8000000000000006
+  - -5.551115123125783e-16
+  
+      at TestContext.<anonymous> (C:\Users\stefa\orca\workspaces\Excuse-Me\worlds-shortcuts\test\cup-pressure.test.js:25:47)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: -0.8000000000000006,
+    expected: -5.551115123125783e-16,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\cup-pressure.test.js:17:78
+✖ active remote pressure clears on bot floor change (0.8852ms)
+  AssertionError [ERR_ASSERTION]: stale pressure cannot charge a lane cost before refresh
+  + actual - expected
+  
+  + -0.8000000000000006
+  - -5.551115123125783e-16
+  
+      at TestContext.<anonymous> (C:\Users\stefa\orca\workspaces\Excuse-Me\worlds-shortcuts\test\cup-pressure.test.js:25:47)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: -0.8000000000000006,
+    expected: -5.551115123125783e-16,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\cup-pressure.test.js:17:78
+✖ active remote pressure clears on human floor change (0.8812ms)
+  AssertionError [ERR_ASSERTION]: stale pressure cannot charge a lane cost before refresh
+  + actual - expected
+  
+  + -0.8000000000000006
+  - -5.551115123125783e-16
+  
+      at TestContext.<anonymous> (C:\Users\stefa\orca\workspaces\Excuse-Me\worlds-shortcuts\test\cup-pressure.test.js:25:47)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: -0.8000000000000006,
+    expected: -5.551115123125783e-16,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\cup-pressure.test.js:17:78
+✖ active remote pressure clears on both floor change (0.9351ms)
+  AssertionError [ERR_ASSERTION]: stale pressure cannot charge a lane cost before refresh
+  + actual - expected
+  
+  + -0.8000000000000006
+  - -5.551115123125783e-16
+  
+      at TestContext.<anonymous> (C:\Users\stefa\orca\workspaces\Excuse-Me\worlds-shortcuts\test\cup-pressure.test.js:25:47)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: -0.8000000000000006,
+    expected: -5.551115123125783e-16,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
