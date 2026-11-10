@@ -1,0 +1,15 @@
+{
+  "checkedAt": "2026-11-10T20:34:12.528Z",
+  "page": {
+    "url": "https://stefanvargas100-hue.github.io/excuse-me/playtest/",
+    "status": 200
+  },
+  "script": {
+    "url": "https://stefanvargas100-hue.github.io/excuse-me/playtest/assets/main.js",
+    "status": 200,
+    "bytes": 341051
+  },
+  "expectedBuild": "11c3fde",
+  "found": true,
+  "markerContext": "),Ae,je,Me=e((()=>{Ae=typeof location<`u`&&/\\/playtest\\//.test(location.pathname||``),je=`11c3fde`}));function Ne(e){if(Le)try{navigator.vibrate&&navigator.vibrate(e)}catch{}}function Pe(e){"
+}
