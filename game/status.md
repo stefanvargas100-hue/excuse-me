@@ -1,5 +1,9 @@
 # Status
 
+## Shortcut re-review cleared - 2026-11-10
+- Independent review 81f8c59 on shortcuts-review (review merge f6497e8) clears both S3 findings in worlds-shortcuts a30ed99/cad626c: neon signs readable across six actual-size captures; Cup pressure and stale costs respect floors. Reviewer reports 78/78 focused regressions, baseline reproduction 10 failures/5 positive passes, build/diff pass. Full 730-test pass remains builder evidence.
+- Implementation fixes are cleared, but batch 11 remains partial on loaded human route balance and real phones. No integration/deployment/main merge performed. Next Director decision: approve publishing this reviewed candidate to playtest for targeted main-versus-shortcut timing, retaining balance hold and main approval gate. Avoid more automated tuning against collision-heavy controllers.
+
 ## Shortcut review fixes checkpoint - 2026-11-10
 - Batch 11c reported complete at cad626c on worlds-shortcuts; code a30ed99. Signs now render after world effects; Cup pressure/stale lane costs filter floors. Reported 15 pressure regressions, 78 related checks, 730 full tests, fit 70/0, build/diff pass.
 - Independent re-review assigned under batch-11d-rereview.md. Not integrated; loaded human balance and real-phone evidence remain outstanding. No balance constants changed.
