@@ -1,3 +1,4 @@
+import { classicTag } from './classic-rules.js';
 import { LV, SPAWN_FAR } from '../config/levels.js';
 import { BASE } from '../config/tuning.js';
 import { rnd } from '../config/util.js';
@@ -24,7 +25,7 @@ export const goalOf = () => (S && S.endless ? Infinity : LV.goal);
 export let raceBuild = false;
 export function setRaceBuild(v) { raceBuild = v; }
 
-export const bestOf = id => parseInt(store.get('excuseme_best_' + id, '0'), 10) || 0;
+export const bestOf = id => parseInt(store.get('excuseme_best_' + id + classicTag, '0'), 10) || 0;
 
 
 // start() hands the next run's options over here, so even the first player model is built with them.

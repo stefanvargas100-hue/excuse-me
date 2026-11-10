@@ -1,3 +1,4 @@
+import { classicTag } from '../sim/classic-rules.js';
 import { RACE_SUBMIT_ENABLED, encodeRaceTime, validRaceTime } from './boards.js';
 // Wires the leaderboard client into the game. Public values only: the "publishable" key is safe to ship in a web page.
 import { $ } from '../dom.js';
@@ -15,7 +16,7 @@ const KEY = 'sb_publishable_FoFHiii4XagCq3-oi3ygQg_UcyZNoJn';
 const offlineFetch = () => Promise.reject(new Error('playtest'));
 const net = typeof fetch === 'function' ? createBoard({ fetch: PLAYTEST ? offlineFetch : (...a) => fetch(...a), url: URL, key: KEY, store, profile: () => ({ level: account.level(), title: account.title().name, pic: account.pic().glyph }) }) : null;
 
-export const boardId = (mode, key) => mode + ':' + key;
+export const boardId = (mode, key) => mode + ':' + key + (mode === 'classic' ? classicTag : '');
 
 export function flushScores() { if (net) net.flush(); }
 

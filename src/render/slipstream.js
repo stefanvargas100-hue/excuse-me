@@ -149,8 +149,9 @@ function puShape(type, x, y, r) {
   } else ctx.arc(x, y, r, 0, Math.PI * 2);   // refill: round, like the stamina bar's own colour
 }
 export function drawPowerups() {
-  if (!S.race || !S.race.pickups || state !== 'play') return;
-  for (const pk of S.race.pickups) {
+  const pickups = S.race ? S.race.pickups : S.pickups;
+  if (!pickups || state !== 'play') return;
+  for (const pk of pickups) {
     if (pk.taken || pk.z - VZ < 1.4 || pk.z - VZ > 45) continue;
     const bob = 0.75 + 0.12 * Math.sin(S.clock * 3 + pk.z), c = W3(pk.x, bob, pk.z), s = F / c[2], r = 0.36 * s;
     const col = PU_TYPES[pk.type].col, fade = clamp((pk.z - VZ - 1.4) / 1.5, 0, 1);

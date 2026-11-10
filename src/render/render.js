@@ -1,8 +1,6 @@
 import { paintTakeshita } from './takeshita.js';
 import { sameRoute } from '../config/side-routes.js';
 import { drawSideRoutes, drawSideRouteMarkers } from './side-routes.js';
-import { comboLevel } from '../config/combo.js';
-import { MULT_COLS, hex } from '../config/colour.js';
 import { FOGCSS, LV } from '../config/levels.js';
 import { clamp } from '../config/util.js';
 import { ctx } from '../dom.js';
@@ -26,8 +24,7 @@ import { styleBackdrop, styleBegin, styleEnd, styleFinish, styleGround } from '.
 
 export function render() {
   refreshWeather();
-  const F0 = F, multNow = Math.min(8, comboLevel(S.chain));
-  setF(calm ? F0 : F0 * (1 + 0.07 * S.slow + 0.012 * (multNow - 1)));   // pull in during slow-mo and as the multiplier climbs
+  const F0 = F;
   const live = S.live && camBob && !calm;
   setVX(S.camX); setVZ(S.pz - CAM_BACK); setVY(CAM_UP);
   setHOR(H * 0.34 + (live ? (1 - Math.cos(S.step)) * H * 0.0012 : 0));
@@ -65,16 +62,6 @@ export function render() {
     ctx.stroke();
   }
   setF(F0);
-  // combo edge tint, slow-motion vignette, chain-break flash
-  if (!calm && (multNow > 1 || S.slow > 0.02 || S.breakFlash > 0)) {
-    const g = ctx.createRadialGradient(W / 2, H * 0.5, Math.min(W, H) * 0.35, W / 2, H * 0.5, Math.max(W, H) * 0.75);
-    const mc = hex(MULT_COLS[multNow - 1]);
-    const tintA = multNow > 1 ? 0.06 + 0.03 * (multNow - 1) : 0;
-    g.addColorStop(0, 'rgba(0,0,0,0)');
-    g.addColorStop(1, S.breakFlash > 0 ? 'rgba(255,255,255,' + (S.breakFlash * 1.4).toFixed(2) + ')'
-      : S.slow > 0.02 ? 'rgba(10,14,30,' + (0.5 * S.slow).toFixed(2) + ')' : 'rgba(' + mc.join(',') + ',' + tintA.toFixed(2) + ')');
-    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  }
   if (state === 'over') {
     const a = clamp(0.35 - S.overT * 0.5, 0, 0.35);
     if (a > 0) { ctx.fillStyle = 'rgba(255,77,79,' + a.toFixed(2) + ')'; ctx.fillRect(0, 0, W, H); }

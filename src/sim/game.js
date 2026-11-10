@@ -1,3 +1,4 @@
+import { classicTag } from './classic-rules.js';
 import { sameRoute, updateRoute, routeSpeed } from '../config/side-routes.js';
 import { medalFor, nextMedal } from '../config/medals.js';
 import { leaveRoom } from '../online/duel.js';
@@ -23,7 +24,7 @@ import { startSlot } from './startgrid.js';
 import { BUMP_SPEED, stepRemotes, stepCupField, addCupBot, addRemoteRacer, draftMul, finishRace, fmtTime, initRace, leadZ, ordinal, raceBest, raceCollide, raceCountdown, racePace, rearZ, standings, updRace } from './race.js';
 import { updCars } from './traffic.js';
 import { beginTut, tutTick } from './tutorial.js';
-import { powerMul } from './powerups.js';
+import { collectPowerups, stepPowerups, extendClassicPickups, powerMul } from './powerups.js';
 import { beginCoach, coachTick } from './racecoach.js';
 import { MODS, TIRED_REGEN, activeMod, modOf, setMod } from './modifiers.js';
 const MOD_NAMES = Object.fromEntries(MODS.map(m => [m.id, m.name]));
@@ -36,6 +37,7 @@ import { applyElimList, initElim, stepElim } from './elim.js';
 import { LESSONS, PRACTICE_OUTFIT, beginLesson, lessonIndex, lessonTick, restartLesson } from './practice.js';
 import { flushScores, showRunBoard, submitRaceTime, submitBestRun, submitChallenge, submitRun } from '../online/online.js';
 import { BOT_NAMES } from '../config/names.js';
+import { effects, statsOf } from '../config/stats.js';
 import { LOOK } from '../save/progress.js';
 import { CUP_RACERS, CUP_RACES, FRIEND_CUP_RULES, friendCupOver, standings as friendCupTable } from './friendcup.js';
 import { CUP_RULES, CUP_STAGES, addRound, betterCup, cupDone, cupPlace, cupPoints, cupTable, cupTime, cupXp, decodeCup, encodeCup, newCup } from './cup.js';
@@ -55,7 +57,7 @@ function movePlayer(dt) {
   S.burstT -= dt; S.dashT -= dt; S.dashCool -= dt; S.flash -= dt;
   S.nearT = Math.max(0, S.nearT - dt); S.bumpT = Math.max(0, S.bumpT - dt); S.ghostT = Math.max(0, S.ghostT - dt);   // race mode only: a bump leaves you slow for a moment
   const bursting = S.burstT > 0 && S.bumpT <= 0;
-  const st = S.race ? S.race.me : null;   // stats only ever apply in a race
+  const st = S.race ? S.race.me : S.moveStats;   // races and Classic share build effects
   if (!bursting && S.dashT <= 0) S.energy = Math.min(100, S.energy + REGEN * (st ? st.regen : 1) * (S.mod === 'tired' ? TIRED_REGEN : 1) * dt);
   S.exhausted = S.energy < COST_DASH || S.flash > 0;
   S.boostV += ((bursting || S.draftT > 0 || S.puT > 0 ? 1 : 0) - S.boostV) * Math.min(1, dt * 8);
@@ -65,7 +67,7 @@ function movePlayer(dt) {
   const strip = S.race && onStrip(LV.id, S.px, S.pz);
   if (strip && !S.onStrip) addPop('FAST STRIP', stripLane(LV.id).col, 22);
   S.onStrip = strip;
-  const pace = (S.race ? racePace(S.chain, S.energy) * draftMul(S) * powerMul(S) * nearMul(S) * (strip ? STRIP_SPEED : 1) : 1) * (S.perfectT > 0 ? PERFECT_SPEED : 1) * (S.streakT > 0 ? STREAK_SPEED : 1);   // race mode: combo speeds you up, low stamina slows you down
+  const pace = ((S.race || S.moveStats) ? racePace(S.chain, S.energy) * draftMul(S) * powerMul(S) * nearMul(S) * (strip ? STRIP_SPEED : 1) : 1) * (S.perfectT > 0 ? PERFECT_SPEED : 1) * (S.streakT > 0 ? STREAK_SPEED : 1);   // shared pace: combo speeds you up, low stamina slows you down
   const target = (bursting ? BOOST : BASE) * weave * pace * (st ? st.speed : 1) * (S.bumpT > 0 ? BUMP_SPEED : 1);
   S.speed += (target - S.speed) * Math.min(1, dt * (st && target > S.speed ? st.accel : 5));
   if (S.dashT > 0) S.vx = S.dashDir * DASH_V;
@@ -111,7 +113,10 @@ export function tick(dt) {
     if (S.kind === 'classic' && S.pz > S.farMark) { S.farMark += 5; trackMax('far_' + LV.id, S.pz); }
     if (pendingDash && performance.now() >= pendingDash.at) { action(pendingDash.z); setPendingDash(null); }
     holdTick(dt);
+    if (S.kind === 'classic' && !S.tut && !S.moveStats) S.moveStats = effects(statsOf({ ...LOOK, ...S.run.outfit }));
+    const pickupZ0 = S.pz, pickupX0 = S.px;
     movePlayer(dt);
+    if (S.moveStats) { stepPowerups(S, dt); extendClassicPickups(); collectPowerups(S, S.px, S.pz, pickupZ0, true, pickupX0); }
     S.me.x = S.px; S.me.z = S.pz;
     if (S.coach) coachTick(dt);
     if (S.tut) {
@@ -155,7 +160,7 @@ export function tick(dt) {
     if (S.race && S.race.elim) { const ev = stepElim(); if (ev) { elimEnd(ev); return; } }
     S.people = S.people.filter(p => !p.dead && p.z > rearZ() - 16);
     if (S.race) raceCollide(dt);   // race: people are solid, you are stopped and slowed
-    else { const hit = collide(); if (hit) { lose(hit); return; } }
+    else { const hit = S.ghostT > 0 ? null : collide(); if (hit) { lose(hit); return; } }
     for (const p of S.people) {
       const dz = p.z - S.pz;
       if (sameRoute(S, p) && !p.passed && p.prevDz > 0 && dz <= 0) { p.passed = true; onPass(p); }
@@ -200,7 +205,7 @@ function recordBest() {
   }
   const b = bestOf(LV.id);
   S.newBest = S.score > b;
-  if (S.newBest) { store.set('excuseme_best_' + LV.id, String(S.score)); ghostSave(); if (S.kind === 'classic' && S.run.policy.scores) submitBestRun(LV.id, S.score, S.ghostRec); }
+  if (S.newBest) { store.set('excuseme_best_' + LV.id + classicTag, String(S.score)); ghostSave(); if (S.kind === 'classic' && S.run.policy.scores) submitBestRun(LV.id, S.score, S.ghostRec); }
 }
 
 // Every finished run pays XP, once: in any mode, even when you quit. A race against bots pays less.
@@ -490,6 +495,7 @@ export function start(a, b, opts) {
   S.mod = activeMod;
   S.mode = mode; S.kind = mode; S.endless = mode !== 'race'; S.seed = key || (duel ? duel.seed : run.seed); S.duel = duel; S.challenge = opts && opts.challenge || null; S.cup = opts && opts.cup || null;
   if (S.endless) S.timeLeft = Infinity;
+  if (mode === 'classic') { S.moveStats = effects(statsOf({ ...LOOK, ...run.outfit })); extendClassicPickups(); }
   ghostStart();
   if (mode === 'race') {
     initRace(duel || opts && (opts.lesson || opts.solo) ? 0 : opts && opts.cup ? 7 : 3, opts && opts.cup ? opts.cup.model.bots : undefined, duel && duel.cup ? duel.cup.difficulty : undefined);
@@ -511,7 +517,7 @@ export function start(a, b, opts) {
   const hb = $('hud').getBoundingClientRect ? $('hud').getBoundingClientRect() : null;
   setRadarTop(hb && hb.bottom ? hb.bottom + 6 : 120);
   if (LV.id === 'shibuya') { S.waveT = 1.5; }
-  if (mode === 'classic' && store.get('excuseme_tut', '0') !== '1') beginTut();
+  if (mode === 'classic' && store.get('excuseme_tut', '0') !== '1') { S.moveStats = null; S.pickups = []; S.pickupNext = 0; beginTut(); }
   beginCoach(mode);
   Music.start(LV.music); Music.ambStart(LV.id);
 }

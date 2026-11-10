@@ -1,3 +1,4 @@
+import { classicTag } from '../sim/classic-rules.js';
 /* ---------- which leaderboard to show ---------- */
 // Same names the game writes scores to (see online.js boardId): daily:<date>, weekly:<week>, classic:<stage id>.
 import { LEVELS } from '../config/levels.js';
@@ -17,7 +18,7 @@ export function boardIdFor(tab, stage) {
   if (tab === 'daily') return 'daily:' + todayKey();
   if (tab === 'weekly') return 'weekly:' + weekKey();
   if (tab === 'challenge') return boardNameFor(utcWeekKey(), CHALLENGE_RULES);
-  return 'classic:' + LEVELS[stage].id;
+  return 'classic:' + LEVELS[stage].id + classicTag;
 }
 
 export function boardTitle(tab, stage) {

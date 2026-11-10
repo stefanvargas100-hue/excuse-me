@@ -10,7 +10,7 @@ function plant(E, key, end) { const pts = []; for (let z = 0; z <= end; z += 1.2
 const clear = E => { while (E.S.nextChunk < E.S.pz + 80) { E.genChunk(E.S.nextChunk); E.S.nextChunk += 4; } for (const p of E.S.people) if (Math.abs(p.z - E.S.pz) < 3.5) p.dead = true; };
 
 test('a classic ghost stays out of sight until you are within 60 m of where your best run ended', () => {
-  const E = load(); plant(E, 'excuseme_ghost_airport', 300);
+  const E = load(); plant(E, 'excuseme_ghost_airport:cm2', 300);
   E.setLevel(0); E.start('classic');
   assert.ok(E.S.ghost, 'the ghost is loaded');
   assert.strictEqual(E.S.ghost.hidden, true, 'hidden at the start');
@@ -22,7 +22,7 @@ test('a classic ghost stays out of sight until you are within 60 m of where your
 });
 
 test('the "close to your best" message shows once, when the ghost appears', () => {
-  const E = load(); plant(E, 'excuseme_ghost_airport', 300);
+  const E = load(); plant(E, 'excuseme_ghost_airport:cm2', 300);
   E.setLevel(0); E.start('classic');
   const count = () => E.S.pops.filter(p => /CLOSE TO YOUR BEST/.test(p.text)).length;
   E.S.pz = 250; for (let i = 0; i < 5; i++) { clear(E); E.tick(DT); }
@@ -32,7 +32,7 @@ test('the "close to your best" message shows once, when the ghost appears', () =
 });
 
 test('a hidden ghost is not drawn', () => {
-  const E = load(); plant(E, 'excuseme_ghost_airport', 300);
+  const E = load(); plant(E, 'excuseme_ghost_airport:cm2', 300);
   E.setLevel(0); E.start('classic');
   for (let i = 0; i < 5; i++) { clear(E); E.tick(DT); }
   assert.strictEqual(E.S.ghost.hidden, true);
@@ -69,8 +69,8 @@ const friendList = (...fs) => JSON.stringify(fs.map((f, i) => ({ name: f.name, s
 
 test('friends\' ghosts join your own, each hidden until you are close to its record', () => {
   const E = load(); E.setLevel(0);
-  E.storage['excuseme_fg_classic_airport'] = friendList({ name: 'Zippy Pigeon 42', g: flat(200) }, { name: 'Jolly Courier 17', g: flat(400) });
-  plant(E, 'excuseme_ghost_airport', 300);
+  E.storage['excuseme_fg_classic_airport:cm2'] = friendList({ name: 'Zippy Pigeon 42', g: flat(200) }, { name: 'Jolly Courier 17', g: flat(400) });
+  plant(E, 'excuseme_ghost_airport:cm2', 300);
   E.start('classic');
   assert.strictEqual(E.S.otherGhosts.length, 2);
   assert.strictEqual(JSON.stringify(E.S.otherGhosts.map(g => g.name).sort()), JSON.stringify(['Jolly Courier 17', 'Zippy Pigeon 42']));
@@ -84,7 +84,7 @@ test('friends\' ghosts join your own, each hidden until you are close to its rec
 test('friends\' race ghosts show in races against bots only, and a daily run has none', () => {
   const E = load(); E.setLevel(0);
   E.storage['excuseme_fg_race_airport'] = friendList({ name: 'Racer Ann', g: flat(500) });
-  E.storage['excuseme_fg_classic_airport'] = friendList({ name: 'Classic Bob', g: flat(500) });
+  E.storage['excuseme_fg_classic_airport:cm2'] = friendList({ name: 'Classic Bob', g: flat(500) });
   E.start('race');
   assert.strictEqual(JSON.stringify(E.S.otherGhosts.map(g => g.name)), JSON.stringify(['Racer Ann']));
   E.start('daily');
