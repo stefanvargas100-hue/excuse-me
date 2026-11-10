@@ -1,0 +1,5 @@
+# Batch 14d: verify seeded movement playtest publication
+
+Codex defaults; verification only. Read AGENTS.md and .github/workflows/deploy.yml. Expected pushed develop SHA is provided in dispatch. Verify that exact Tests run succeeds, downstream Pages deployment succeeds, and https://stefanvargas100-hue.github.io/excuse-me/playtest/ plus its referenced main JS return HTTP 200 with the expected embedded short build ID. The main workflow SHA differs from the develop build marker; main has not been merged.
+
+May edit only game/rounds/round-02/reports/batch-14d-publication-check.md and batch-14d-evidence/ on own branch. No production changes, dependencies, deployment commands, database changes, live writes or subagents. CI waiting allowed; do not poll Orca. Allow up to 25 minutes for CI/propagation, then report partial with exact unresolved stage if necessary. No local full-suite rerun. Commit <=10-line report and supporting evidence, return report path. Publication does not establish phone feel, deployed schema acceptance, installed-worker behavior, tutorial/stage parity or heading clipping resolution.

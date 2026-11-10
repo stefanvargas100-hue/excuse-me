@@ -1,5 +1,11 @@
 # Status
 
+## Seeded movement integrated for playtest - 2026-11-10
+- Independent review f777ca4 cleared batch 14 with 112 focused tests and 40 baseline crowd comparisons; no blocking regression. Integrated builder 55ca35b/report a6e2f6e and reviewer evidence/tests as b3941d8. Lead combined suite 816/816, build and diff checks pass.
+- Daily/Weekly now share Classic build stats, pace bonuses and endless pickups, with captured mp2 score/board identities, unchanged reset clocks/attempt markers and isolated legacy queues. Lead inspected 320 Daily results and 390 Weekly boost screenshots. Browser emulation only; phones/deployed schema remain unverified.
+- Publishing through develop; batch-14d-publication-check.md verifies exact served SHA before claiming live. Main remains unchanged. Merged builder/reviewer workspaces and branches removed after clean/ancestry checks.
+- Existing S3 narrow leaderboard heading clipping is a queued shared-UI visual follow-up in game/todo.md. Tutorial/stage parity, later visual review, interrupted batch 10 and remaining playtest feedback remain open.
+
 ## Seeded movement recovered; independent review pending - 2026-11-10
 - Builder implementation 55ca35b/report a6e2f6e on seeded-movement reports 814/814 full tests, 93 focused, build/diff pass and actual /playtest/ browser captures at 320/390. Direct pickup calls now compare matching-state full crowd objects and RNG sentinels; mutation caused 40/40 intended failures before removal. Original failures retained as historical evidence.
 - Batch-14c-review.md assigns independent review of movement, frozen mp2 IDs/clock boundaries, preserved attempts/queues/crowds and test harness validity. Not integrated. Inherited 320 leaderboard heading clipping needs disposition; phone/deployed-schema checks remain unverified. Published Classic 1f9faec and main unchanged.
