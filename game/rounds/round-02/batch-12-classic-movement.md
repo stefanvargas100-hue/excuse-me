@@ -3,6 +3,12 @@
 **Builder:** Codex, default model/effort. Defined gameplay changes requested by Director.
 **Risk:** medium; lead review required, independent review if shared online rules change.
 
+## Authorized compatibility extension - 2026-11-10
+- Lead authorizes src/online/online.js solely for versioned Classic submit/fetch/display board identity; src/sim/ghostshare.js solely for versioned Classic friend ghost storage; src/online/duel.js solely for versioning or rejecting legacy Classic ghost exchange, plus relevant tests. Independent review is now required before integration.
+- Use one consistent Classic rules identity across local records, online boards and ghosts. Preserve legacy saved data without copying it into new competitive keys. Do not disable these features as the default solution.
+- Test new-version round trips, rejection/isolation of legacy and mismatched ghosts, submit/fetch key agreement, preservation of old saves, and unchanged non-Classic behavior. Keep live/playtest separation intact.
+- No database/schema changes, migration, network protocol redesign or unrelated room/readiness edits. If existing server validation cannot accept the new identity without such changes, stop and report the exact constraint. No live writes for verification.
+
 ## Goal
 Director approved: remove combo slow-motion visuals, keep the view constant, and give Classic the existing speed increases, build attributes and power-ups. Movement rules should agree across modes; retain their objectives and scoring. This batch delays remaining lobby/spectating/custom-Cup work; batch 10 WIP stays separate.
 
