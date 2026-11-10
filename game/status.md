@@ -1,5 +1,9 @@
 # Status
 
+## Shortcut implementation checkpoint - 2026-11-10
+- Batch 11 partial on stefanvargas100-hue/worlds-shortcuts at f1eb59e (polish 2797a9c, gameplay a7840d2). Reported final checks: 715 full tests, 25 focused, 32 related, fit 70/0, build/diff pass. Not integrated.
+- Lead inspected 390px screenshot sheet: route pedestrians/barriers and new worlds present. Easy-alley balance unresolved: fixed-x collision-heavy controller shows 6-11% gain and is not adequate fairness proof. Independent review/physical-input measurement brief: batch-11b-review.md. Real phones remain unchecked.
+
 ## Visual reconciliation and shortcuts - 2026-11-10
 - Director confirmed new art worlds are authoritative: retain/adapt beneficial earlier polish, then improve shortcuts. Batch 11 brief: `game/rounds/round-02/batch-11-worlds-shortcuts.md`; Codex worker requested from current develop, separate from interrupted batch 10.
 - Do not wholesale merge batch 09's classic-look polish. Later Fable visual review remains planned. Main requires Director approval.
