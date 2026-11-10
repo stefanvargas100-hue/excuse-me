@@ -128,13 +128,13 @@ test('"Excuse me" clears a row of people ahead, not just two', () => {
 function tail(E, ticks, dx, dz, vz) {
   for (let i = 0; i < ticks; i++) {
     E.S.people.length = 0; E.S.race.bots.length = 0; E.S.nextChunk = 1e9;
-    const p = E.mkPerson(E.S.px + dx, E.S.pz + dz); p.vz = vz; p.vx = 0;
+    const p = E.mkPerson(E.S.px + dx, E.S.pz + dz); p.vz = vz; p.vx = 0; p.racer = true;
     E.tick(DT);
   }
 }
 function atGo() { const E = race(0); for (let i = 0; i < 91; i++) E.tick(DT); return E; }
 
-test('slipstream: tucking in behind a walker earns a speed boost', () => {
+test('slipstream: tucking in behind a racer earns a speed boost', () => {
   const E = atGo();
   tail(E, 60, 0, 2.5, 3);
   const plain = atGo(); tail(plain, 60, 3, 2.5, 3);   // same walker, off to the side
@@ -161,7 +161,7 @@ test('slipstream does nothing outside a race', () => {
   const E = load(); E.setLevel(0); E.start('classic');
   for (let i = 0; i < 90; i++) { E.S.people.length = 0; E.S.nextChunk = 1e9; const p = E.mkPerson(E.S.px, E.S.pz + 2.5); p.vz = 3; E.tick(DT); }
   assert.strictEqual(E.S.draftT, 0);
-  assert.ok(E.S.speed <= 3.001);
+  assert.ok(E.S.speed <= 3 * E.S.moveStats.speed + .001, 'only the selected build affects the empty-lane pace');
 });
 
 test('slipstream: the closer you are, the sooner it charges', () => {

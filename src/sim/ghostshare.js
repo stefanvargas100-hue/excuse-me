@@ -1,3 +1,4 @@
+import { classicTag } from './classic-rules.js';
 import { sideRoutes } from '../config/side-routes.js';
 import { courseTag } from '../config/routes.js';
 /* ---------- sharing ghosts: packing, checking and keeping the ghosts of friends ----------
@@ -38,7 +39,7 @@ export const cleanFriendName = raw => {
   return s || 'Friend';
 };
 
-const friendKey = (kind, levelId) => 'excuseme_fg_' + (kind === 'race' ? 'race' : 'classic') + '_' + levelId + (kind === 'race' && sideRoutes(levelId).length ? courseTag(levelId) : '');
+const friendKey = (kind, levelId) => 'excuseme_fg_' + (kind === 'race' ? 'race' : 'classic') + '_' + levelId + (kind === 'race' && sideRoutes(levelId).length ? courseTag(levelId) : kind === 'classic' ? classicTag : '');
 const readList = (store, key) => { try { const v = JSON.parse(store.get(key, '[]')); return Array.isArray(v) ? v : []; } catch (e) { return []; } };
 
 // Friends' ghosts for one stage: newest first, at most MAX_FRIEND_GHOSTS.

@@ -38,12 +38,33 @@ function give(r, type, isMe) {
 
 // Looks for a pickup at this runner's feet (r is the player's state or a bot). z0 is where they were a moment ago,
 // so a fast runner cannot jump over one between frames.
-export function collectPowerups(r, x, z, z0, isMe) {
-  const R = S.race; if (!R || !R.pickups) return;
+export function collectPowerups(r, x, z, z0, isMe, x0 = x) {
+  const R = S.race || (S.moveStats ? S : null); if (!R || !R.pickups) return;
   for (const pk of R.pickups) {
-    if (pk.taken || pk.z < z0 - REACH_Z || pk.z > z + REACH_Z || Math.abs(pk.x - x) > REACH_X) continue;
+    if ((pk.route || '') !== (r.route || '') || pk.taken) continue;
+    let lo = 0, hi = 1;
+    for (const [from, to, center, reach] of [[x0, x, pk.x, REACH_X], [z0 ?? z, z, pk.z, REACH_Z]]) {
+      const delta = to - from;
+      if (!delta) { if (Math.abs(center - from) > reach) hi = -1; continue; }
+      const a = (center - reach - from) / delta, b = (center + reach - from) / delta;
+      lo = Math.max(lo, Math.min(a, b)); hi = Math.min(hi, Math.max(a, b));
+    }
+    if (lo > hi) continue;
     pk.taken = true; give(r, pk.type, isMe);
   }
 }
 
 export function stepPowerups(r, dt) { r.puT = Math.max(0, (r.puT || 0) - dt); }
+
+// Each position owns its random stream; generating pickups never consumes crowd randomness.
+export function extendClassicPickups() {
+  S.pickups ||= [];
+  S.pickups = S.pickups.filter(p => !p.taken && p.z > S.pz - 16);
+  const first = Math.max(S.pickupNext || 0, Math.floor(Math.max(0, S.pz - 16) / GAP));
+  const end = Math.floor((S.pz + 150) / GAP);
+  for (let i = first; i <= end; i++) {
+    const rng = mulberry32(0xb007 + i * 997 + LV.goal);
+    S.pickups.push({ x: (rng() * 2 - 1) * (LV.half - 1.2), z: FIRST + i * GAP + (rng() - .5) * JITTER, type: Object.keys(PU_TYPES)[Math.floor(rng() * 3)], taken: false });
+  }
+  S.pickupNext = end + 1;
+}

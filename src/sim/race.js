@@ -51,7 +51,7 @@ function inDraft(r, x, z, self) {
     const near = 1 - (oz - z - 0.3) / (DRAFT_LEN - 0.3);
     if (near > best) { best = near; r.draftNear = near; r.draftX = ox; r.draftZ = oz; r.draftWho = who; }
   };
-  for (const p of S.people) if (!p.dead && !p.prop) check(p.x, p.z, p.vz, p);
+  for (const p of S.people) if ((S.lesson || p.racer) && !p.dead && !p.prop) check(p.x, p.z, p.vz, p);
   if (self !== S) check(S.px, S.pz, S.speed, S);
   for (const b of S.race.bots) if (b !== self && !b.done) check(b.x, b.z, b.speed, b);
   if (best >= 0 && r.draftWho && r.draftWho.racer) { r.draftWho.pressT = 0.4; r.draftWho.pressX = x; }   // a bot knows when someone is on its tail

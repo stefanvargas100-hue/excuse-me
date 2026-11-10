@@ -27,9 +27,10 @@ test('a race has a few pickups spread along the stage, none near the start, same
   }
 });
 
-test('no pickups in classic runs', () => {
+test('Classic pickups do not fabricate race state', () => {
   const E = load(); E.setLevel(0); E.start(false, 'classic');
-  assert.ok(!E.S.race, 'classic has no race state, so nothing to pick up');
+  assert.ok(!E.S.race, 'Classic keeps its own mode state');
+  assert.ok(E.S.pickups.length > 0, 'Classic has its own pickup lifecycle');
 });
 
 test('walking onto a boost pickup makes you faster for about 3.5 seconds, then it wears off', () => {

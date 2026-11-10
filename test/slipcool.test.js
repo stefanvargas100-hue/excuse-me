@@ -8,7 +8,7 @@ function atGo() { const E = load(); E.setLevel(0); E.start(false, 'race'); for (
 function tail(E, ticks, dx, dz, vz) {
   for (let i = 0; i < ticks; i++) {
     E.S.people.length = 0; E.S.race.bots.length = 0; E.S.nextChunk = 1e9;
-    const p = E.mkPerson(E.S.px + dx, E.S.pz + dz); p.vz = vz; p.vx = 0;
+    const p = E.mkPerson(E.S.px + dx, E.S.pz + dz); p.vz = vz; p.vx = 0; p.racer = true;
     E.tick(DT);
   }
 }

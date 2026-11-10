@@ -15,14 +15,14 @@ test('daily and weekly boards use today and this week; classic has one board per
   const now = new Date(), y = now.getFullYear(), mo = String(now.getMonth() + 1).padStart(2, '0'), d = String(now.getDate()).padStart(2, '0');
   assert.strictEqual(boardIdFor('daily', 0), 'daily:' + y + '-' + mo + '-' + d);
   assert.match(boardIdFor('weekly', 0), /^weekly:\d{4}-W\d{2}$/);
-  assert.strictEqual(boardIdFor('classic', 0), 'classic:airport');
-  assert.strictEqual(boardIdFor('classic', 1), 'classic:nyc');
-  assert.strictEqual(boardIdFor('classic', 2), 'classic:shibuya');
+  assert.strictEqual(boardIdFor('classic', 0), 'classic:airport:cm2');
+  assert.strictEqual(boardIdFor('classic', 1), 'classic:nyc:cm2');
+  assert.strictEqual(boardIdFor('classic', 2), 'classic:shibuya:cm2');
 });
 
 test('the same names the game writes: daily and weekly runs submit with these keys', () => {
   const fs = require('fs'), src = fs.readFileSync(path.join(__dirname, '..', 'src', 'online', 'online.js'), 'utf8');
-  assert.ok(src.includes("export const boardId = (mode, key) => mode + ':' + key;"), 'board id format unchanged');
+  assert.ok(src.includes("export const boardId = (mode, key) => mode + ':' + key + (mode === 'classic' ? classicTag : '');"), 'board id format unchanged');
 });
 
 test('titles say what you are looking at', () => {

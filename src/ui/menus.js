@@ -284,7 +284,7 @@ function buildChallenges() {
       head.appendChild(name); head.appendChild(num);
       const what = document.createElement('span'); what.textContent = c.text;
       const bar = document.createElement('div'); bar.className = 'statb'; const fill = document.createElement('i'); fill.className = 'up'; fill.style.width = (pct(c) * 100).toFixed(0) + '%'; bar.appendChild(fill);
-      const hint = document.createElement('small'); hint.textContent = stats ? 'Race stats: ' + statHint(stats) : 'Looks only';
+      const hint = document.createElement('small'); hint.textContent = stats ? 'Movement stats: ' + statHint(stats) : 'Looks only';
       [head, what, bar, hint].forEach(n => li.appendChild(n));
       return li;
     }));

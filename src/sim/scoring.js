@@ -47,7 +47,7 @@ export function onPass(p) {
   const mult = comboLevel(S.chain);
   let pts = 10, sound = null;
   const tags = [];
-  if (S.race) nearBoost(S, gap);
+  if (!S.tut && !S.lesson) nearBoost(S, gap);
   if (gap < 0.4) {
     S.nearHits = now - S.nearHitT <= STREAK_WINDOW ? S.nearHits + 1 : 1; S.nearHitT = now;
     if (S.nearHits >= STREAK_NEEDED) { S.nearHits = 0; S.streakT = STREAK_T; tags.push(['NEAR-MISS STREAK', '#ff6b9d']); }
@@ -78,8 +78,6 @@ export function onPass(p) {
   if (sound) Music.sfx(sound);
   else if (tags.length) Music.sfx('combo');
   S.lastPassT = now; S.lastPass = { t: now, side, adx: Math.abs(dx) };
-  // near-miss slow motion on the riskiest passes
-  if (gap < 0.15 || tags.some(t => t[0] === 'THREAD THE NEEDLE')) { S.hitStop = 0.05; if (!calm) { S.slowT = 0.55; Music.sfx('slow'); } }
   if (gap < 0.15) buzz(30); else if (gap < 0.4) buzz(12);
   // the person you brushed past reacts
   if (gap < 0.4 && !p.rival) {
