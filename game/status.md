@@ -1,5 +1,11 @@
 # Status
 
+## Scoped Classic integrated for playtest - 2026-11-10
+- Independent re-review 59e4b30 cleared S2 and both S3 findings. Integrated review branch (preserving all evidence and implementation 0cbb2d7) as 87c5111. Lead combined checks: 751/751 tests, build and diff pass. Lead inspected 320-small pickup and 390-large boost captures; browser evidence only.
+- Classic now has shared build stats/pace, endless existing pickups, constant combo view and cm2 record/ghost isolation. Original race drafting preserved. Merged builder/review workspaces and branches removed after clean status/ancestry checks.
+- Publication to playtest proceeds through develop; batch-12e-publication-check.md verifies exact served build. Main remains unchanged and requires approval. Phone feel, deployed-server acceptance and installed live service-worker behavior remain unverified.
+- Remaining all-mode movement request stays open: batch-13-parity-plan.md scopes Daily/Weekly/scripted movement and stage features with fair competition identities. Later visual review and interrupted batch 10 remain outstanding. Do not label Classic completion as complete all-mode parity.
+
 ## Classic review fixes awaiting re-review - 2026-11-10
 - Batch 12c implementation 0cbb2d7/report 9ca46c5 restores original player/bot pedestrian drafting, isolates pickup lifecycle, tests current-kind wrong rules, and captures actual /playtest/ channel evidence. Builder reports final 751/751, focused 22+2, pickup repeats 20/20, build/diff pass.
 - Original independent reviewer assigned batch-12d-rereview.md. No integration yet; prior S2/S3 findings require clearance. Daily/Weekly and stage-feature parity, real phones and deployed server acceptance remain outstanding. Main unchanged.

@@ -1,0 +1,5 @@
+# Batch 12e: verify scoped Classic playtest publication
+
+Codex default model/effort, verification only. Read AGENTS.md and .github/workflows/deploy.yml. Expected build SHA is supplied in dispatch after lead pushes develop. Verify that exact develop Tests run, downstream Pages deployment, HTTP 200 at https://stefanvargas100-hue.github.io/excuse-me/playtest/ and its referenced main JS bundle containing the expected short build ID. Main has not been merged. Do not mistake the main workflow SHA for the embedded develop build marker.
+
+May edit only game/rounds/round-02/reports/batch-12e-publication-check.md and batch-12e-evidence/ on own branch. No production edits, dependencies, deployments, live writes, database changes or subagents. CI waiting is allowed, Orca polling is not. Allow up to 25 minutes for CI/propagation; report failure or partial honestly if not verified. No local full-suite rerun. Commit <=10-line report with evidence and return report path. Real phones, installed-worker behavior, deployed server acceptance and remaining all-mode parity are not proven by publication.
