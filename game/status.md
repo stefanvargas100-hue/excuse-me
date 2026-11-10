@@ -1,5 +1,9 @@
 # Status
 
+## Shortcut review fixes checkpoint - 2026-11-10
+- Batch 11c reported complete at cad626c on worlds-shortcuts; code a30ed99. Signs now render after world effects; Cup pressure/stale lane costs filter floors. Reported 15 pressure regressions, 78 related checks, 730 full tests, fit 70/0, build/diff pass.
+- Independent re-review assigned under batch-11d-rereview.md. Not integrated; loaded human balance and real-phone evidence remain outstanding. No balance constants changed.
+
 ## Shortcut independent review checkpoint - 2026-11-10
 - Review/tool committed on stefanvargas100-hue/shortcuts-review at 748c434 (tool/evidence 2fe73fd). All 48 runs completed; reviewer reports 32 focused checks/build passing, production unchanged. No S1/S2 implementation regression found by inspection.
 - HOLD integration: loaded balance unproved with 9-30 collisions per controller run. Clean controls: Subway ~4.7% faster, alley ~0.7% slower. Loaded alley -7.5%..+10.32% gain; not proof of skilled-human dominance. Director human timing/design disposition needed.
