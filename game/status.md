@@ -1,5 +1,9 @@
 # Status
 
+## Seeded movement recovered; independent review pending - 2026-11-10
+- Builder implementation 55ca35b/report a6e2f6e on seeded-movement reports 814/814 full tests, 93 focused, build/diff pass and actual /playtest/ browser captures at 320/390. Direct pickup calls now compare matching-state full crowd objects and RNG sentinels; mutation caused 40/40 intended failures before removal. Original failures retained as historical evidence.
+- Batch-14c-review.md assigns independent review of movement, frozen mp2 IDs/clock boundaries, preserved attempts/queues/crowds and test harness validity. Not integrated. Inherited 320 leaderboard heading clipping needs disposition; phone/deployed-schema checks remain unverified. Published Classic 1f9faec and main unchanged.
+
 ## Seeded movement partial; validation recovery assigned - 2026-11-10
 - Batch 14 worker stopped as instructed with uncommitted implementation in seeded-movement and committed partial report. Full suite 766/772; six failures (five newly added crowd comparisons and one obsolete legacy board expectation). Build/diff passed; browser/boundary/acceptance coverage unfinished. No integration.
 - Lead inspected preserved diff/logs: crowd test advances different movement states before comparing entire objects including player-relative prevDz. Recovery brief batch-14b-recovery.md directs isolated pickup-generation and explicit RNG-sentinel tests, keeps meaningful generation comparisons, updates intentional mp2 expectations and completes missing acceptance/browser evidence. Existing Classic playtest 1f9faec remains unchanged.
