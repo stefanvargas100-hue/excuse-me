@@ -86,15 +86,16 @@ async function measure(page, screen) {
 }
 
 try {
-  server = await preview({ preview: { host: '127.0.0.1', port: 0, open: false } });
+  server = await preview({ ...(evidence ? { base: '/playtest/' } : {}), preview: { host: '127.0.0.1', port: 0, open: false } });
   const address = server.httpServer.address();
-  const url = `http://127.0.0.1:${address.port}`;
+  const origin = `http://127.0.0.1:${address.port}`;
+  const url = origin + (evidence ? '/playtest/' : '/');
   browser = await chromium.launch();
   for (const viewport of sizes) {
     const size = `${viewport.width}x${viewport.height}`;
     // A non-persistent context has no cookies or saves from previous runs/sizes.
     const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height }, hasTouch: viewport.touch, isMobile: viewport.touch });
-    await context.route(/^https?:\/\/([^/]+\.)?supabase\.co(?::\d+)?\//i, route => route.abort());
+    await context.route('**/*', route => new URL(route.request().url()).origin === origin ? route.continue() : route.abort());
     // Keep a valid generated-length name reproducible, including its small-screen fit.
     await context.addInitScript(() => {
       if (!localStorage.getItem('excuseme_online_name')) localStorage.setItem('excuseme_online_name', JSON.stringify('Breezy Commuter 37'));
@@ -174,7 +175,7 @@ try {
       }],
       ['friend cup setup full', async () => {
         await routes.find(r => r[0] === 'friend cup setup')[1]();
-        await page.evaluate(() => { const E = window.__excuse; for (let i = 2; i <= 8; i++) E.injectRoomMessage('hello', { id: 'pl00000' + i, proto: E.PROTO, name: 'Hurried Tourist ' + (10 + i), look: {} }); });
+        await page.evaluate(() => { const E = window.__excuse; for (let i = 2; i <= 8; i++) E.injectRoomMessage('hello', { id: 'pl00000' + i, proto: E.PROTO, startProtocol: 2, name: 'Hurried Tourist ' + (10 + i), look: {} }); });
         await page.locator('#friendHost .friendroster li:not(.empty)').nth(7).waitFor();
       }],
       ['friend cup guest', async () => {
@@ -202,12 +203,12 @@ try {
         await home();
         await page.evaluate(() => {
           const E = window.__excuse; E.startCup();
-          for (let round = 0; round < 3; round++) {
+          for (let round = 0; round < 4; round++) {
             E.S.race.countT = 0; E.S.people.length = 0;
             for (let i = 0; i < 14; i++) E.tick(1 / 30);
             E.S.pz = E.LV.goal + 1;
             for (let i = 0; i < 90; i++) E.tick(1 / 30);
-            if (round < 2) E.nextCupRound();
+            if (round < 3) E.nextCupRound();
           }
         });
       }],
@@ -219,6 +220,13 @@ try {
         const m = await measure(page, screen);
         if (evidence && viewport.touch && (name === 'friend cup setup full' || name === 'friend cup guest' || name === 'friend cup standings' || name === 'cup final')) {
           await page.screenshot({ path: evidence + '/' + name.replace(/ /g, '-') + '-' + size + '.png' });
+          if (name === 'friend cup setup full' || name === 'friend cup guest') {
+            const control = page.locator(name === 'friend cup guest' ? '#friendReady' : '#friendStart');
+            await control.scrollIntoViewIfNeeded();
+            const bounds = await control.boundingBox();
+            if (!bounds || bounds.y < 0 || bounds.y + bounds.height > viewport.height) line(size, name, 'action', 'action unreachable');
+            await page.screenshot({ path: evidence + '/' + name.replace(/ /g, '-') + '-action-' + size + '.png' });
+          }
         }
         if (name === 'end' || name === 'cup final' || name === 'friend cup standings' || name === 'friend cup final') {
           const rows = await page.locator('#raceBoard li').count();

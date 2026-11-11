@@ -85,6 +85,7 @@ test('Ready becomes usable after a silent network gap without a socket close eve
 test('Start confirms host intent without a separate Ready or automatic countdown',async()=>{
  const {games:[h,g]}=await pair();
  assert.equal(h.element('friendReady').hidden,true);
+ assert.doesNotMatch(h.lobbyStatus(), /Choose Ready/);
  assert.equal(g.element('friendReady').hidden,false);
  g.setRoomReady(true);await settle();
  assert.equal(h.canStartRoom(),true);assert.notEqual(h.state,'play');

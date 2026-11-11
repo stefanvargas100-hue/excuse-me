@@ -167,8 +167,8 @@ const changed = () => {
   if (room && inRoster && !raced && lobby && disconnectedAt === null) {
     const view = lobby.view(), stage = cupCfg ? cupSummary() : LEVELS[levelIdx].name;
     lastStatus = lobbyNotice || (cupCfg && !validCup(cupCfg) ? (role === 'host' ? 'Friend Cup: pick 4 different stages, in race order.' : 'Friend Cup · the host is choosing stages.') :!view.compatible ? 'Update the game on every phone before joining.' : view.busy ? 'Preparing race. Keep the game open.' :
-      roster.length < 2 ? 'Waiting for friends to join...' : lobby.canStart() || view.players.every(p => p.ready) ? stage + ' · Everyone is ready. ' + (role === 'host' ? 'Press Start race.' : 'Waiting for the host.') :
-      'Connected · ' + stage + ' · Choose Ready when you are set.');
+      roster.length < 2 ? 'Waiting for friends to join...' : lobby.canStart(role === 'host') || view.players.every(p => p.ready) ? stage + ' · Everyone is ready. ' + (role === 'host' ? 'Press Start race.' : 'Waiting for the host.') :
+      'Connected · ' + stage + ' · ' + (role === 'host' ? 'Waiting for guests to choose Ready.' : 'Choose Ready when you are set.') + '');
   }
   ui.status(lastStatus, !!room && raced && !S?.race?.finished); showRematch();
 };
