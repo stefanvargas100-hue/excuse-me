@@ -1,5 +1,9 @@
 # Status
 
+## Treatment A trial approved - 2026-11-10
+- Director approved implementing/testing treatment A for playtest. Batch-17a-approved-cap-trial.md assigns stats-only implementation plus exhaustive and real-tick checks, original build rows unchanged. No additional tuning approval needed for that exact formula.
+- Batch 10 recovery owns shared UI/game/network files, so 17a cannot edit those concurrently. Required sequential compatibility companion will isolate records/ghosts/boards and mixed-version races and address any stat-display assumptions before trial integration/publication. Main remains unapproved; phone/crowded balance remains human validation.
+
 ## Build-cap trial proposal awaiting Director approval - 2026-11-10
 - Integrated measurement-only study f315020 from build-balance-study; no production tuning. Lead reran 3/3 tool tests and diff check; full gameplay/build exempt for study-only scope. Original 36 cases preserved, 72 comparison rows and exhaustive 174,240 same-gear/body tuples per build recorded.
 - Recommend treatment A for controlled playtest trial: cap non-build speed contributions at +/-10, then add original build speed points; acceleration/recovery unchanged. This removes all measured same-gear speed ties, but lowers small speed in 2.76% of enumerated tuples. Example male speed kit: large 3.180 -> 3.234 m/s, small 3.144 -> 3.126, medium unchanged. Plain kit unchanged. This does not prove competitive balance.
