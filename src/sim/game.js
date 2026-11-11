@@ -377,14 +377,14 @@ function showChallengeEnd() {
 }
 
 // Presentation never changes scores. Remember each round even if standings redraw.
-const cupAwardsShown = new WeakMap();
-function showCupAward(model, round, points) {
+const cupAwardsShown = new Set();
+function showCupAward(key, points) {
   setStat('sChain', 'Round points', points === null ? 'Pending' : '+' + points + ' points');
   if (points === null) return;
-  let seen = cupAwardsShown.get(model);
-  if (!seen) { seen = new Set(); cupAwardsShown.set(model, seen); }
-  if (seen.has(round)) return;
-  seen.add(round);
+  if (cupAwardsShown.has(key)) return;
+  cupAwardsShown.add(key);
+  // Keep recent Cups across state replacement without retaining model objects.
+  if (cupAwardsShown.size > 128) cupAwardsShown.delete(cupAwardsShown.values().next().value);
   if (!calm && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     $('sChain').animate?.([{ transform: 'translateY(5px)', opacity: .5 }, { transform: 'translateY(0)', opacity: 1 }], { duration: 450 });
   }
@@ -398,7 +398,7 @@ function showCupEnd() {
   $('sScoreLabel').textContent = 'Round time'; $('sScore').textContent = fmtTime(S.time);
   setStat('sBest', done ? 'Cup points' : 'Cup points so far', cupPoints(m) + (done && S.cup.newBest ? ' · new best' : ''));
   setStat('sDist', 'Round place', ordinal(place) + ' of ' + n); setStat('sChain', 'Bumps', String(S.bumps));
-  showCupAward(m, m.rounds.length, pointsFor(m.rounds.at(-1)?.place));
+  showCupAward(JSON.stringify(['local', m.seed, m.rounds.length]), pointsFor(m.rounds.at(-1)?.place));
   setExtraStats(false);
   const bd = $('raceBoard'); bd.hidden = false; bd.innerHTML = '';
   table.forEach((r, i) => { const li = document.createElement('li'); if (r.me) li.className = 'me'; li.textContent = (i + 1) + '. ' + r.name + ' · ' + r.points + ' pts'; bd.appendChild(li); });
@@ -422,7 +422,7 @@ function showFriendCupEnd() {
   $('sScoreLabel').textContent = 'Race time'; $('sScore').textContent = restarting ? '-' : D.dnf ? 'DNF' : fmtTime(D.finish ?? S.time);
   setStat('sBest', over ? 'Cup points' : 'Cup points so far', String(pts));
   setStat('sDist', 'Race place', mine ? ordinal(place) + ' of ' + CUP_RACERS : '-');
-  showCupAward(D, C.race, mine ? pointsFor(mine.place) : null);
+  showCupAward(JSON.stringify(['friend', m.seed, D.meId, C.race]), mine ? pointsFor(mine.place) : null);
   setExtraStats(false);
   const bd = $('raceBoard'); bd.hidden = false; bd.innerHTML = '';
   table.forEach((r, i) => {

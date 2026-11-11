@@ -150,3 +150,26 @@ test('round award and cumulative Cup points remain distinct over multiple rounds
  assert.equal(E.element('sChain').textContent,'+8 points');
  assert.match(E.element('sBest').textContent,/18/);
 });
+
+test('local award persists without replay on redraw or fresh equivalent model', () => {
+ const E=load(undefined,{seed:3,dom:true,presentation:true}); let animations=0;
+ E.element('sChain').animate=()=>{animations++;}; E.startCup(); finish(E);
+ assert.equal(animations,1); const before=JSON.stringify(E.S.cup.model);
+ E.setEndShown(false); E.tick(DT); assert.equal(animations,1);
+ E.S.cup.model=JSON.parse(before); E.setEndShown(false); E.tick(DT);
+ assert.equal(animations,1,'fresh equivalent model must not repeat the visual award');
+ assert.equal(JSON.stringify(E.S.cup.model),before); assert.equal(E.element('sChain').textContent,'+10 points');
+ E.nextCupRound(); finish(E,7); assert.equal(animations,2); assert.equal(E.element('sChain').textContent,'+1 points');
+ assert.match(E.element('sBest').textContent,/11/);
+ for(let r=2;r<4;r++){E.nextCupRound();finish(E);}
+ assert.equal(animations,4);assert.equal(E.element('sChain').textContent,'+10 points');
+ assert.match(E.element('sBest').textContent,/31/);const final=JSON.stringify(E.S.cup.model);
+ E.setEndShown(false);E.tick(DT);assert.equal(animations,4);assert.equal(JSON.stringify(E.S.cup.model),final);
+});
+for(const mode of ['calm','reduced']) test('local Cup '+mode+' keeps points and progression without animation',()=>{
+ const E=load(undefined,{seed:3,dom:true,presentation:true});let animations=0;
+ E.element('sChain').animate=()=>{animations++;};if(mode==='calm')E.setCalm(true);else E.reduceMotion(true);
+ E.startCup(); finish(E);assert.equal(animations,0);assert.equal(E.element('sChain').textContent,'+10 points');
+ assert.equal(E.element('next').disabled,false);E.nextCupRound();finish(E,1);
+ assert.equal(animations,0);assert.equal(E.element('sChain').textContent,'+8 points');assert.match(E.element('sBest').textContent,/18/);
+});

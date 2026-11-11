@@ -98,6 +98,7 @@ try {
     await context.route('**/*', route => new URL(route.request().url()).origin === origin ? route.continue() : route.abort());
     // Keep a valid generated-length name reproducible, including its small-screen fit.
     await context.addInitScript(() => {
+      const NativeDate = Date; window.Date = class extends NativeDate { constructor(...args) { super(...(args.length ? args : ['2026-11-10T12:00:00Z'])); } static now() { return NativeDate.parse('2026-11-10T12:00:00Z'); } };
       if (!localStorage.getItem('excuseme_online_name')) localStorage.setItem('excuseme_online_name', JSON.stringify('Breezy Commuter 37'));
     });
     const page = await context.newPage();
@@ -126,8 +127,8 @@ try {
       for (let i = 0; i < 14; i++) E.tick(1 / 30);
       E.S.pz = E.LV.goal + 1;
       for (let i = 0; i < 90; i++) E.tick(1 / 30);
-      // between races the host's button is the longest label it can show
-      if (races < 4) document.getElementById('again').textContent = 'Start race 4 · Shibuya Crossing';
+      // Synthetic standalone fixture: next label follows its actual model.
+      if (races < 4) document.getElementById('again').textContent = 'Start race ' + (races + 1) + ' \u00b7 ' + E.LEVELS[model.stages[races]].name;
     }, races);
     const routes = [
       ['start', home], ['play', play],
