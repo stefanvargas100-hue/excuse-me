@@ -1,5 +1,10 @@
 # Status
 
+## Cap trial implemented; independent review assigned - 2026-11-10
+- Builder 61b9edb/db0f0b4 reports approved A formula, 522,720 loadout checks, 825/825 full tests/build passing, 630/630 bots finishing 210 normal races and six deliberate 20s contact trials (18 timeouts retained). Lead inspected formula/helper/evidence: large speed-kit mean finish deltas Fifth +1.10s, Subway -0.70s, Takeshita -0.02s; no consistent crowded winner. Not published.
+- Batch-17c-cap-review.md assigns independent code/measurement audit and representative reproductions. Batch-17b remains a proposed compatibility/UI companion, not implementation authorization; preserve existing deterministic Challenge content while deciding minimal identity isolation. Main still requires approval.
+- Batch 10 remains unresolved: worker-show reports exited and retained; prior resume message has not established completion. Its preserved WIP/shared-file ownership must be recovered or explicitly released before companion edits. Do not assume a sent message means active work.
+
 ## Approved cap trial: bot validation requested - 2026-11-10
 - Director explicitly requested testing with bots. Active cap-trial worker receives batch-17a-bot-validation.md: paired legacy/A populated races with native bot AI, fixed seeds, balanced positions, all builds and plain/capped gear, plus real collision evidence and reproducible results. No additional tuning authorized.
 - Compatibility companion and independent review still precede integration/publication; bot results must be distinguished from phone handling checks. Main remains unapproved. Batch 10 retains shared-file ownership.
