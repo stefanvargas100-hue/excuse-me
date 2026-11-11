@@ -1,5 +1,10 @@
 # Status
 
+## Combined cap candidate ready for independent review - 2026-11-11
+- Cap-trial candidate 5a5551d/report 5f6a580 includes compatibility/stat-display work, unchanged approved treatment A and authorized develop/airport merge 2709bf0. Builder reports 855/855 full suite, focused 42/42, later expanded all-stage wire 5/5, build/diff and local browser at both widths. Not integrated or published.
+- Lead inspected identity matrix/new source and representative max-stat, played-period and populated-airport screenshots. Race board underscore suffix matches inspected local SQL constraints; deployed acceptance remains unverified. Narrow item captions remain visual work. Batch-17f-combined-review.md returns candidate to independent cap-review owner for complete records/ghosts/queues/protocol/layout audit and prior-finding disposition.
+- Publication stays held until combined review and coordinator integration checks. Latest verified playtest remains 11c3fde; main unapproved and queued visual pass still required. Belt workspace temporary baseline remains preserved following worker cleanup rejection.
+
 ## Airport generation fixed; bundle with cap compatibility - 2026-11-11
 - Batch 10f reproduced inherited seed-35 belt failure on current and 394d12e: 35/999. Final genChunk-only correction 985b44b/report ac1c301 passes lead full suite 837/837 after worker's two intermediate failures; no mk hook remains. Integrated 3a23f0a has identical source/tests/tools to checked candidate and passes merged build/diff. Original worker partial outcome is retained; lead validation closes its missing final-suite check.
 - Final seed rows 1-100 audited with zero generated reverse occupants/threshold failures. Airport race positions change, so publication remains held for batch 17d new competitive identities, not for a failing test. Addendum batch-17e-belt-companion.md directs active cap worker to checkpoint then merge develop, verify category/ghost/peer isolation and capture populated airport browser evidence. Challenge recipe/seed/outfit stay frozen; airport spawn correction is explicit. Independent combined review still required.

@@ -1,6 +1,7 @@
 # To-do
 
 ## Current follow-ups - 2026-11-10
+- Lead/visual owner, S3: narrow customization item captions overlap card borders in batch-17d 320px extrema screenshots. Builder identifies existing cramped labels; independent 17f review must distinguish inherited/new. Include actual-size label readability in the queued visual pass.
 - Lead/visual owner, S3: review the 31 shared fit failures in batch-10c-evidence/fit-comparison.json (play/boards/stages/challenge). Independent 10d audit found zero introduced by host/Cup work; these existing issues remain open for the queued visual pass.
 - Lead/shared UI owner, S3: fix the leaderboard heading clipping at 320px. Independent batch-14c review reproduced it on baseline dd3fddb; evidence is in batch-14c-evidence/. Include in the queued visual review; no new regression in seeded movement.
 - Lead: complete tutorial movement parity and separately scope race-only stage features; Daily/Weekly publication does not close these. Keep interrupted host/Cup-points batch 10 and remaining playtest feedback visible in status.
