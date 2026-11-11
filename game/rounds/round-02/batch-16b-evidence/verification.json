@@ -1,0 +1,7 @@
+{
+  "command": "node game/rounds/round-02/batch-16b-evidence/reproduce.cjs",
+  "exactRepeat": true,
+  "baselineRowsPreserved": 36,
+  "capRowsWithUnchangedOtherStatsAndTiming": 36,
+  "analyticalChecks": 1412718
+}
