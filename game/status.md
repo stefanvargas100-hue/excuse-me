@@ -1,5 +1,9 @@
 # Status
 
+## Build balance study needs cap disposition - 2026-11-10
+- Batch 16 study ef9bfbb/report c52656c reports 36 deterministic actual-tick cases, 2 focused tests and exact repeatability; no production changes. Large has modest clear-cruise benefit but speed gear can cap medium/large equally while retaining large acceleration cost.
+- Proposed +4/-3/-1 does not resolve capped gear weakness and reduces plain repeated-burst average. Lead assigned bounded batch-16b-cap-study.md to compare two in-memory speed-cap treatments before recommending values for Director approval. Not integrated or approved tuning; human crowded/shortcut balance remains unproved.
+
 ## Continued playtest follow-ups - 2026-11-10
 - Director requested continued work. Resuming interrupted batch 10 in its preserved playtest-fixes workspace via batch-10b-recovery.md: checkpoint inherited WIP, merge current develop into worker branch only, finish host Start/Cup-points evidence, independent review before integration. Lead confirmed prior agent exited; no duplicate implementation worker.
 - Parallel batch-16-build-balance-study.md produces mechanics measurements and proposed large/small/medium tuning, without production changes. Proposed values still need Director approval. Shared-screen visual follow-up and tutorial/stage parity remain queued; main remains unchanged.

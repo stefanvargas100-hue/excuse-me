@@ -1,0 +1,13 @@
+# Batch 16b: resolve cap weakness before tuning recommendation
+
+Builder: same Codex balance-study worker, default model/effort. Analysis/in-memory experiments only, no production changes. Original 16 brief and approval gate remain.
+
+Lead review: +4/-3/-1 improves start/cruise but keeps speed-kit large capped behind medium and lowers plain burst average. Do not present it as resolving the Director's complaint. Test a small bounded set of alternatives addressing that observed cause, then give an honest recommendation or an explicit unresolved tradeoff.
+
+May edit the existing tools/build-balance.cjs, test/build-balance.test.js, batch-16-build-proposal.md, new batch-16b-evidence/ and reports/batch-16b-cap-study.md. Preserve original measurements/history; no source tuning, dependency, database, deployment, subagents or lead/main edits.
+
+Compare current rules and original +4/-3/-1 candidate with TWO analytical cap treatments using original build rows: (A) cap combined non-build speed contributions at +/-10, then add build speed outside that cap, keeping acceleration/recovery behavior unchanged; (B) modestly raise only the total speed cap to +/-13, keeping other caps and original build rows. These are experimental definitions, not approved designs. Explicitly document whether body/fit are within each cap. Do not silently alter fit or double-count build points. Use actual ticks driven by the candidate effective stats; validate analytical stat calculations against current statsOf when the proposed cap is inactive.
+
+Reuse both bodies/three kits and short/long, bump, steering, refill/burst measurements. Add a bounded pure-stat enumeration of currently valid gear combinations for cap frequency and pairwise same-gear speed-role collapse (or an explicitly representative fixed set if full enumeration is unreasonable). Record how often large equals medium speed while paying acceleration cost, and worst-case speed range; do not claim these are player usage frequencies. Measure rather than assume impact on small/medium. No crowded-controller work or human-balance claim.
+
+Return a compact comparative table of all options, at least one capped and uncapped loadout, gains/losses and compatibility scope. Recommend one only if evidence supports its intended role; explain residual tradeoffs. Director approval is still required before any production implementation. Keep human protocol practical and prioritize the capped loadout and repeated-bump/burst cases. Run focused tool tests and diff check; no full gameplay suite needed for measurement-only changes. Stop after two failed attempts at the same problem. Commit <=10-line follow-up report and return path.
