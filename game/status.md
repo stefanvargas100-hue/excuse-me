@@ -1,5 +1,10 @@
 # Status
 
+## Host/Cup integrated; publication held on belt test - 2026-11-11
+- Independent 10d review 94329e3 passes: 150 focused checks, expected pre-fix failures, local browser at both widths including secondary-control scrolling, build/diff and no introduced fit findings. Integrated builder/reviewer in 22e4c67. Clean merged workspaces/branches removed after ancestry checks.
+- Lead combined suite: 828/829; airport crowd reverse-belt assertion failed (28/911 sampled positions, limit 3%). Build/diff pass. Batch-10f-belt-check.md assigns deterministic reproduction, baseline attribution and bounded fix; no publishing until resolved. Latest verified playtest remains 11c3fde. Batch-10e publication brief is prepared but not dispatched.
+- Batch-17d-cap-compatibility.md authorizes the sequential compatibility/UI companion on preserved cap-trial, with reviewed host/Cup merged there first. Exact approved speed formula only; retain Challenge content and Daily/Weekly attempts while isolating records/ghosts/peers. Parallel belt work has disjoint ownership. Cap review remains required before integration; main approval and queued visual pass remain outstanding.
+
 ## Host/Cup acceptance complete; independent review next - 2026-11-11
 - Batch 10c implementation/evidence 17fb564 and report d025d88 preserve scoring and PROTO 8 while preventing duplicate award animations on fresh equivalent state. Builder reports 829/829 full tests, focused 120/120 and presentation 62/62, build/diff pass; local eight-page browser checks exercise enabled controls and completed animations at both widths.
 - Lead inspected semantic-key diff and narrow host/standings plus 390px local results screenshots. Comparable fit evidence reports 32 baseline failures versus 31 candidate, zero introduced. Independent batch-10d-review.md audits complete host/Cup delta, start guards, award lifecycle, screenshots and evidence before integration. Actual transport reconnect, browser dropped-ack cancellation and real phones remain unverified; simulated checks are separate.
