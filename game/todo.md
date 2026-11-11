@@ -1,5 +1,12 @@
 # To-do
 
+## Current follow-ups - 2026-11-10
+- Lead/shared UI owner, S3: fix the leaderboard heading clipping at 320px. Independent batch-14c review reproduced it on baseline dd3fddb; evidence is in batch-14c-evidence/. Include in the queued visual review; no new regression in seeded movement.
+- Lead: complete tutorial movement parity and separately scope race-only stage features; Daily/Weekly publication does not close these. Keep interrupted host/Cup-points batch 10 and remaining playtest feedback visible in status.
+- Director phone playtest: compare build feel and boost/pickup readability across Classic, Daily and Weekly after the latest build is verified; check crowded main-versus-shortcut timing. Main still requires explicit approval.
+
+The older handover list below is historical; use game/status.md for completed work.
+
 **Written:** 2026-11-09, at a lead handover. Start from `game/status.md` for the current state.
 
 ## Stefan (Director)

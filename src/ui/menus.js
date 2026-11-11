@@ -1,3 +1,4 @@
+import { seededIdentity } from '../sim/seeded-rules.js';
 import { medalFor } from '../config/medals.js';
 import { comboLevel } from '../config/combo.js';
 import { Music } from '../audio/music.js';
@@ -47,8 +48,8 @@ function buildPlay() {
   mode('lvl', 'Competitive', 'Race friends', 'Live, 2-8 players', 'Make a room, send the code, and race up to 7 friends on the same crowd, live.', openFriend);
   // Daily and weekly runs: endless, one try each, the same crowd for everyone.
   const periodic = (kind, title, lvl, key, startFn, blurb) => {
-    const done = hasPlayed(kind), best = parseInt(store.get('excuseme_' + kind + '_' + key, '0'), 10) || 0;
-    const x = mode('lvl daily', title + ' · ' + key, LEVELS[lvl].name, done ? (best ? fmt(best) + ' pts' : 'Played') : 'One try',
+    const done = hasPlayed(kind), best = parseInt(store.get(seededIdentity(kind, key).scoreKey, '0'), 10) || 0;
+    const x = mode('lvl daily', title + ' · Updated movement · ' + key, LEVELS[lvl].name, done ? (best ? fmt(best) + ' pts' : 'Played') : 'One try',
       done ? (kind === 'daily' ? 'Played today. A new crowd arrives tomorrow.' : 'Played this week. A new crowd arrives on Monday.') : blurb, startFn);
     if (done) { x.setAttribute('aria-disabled', 'true'); x.classList.add('done'); }
   };
@@ -284,7 +285,7 @@ function buildChallenges() {
       head.appendChild(name); head.appendChild(num);
       const what = document.createElement('span'); what.textContent = c.text;
       const bar = document.createElement('div'); bar.className = 'statb'; const fill = document.createElement('i'); fill.className = 'up'; fill.style.width = (pct(c) * 100).toFixed(0) + '%'; bar.appendChild(fill);
-      const hint = document.createElement('small'); hint.textContent = stats ? 'Race stats: ' + statHint(stats) : 'Looks only';
+      const hint = document.createElement('small'); hint.textContent = stats ? 'Movement stats: ' + statHint(stats) : 'Looks only';
       [head, what, bar, hint].forEach(n => li.appendChild(n));
       return li;
     }));

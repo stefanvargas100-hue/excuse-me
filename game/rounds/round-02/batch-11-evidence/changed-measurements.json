@@ -1,0 +1,114 @@
+{
+  "command": "node tools/route-measurement.cjs",
+  "limitations": "Prescribed x each frame; no lateral travel cost, no human steering, dynamic crowd active, no bots. Compare trends only; cannot certify fairness.",
+  "rows": [
+    {
+      "level": 5,
+      "seed": 4,
+      "side": false,
+      "seconds": 124.2,
+      "z": 320.04740683842726,
+      "bumps": 29,
+      "gear": "{\"body\":\"m\",\"build\":\"medium\",\"shirtType\":\"tee\",\"pantsType\":\"jeans\",\"shoeType\":\"sneakers\",\"shirt\":\"#ffcf1f\",\"pants\":\"#1e3a5f\",\"shoe\":\"#f4f6f8\",\"skin\":\"#c68863\",\"hair\":\"#3b2a1e\",\"hairStyle\":\"short\",\"hat\":\"cap\",\"showHead\":\"1\",\"pack\":\"pack\",\"gear\":\"#111827\",\"eyes\":\"dot\",\"nose\":\"none\",\"mouth\":\"smile\"}"
+    },
+    {
+      "level": 5,
+      "seed": 4,
+      "side": true,
+      "seconds": 105.2,
+      "z": 320.02097278508893,
+      "bumps": 9,
+      "gear": "{\"body\":\"m\",\"build\":\"medium\",\"shirtType\":\"tee\",\"pantsType\":\"jeans\",\"shoeType\":\"sneakers\",\"shirt\":\"#ffcf1f\",\"pants\":\"#1e3a5f\",\"shoe\":\"#f4f6f8\",\"skin\":\"#c68863\",\"hair\":\"#3b2a1e\",\"hairStyle\":\"short\",\"hat\":\"cap\",\"showHead\":\"1\",\"pack\":\"pack\",\"gear\":\"#111827\",\"eyes\":\"dot\",\"nose\":\"none\",\"mouth\":\"smile\"}"
+    },
+    {
+      "level": 5,
+      "seed": 8,
+      "side": false,
+      "seconds": 124.88333333333334,
+      "z": 320.0005326405401,
+      "bumps": 34,
+      "gear": "{\"body\":\"m\",\"build\":\"medium\",\"shirtType\":\"tee\",\"pantsType\":\"jeans\",\"shoeType\":\"sneakers\",\"shirt\":\"#ffcf1f\",\"pants\":\"#1e3a5f\",\"shoe\":\"#f4f6f8\",\"skin\":\"#c68863\",\"hair\":\"#3b2a1e\",\"hairStyle\":\"short\",\"hat\":\"cap\",\"showHead\":\"1\",\"pack\":\"pack\",\"gear\":\"#111827\",\"eyes\":\"dot\",\"nose\":\"none\",\"mouth\":\"smile\"}"
+    },
+    {
+      "level": 5,
+      "seed": 8,
+      "side": true,
+      "seconds": 97.55,
+      "z": 320.0123550450164,
+      "bumps": 4,
+      "gear": "{\"body\":\"m\",\"build\":\"medium\",\"shirtType\":\"tee\",\"pantsType\":\"jeans\",\"shoeType\":\"sneakers\",\"shirt\":\"#ffcf1f\",\"pants\":\"#1e3a5f\",\"shoe\":\"#f4f6f8\",\"skin\":\"#c68863\",\"hair\":\"#3b2a1e\",\"hairStyle\":\"short\",\"hat\":\"cap\",\"showHead\":\"1\",\"pack\":\"pack\",\"gear\":\"#111827\",\"eyes\":\"dot\",\"nose\":\"none\",\"mouth\":\"smile\"}"
+    },
+    {
+      "level": 5,
+      "seed": 42,
+      "side": false,
+      "seconds": 111.01666666666667,
+      "z": 320.0644216954623,
+      "bumps": 19,
+      "gear": "{\"body\":\"m\",\"build\":\"medium\",\"shirtType\":\"tee\",\"pantsType\":\"jeans\",\"shoeType\":\"sneakers\",\"shirt\":\"#ffcf1f\",\"pants\":\"#1e3a5f\",\"shoe\":\"#f4f6f8\",\"skin\":\"#c68863\",\"hair\":\"#3b2a1e\",\"hairStyle\":\"short\",\"hat\":\"cap\",\"showHead\":\"1\",\"pack\":\"pack\",\"gear\":\"#111827\",\"eyes\":\"dot\",\"nose\":\"none\",\"mouth\":\"smile\"}"
+    },
+    {
+      "level": 5,
+      "seed": 42,
+      "side": true,
+      "seconds": 96.35,
+      "z": 320.0195659406835,
+      "bumps": 2,
+      "gear": "{\"body\":\"m\",\"build\":\"medium\",\"shirtType\":\"tee\",\"pantsType\":\"jeans\",\"shoeType\":\"sneakers\",\"shirt\":\"#ffcf1f\",\"pants\":\"#1e3a5f\",\"shoe\":\"#f4f6f8\",\"skin\":\"#c68863\",\"hair\":\"#3b2a1e\",\"hairStyle\":\"short\",\"hat\":\"cap\",\"showHead\":\"1\",\"pack\":\"pack\",\"gear\":\"#111827\",\"eyes\":\"dot\",\"nose\":\"none\",\"mouth\":\"smile\"}"
+    },
+    {
+      "level": 6,
+      "seed": 4,
+      "side": false,
+      "seconds": 108.46666666666667,
+      "z": 280.0807972730232,
+      "bumps": 28,
+      "gear": "{\"body\":\"m\",\"build\":\"medium\",\"shirtType\":\"tee\",\"pantsType\":\"jeans\",\"shoeType\":\"sneakers\",\"shirt\":\"#ffcf1f\",\"pants\":\"#1e3a5f\",\"shoe\":\"#f4f6f8\",\"skin\":\"#c68863\",\"hair\":\"#3b2a1e\",\"hairStyle\":\"short\",\"hat\":\"cap\",\"showHead\":\"1\",\"pack\":\"pack\",\"gear\":\"#111827\",\"eyes\":\"dot\",\"nose\":\"none\",\"mouth\":\"smile\"}"
+    },
+    {
+      "level": 6,
+      "seed": 4,
+      "side": true,
+      "seconds": 102.3,
+      "z": 280.0078376402087,
+      "bumps": 11,
+      "gear": "{\"body\":\"m\",\"build\":\"medium\",\"shirtType\":\"tee\",\"pantsType\":\"jeans\",\"shoeType\":\"sneakers\",\"shirt\":\"#ffcf1f\",\"pants\":\"#1e3a5f\",\"shoe\":\"#f4f6f8\",\"skin\":\"#c68863\",\"hair\":\"#3b2a1e\",\"hairStyle\":\"short\",\"hat\":\"cap\",\"showHead\":\"1\",\"pack\":\"pack\",\"gear\":\"#111827\",\"eyes\":\"dot\",\"nose\":\"none\",\"mouth\":\"smile\"}"
+    },
+    {
+      "level": 6,
+      "seed": 8,
+      "side": false,
+      "seconds": 110.36666666666666,
+      "z": 280.06589632478807,
+      "bumps": 27,
+      "gear": "{\"body\":\"m\",\"build\":\"medium\",\"shirtType\":\"tee\",\"pantsType\":\"jeans\",\"shoeType\":\"sneakers\",\"shirt\":\"#ffcf1f\",\"pants\":\"#1e3a5f\",\"shoe\":\"#f4f6f8\",\"skin\":\"#c68863\",\"hair\":\"#3b2a1e\",\"hairStyle\":\"short\",\"hat\":\"cap\",\"showHead\":\"1\",\"pack\":\"pack\",\"gear\":\"#111827\",\"eyes\":\"dot\",\"nose\":\"none\",\"mouth\":\"smile\"}"
+    },
+    {
+      "level": 6,
+      "seed": 8,
+      "side": true,
+      "seconds": 98.25,
+      "z": 280.0110335212526,
+      "bumps": 7,
+      "gear": "{\"body\":\"m\",\"build\":\"medium\",\"shirtType\":\"tee\",\"pantsType\":\"jeans\",\"shoeType\":\"sneakers\",\"shirt\":\"#ffcf1f\",\"pants\":\"#1e3a5f\",\"shoe\":\"#f4f6f8\",\"skin\":\"#c68863\",\"hair\":\"#3b2a1e\",\"hairStyle\":\"short\",\"hat\":\"cap\",\"showHead\":\"1\",\"pack\":\"pack\",\"gear\":\"#111827\",\"eyes\":\"dot\",\"nose\":\"none\",\"mouth\":\"smile\"}"
+    },
+    {
+      "level": 6,
+      "seed": 42,
+      "side": false,
+      "seconds": 99.2,
+      "z": 280.01276144343854,
+      "bumps": 22,
+      "gear": "{\"body\":\"m\",\"build\":\"medium\",\"shirtType\":\"tee\",\"pantsType\":\"jeans\",\"shoeType\":\"sneakers\",\"shirt\":\"#ffcf1f\",\"pants\":\"#1e3a5f\",\"shoe\":\"#f4f6f8\",\"skin\":\"#c68863\",\"hair\":\"#3b2a1e\",\"hairStyle\":\"short\",\"hat\":\"cap\",\"showHead\":\"1\",\"pack\":\"pack\",\"gear\":\"#111827\",\"eyes\":\"dot\",\"nose\":\"none\",\"mouth\":\"smile\"}"
+    },
+    {
+      "level": 6,
+      "seed": 42,
+      "side": true,
+      "seconds": 91.41666666666667,
+      "z": 280.0324785805168,
+      "bumps": 4,
+      "gear": "{\"body\":\"m\",\"build\":\"medium\",\"shirtType\":\"tee\",\"pantsType\":\"jeans\",\"shoeType\":\"sneakers\",\"shirt\":\"#ffcf1f\",\"pants\":\"#1e3a5f\",\"shoe\":\"#f4f6f8\",\"skin\":\"#c68863\",\"hair\":\"#3b2a1e\",\"hairStyle\":\"short\",\"hat\":\"cap\",\"showHead\":\"1\",\"pack\":\"pack\",\"gear\":\"#111827\",\"eyes\":\"dot\",\"nose\":\"none\",\"mouth\":\"smile\"}"
+    }
+  ]
+}

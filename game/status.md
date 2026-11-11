@@ -1,5 +1,120 @@
 # Status
 
+## Cap review passed; shared-file recovery precedes companion - 2026-11-10
+- Independent cap review 2d9a79c passes approved stats/native-bot evidence: 24 focused checks, six exact full-race reproductions, all 72 historical rows, independent aggregation, build/diff pass. Full 825/825 accepted from builder. No integration or publication yet.
+- Companion must resolve S2 proposed Challenge content reset by separating competition identity from existing content seed; S3 menu old/new score reads, captured mp2 identity suffix preservation and preview +/-13 normalization are required. Preserve weekly content, reset clocks, attempts, legacy saves/queues; no extra tuning or database work.
+- Batch 10 worker was proven exited but dispatch remained unsettled; retry was safely refused. Guarded worker-stop confirmed stopped for ctx_65467018af79, preserving workspace/WIP. Retry same task in playtest-fixes with batch-10b-recovery.md before shared compatibility edits. This replaces the ineffective earlier resume message, not the original task or its preserved work.
+
+## Cap trial implemented; independent review assigned - 2026-11-10
+- Builder 61b9edb/db0f0b4 reports approved A formula, 522,720 loadout checks, 825/825 full tests/build passing, 630/630 bots finishing 210 normal races and six deliberate 20s contact trials (18 timeouts retained). Lead inspected formula/helper/evidence: large speed-kit mean finish deltas Fifth +1.10s, Subway -0.70s, Takeshita -0.02s; no consistent crowded winner. Not published.
+- Batch-17c-cap-review.md assigns independent code/measurement audit and representative reproductions. Batch-17b remains a proposed compatibility/UI companion, not implementation authorization; preserve existing deterministic Challenge content while deciding minimal identity isolation. Main still requires approval.
+- Batch 10 remains unresolved: worker-show reports exited and retained; prior resume message has not established completion. Its preserved WIP/shared-file ownership must be recovered or explicitly released before companion edits. Do not assume a sent message means active work.
+
+## Approved cap trial: bot validation requested - 2026-11-10
+- Director explicitly requested testing with bots. Active cap-trial worker receives batch-17a-bot-validation.md: paired legacy/A populated races with native bot AI, fixed seeds, balanced positions, all builds and plain/capped gear, plus real collision evidence and reproducible results. No additional tuning authorized.
+- Compatibility companion and independent review still precede integration/publication; bot results must be distinguished from phone handling checks. Main remains unapproved. Batch 10 retains shared-file ownership.
+
+## Treatment A trial approved - 2026-11-10
+- Director approved implementing/testing treatment A for playtest. Batch-17a-approved-cap-trial.md assigns stats-only implementation plus exhaustive and real-tick checks, original build rows unchanged. No additional tuning approval needed for that exact formula.
+- Batch 10 recovery owns shared UI/game/network files, so 17a cannot edit those concurrently. Required sequential compatibility companion will isolate records/ghosts/boards and mixed-version races and address any stat-display assumptions before trial integration/publication. Main remains unapproved; phone/crowded balance remains human validation.
+
+## Build-cap trial proposal awaiting Director approval - 2026-11-10
+- Integrated measurement-only study f315020 from build-balance-study; no production tuning. Lead reran 3/3 tool tests and diff check; full gameplay/build exempt for study-only scope. Original 36 cases preserved, 72 comparison rows and exhaustive 174,240 same-gear/body tuples per build recorded.
+- Recommend treatment A for controlled playtest trial: cap non-build speed contributions at +/-10, then add original build speed points; acceleration/recovery unchanged. This removes all measured same-gear speed ties, but lowers small speed in 2.76% of enumerated tuples. Example male speed kit: large 3.180 -> 3.234 m/s, small 3.144 -> 3.126, medium unchanged. Plain kit unchanged. This does not prove competitive balance.
+- Director approval pending before implementation; see batch-16-build-proposal.md. Earlier +4/-3/-1 proposal withdrawn. Any implementation needs explicit score/ghost/multiplayer compatibility planning and phone trial. Main unchanged; host/Cup batch 10 recovery remains assigned separately.
+
+## Build balance study needs cap disposition - 2026-11-10
+- Batch 16 study ef9bfbb/report c52656c reports 36 deterministic actual-tick cases, 2 focused tests and exact repeatability; no production changes. Large has modest clear-cruise benefit but speed gear can cap medium/large equally while retaining large acceleration cost.
+- Proposed +4/-3/-1 does not resolve capped gear weakness and reduces plain repeated-burst average. Lead assigned bounded batch-16b-cap-study.md to compare two in-memory speed-cap treatments before recommending values for Director approval. Not integrated or approved tuning; human crowded/shortcut balance remains unproved.
+
+## Continued playtest follow-ups - 2026-11-10
+- Director requested continued work. Resuming interrupted batch 10 in its preserved playtest-fixes workspace via batch-10b-recovery.md: checkpoint inherited WIP, merge current develop into worker branch only, finish host Start/Cup-points evidence, independent review before integration. Lead confirmed prior agent exited; no duplicate implementation worker.
+- Parallel batch-16-build-balance-study.md produces mechanics measurements and proposed large/small/medium tuning, without production changes. Proposed values still need Director approval. Shared-screen visual follow-up and tutorial/stage parity remain queued; main remains unchanged.
+
+## Daily/Weekly playtest publication verified - 2026-11-10
+- Verified playtest build 11c3fde: Tests 42895513510 and downstream Pages 42896427872 succeeded; page and referenced main.js HTTP 200 with matching embedded ID at 2026-11-10T20:34:12Z. Worker report/evidence 02f326e integrated; evidence lives under reports/batch-14d-evidence/. Documentation HEAD is not the served build ID.
+- Classic, Daily and Weekly shared build stats/speed bonuses/existing pickups are available for phone playtest, with combo slowdown/zoom/tint removed. Prior integrated suite passed 816/816. Main unchanged and still requires explicit approval.
+- Open: phone feel and crowded shortcut balance, deployed schema acceptance, installed live service-worker behavior, tutorial/stage parity, inherited S3 heading clipping/later visual review, interrupted batch 10 and remaining playtest feedback. Publication verification does not resolve those checks.
+
+## Seeded movement integrated for playtest - 2026-11-10
+- Independent review f777ca4 cleared batch 14 with 112 focused tests and 40 baseline crowd comparisons; no blocking regression. Integrated builder 55ca35b/report a6e2f6e and reviewer evidence/tests as b3941d8. Lead combined suite 816/816, build and diff checks pass.
+- Daily/Weekly now share Classic build stats, pace bonuses and endless pickups, with captured mp2 score/board identities, unchanged reset clocks/attempt markers and isolated legacy queues. Lead inspected 320 Daily results and 390 Weekly boost screenshots. Browser emulation only; phones/deployed schema remain unverified.
+- Publishing through develop; batch-14d-publication-check.md verifies exact served SHA before claiming live. Main remains unchanged. Merged builder/reviewer workspaces and branches removed after clean/ancestry checks.
+- Existing S3 narrow leaderboard heading clipping is a queued shared-UI visual follow-up in game/todo.md. Tutorial/stage parity, later visual review, interrupted batch 10 and remaining playtest feedback remain open.
+
+## Seeded movement recovered; independent review pending - 2026-11-10
+- Builder implementation 55ca35b/report a6e2f6e on seeded-movement reports 814/814 full tests, 93 focused, build/diff pass and actual /playtest/ browser captures at 320/390. Direct pickup calls now compare matching-state full crowd objects and RNG sentinels; mutation caused 40/40 intended failures before removal. Original failures retained as historical evidence.
+- Batch-14c-review.md assigns independent review of movement, frozen mp2 IDs/clock boundaries, preserved attempts/queues/crowds and test harness validity. Not integrated. Inherited 320 leaderboard heading clipping needs disposition; phone/deployed-schema checks remain unverified. Published Classic 1f9faec and main unchanged.
+
+## Seeded movement partial; validation recovery assigned - 2026-11-10
+- Batch 14 worker stopped as instructed with uncommitted implementation in seeded-movement and committed partial report. Full suite 766/772; six failures (five newly added crowd comparisons and one obsolete legacy board expectation). Build/diff passed; browser/boundary/acceptance coverage unfinished. No integration.
+- Lead inspected preserved diff/logs: crowd test advances different movement states before comparing entire objects including player-relative prevDz. Recovery brief batch-14b-recovery.md directs isolated pickup-generation and explicit RNG-sentinel tests, keeps meaningful generation comparisons, updates intentional mp2 expectations and completes missing acceptance/browser evidence. Existing Classic playtest 1f9faec remains unchanged.
+
+## Classic playtest publication verified - 2026-11-10
+- Publication worker report/evidence 950a996 verified exact develop build 1f9faec: Tests 42891258496 and downstream Pages 42892681554 succeeded; playtest HTML and referenced main.js HTTP 200, embedded ID matches. Evidence checked at 2026-11-10T20:12:12Z and retained in batch-12e-evidence/. Report integrated; documentation HEAD is not the published build ID.
+- Classic build stats, speed bonuses, existing endless pickups and constant combo view are available for phone playtest. Phone feel, installed live service-worker behavior and deployed server acceptance remain unverified. Main remains unchanged.
+- Daily/Weekly movement parity is assigned to Codex in seeded-movement under batch-14-seeded-movement.md (dispatch ctx_bcdab82cef19); implementation and independent review pending. Later visual review, tutorial/stage parity and interrupted batch 10 remain open.
+
+## Remaining parity plan disposition - 2026-11-10
+- Batch 13 planning branch 04341ed integrated (source inspection only). Lead adopts shared Daily/Weekly stats/pace/pickups and competition-key audit, but defers the proposed server attempt ledger/UTC or scheduled activation changes as broader than movement parity.
+- Batch 14 brief implements new seeded mp2 score/board identities with frozen period/rules, unchanged reset clock and played markers, deterministic crowds and existing enforcement limits. Old-client scores remain isolated on legacy boards; no database work or stronger account-wide enforcement claim. Independent review required. Tutorial learning and race-only stage features remain later follow-ups.
+- Classic playtest publication 1f9faec still awaits its verification worker report; do not substitute documentation HEAD for expected build. Main remains unchanged.
+
+## Scoped Classic integrated for playtest - 2026-11-10
+- Independent re-review 59e4b30 cleared S2 and both S3 findings. Integrated review branch (preserving all evidence and implementation 0cbb2d7) as 87c5111. Lead combined checks: 751/751 tests, build and diff pass. Lead inspected 320-small pickup and 390-large boost captures; browser evidence only.
+- Classic now has shared build stats/pace, endless existing pickups, constant combo view and cm2 record/ghost isolation. Original race drafting preserved. Merged builder/review workspaces and branches removed after clean status/ancestry checks.
+- Publication to playtest proceeds through develop; batch-12e-publication-check.md verifies exact served build. Main remains unchanged and requires approval. Phone feel, deployed-server acceptance and installed live service-worker behavior remain unverified.
+- Remaining all-mode movement request stays open: batch-13-parity-plan.md scopes Daily/Weekly/scripted movement and stage features with fair competition identities. Later visual review and interrupted batch 10 remain outstanding. Do not label Classic completion as complete all-mode parity.
+
+## Classic review fixes awaiting re-review - 2026-11-10
+- Batch 12c implementation 0cbb2d7/report 9ca46c5 restores original player/bot pedestrian drafting, isolates pickup lifecycle, tests current-kind wrong rules, and captures actual /playtest/ channel evidence. Builder reports final 751/751, focused 22+2, pickup repeats 20/20, build/diff pass.
+- Original independent reviewer assigned batch-12d-rereview.md. No integration yet; prior S2/S3 findings require clearance. Daily/Weekly and stage-feature parity, real phones and deployed server acceptance remain outstanding. Main unchanged.
+
+## Classic review HOLD and targeted fixes - 2026-11-10
+- Independent review a6e23fa on classic-review found S2 ordinary-race pedestrian drafting regression with unchanged identities; restore pre-batch behavior, not widen migrations. Lead brief wording was overbroad: no invented Classic drafting did not justify changing existing races.
+- S3 gaps: browser query did not select actual playtest channel; endless pickup test intermittently fails with crowd generation. Reviewer full 749/749, focused 45/46, recheck 11/11, browser six cases/build/diff pass. cm2 compatibility passed inspection; live schema/phones unverified.
+- Fix brief batch-12c-review-fixes.md assigned to original builder; independent re-review required before integration. Daily/Weekly and race-only stage-feature parity remain outstanding, not complete. Main unchanged.
+
+## Classic implementation review and verified shortcut publication - 2026-11-10
+- Lead verified shortcut playtest 2d712c0: Tests run 42837699444 and Pages run 42839254144 succeeded; page and assets/main.js HTTP 200, served bundle contains expected build ID. Publication worker previously hit usage limit; this is direct lead verification, not its report. Human loaded balance/phone checks remain.
+- Classic batch 12 reported implementation 5c91068/report d7913b1, 748 full tests and 62 final focused checks, build/diff and Chromium evidence. Not integrated. Independent batch-12b-review.md covers cm2 compatibility, final safety fixes, race drafting regression risk, and remaining Daily/Weekly/stage movement exceptions. Main approval and later visual review remain required.
+
+## Approved shortcut publication and Classic parity - 2026-11-10
+- Director approved shortcut integration/publication to playtest, retaining loaded-human balance and real-phone checks. Integrated builder cad626c and independent review/tool 81f8c59 as 8e5d123. Lead integrated checks: 734/734 tests, build and diff check pass. Merged builder/reviewer workspaces and branches removed; evidence retained in develop.
+- Push to develop authorized; publication verification assigned in batch-11e-publication-check.md. Do not claim served build until that report verifies it. Main merge remains unapproved.
+- Director requests constant visuals without combo slow motion, and Classic speed increases/build stats/existing power-ups matching movement in other modes. Codex brief batch-12-classic-movement.md; review required before integration. New art worlds remain authoritative, later Fable visual review remains queued. This work takes priority over remaining lobby/spectating/custom-Cup proposals.
+- Batch 10 host/points WIP remains preserved in playtest-fixes, not integrated or claimed complete. No live migration authorized.
+
+## Shortcut re-review cleared - 2026-11-10
+- Independent review 81f8c59 on shortcuts-review (review merge f6497e8) clears both S3 findings in worlds-shortcuts a30ed99/cad626c: neon signs readable across six actual-size captures; Cup pressure and stale costs respect floors. Reviewer reports 78/78 focused regressions, baseline reproduction 10 failures/5 positive passes, build/diff pass. Full 730-test pass remains builder evidence.
+- Implementation fixes are cleared, but batch 11 remains partial on loaded human route balance and real phones. No integration/deployment/main merge performed. Next Director decision: approve publishing this reviewed candidate to playtest for targeted main-versus-shortcut timing, retaining balance hold and main approval gate. Avoid more automated tuning against collision-heavy controllers.
+
+## Shortcut review fixes checkpoint - 2026-11-10
+- Batch 11c reported complete at cad626c on worlds-shortcuts; code a30ed99. Signs now render after world effects; Cup pressure/stale lane costs filter floors. Reported 15 pressure regressions, 78 related checks, 730 full tests, fit 70/0, build/diff pass.
+- Independent re-review assigned under batch-11d-rereview.md. Not integrated; loaded human balance and real-phone evidence remain outstanding. No balance constants changed.
+
+## Shortcut independent review checkpoint - 2026-11-10
+- Review/tool committed on stefanvargas100-hue/shortcuts-review at 748c434 (tool/evidence 2fe73fd). All 48 runs completed; reviewer reports 32 focused checks/build passing, production unchanged. No S1/S2 implementation regression found by inspection.
+- HOLD integration: loaded balance unproved with 9-30 collisions per controller run. Clean controls: Subway ~4.7% faster, alley ~0.7% slower. Loaded alley -7.5%..+10.32% gain; not proof of skilled-human dominance. Director human timing/design disposition needed.
+- Two S3 findings assigned to original builder under batch-11c-review-fixes.md: faint neon route strips and existing cross-floor Friend Cup bot pressure. No balance tuning authorized. Main approval remains required.
+
+## Shortcut implementation checkpoint - 2026-11-10
+- Batch 11 partial on stefanvargas100-hue/worlds-shortcuts at f1eb59e (polish 2797a9c, gameplay a7840d2). Reported final checks: 715 full tests, 25 focused, 32 related, fit 70/0, build/diff pass. Not integrated.
+- Lead inspected 390px screenshot sheet: route pedestrians/barriers and new worlds present. Easy-alley balance unresolved: fixed-x collision-heavy controller shows 6-11% gain and is not adequate fairness proof. Independent review/physical-input measurement brief: batch-11b-review.md. Real phones remain unchecked.
+
+## Visual reconciliation and shortcuts - 2026-11-10
+- Director confirmed new art worlds are authoritative: retain/adapt beneficial earlier polish, then improve shortcuts. Batch 11 brief: `game/rounds/round-02/batch-11-worlds-shortcuts.md`; Codex worker requested from current develop, separate from interrupted batch 10.
+- Do not wholesale merge batch 09's classic-look polish. Later Fable visual review remains planned. Main requires Director approval.
+
+## Art worlds checkpoint - 2026-11-10, Claude (design lead for the visual update)
+- Director ordered a visual update: every stage its own world, in three cup families. Built on `stefanvargas100-hue/art-styles` (35177ff) and merged into develop at 3c5e7c6 with Director approval to publish to the playtest link. 699/699 tests, build and diff check passed on the branch; the merged tree is identical.
+- Worlds: Fifth Avenue superhero comic, Central Park Sunday funnies, Brooklyn Bridge sunset pulp, Subway ink noir, Shibuya neo-noir, Takeshita neon pop, Terminal B space station. How it works and how to review: newest entry in `game/decisions.md`.
+- Not checked: real phones, phone performance of glow and rain, Japanese sign lettering on devices without those fonts. Menus, customise preview and podium still use the classic look.
+- Batch 09 visual pass has reported (`stefanvargas100-hue/visual-pass`, 243fd51) and is NOT merged. It polishes the classic look in files the art worlds also touch (`figures.js`, `render.js`, stage scenery), so review it against the art worlds before merging; some of it may be superseded.
+- Batch 10 playtest fixes: the Codex worker stopped on its usage limit with ten uncommitted files in the `playtest-fixes` workspace and no report. Still open; Director has not yet chosen who finishes it.
+- Lead work for this update was done from the Claude desktop app, which Orca cannot wake. Check workers by hand (`orca orchestration worker-list`).
+- Main merge still requires Director approval. Live migration 0003 remains unapplied.
+
 ## Director playtest feedback checkpoint - 2026-11-09
 - Clarified: host uses Start without separate Ready; fix clipped control. Totals concern Cup points: verify accumulation and show a clear animated +points award with a persistent numeric value. See intake clarification for acceptance criteria.
 - Director finished phone playtest of 35f4f72 and reported Subway shortcut emptiness, Friend lobby readiness/layout trouble, race totals trouble, and weak large-build balance; requested grouped tracks, group/custom-four Cups, zero-or-more bots, and finish spectating.

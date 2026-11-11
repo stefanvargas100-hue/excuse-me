@@ -3,6 +3,7 @@ import { ctx } from '../dom.js';
 import { touches } from '../input/input.js';
 import { H, UI, W } from './camera.js';
 import { FONT } from './draw.js';
+import { styleFamily } from './style.js';
 import { S } from '../sim/state.js';
 import { TUT } from '../sim/tutorial.js';
 
@@ -28,13 +29,20 @@ export function zoneGuide() {
 
 export function drawPops() {
   let y = H * 0.8;   // above the bottom HUD row, which would otherwise sit on the countdown and the pop-ups
+  const comic = styleFamily() === 'comic';   // New York: pop-ups are lettered like comic sound effects, the big ones on a burst
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   for (let i = S.pops.length - 1; i >= 0; i--) {
     const q = S.pops[i], a = clamp(1.3 - q.t, 0, 1), rise = q.t * 26;
     const pop = q.t < 0.12 ? 0.7 + q.t * 2.5 : 1;
     ctx.globalAlpha = a * 0.92;   // readable on the bright stages too
-    ctx.font = '700 ' + Math.round(q.size * 0.72 * pop * UI) + 'px ' + FONT;
-    ctx.lineWidth = 4.5; ctx.strokeStyle = 'rgba(30,20,45,0.85)'; ctx.lineJoin = 'round';
+    ctx.font = (comic ? "400 " : '700 ') + Math.round(q.size * 0.72 * pop * UI) + 'px ' + (comic ? "'Permanent Marker'," + FONT : FONT);
+    ctx.lineWidth = comic ? 7 : 4.5; ctx.strokeStyle = comic ? '#0d0b14' : 'rgba(30,20,45,0.85)'; ctx.lineJoin = 'round';
+    if (comic && q.size >= 24) {
+      const tw = ctx.measureText(q.text).width, rx = tw * 0.62 + 16, ry = q.size * 0.72 * UI * 0.95 + 10, n = 16;
+      ctx.beginPath();
+      for (let k = 0; k < n * 2; k++) { const an = k * Math.PI / n + i, rr = k % 2 ? 1 : 0.76; ctx.lineTo(W / 2 + Math.cos(an) * rx * rr, y - rise + Math.sin(an) * ry * rr); }
+      ctx.closePath(); ctx.fillStyle = '#fff6d6'; ctx.fill(); ctx.lineWidth = 3.5; ctx.stroke(); ctx.lineWidth = 7;
+    }
     ctx.strokeText(q.text, W / 2, y - rise);
     ctx.fillStyle = q.color; ctx.fillText(q.text, W / 2, y - rise);
     y -= q.size * 0.8;

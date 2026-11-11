@@ -161,7 +161,7 @@ test('slipstream does nothing outside a race', () => {
   const E = load(); E.setLevel(0); E.start('classic');
   for (let i = 0; i < 90; i++) { E.S.people.length = 0; E.S.nextChunk = 1e9; const p = E.mkPerson(E.S.px, E.S.pz + 2.5); p.vz = 3; E.tick(DT); }
   assert.strictEqual(E.S.draftT, 0);
-  assert.ok(E.S.speed <= 3.001);
+  assert.ok(E.S.speed <= 3 * E.S.moveStats.speed + .001, 'only the selected build affects the empty-lane pace');
 });
 
 test('slipstream: the closer you are, the sooner it charges', () => {
@@ -205,4 +205,19 @@ test('bots contest the race: Hard bots use the walkway and draft people more tha
   const sum = lvl => [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].reduce((a, s) => a + run(lvl, s), 0);
   const easy = sum(0), hard = sum(2);
   assert.ok(hard > 0 && hard > easy, 'time on the forward belt, Hard ' + hard + ' vs Easy ' + easy);
+});
+for (const who of ['player', 'bot']) test(`ordinary race ${who} retains pedestrian drafting`, () => {
+  const E = load(); E.start('race'); E.S.race.countT = 0;
+  const bot = E.S.race.bots[0]; E.S.race.bots = who === 'bot' ? [bot] : [];
+  const runner = who === 'bot' ? bot : E.S;
+  let maxBoost = 0;
+  for (let i = 0; i < 90; i++) {
+    E.S.people = []; E.S.nextChunk = 1e9;
+    const x = who === 'bot' ? bot.x : E.S.px, z = who === 'bot' ? bot.z : E.S.pz;
+    if (who === 'bot') E.S.px = -5;
+    const p = E.mkPerson(x, z + 2.5); p.vz = 3; p.vx = 0;
+    assert.ok(!p.racer, 'ordinary walker target');
+    E.tick(DT); maxBoost = Math.max(maxBoost, runner.draftT);
+  }
+  assert.ok(maxBoost > 0, 'pedestrian drafting earns the existing boost');
 });

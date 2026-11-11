@@ -27,7 +27,7 @@ export const hasRoutes = id => !!STAGES[id];
 export const zonesOf = id => (STAGES[id] ? STAGES[id].zones : []);
 export const routeCfg = id => STAGES[id] || null;
 // Added to race-record keys of a stage whose course has route zones, so old times and ghosts are never compared with new ones.
-export const courseTag = id => (sideRoutes(id).length ? ':sr1' : hasRoutes(id) ? ':rt' + ROUTE_RULES : '');
+export const courseTag = id => (sideRoutes(id).length ? ':sr2' : hasRoutes(id) ? ':rt' + ROUTE_RULES : '');
 
 // The x ranges of a barrier line that are open, as [from, to] pairs.
 export function openings(id, zone) {

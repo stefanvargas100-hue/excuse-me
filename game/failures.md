@@ -15,6 +15,7 @@ Problems the lead caused, why they got through, and what now prevents them. Upda
 
 | Mistake | Effect on the worker | Why it got past the lead | What prevents it now | Seen |
 |---|---|---|---|---|
+| Classic brief's no-pedestrian-drafting wording was global | Worker removed existing race drafting, requiring a fix and re-review | Lead did not distinguish new Classic behavior from unchanged race rules | Template fairness check now requires explicit target/unaffected modes; player/bot regression tests caught and verified restoration in batch 12c, independently cleared in 12d | 1 |
 | Report format in `AGENTS.md` conflicted with Orca's | Report missed the format, and the lead wrongly implied the worker slipped | Never read Orca's worker instructions | Plan check 1, and `process-review` | 1 |
 | `AGENTS.md` pointed every worker at the vision file | Workers read a file their batch did not need | Wrote the rule for leads and workers without separating them | Rule removed, and plan check 4 | 1 |
 | Hotfix target measured against the screen, not the card | Worker met a limit that was still wrong, then stopped to ask | Used the first limit I thought of | Plan check 2 | 1 |

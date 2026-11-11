@@ -47,6 +47,8 @@ for (const L of LEVELS) L.limit = Math.round(L.goal / 3.0 * 1.07 + 6);
 export let LVI = 0, LV = LEVELS[0], FOGc = hex(LV.fog), FOGCSS = LV.fog;
 
 export function setLevel(i) { LVI = i; LV = LEVELS[i]; FOGc = hex(LV.fog); FOGCSS = LV.fog; }
+// An art style can swap the haze colour that distance fades into (drawing only).
+export function setFog(h) { FOGc = hex(h); FOGCSS = h; }
 
 // The bridge approaches taper over eight metres, keeping the same boundaries in drawing and movement.
 export function halfAt(z) {

@@ -1,0 +1,11 @@
+{
+    "checkedAtUtc":  "2026-11-10T20:12:12.4872199Z",
+    "pageUrl":  "https://stefanvargas100-hue.github.io/excuse-me/playtest/",
+    "pageStatus":  200,
+    "bundleUrl":  "https://stefanvargas100-hue.github.io/excuse-me/playtest/assets/main.js",
+    "bundleStatus":  200,
+    "expectedBuildId":  "1f9faec",
+    "markerFound":  true,
+    "markerExcerpt":  "=e((()=\u003e{Ae=typeof location\u003c`u`\u0026\u0026/\\/playtest\\//.test(location.pathname||``),je=`1f9faec`}));function Ne(e){if(Le)try{navigator.vibrate\u0026\u0026navigator.vibrate(e)}cat",
+    "bundleSha256":  "a7c0260c68942aa267d3b298ba88261fd8fb06c05c18fbd586069562e7182639"
+}

@@ -84,7 +84,7 @@ test('quitting from the pause menu keeps your best score and distance', () => {
   E.pauseGame(); E.quitRun(); E.toMenu();
   assert.ok(E.tallyOf('bestScore') >= sc, 'score kept');
   assert.ok(E.tallyOf('far_airport') >= z - 1, 'distance kept');
-  assert.strictEqual(E.storage.excuseme_best_airport, String(sc));
+  assert.strictEqual(E.storage['excuseme_best_airport:cm2'], String(sc));
 });
 
 test('quitting a daily run saves its score and the try stays used', () => {

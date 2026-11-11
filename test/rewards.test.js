@@ -55,8 +55,8 @@ test('the burst makes you actually walk faster, and a bump cancels it', () => {
   if (E.S.bumpT > 0) assert.strictEqual(E.nearMul(E.S), 1, 'a bump ends the burst');
 });
 
-test('outside a race a near miss does not change your speed', () => {
+test('Classic near misses grant the shared speed multiplier', () => {
   const E = load(); E.setLevel(0); E.start(false, 'classic'); for (let i = 0; i < 30; i++) E.tick(DT);
   E.S.people.length = 0; passBy(E, 0.6);
-  assert.strictEqual(E.nearMul(E.S), 1);
+  assert.strictEqual(E.nearMul(E.S), 1.25);
 });

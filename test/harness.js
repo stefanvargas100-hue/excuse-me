@@ -37,7 +37,7 @@ function load(sourceFile, opts) {
     return elements.get(id);
   }
   // the game is ES modules; bundle them into one script so each load() gets its own independent copy of the game state
-  const code = esbuild.buildSync({ entryPoints: [sourceFile || path.join(__dirname, '..', 'src', 'main.js')], bundle: true, format: 'iife', write: false, logLevel: 'silent' }).outputFiles[0].text;
+  const code = esbuild.buildSync({ ...(opts?.seeded ? { stdin: { contents: "import '../src/main.js'; import {extendClassicPickups} from '../src/sim/powerups.js'; import {R,setR,mulberry32} from '../src/config/util.js'; Object.assign(window.__excuse,{extendClassicPickups,setR,mulberry32,random:()=>R()});", resolveDir: __dirname } } : { entryPoints: [sourceFile || path.join(__dirname, '..', 'src', 'main.js')] }), bundle: true, format: 'iife', write: false, logLevel: 'silent' }).outputFiles[0].text;
   const store = { excuseme_tut: '1' };   // skip the first-run tutorial
   const win = {
     innerWidth: 390, innerHeight: 844, devicePixelRatio: 2,
@@ -56,6 +56,8 @@ function load(sourceFile, opts) {
     requestAnimationFrame() { return 0; }, cancelAnimationFrame() {}, addEventListener() {}, removeEventListener() {}
   };
   sandbox.globalThis = sandbox; Object.assign(win, sandbox.window);
+  let wallTime = opts?.date?.getTime();
+  if (wallTime !== undefined) sandbox.Date = class extends Date { constructor(...a) { super(...(a.length ? a : [wallTime])); } static now() { return wallTime; } };
   if (opts && opts.clock) {
     sandbox.Date = class extends Date { static now() { return now; } };
     sandbox.setInterval = fn => { intervals.set(++timerId, fn); return timerId; };
@@ -67,6 +69,7 @@ function load(sourceFile, opts) {
   if (opts && opts.seed !== undefined) vm.runInContext('(function(){ var s = ' + (opts.seed >>> 0) + ' || 1; Math.random = function(){ s = (s + 0x6D2B79F5) | 0; var t = Math.imul(s ^ (s >>> 15), 1 | s); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; })()', sandbox);
   vm.runInContext(code, sandbox, { filename: 'game-bundle.js' });
   const E = sandbox.window.__excuse || win.__excuse;
+  E.setDate = date => { wallTime = date.getTime(); };
   E.storage = store;   // the fake localStorage, so tests can pick settings such as bot difficulty
   let lobbyTime = opts?.lobbyOffset || 0;
   if (E.useLobbyClock) E.useLobbyClock(() => lobbyTime);

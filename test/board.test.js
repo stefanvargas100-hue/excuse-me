@@ -156,3 +156,10 @@ test('race top twenty also includes your own ranked place', async () => {
  const fetch=async url => ({ok:true, headers:{get:()=> '0-0/25'}, json:async()=>url.includes('user_id=eq.me')?[{user_id:'me',name:'My Racer',score:1900000}]:url.includes('score=gt.')?[]:Array.from({length:20},(_,i)=>({user_id:'p'+i,name:'Other Racer',score:1990000-i}))});
  const b=createBoard({fetch,url:'https://fake',key:'pk',store:st}); const rows=await b.top('race:airport',20);assert.equal(rows.length,21);assert.equal(rows[20].rank,26);assert.equal(rows[20].you,true);
 });
+test('legacy and mp2 queues retain original full identities across reload and retry', async()=>{
+ const srv=fakeServer({down:true}),st=memStore();const first=make(srv,st);
+ const ids=['daily:2026-11-10','daily:2026-11-10:mp2','weekly:2026-W46','weekly:2026-W46:mp2'];
+ for(let i=0;i<ids.length;i++)await first.submit(ids[i],100+i);
+ srv.setDown(false);await make(srv,st).flush();await make(srv,st).flush();
+ assert.deepStrictEqual(srv.rows.map(r=>r.board).sort(),ids.sort());assert.equal(srv.rows.length,4);
+});

@@ -470,7 +470,9 @@ button:disabled.big, button:disabled.ghost { opacity: .5; cursor: default; }
 #boardList li .lv { font-size: 13px; color: var(--btn); white-space: nowrap; }
 #boardList li .sc { font-family: var(--display); font-variant-numeric: tabular-nums; }
 #boardList li.msg { justify-content: center; background: transparent; border-style: dashed; }
-#boardStages, #boardTabs { flex-wrap: nowrap; } #boardStages .chip, #boardTabs .chip { flex: 1 1 0; min-width: 0; padding: 0 4px; }
+#boardStages, #boardTabs { flex-wrap: nowrap; } #boardStages .chip { flex: 1 1 0; min-width: 0; padding: 0 4px; }
+#boardTabs .chip { flex: 1 0 auto; min-width: 0; padding: 0 4px; }
+#boards .boardtitle, #boardList li .lv { color: #a32b60; }
 
 /* Race: the progress bar becomes a thin line with a finish flag; a dot for every racer rides on top of it, yours biggest */
 .track.race { height: 4px; border: 0; border-radius: 2px; background: var(--ink); box-shadow: none; margin: 0 16px 0 4px; }

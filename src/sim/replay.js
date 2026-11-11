@@ -1,3 +1,4 @@
+import { classicTag } from './classic-rules.js';
 import { updateRoute } from '../config/side-routes.js';
 import { LV } from '../config/levels.js';
 import { store } from '../save/store.js';
@@ -17,7 +18,7 @@ import { splitPoints, timeAtZ, splitText, splitColor } from './splits.js';
 const GHOST_MAX = 1500;   // up to 10 minutes of your own samples
 export const GHOST_CLOSE_M = 60;
 const FRIEND_COLORS = ['#8be9fd', '#ff9f43', '#c792ff', '#7ee081'], LEADER_COLORS = ['#ff6b9d', '#ffb3d1', '#ff8fb8'];
-const ghostKey = () => recordKey((S.kind === 'race' ? 'excuseme_ghost_race_' + LV.id + courseTag(LV.id) : 'excuseme_ghost_' + LV.id), S.run);
+const ghostKey = () => recordKey((S.kind === 'race' ? 'excuseme_ghost_race_' + LV.id + courseTag(LV.id) : 'excuseme_ghost_' + LV.id + classicTag), S.run);
 const raceKind = () => S.kind === 'race' && !S.duel;
 const wantsGhost = () => (S.kind === 'classic' || raceKind()) && !S.tut && S.run.policy.ghosts;
 export const visibleGhost = () => (S.ghost && !S.ghost.hidden ? S.ghost : null);

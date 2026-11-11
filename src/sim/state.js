@@ -1,3 +1,4 @@
+import { classicTag } from './classic-rules.js';
 import { LV, SPAWN_FAR } from '../config/levels.js';
 import { BASE } from '../config/tuning.js';
 import { rnd } from '../config/util.js';
@@ -24,7 +25,7 @@ export const goalOf = () => (S && S.endless ? Infinity : LV.goal);
 export let raceBuild = false;
 export function setRaceBuild(v) { raceBuild = v; }
 
-export const bestOf = id => parseInt(store.get('excuseme_best_' + id, '0'), 10) || 0;
+export const bestOf = id => parseInt(store.get('excuseme_best_' + id + classicTag, '0'), 10) || 0;
 
 
 // start() hands the next run's options over here, so even the first player model is built with them.
@@ -34,7 +35,7 @@ export function setNextRun(r) { nextRun = r; }
 export function reset() {
   const run = nextRun || makeRun(); nextRun = null;
   setCounting(run.policy.progress);
-  S = { run, clean: newClean(), px: 0, pz: 0, vx: 0, speed: BASE, energy: 100, exhausted: false, boostV: 0, step: 0, camX: 0,
+  S = { competition: null, moveStats: null, pickups: [], pickupNext: 0, puT: 0, run, clean: newClean(), px: 0, pz: 0, vx: 0, speed: BASE, energy: 100, exhausted: false, boostV: 0, step: 0, camX: 0,
         time: 0, people: [], cars: [], carT: [0, 0.6, 1.2], xings: [], flows: [], waveT: 4, nextChunk: 14, overT: 0, live: false, clock: 0,
         fastT: 2, rivalT: 7, dodged: 0, close: 0, passed: 0, heat: 0,
         score: 0, chain: 0, bestChain: 0, lastPassT: -9, lastPass: null,

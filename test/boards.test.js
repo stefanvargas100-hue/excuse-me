@@ -13,16 +13,17 @@ test('tabs: Daily, Weekly, Classic and Challenge', () => {
 
 test('daily and weekly boards use today and this week; classic has one board per stage', () => {
   const now = new Date(), y = now.getFullYear(), mo = String(now.getMonth() + 1).padStart(2, '0'), d = String(now.getDate()).padStart(2, '0');
-  assert.strictEqual(boardIdFor('daily', 0), 'daily:' + y + '-' + mo + '-' + d);
-  assert.match(boardIdFor('weekly', 0), /^weekly:\d{4}-W\d{2}$/);
-  assert.strictEqual(boardIdFor('classic', 0), 'classic:airport');
-  assert.strictEqual(boardIdFor('classic', 1), 'classic:nyc');
-  assert.strictEqual(boardIdFor('classic', 2), 'classic:shibuya');
+  assert.strictEqual(boardIdFor('daily', 0), 'daily:' + y + '-' + mo + '-' + d + ':mp2');
+  assert.match(boardIdFor('weekly', 0), /^weekly:\d{4}-W\d{2}:mp2$/);
+  assert.strictEqual(boardIdFor('classic', 0), 'classic:airport:cm2');
+  assert.strictEqual(boardIdFor('classic', 1), 'classic:nyc:cm2');
+  assert.strictEqual(boardIdFor('classic', 2), 'classic:shibuya:cm2');
 });
 
-test('the same names the game writes: daily and weekly runs submit with these keys', () => {
-  const fs = require('fs'), src = fs.readFileSync(path.join(__dirname, '..', 'src', 'online', 'online.js'), 'utf8');
-  assert.ok(src.includes("export const boardId = (mode, key) => mode + ':' + key;"), 'board id format unchanged');
+test('menu, results and submission agree, without double suffixing', () => {
+ const out=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/online/online.js')],bundle:true,format:'cjs',write:false,logLevel:'silent'}).outputFiles[0].text;
+ const vm=require('vm'), m={exports:{}};vm.runInNewContext(out,{module:m,exports:m.exports,localStorage:{getItem:()=>null},window:{},document:{getElementById:()=>require('./harness').stub()},navigator:{}});
+ for(const mode of ['daily','weekly']) { const board=boardIdFor(mode,0), key=board.slice(mode.length+1);assert.equal(m.exports.boardId(mode,key),board);assert.equal(m.exports.boardId(mode,key.replace(':mp2','')),board); }
 });
 
 test('titles say what you are looking at', () => {

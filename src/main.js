@@ -22,6 +22,9 @@ import { LOOK } from './save/progress.js';
 import { rotatingList } from './save/rotating.js';
 import { account, setLevelUpListener } from './save/level.js';
 import { modOf } from './sim/modifiers.js';
+import { boardId } from './online/online.js';
+import { boardIdFor } from './online/boards.js';
+import { collectPowerups } from './sim/powerups.js';
 import { makeRun, recordKey } from './sim/runopts.js';
 import { cleanBonusFor, stepClean } from './sim/clean.js';
 
@@ -34,6 +37,7 @@ import { weekKey } from './config/util.js';
 import { duelReceive, roomElim, setRoomElim, roomLevel, setRoomLevel, hostRoom, hostStart, injectRoomMessage, joinRoom, leaveRoom, lobbyPlayers, lobbyStatus, rematchState, requestRematch, startDuel, useRoomFactory, useLobbyClock, setRoomReady, canStartRoom, roomLobbyState } from './online/duel.js';
 import { initFriend } from './ui/friend.js';
 import { pickVariant, setVariant, variantOf, VARIANTS } from './render/weather.js';
+import { forceStyle, styleId } from './render/style.js';
 
 
 
@@ -45,10 +49,8 @@ function frame(now) {
   const raw = Math.min(0.05, Math.max(0, (now - lastT) / 1000)); lastT = now;
   dtHist.push(raw); if (dtHist.length > 4) dtHist.shift();
   const dt = raw > 0.04 ? raw : dtHist.reduce((a, b) => a + b, 0) / dtHist.length;   // average the last few frames; keep real long gaps
-  // slow motion runs on real time so it always lasts the same
-  S.slowT -= dt; S.slow += ((S.slowT > 0 ? 1 : 0) - S.slow) * Math.min(1, dt * (S.slowT > 0 ? 14 : 5));
   S.breakFlash = Math.max(0, S.breakFlash - dt);
-  let gdt = dt * (1 - 0.68 * S.slow);
+  let gdt = dt;
   if (S.hitStop > 0) { S.hitStop -= dt; if (!calm) gdt = 0; }
   Music.wind(state === 'play' && S.race ? (S.draftT > 0 ? 0.7 : draftCharge(S)) : 0);
   const n = Math.max(1, Math.ceil(gdt / 0.0167));
@@ -78,9 +80,10 @@ reset();
 
 buildLevels();
 
-window.__excuse = { startCup, nextCupRound, cupState, podiumOf, drawPodium, setVariant, variantOf, VARIANTS, pickVariant, startChallenge, utcWeekKey, challengeFor, challengeRemainingMs, encodeChallengeTime, decodeChallengeTime, validChallengeTime, boardNameFor, challengeSubmitEnabled: CHALLENGE_SUBMIT_ENABLED, resumeGame, roomElim, setRoomElim, elimCheckpoints, elimLast, restartRun, onStrip, routeZones: zonesOf, routeOpenings: openings, routeCfg, beltAt, startPractice, lessonRetry, lessonNext, botExcuseMe, stepClean, cleanBonusFor, recordKey, makeRun, hud, statDetails, raceCollide, setTopGhostFetcher, visibleGhosts, visibleGhost, genChunk, touches, onPass, nearMul, roomLevel, setRoomLevel, get LV() { return LV; }, injectRoomMessage, lobbyPlayers, lobbyStatus, draftMul, powerMul, xp: () => account.xp(), account, startDuel, duelReceive, hostRoom, hostStart, joinRoom, leaveRoom, rematchState, requestRematch, useRoomFactory, nextGoal, tallySnapshot, modOf, rotatingList, tick, reset, start, setLevel, get S() { return S; }, get state() { return state; }, keys, action, onTap, render, drawPreview, LEVELS, runEvent, shout, weekKey, hasPlayed, pauseGame, quitRun, toMenu, CHALLENGES, isLocked, tallyOf, track, trackMax, racePace, fitOf, BODIES, BUILDS, ITEM_STATS, effects, statsOf, LOOK, mkPerson: (x, z) => mk(x, z, { hx: 0, hz: 1, v0: 1 }) };
+window.__excuse = { boardId, boardIdFor, collectPowerups, startCup, nextCupRound, cupState, podiumOf, drawPodium, setVariant, variantOf, VARIANTS, pickVariant, startChallenge, utcWeekKey, challengeFor, challengeRemainingMs, encodeChallengeTime, decodeChallengeTime, validChallengeTime, boardNameFor, challengeSubmitEnabled: CHALLENGE_SUBMIT_ENABLED, resumeGame, roomElim, setRoomElim, elimCheckpoints, elimLast, restartRun, onStrip, routeZones: zonesOf, routeOpenings: openings, routeCfg, beltAt, startPractice, lessonRetry, lessonNext, botExcuseMe, stepClean, cleanBonusFor, recordKey, makeRun, hud, statDetails, raceCollide, setTopGhostFetcher, visibleGhosts, visibleGhost, genChunk, touches, onPass, nearMul, roomLevel, setRoomLevel, get LV() { return LV; }, injectRoomMessage, lobbyPlayers, lobbyStatus, draftMul, powerMul, xp: () => account.xp(), account, startDuel, duelReceive, hostRoom, hostStart, joinRoom, leaveRoom, rematchState, requestRematch, useRoomFactory, nextGoal, tallySnapshot, modOf, rotatingList, tick, reset, start, setLevel, get S() { return S; }, get state() { return state; }, keys, action, onTap, render, drawPreview, LEVELS, runEvent, shout, weekKey, hasPlayed, pauseGame, quitRun, toMenu, CHALLENGES, isLocked, tallyOf, track, trackMax, racePace, fitOf, BODIES, BUILDS, ITEM_STATS, effects, statsOf, LOOK, mkPerson: (x, z) => mk(x, z, { hx: 0, hz: 1, v0: 1 }) };
 
 Object.assign(window.__excuse, { useLobbyClock, setRoomReady, canStartRoom, roomLobbyState });
+Object.assign(window.__excuse, { forceStyle, styleId });
 requestAnimationFrame(frame);
 
 // Review tool: add ?lineup to the address to see every body and clothing item side by side.

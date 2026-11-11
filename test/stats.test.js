@@ -75,7 +75,7 @@ test('race: recovery refills stamina faster and shortens a bump', () => {
   assert.ok(fast.S.race.me.bumpT < slow.S.race.me.bumpT);
 });
 
-test('classic ignores stats: a large and a small build walk exactly the same', () => {
+test('Classic applies build and gear speed', () => {
   const run = build => {
     const E = load(); Object.assign(E.LOOK, { build, shoeType: build === 'large' ? 'runners' : 'slides' });
     E.setLevel(0); E.start('classic');
@@ -84,7 +84,7 @@ test('classic ignores stats: a large and a small build walk exactly the same', (
     E.S.energy = 40; runEmpty(E, 30);
     return [E.S.speed, E.S.pz, E.S.px, E.S.energy];
   };
-  assert.deepStrictEqual(run('large'), run('small'));
+  assert.ok(run('large')[0] > run('small')[0]);
 });
 
 test('bots get a build and gear with the same stat rules', () => {
@@ -105,12 +105,12 @@ test('male and female have different stats and an equal trade-off', () => {
   assert.strictEqual(sumOf(m), sumOf(f));
 });
 
-test('race: body changes real speed and recovery, classic ignores it', () => {
+test('body changes real speed and recovery in races and Classic', () => {
   const m = racer({ body: 'm' }), f = racer({ body: 'f' });
   assert.ok(m.S.race.me.speed > f.S.race.me.speed);
   assert.ok(f.S.race.me.regen > m.S.race.me.regen);
   const run = body => { const E = load(); E.LOOK.body = body; E.setLevel(0); E.start('classic'); runEmpty(E, 90); return [E.S.speed, E.S.pz]; };
-  assert.deepStrictEqual(run('m'), run('f'));
+  assert.ok(run('m')[0] > run('f')[0]);
 });
 
 const plain = { body: 'm', build: 'medium', shirtType: 'tee', pantsType: 'jeans', shoeType: 'sneakers', hat: 'cap', pack: 'pack' };
@@ -136,7 +136,7 @@ test('fit check: a mixed bag with a clear purpose earns a boost too, and the tot
   assert.ok(fitOf(stacked).boost <= 3);
 });
 
-test('fit check adds to all three stats, in races only, and a hidden headpiece still counts', () => {
+test('fit check adds to all three stats, in races and Classic, and a hidden headpiece still counts', () => {
   const E = load();
   const off = E.statsOf({ ...y2k, pack: 'pack' }), on = E.statsOf(y2k);
   assert.ok(on.rec > off.rec - 1);
@@ -144,5 +144,5 @@ test('fit check adds to all three stats, in races only, and a hidden headpiece s
   const base = E.statsOf(plain), full = E.statsOf(y2k);
   assert.ok(full.speed + full.accel + full.rec > base.speed + base.accel + base.rec, 'a full set is worth more than plain clothes');
   const run = look => { const G = load(); Object.assign(G.LOOK, look); G.setLevel(0); G.start('classic'); for (let i = 0; i < 90; i++) { G.S.people.length = 0; G.S.nextChunk = 1e9; G.tick(DT); } return [G.S.speed, G.S.pz]; };
-  assert.deepStrictEqual(run(plain), run(y2k));
+  assert.ok(run(y2k)[0] > run(plain)[0]);
 });
