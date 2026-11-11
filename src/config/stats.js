@@ -1,5 +1,5 @@
 import { BASE, BOOST, REGEN } from './tuning.js';
-/* ---------- race stats: your build and the type of gear you wear. Race mode only; colours never matter. ---------- */
+/* ---------- race stats: your build and the type of gear you wear. Shared by race and Classic movement; colours never matter. ---------- */
 // Every entry is points of [speed, accel, rec]. Each one is a trade-off that adds up to zero, so nothing is simply better.
 const pts = (speed, accel, rec) => ({ speed, accel, rec });
 const NONE = pts(0, 0, 0);
@@ -63,19 +63,19 @@ export function fitOf(look) {
   return { style, count, stylePts, focus, focusPts, boost: Math.min(3, stylePts + focusPts) };
 }
 
-const CAP = 10;   // no loadout can stack a stat past this many points
+const CAP = 10;   // non-build speed cap; combined acceleration/recovery cap
 const clampPts = v => Math.max(-CAP, Math.min(CAP, v));
 
 export function statsOf(look) {
   const b = BUILDS[look.build] || BUILDS.medium;
   const body = BODIES[look.body] || BODIES.m;
-  let speed = b.speed + body.speed, accel = b.accel + body.accel, rec = b.rec + body.rec;
+  let speed = body.speed, accel = b.accel + body.accel, rec = b.rec + body.rec;
   for (const key in ITEM_STATS) {
     const it = ITEM_STATS[key][look[key]] || NONE;
     speed += it.speed; accel += it.accel; rec += it.rec;
   }
   const fit = fitOf(look).boost;
-  return { speed: clampPts(speed + fit), accel: clampPts(accel + fit), rec: clampPts(rec + fit) };
+  return { speed: clampPts(speed + fit) + b.speed, accel: clampPts(accel + fit), rec: clampPts(rec + fit) };
 }
 
 // What the points do in a race.
@@ -95,7 +95,9 @@ export function effects(s) {
 
 // The same numbers as percentages, for the customize screen.
 export const statPercents = s => ({ speed: s.speed * SPEED_PER * 100, accel: s.accel * ACCEL_PER * 100, rec: s.rec * REC_PER * 100 });
+// Keep the combined non-speed cap stable for existing consumers.
 export const STAT_CAP = CAP;
+export const STAT_CAPS = { speed: CAP + 3, accel: CAP, rec: CAP };
 
 // A short label for a chip, for example "+Speed -Recovery".
 export function statHint(it) {

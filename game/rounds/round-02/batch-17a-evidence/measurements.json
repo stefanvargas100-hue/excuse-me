@@ -1,0 +1,912 @@
+{
+  "source": "Active production stats; compared exactly with historical A rows (historical files unchanged)",
+  "seed": 42,
+  "dt": 0.016666666666666666,
+  "isolated": true,
+  "rows": [
+    {
+      "kit": "plain",
+      "look": {
+        "shirtType": "tee",
+        "pantsType": "jeans",
+        "shoeType": "sneakers",
+        "hat": "cap",
+        "pack": "pack",
+        "body": "m",
+        "build": "small"
+      },
+      "points": {
+        "speed": -1,
+        "accel": 4,
+        "rec": -3
+      },
+      "st": {
+        "speed": 0.994,
+        "accel": 4.2,
+        "lat": 1.12,
+        "regen": 0.88,
+        "bumpT": 1.3975
+      },
+      "target": 2.982,
+      "actual": 2.981999999999997,
+      "firstSpeed": 0.20874000000000004,
+      "t90": 0.5333333333333333,
+      "t99": 1.0666666666666667,
+      "secondsAbove99": 58.93333333333333,
+      "shortDistance": 5.303809067441035,
+      "longDistance": 178.25970000000441,
+      "bump95Seconds": 2,
+      "bump95Distance": 3.028473923834979,
+      "minBumpSpeed": 0.8961245972262591,
+      "steer90": 0.2833333333333333,
+      "refill": 12.633333333333333,
+      "burstDuty": 0.2465277777777778,
+      "bursts": 25,
+      "burstMeanSpeed": 3.5464770580048377,
+      "minEnergy": 40.01199999999724
+    },
+    {
+      "kit": "plain",
+      "look": {
+        "shirtType": "tee",
+        "pantsType": "jeans",
+        "shoeType": "sneakers",
+        "hat": "cap",
+        "pack": "pack",
+        "body": "m",
+        "build": "medium"
+      },
+      "points": {
+        "speed": 2,
+        "accel": 0,
+        "rec": -2
+      },
+      "st": {
+        "speed": 1.012,
+        "accel": 3.5,
+        "lat": 1,
+        "regen": 0.92,
+        "bumpT": 1.3650000000000002
+      },
+      "target": 3.036,
+      "actual": 3.0359999999999965,
+      "firstSpeed": 0.1771,
+      "t90": 0.65,
+      "t99": 1.2833333333333332,
+      "secondsAbove99": 58.71666666666667,
+      "shortDistance": 5.255773703261217,
+      "longDistance": 181.3431714285798,
+      "bump95Seconds": 2.0833333333333335,
+      "bump95Distance": 3.314559825966662,
+      "minBumpSpeed": 0.9126472529772709,
+      "steer90": 0.31666666666666665,
+      "refill": 12.083333333333334,
+      "burstDuty": 0.2563888888888889,
+      "bursts": 26,
+      "burstMeanSpeed": 3.608985373688457,
+      "minEnergy": 40.00599999999952
+    },
+    {
+      "kit": "plain",
+      "look": {
+        "shirtType": "tee",
+        "pantsType": "jeans",
+        "shoeType": "sneakers",
+        "hat": "cap",
+        "pack": "pack",
+        "body": "m",
+        "build": "large"
+      },
+      "points": {
+        "speed": 5,
+        "accel": -4,
+        "rec": -1
+      },
+      "st": {
+        "speed": 1.03,
+        "accel": 2.8000000000000003,
+        "lat": 0.88,
+        "regen": 0.96,
+        "bumpT": 1.3325
+      },
+      "target": 3.09,
+      "actual": 3.0899999999999954,
+      "firstSpeed": 0.1442,
+      "t90": 0.8166666666666667,
+      "t99": 1.6166666666666667,
+      "secondsAbove99": 58.38333333333333,
+      "shortDistance": 5.131328099530749,
+      "longDistance": 184.34792857143697,
+      "bump95Seconds": 2.25,
+      "bump95Distance": 3.8156308409769033,
+      "minBumpSpeed": 0.9292374853950022,
+      "steer90": 0.36666666666666664,
+      "refill": 11.583333333333334,
+      "burstDuty": 0.26625,
+      "bursts": 27,
+      "burstMeanSpeed": 3.6577178797879566,
+      "minEnergy": 40.04799999999902
+    },
+    {
+      "kit": "speed",
+      "look": {
+        "shirtType": "suit",
+        "pantsType": "joggers",
+        "shoeType": "runners",
+        "hat": "cap",
+        "pack": "pack",
+        "body": "m",
+        "build": "small"
+      },
+      "points": {
+        "speed": 7,
+        "accel": 3,
+        "rec": -5
+      },
+      "st": {
+        "speed": 1.042,
+        "accel": 4.0249999999999995,
+        "lat": 1.09,
+        "regen": 0.8,
+        "bumpT": 1.4625000000000001
+      },
+      "target": 3.1260000000000003,
+      "actual": 3.1259999999999972,
+      "firstSpeed": 0.20970250000000001,
+      "t90": 0.5666666666666667,
+      "t99": 1.1166666666666667,
+      "secondsAbove99": 58.88333333333333,
+      "shortDistance": 5.527628301462282,
+      "longDistance": 186.83545403725896,
+      "bump95Seconds": 2.0833333333333335,
+      "bump95Distance": 3.269874154628989,
+      "minBumpSpeed": 0.9389284497283287,
+      "steer90": 0.2833333333333333,
+      "refill": 13.9,
+      "burstDuty": 0.23597222222222222,
+      "bursts": 24,
+      "burstMeanSpeed": 3.683159592195824,
+      "minEnergy": 40.11999999999375
+    },
+    {
+      "kit": "speed",
+      "look": {
+        "shirtType": "suit",
+        "pantsType": "joggers",
+        "shoeType": "runners",
+        "hat": "cap",
+        "pack": "pack",
+        "body": "m",
+        "build": "medium"
+      },
+      "points": {
+        "speed": 10,
+        "accel": -1,
+        "rec": -4
+      },
+      "st": {
+        "speed": 1.06,
+        "accel": 3.3249999999999997,
+        "lat": 0.97,
+        "regen": 0.84,
+        "bumpT": 1.4300000000000002
+      },
+      "target": 3.18,
+      "actual": 3.179999999999996,
+      "firstSpeed": 0.176225,
+      "t90": 0.6833333333333333,
+      "t99": 1.35,
+      "secondsAbove99": 58.65,
+      "shortDistance": 5.457574426700064,
+      "longDistance": 189.89660902254832,
+      "bump95Seconds": 2.2,
+      "bump95Distance": 3.6617150710751782,
+      "minBumpSpeed": 0.9553661471624187,
+      "steer90": 0.3333333333333333,
+      "refill": 13.233333333333333,
+      "burstDuty": 0.23930555555555555,
+      "bursts": 25,
+      "burstMeanSpeed": 3.7288084708747804,
+      "minEnergy": 40.00599999999787
+    },
+    {
+      "kit": "speed",
+      "look": {
+        "shirtType": "suit",
+        "pantsType": "joggers",
+        "shoeType": "runners",
+        "hat": "cap",
+        "pack": "pack",
+        "body": "m",
+        "build": "large"
+      },
+      "points": {
+        "speed": 13,
+        "accel": -5,
+        "rec": -3
+      },
+      "st": {
+        "speed": 1.078,
+        "accel": 2.625,
+        "lat": 0.85,
+        "regen": 0.88,
+        "bumpT": 1.3975
+      },
+      "target": 3.234,
+      "actual": 3.233999999999995,
+      "firstSpeed": 0.1414875,
+      "t90": 0.8666666666666667,
+      "t99": 1.7166666666666666,
+      "secondsAbove99": 58.28333333333333,
+      "shortDistance": 5.295392321298975,
+      "longDistance": 192.86189999999638,
+      "bump95Seconds": 2.3666666666666667,
+      "bump95Distance": 4.171709959720081,
+      "minBumpSpeed": 0.9718534364284781,
+      "steer90": 0.36666666666666664,
+      "refill": 12.633333333333333,
+      "burstDuty": 0.2465277777777778,
+      "bursts": 25,
+      "burstMeanSpeed": 3.7718457145422213,
+      "minEnergy": 40.01199999999724
+    },
+    {
+      "kit": "responsive",
+      "look": {
+        "shirtType": "tank",
+        "pantsType": "shorts",
+        "shoeType": "slides",
+        "hat": "cap",
+        "pack": "pack",
+        "body": "m",
+        "build": "small"
+      },
+      "points": {
+        "speed": -3,
+        "accel": 10,
+        "rec": -3
+      },
+      "st": {
+        "speed": 0.982,
+        "accel": 5.25,
+        "lat": 1.3,
+        "regen": 0.88,
+        "bumpT": 1.3975
+      },
+      "target": 2.9459999999999997,
+      "actual": 2.9459999999999975,
+      "firstSpeed": 0.257775,
+      "t90": 0.43333333333333335,
+      "t99": 0.85,
+      "secondsAbove99": 59.15,
+      "shortDistance": 5.379965797538594,
+      "longDistance": 176.2479571428629,
+      "bump95Seconds": 1.8666666666666667,
+      "bump95Distance": 2.6912831715073784,
+      "minBumpSpeed": 0.8853061916259419,
+      "steer90": 0.25,
+      "refill": 12.633333333333333,
+      "burstDuty": 0.2465277777777778,
+      "bursts": 25,
+      "burstMeanSpeed": 3.5272478362154085,
+      "minEnergy": 40.01199999999724
+    },
+    {
+      "kit": "responsive",
+      "look": {
+        "shirtType": "tank",
+        "pantsType": "shorts",
+        "shoeType": "slides",
+        "hat": "cap",
+        "pack": "pack",
+        "body": "m",
+        "build": "medium"
+      },
+      "points": {
+        "speed": 0,
+        "accel": 8,
+        "rec": -2
+      },
+      "st": {
+        "speed": 1,
+        "accel": 4.8999999999999995,
+        "lat": 1.24,
+        "regen": 0.92,
+        "bumpT": 1.3650000000000002
+      },
+      "target": 3,
+      "actual": 2.9999999999999973,
+      "firstSpeed": 0.24499999999999994,
+      "t90": 0.4666666666666667,
+      "t99": 0.9166666666666666,
+      "secondsAbove99": 59.083333333333336,
+      "shortDistance": 5.437775517884854,
+      "longDistance": 179.43775510204725,
+      "bump95Seconds": 1.8666666666666667,
+      "bump95Distance": 2.784468191092946,
+      "minBumpSpeed": 0.9018253487917696,
+      "steer90": 0.25,
+      "refill": 12.083333333333334,
+      "burstDuty": 0.2563888888888889,
+      "bursts": 26,
+      "burstMeanSpeed": 3.608604991604372,
+      "minEnergy": 40.00599999999952
+    },
+    {
+      "kit": "responsive",
+      "look": {
+        "shirtType": "tank",
+        "pantsType": "shorts",
+        "shoeType": "slides",
+        "hat": "cap",
+        "pack": "pack",
+        "body": "m",
+        "build": "large"
+      },
+      "points": {
+        "speed": 3,
+        "accel": 4,
+        "rec": -1
+      },
+      "st": {
+        "speed": 1.018,
+        "accel": 4.2,
+        "lat": 1.12,
+        "regen": 0.96,
+        "bumpT": 1.3325
+      },
+      "target": 3.0540000000000003,
+      "actual": 3.053999999999997,
+      "firstSpeed": 0.21378000000000003,
+      "t90": 0.5333333333333333,
+      "t99": 1.0666666666666667,
+      "secondsAbove99": 58.93333333333333,
+      "shortDistance": 5.431868843717279,
+      "longDistance": 182.563757142868,
+      "bump95Seconds": 1.9333333333333333,
+      "bump95Distance": 3.0405309749200065,
+      "minBumpSpeed": 0.9184114176039927,
+      "steer90": 0.2833333333333333,
+      "refill": 11.583333333333334,
+      "burstDuty": 0.26625,
+      "bursts": 27,
+      "burstMeanSpeed": 3.678743420703491,
+      "minEnergy": 40.04799999999902
+    },
+    {
+      "kit": "plain",
+      "look": {
+        "shirtType": "tee",
+        "pantsType": "jeans",
+        "shoeType": "sneakers",
+        "hat": "cap",
+        "pack": "pack",
+        "body": "f",
+        "build": "small"
+      },
+      "points": {
+        "speed": -5,
+        "accel": 4,
+        "rec": 1
+      },
+      "st": {
+        "speed": 0.97,
+        "accel": 4.2,
+        "lat": 1.12,
+        "regen": 1.04,
+        "bumpT": 1.2675
+      },
+      "target": 2.91,
+      "actual": 2.909999999999997,
+      "firstSpeed": 0.20370000000000002,
+      "t90": 0.5333333333333333,
+      "t99": 1.0666666666666667,
+      "secondsAbove99": 58.93333333333333,
+      "shortDistance": 5.175749291164795,
+      "longDistance": 173.9556428571372,
+      "bump95Seconds": 1.8833333333333333,
+      "bump95Distance": 2.853530506473035,
+      "minBumpSpeed": 0.8757356491722313,
+      "steer90": 0.2833333333333333,
+      "refill": 10.7,
+      "burstDuty": 0.27875,
+      "bursts": 29,
+      "burstMeanSpeed": 3.5304430968216542,
+      "minEnergy": 40.0000000000006
+    },
+    {
+      "kit": "plain",
+      "look": {
+        "shirtType": "tee",
+        "pantsType": "jeans",
+        "shoeType": "sneakers",
+        "hat": "cap",
+        "pack": "pack",
+        "body": "f",
+        "build": "medium"
+      },
+      "points": {
+        "speed": -2,
+        "accel": 0,
+        "rec": 2
+      },
+      "st": {
+        "speed": 0.988,
+        "accel": 3.5,
+        "lat": 1,
+        "regen": 1.08,
+        "bumpT": 1.2349999999999999
+      },
+      "target": 2.964,
+      "actual": 2.9639999999999964,
+      "firstSpeed": 0.1729,
+      "t90": 0.65,
+      "t99": 1.2833333333333332,
+      "secondsAbove99": 58.71666666666667,
+      "shortDistance": 5.131130848638422,
+      "longDistance": 177.0425428571406,
+      "bump95Seconds": 1.9666666666666666,
+      "bump95Distance": 3.132314407928183,
+      "minBumpSpeed": 0.8925160626994265,
+      "steer90": 0.31666666666666665,
+      "refill": 10.3,
+      "burstDuty": 0.28597222222222224,
+      "bursts": 29,
+      "burstMeanSpeed": 3.588534888197239,
+      "minEnergy": 40.0000000000023
+    },
+    {
+      "kit": "plain",
+      "look": {
+        "shirtType": "tee",
+        "pantsType": "jeans",
+        "shoeType": "sneakers",
+        "hat": "cap",
+        "pack": "pack",
+        "body": "f",
+        "build": "large"
+      },
+      "points": {
+        "speed": 1,
+        "accel": -4,
+        "rec": 3
+      },
+      "st": {
+        "speed": 1.006,
+        "accel": 2.8000000000000003,
+        "lat": 0.88,
+        "regen": 1.12,
+        "bumpT": 1.2025000000000001
+      },
+      "target": 3.018,
+      "actual": 3.0179999999999954,
+      "firstSpeed": 0.14084,
+      "t90": 0.8166666666666667,
+      "t99": 1.6166666666666667,
+      "secondsAbove99": 58.38333333333333,
+      "shortDistance": 5.011763172939742,
+      "longDistance": 180.05244285712652,
+      "bump95Seconds": 2.1333333333333333,
+      "bump95Distance": 3.621338022898611,
+      "minBumpSpeed": 0.9094182864363245,
+      "steer90": 0.36666666666666664,
+      "refill": 9.933333333333334,
+      "burstDuty": 0.29583333333333334,
+      "bursts": 30,
+      "burstMeanSpeed": 3.6347467313716435,
+      "minEnergy": 40.000000000000895
+    },
+    {
+      "kit": "speed",
+      "look": {
+        "shirtType": "suit",
+        "pantsType": "joggers",
+        "shoeType": "runners",
+        "hat": "cap",
+        "pack": "pack",
+        "body": "f",
+        "build": "small"
+      },
+      "points": {
+        "speed": 4,
+        "accel": 3,
+        "rec": -1
+      },
+      "st": {
+        "speed": 1.024,
+        "accel": 4.0249999999999995,
+        "lat": 1.09,
+        "regen": 0.96,
+        "bumpT": 1.3325
+      },
+      "target": 3.072,
+      "actual": 3.071999999999997,
+      "firstSpeed": 0.20607999999999999,
+      "t90": 0.5666666666666667,
+      "t99": 1.1166666666666667,
+      "secondsAbove99": 58.88333333333333,
+      "shortDistance": 5.432141440208615,
+      "longDistance": 183.60797018632337,
+      "bump95Seconds": 1.95,
+      "bump95Distance": 3.0905443726569395,
+      "minBumpSpeed": 0.9238244514994973,
+      "steer90": 0.2833333333333333,
+      "refill": 11.583333333333334,
+      "burstDuty": 0.26625,
+      "bursts": 27,
+      "burstMeanSpeed": 3.694697876217002,
+      "minEnergy": 40.04799999999902
+    },
+    {
+      "kit": "speed",
+      "look": {
+        "shirtType": "suit",
+        "pantsType": "joggers",
+        "shoeType": "runners",
+        "hat": "cap",
+        "pack": "pack",
+        "body": "f",
+        "build": "medium"
+      },
+      "points": {
+        "speed": 7,
+        "accel": -1,
+        "rec": 0
+      },
+      "st": {
+        "speed": 1.042,
+        "accel": 3.3249999999999997,
+        "lat": 0.97,
+        "regen": 1,
+        "bumpT": 1.3
+      },
+      "target": 3.1260000000000003,
+      "actual": 3.1259999999999963,
+      "firstSpeed": 0.1732325,
+      "t90": 0.6833333333333333,
+      "t99": 1.35,
+      "secondsAbove99": 58.65,
+      "shortDistance": 5.364898634548552,
+      "longDistance": 186.67194962405208,
+      "bump95Seconds": 2.0666666666666664,
+      "bump95Distance": 3.4746047820669026,
+      "minBumpSpeed": 0.9404938153618656,
+      "steer90": 0.3333333333333333,
+      "refill": 11.116666666666667,
+      "burstDuty": 0.2761111111111111,
+      "bursts": 28,
+      "burstMeanSpeed": 3.7518752816674437,
+      "minEnergy": 40
+    },
+    {
+      "kit": "speed",
+      "look": {
+        "shirtType": "suit",
+        "pantsType": "joggers",
+        "shoeType": "runners",
+        "hat": "cap",
+        "pack": "pack",
+        "body": "f",
+        "build": "large"
+      },
+      "points": {
+        "speed": 10,
+        "accel": -5,
+        "rec": 1
+      },
+      "st": {
+        "speed": 1.06,
+        "accel": 2.625,
+        "lat": 0.85,
+        "regen": 1.04,
+        "bumpT": 1.2675
+      },
+      "target": 3.18,
+      "actual": 3.1799999999999953,
+      "firstSpeed": 0.139125,
+      "t90": 0.8666666666666667,
+      "t99": 1.7166666666666666,
+      "secondsAbove99": 58.28333333333333,
+      "shortDistance": 5.206972041351495,
+      "longDistance": 189.64157142856357,
+      "bump95Seconds": 2.25,
+      "bump95Distance": 3.99096374991264,
+      "minBumpSpeed": 0.9569894722913044,
+      "steer90": 0.36666666666666664,
+      "refill": 10.7,
+      "burstDuty": 0.27875,
+      "bursts": 29,
+      "burstMeanSpeed": 3.775388212257761,
+      "minEnergy": 40.0000000000006
+    },
+    {
+      "kit": "responsive",
+      "look": {
+        "shirtType": "tank",
+        "pantsType": "shorts",
+        "shoeType": "slides",
+        "hat": "cap",
+        "pack": "pack",
+        "body": "f",
+        "build": "small"
+      },
+      "points": {
+        "speed": -7,
+        "accel": 10,
+        "rec": 1
+      },
+      "st": {
+        "speed": 0.958,
+        "accel": 5.25,
+        "lat": 1.3,
+        "regen": 1.04,
+        "bumpT": 1.2675
+      },
+      "target": 2.8739999999999997,
+      "actual": 2.8739999999999974,
+      "firstSpeed": 0.25147499999999995,
+      "t90": 0.43333333333333335,
+      "t99": 0.85,
+      "secondsAbove99": 59.15,
+      "shortDistance": 5.248479871733167,
+      "longDistance": 171.94047142856655,
+      "bump95Seconds": 1.75,
+      "bump95Distance": 2.5248916408858393,
+      "minBumpSpeed": 0.8649018060896883,
+      "steer90": 0.25,
+      "refill": 10.7,
+      "burstDuty": 0.27875,
+      "bursts": 29,
+      "burstMeanSpeed": 3.512928582656747,
+      "minEnergy": 40.0000000000006
+    },
+    {
+      "kit": "responsive",
+      "look": {
+        "shirtType": "tank",
+        "pantsType": "shorts",
+        "shoeType": "slides",
+        "hat": "cap",
+        "pack": "pack",
+        "body": "f",
+        "build": "medium"
+      },
+      "points": {
+        "speed": -4,
+        "accel": 8,
+        "rec": 2
+      },
+      "st": {
+        "speed": 0.976,
+        "accel": 4.8999999999999995,
+        "lat": 1.24,
+        "regen": 1.08,
+        "bumpT": 1.2349999999999999
+      },
+      "target": 2.928,
+      "actual": 2.9279999999999973,
+      "firstSpeed": 0.23911999999999994,
+      "t90": 0.4666666666666667,
+      "t99": 0.9166666666666666,
+      "secondsAbove99": 59.083333333333336,
+      "shortDistance": 5.307268905455617,
+      "longDistance": 175.13124897959173,
+      "bump95Seconds": 1.75,
+      "bump95Distance": 2.615147089945534,
+      "minBumpSpeed": 0.8816757866342513,
+      "steer90": 0.25,
+      "refill": 10.3,
+      "burstDuty": 0.28597222222222224,
+      "bursts": 29,
+      "burstMeanSpeed": 3.5910560249766452,
+      "minEnergy": 40.0000000000023
+    },
+    {
+      "kit": "responsive",
+      "look": {
+        "shirtType": "tank",
+        "pantsType": "shorts",
+        "shoeType": "slides",
+        "hat": "cap",
+        "pack": "pack",
+        "body": "f",
+        "build": "large"
+      },
+      "points": {
+        "speed": -1,
+        "accel": 4,
+        "rec": 3
+      },
+      "st": {
+        "speed": 0.994,
+        "accel": 4.2,
+        "lat": 1.12,
+        "regen": 1.12,
+        "bumpT": 1.2025000000000001
+      },
+      "target": 2.982,
+      "actual": 2.981999999999997,
+      "firstSpeed": 0.20874000000000004,
+      "t90": 0.5333333333333333,
+      "t99": 1.0666666666666667,
+      "secondsAbove99": 58.93333333333333,
+      "shortDistance": 5.303809067441035,
+      "longDistance": 178.25970000000441,
+      "bump95Seconds": 1.8166666666666667,
+      "bump95Distance": 2.8645201539081038,
+      "minBumpSpeed": 0.8985703545901658,
+      "steer90": 0.2833333333333333,
+      "refill": 9.933333333333334,
+      "burstDuty": 0.29583333333333334,
+      "bursts": 30,
+      "burstMeanSpeed": 3.6603274313156065,
+      "minEnergy": 40.000000000000895
+    }
+  ],
+  "enumeration": {
+    "definition": "All current ITEM_STATS slot combinations x two bodies; cap counts across three builds; pair counts per same-gear/body tuple; not usage frequencies",
+    "analyticalChecks": 522720,
+    "results": {
+      "current": {
+        "loadoutsPerBuild": 174240,
+        "capApplied": 22901,
+        "atSpeedBoundary": 33360,
+        "largeEqualsMedium": 6100,
+        "largeEqualsMediumWithAccelCost": 6100,
+        "smallEqualsMedium": 1353,
+        "smallEqualsLarge": 1346,
+        "speedChanges": {
+          "small": {
+            "up": 0,
+            "down": 0,
+            "same": 174240
+          },
+          "medium": {
+            "up": 0,
+            "down": 0,
+            "same": 174240
+          },
+          "large": {
+            "up": 0,
+            "down": 0,
+            "same": 174240
+          }
+        },
+        "speedRange": {
+          "small": {
+            "min": -10,
+            "max": 10
+          },
+          "medium": {
+            "min": -10,
+            "max": 10
+          },
+          "large": {
+            "min": -7,
+            "max": 10
+          }
+        }
+      },
+      "candidate": {
+        "loadoutsPerBuild": 174240,
+        "capApplied": 29772,
+        "atSpeedBoundary": 37989,
+        "largeEqualsMedium": 6100,
+        "largeEqualsMediumWithAccelCost": 6100,
+        "smallEqualsMedium": 1353,
+        "smallEqualsLarge": 1346,
+        "speedChanges": {
+          "small": {
+            "up": 0,
+            "down": 0,
+            "same": 174240
+          },
+          "medium": {
+            "up": 0,
+            "down": 0,
+            "same": 174240
+          },
+          "large": {
+            "up": 149867,
+            "down": 0,
+            "same": 24373
+          }
+        },
+        "speedRange": {
+          "small": {
+            "min": -10,
+            "max": 10
+          },
+          "medium": {
+            "min": -10,
+            "max": 10
+          },
+          "large": {
+            "min": -6,
+            "max": 10
+          }
+        }
+      },
+      "A": {
+        "loadoutsPerBuild": 174240,
+        "capApplied": 13155,
+        "atSpeedBoundary": 18321,
+        "largeEqualsMedium": 0,
+        "largeEqualsMediumWithAccelCost": 0,
+        "smallEqualsMedium": 0,
+        "smallEqualsLarge": 0,
+        "speedChanges": {
+          "small": {
+            "up": 0,
+            "down": 4814,
+            "same": 169426
+          },
+          "medium": {
+            "up": 0,
+            "down": 0,
+            "same": 174240
+          },
+          "large": {
+            "up": 17502,
+            "down": 0,
+            "same": 156738
+          }
+        },
+        "speedRange": {
+          "small": {
+            "min": -13,
+            "max": 7
+          },
+          "medium": {
+            "min": -10,
+            "max": 10
+          },
+          "large": {
+            "min": -7,
+            "max": 13
+          }
+        }
+      },
+      "B": {
+        "loadoutsPerBuild": 174240,
+        "capApplied": 4972,
+        "atSpeedBoundary": 7483,
+        "largeEqualsMedium": 1346,
+        "largeEqualsMediumWithAccelCost": 1346,
+        "smallEqualsMedium": 30,
+        "smallEqualsLarge": 30,
+        "speedChanges": {
+          "small": {
+            "up": 585,
+            "down": 429,
+            "same": 173226
+          },
+          "medium": {
+            "up": 4385,
+            "down": 0,
+            "same": 169855
+          },
+          "large": {
+            "up": 17502,
+            "down": 0,
+            "same": 156738
+          }
+        },
+        "speedRange": {
+          "small": {
+            "min": -13,
+            "max": 13
+          },
+          "medium": {
+            "min": -10,
+            "max": 13
+          },
+          "large": {
+            "min": -7,
+            "max": 13
+          }
+        }
+      }
+    }
+  }
+}
