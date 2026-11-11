@@ -1,5 +1,9 @@
 # Status
 
+## Host/Cup recovered; acceptance gaps assigned - 2026-11-10
+- Batch 10b preserved WIP 12ef711, merged develop 0cb02c8 and implemented 422ad69/report 3c2b9f4. Reported 822/822 suite before final wording, focused/build/diff pass. Lead inspected diff and 320px full-lobby/standings images; scoring defect not found, +round points presentation added, host separate Ready removed using existing protocol.
+- Batch-10c-acceptance.md returns missing zero/motion/redraw/reconnect tests and enabled-control evidence to same worker; investigates inconsistent current/next race labels in captured fixture. Broad fit 31 failures require comparable baseline evidence before calling them inherited. Not integrated. Cap compatibility remains sequenced after shared-file completion; main unapproved.
+
 ## Delayed shortcut verification archived; current work unchanged - 2026-11-10
 - Integrated evidence-only e075ce9: original shortcut Tests/Pages succeeded for 2d712c0; resumed HTTP capture instead found newer 11c3fde (200). Worker outcome stays partial for its historical matching-ID requirement, not a current publication failure. Earlier direct lead verification and later independently verified 11c3fde remain separate evidence; no rollback/redeploy or new gameplay testing warranted.
 - Host/Cup recovery restarted successfully as ctx_3b1bdc547b4a on original task task_c71dafd399d4 and preserved playtest-fixes workspace; required batch-10b recovery brief delivered. Cap/evidence review passed; compatibility/UI companion waits for shared files. Main remains unchanged and unapproved.
