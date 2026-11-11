@@ -1,5 +1,9 @@
 # Status
 
+## Approved cap trial: bot validation requested - 2026-11-10
+- Director explicitly requested testing with bots. Active cap-trial worker receives batch-17a-bot-validation.md: paired legacy/A populated races with native bot AI, fixed seeds, balanced positions, all builds and plain/capped gear, plus real collision evidence and reproducible results. No additional tuning authorized.
+- Compatibility companion and independent review still precede integration/publication; bot results must be distinguished from phone handling checks. Main remains unapproved. Batch 10 retains shared-file ownership.
+
 ## Treatment A trial approved - 2026-11-10
 - Director approved implementing/testing treatment A for playtest. Batch-17a-approved-cap-trial.md assigns stats-only implementation plus exhaustive and real-tick checks, original build rows unchanged. No additional tuning approval needed for that exact formula.
 - Batch 10 recovery owns shared UI/game/network files, so 17a cannot edit those concurrently. Required sequential compatibility companion will isolate records/ghosts/boards and mixed-version races and address any stat-display assumptions before trial integration/publication. Main remains unapproved; phone/crowded balance remains human validation.
