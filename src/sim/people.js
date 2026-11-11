@@ -494,6 +494,15 @@ function placeRoute(z0) {
 export function genChunk(z0) {
   const n0 = S.people.length;
   seeded(':c' + z0, () => { genChunkInner(z0); beltRiders(z0); });
+  // Ordinary airport race crowds spawn on the forward belt; preserve the random stream.
+  // Explicit people and the Daily/Weekly generator keep their existing positions.
+  const B = raceBuild && beltInfo(LV.id);
+  if (B) for (const p of S.people.slice(n0)) {
+    if (!p.prop && beltHasZ(B, p.z) && p.x > B.rev[0] && p.x <= B.rev[1]) {
+      p.x -= B.rev[0] - B.fwd[0];
+      if (p.laneX !== null) p.laneX -= B.rev[0] - B.fwd[0];
+    }
+  }
   if (raceBuild) {
     seeded(':r' + z0, () => placeRoute(z0));
     const stream = R;

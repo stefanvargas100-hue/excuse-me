@@ -1,5 +1,10 @@
 # Status
 
+## Airport generation fixed; bundle with cap compatibility - 2026-11-11
+- Batch 10f reproduced inherited seed-35 belt failure on current and 394d12e: 35/999. Final genChunk-only correction 985b44b/report ac1c301 passes lead full suite 837/837 after worker's two intermediate failures; no mk hook remains. Integrated 3a23f0a has identical source/tests/tools to checked candidate and passes merged build/diff. Original worker partial outcome is retained; lead validation closes its missing final-suite check.
+- Final seed rows 1-100 audited with zero generated reverse occupants/threshold failures. Airport race positions change, so publication remains held for batch 17d new competitive identities, not for a failing test. Addendum batch-17e-belt-companion.md directs active cap worker to checkpoint then merge develop, verify category/ghost/peer isolation and capture populated airport browser evidence. Challenge recipe/seed/outfit stay frozen; airport spawn correction is explicit. Independent combined review still required.
+- Root evidence moved to round batch-10f-evidence/. Belt worker workspace/branch retained with untracked baseline source/ZIP because its automatic approval review rejected cleanup; no attempt to bypass that rejection. Main unapproved, queued visual pass required, latest verified playtest still 11c3fde.
+
 ## Host/Cup integrated; publication held on belt test - 2026-11-11
 - Independent 10d review 94329e3 passes: 150 focused checks, expected pre-fix failures, local browser at both widths including secondary-control scrolling, build/diff and no introduced fit findings. Integrated builder/reviewer in 22e4c67. Clean merged workspaces/branches removed after ancestry checks.
 - Lead combined suite: 828/829; airport crowd reverse-belt assertion failed (28/911 sampled positions, limit 3%). Build/diff pass. Batch-10f-belt-check.md assigns deterministic reproduction, baseline attribution and bounded fix; no publishing until resolved. Latest verified playtest remains 11c3fde. Batch-10e publication brief is prepared but not dispatched.
