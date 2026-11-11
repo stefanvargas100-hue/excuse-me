@@ -1,0 +1,1480 @@
+{
+  "trials": 216,
+  "completion": {
+    "all-bots-finished": 210,
+    "time-limit": 6
+  },
+  "summary": [
+    {
+      "id": "controlled/1/plain/small",
+      "n": 15,
+      "completeA": 15,
+      "completeLegacy": 15,
+      "timeoutsA": 0,
+      "timeoutsLegacy": 0,
+      "delta": {
+        "n": 15,
+        "mean": 0,
+        "min": 0,
+        "max": 0,
+        "faster": 0,
+        "slower": 0,
+        "tied": 15
+      },
+      "timesA": 143.3644444444389,
+      "timesLegacy": 143.3644444444389,
+      "placesA": {
+        "1": 6,
+        "2": 4,
+        "3": 5
+      },
+      "placesLegacy": {
+        "1": 6,
+        "2": 4,
+        "3": 5
+      },
+      "bumpsA": 8.933333333333334,
+      "bumpsLegacy": 8.933333333333334,
+      "recoveryA": 12.260000000000026,
+      "recoveryLegacy": 12.260000000000026,
+      "burstsA": 26.933333333333334,
+      "burstsLegacy": 26.933333333333334,
+      "routeSecondsA": {
+        "main": 2150.4666666665835
+      },
+      "routeSecondsLegacy": {
+        "main": 2150.4666666665835
+      }
+    },
+    {
+      "id": "controlled/1/plain/medium",
+      "n": 15,
+      "completeA": 15,
+      "completeLegacy": 15,
+      "timeoutsA": 0,
+      "timeoutsLegacy": 0,
+      "delta": {
+        "n": 15,
+        "mean": 0,
+        "min": 0,
+        "max": 0,
+        "faster": 0,
+        "slower": 0,
+        "tied": 15
+      },
+      "timesA": 141.49111111110562,
+      "timesLegacy": 141.49111111110562,
+      "placesA": {
+        "1": 6,
+        "2": 5,
+        "3": 4
+      },
+      "placesLegacy": {
+        "1": 6,
+        "2": 5,
+        "3": 4
+      },
+      "bumpsA": 9.333333333333334,
+      "bumpsLegacy": 9.333333333333334,
+      "recoveryA": 12.540000000000003,
+      "recoveryLegacy": 12.540000000000003,
+      "burstsA": 29.4,
+      "burstsLegacy": 29.4,
+      "routeSecondsA": {
+        "main": 2122.3666666665845
+      },
+      "routeSecondsLegacy": {
+        "main": 2122.3666666665845
+      }
+    },
+    {
+      "id": "controlled/1/plain/large",
+      "n": 15,
+      "completeA": 15,
+      "completeLegacy": 15,
+      "timeoutsA": 0,
+      "timeoutsLegacy": 0,
+      "delta": {
+        "n": 15,
+        "mean": 0,
+        "min": 0,
+        "max": 0,
+        "faster": 0,
+        "slower": 0,
+        "tied": 15
+      },
+      "timesA": 144.49999999999437,
+      "timesLegacy": 144.49999999999437,
+      "placesA": {
+        "1": 3,
+        "2": 6,
+        "3": 6
+      },
+      "placesLegacy": {
+        "1": 3,
+        "2": 6,
+        "3": 6
+      },
+      "bumpsA": 10.866666666666667,
+      "bumpsLegacy": 10.866666666666667,
+      "recoveryA": 14.166666666666679,
+      "recoveryLegacy": 14.166666666666679,
+      "burstsA": 28.333333333333332,
+      "burstsLegacy": 28.333333333333332,
+      "routeSecondsA": {
+        "main": 2167.4999999999154
+      },
+      "routeSecondsLegacy": {
+        "main": 2167.4999999999154
+      }
+    },
+    {
+      "id": "controlled/1/speed/small",
+      "n": 15,
+      "completeA": 15,
+      "completeLegacy": 15,
+      "timeoutsA": 0,
+      "timeoutsLegacy": 0,
+      "delta": {
+        "n": 15,
+        "mean": 3.151111111110931,
+        "min": -5.699999999999676,
+        "max": 18.29999999999896,
+        "faster": 8,
+        "slower": 7,
+        "tied": 0
+      },
+      "timesA": 136.74444444443924,
+      "timesLegacy": 133.59333333332833,
+      "placesA": {
+        "1": 6,
+        "2": 4,
+        "3": 5
+      },
+      "placesLegacy": {
+        "1": 6,
+        "2": 7,
+        "3": 2
+      },
+      "bumpsA": 9.133333333333333,
+      "bumpsLegacy": 7.266666666666667,
+      "recoveryA": 12.855555555555537,
+      "recoveryLegacy": 10.44666666666664,
+      "burstsA": 26.666666666666668,
+      "burstsLegacy": 25.6,
+      "routeSecondsA": {
+        "main": 2051.1666666665888
+      },
+      "routeSecondsLegacy": {
+        "main": 2003.8999999999248
+      }
+    },
+    {
+      "id": "controlled/1/speed/medium",
+      "n": 15,
+      "completeA": 15,
+      "completeLegacy": 15,
+      "timeoutsA": 0,
+      "timeoutsLegacy": 0,
+      "delta": {
+        "n": 15,
+        "mean": -0.5066666666666378,
+        "min": -15.633333333332445,
+        "max": 19.299999999998917,
+        "faster": 8,
+        "slower": 7,
+        "tied": 0
+      },
+      "timesA": 136.37333333332816,
+      "timesLegacy": 136.8799999999948,
+      "placesA": {
+        "1": 6,
+        "2": 4,
+        "3": 5
+      },
+      "placesLegacy": {
+        "1": 5,
+        "2": 3,
+        "3": 7
+      },
+      "bumpsA": 9.533333333333333,
+      "bumpsLegacy": 8.933333333333334,
+      "recoveryA": 13.359999999999992,
+      "recoveryLegacy": 12.642222222222191,
+      "burstsA": 26.8,
+      "burstsLegacy": 27.133333333333333,
+      "routeSecondsA": {
+        "main": 2045.5999999999224
+      },
+      "routeSecondsLegacy": {
+        "main": 2053.199999999922
+      }
+    },
+    {
+      "id": "controlled/1/speed/large",
+      "n": 15,
+      "completeA": 15,
+      "completeLegacy": 15,
+      "timeoutsA": 0,
+      "timeoutsLegacy": 0,
+      "delta": {
+        "n": 15,
+        "mean": 1.1022222222221596,
+        "min": -10.099999999999426,
+        "max": 15.666666666665776,
+        "faster": 7,
+        "slower": 8,
+        "tied": 0
+      },
+      "timesA": 138.8111111111058,
+      "timesLegacy": 137.70888888888365,
+      "placesA": {
+        "1": 3,
+        "2": 7,
+        "3": 5
+      },
+      "placesLegacy": {
+        "1": 4,
+        "2": 5,
+        "3": 6
+      },
+      "bumpsA": 10.066666666666666,
+      "bumpsLegacy": 8,
+      "recoveryA": 13.884444444444448,
+      "recoveryLegacy": 11.108888888888862,
+      "burstsA": 25.266666666666666,
+      "burstsLegacy": 26.733333333333334,
+      "routeSecondsA": {
+        "main": 2082.166666666587
+      },
+      "routeSecondsLegacy": {
+        "main": 2065.6333333332545
+      }
+    },
+    {
+      "id": "controlled/5/plain/small",
+      "n": 15,
+      "completeA": 15,
+      "completeLegacy": 15,
+      "timeoutsA": 0,
+      "timeoutsLegacy": 0,
+      "delta": {
+        "n": 15,
+        "mean": 0,
+        "min": 0,
+        "max": 0,
+        "faster": 0,
+        "slower": 0,
+        "tied": 15
+      },
+      "timesA": 100.9177777777746,
+      "timesLegacy": 100.9177777777746,
+      "placesA": {
+        "1": 4,
+        "2": 4,
+        "3": 7
+      },
+      "placesLegacy": {
+        "1": 4,
+        "2": 4,
+        "3": 7
+      },
+      "bumpsA": 1.8,
+      "bumpsLegacy": 1.8,
+      "recoveryA": 2.5199999999999974,
+      "recoveryLegacy": 2.5199999999999974,
+      "burstsA": 25.533333333333335,
+      "burstsLegacy": 25.533333333333335,
+      "routeSecondsA": {
+        "main": 859.033333333323,
+        "mezzanine": 654.7333333333295
+      },
+      "routeSecondsLegacy": {
+        "main": 859.033333333323,
+        "mezzanine": 654.7333333333295
+      }
+    },
+    {
+      "id": "controlled/5/plain/medium",
+      "n": 15,
+      "completeA": 15,
+      "completeLegacy": 15,
+      "timeoutsA": 0,
+      "timeoutsLegacy": 0,
+      "delta": {
+        "n": 15,
+        "mean": 0,
+        "min": 0,
+        "max": 0,
+        "faster": 0,
+        "slower": 0,
+        "tied": 15
+      },
+      "timesA": 98.65555555555254,
+      "timesLegacy": 98.65555555555254,
+      "placesA": {
+        "1": 8,
+        "2": 6,
+        "3": 1
+      },
+      "placesLegacy": {
+        "1": 8,
+        "2": 6,
+        "3": 1
+      },
+      "bumpsA": 2.533333333333333,
+      "bumpsLegacy": 2.533333333333333,
+      "recoveryA": 3.351111111111108,
+      "recoveryLegacy": 3.351111111111108,
+      "burstsA": 25.733333333333334,
+      "burstsLegacy": 25.733333333333334,
+      "routeSecondsA": {
+        "main": 940.7333333333183,
+        "mezzanine": 539.0999999999975
+      },
+      "routeSecondsLegacy": {
+        "main": 940.7333333333183,
+        "mezzanine": 539.0999999999975
+      }
+    },
+    {
+      "id": "controlled/5/plain/large",
+      "n": 15,
+      "completeA": 15,
+      "completeLegacy": 15,
+      "timeoutsA": 0,
+      "timeoutsLegacy": 0,
+      "delta": {
+        "n": 15,
+        "mean": 0,
+        "min": 0,
+        "max": 0,
+        "faster": 0,
+        "slower": 0,
+        "tied": 15
+      },
+      "timesA": 102.5444444444412,
+      "timesLegacy": 102.5444444444412,
+      "placesA": {
+        "1": 3,
+        "2": 5,
+        "3": 7
+      },
+      "placesLegacy": {
+        "1": 3,
+        "2": 5,
+        "3": 7
+      },
+      "bumpsA": 3,
+      "bumpsLegacy": 3,
+      "recoveryA": 3.9022222222222154,
+      "recoveryLegacy": 3.9022222222222154,
+      "burstsA": 25.4,
+      "burstsLegacy": 25.4,
+      "routeSecondsA": {
+        "main": 850.7333333333235,
+        "mezzanine": 687.4333333333302
+      },
+      "routeSecondsLegacy": {
+        "main": 850.7333333333235,
+        "mezzanine": 687.4333333333302
+      }
+    },
+    {
+      "id": "controlled/5/speed/small",
+      "n": 15,
+      "completeA": 15,
+      "completeLegacy": 15,
+      "timeoutsA": 0,
+      "timeoutsLegacy": 0,
+      "delta": {
+        "n": 15,
+        "mean": 0.7555555555555126,
+        "min": -8.066666666666208,
+        "max": 22.46666666666539,
+        "faster": 9,
+        "slower": 6,
+        "tied": 0
+      },
+      "timesA": 99.84888888888578,
+      "timesLegacy": 99.09333333333026,
+      "placesA": {
+        "1": 4,
+        "2": 3,
+        "3": 8
+      },
+      "placesLegacy": {
+        "1": 5,
+        "2": 6,
+        "3": 4
+      },
+      "bumpsA": 2.066666666666667,
+      "bumpsLegacy": 1.8,
+      "recoveryA": 2.9333333333333305,
+      "recoveryLegacy": 2.593333333333332,
+      "burstsA": 23.733333333333334,
+      "burstsLegacy": 23.266666666666666,
+      "routeSecondsA": {
+        "main": 766.9333333333283,
+        "mezzanine": 730.799999999997
+      },
+      "routeSecondsLegacy": {
+        "main": 811.6333333333258,
+        "mezzanine": 674.7666666666644
+      }
+    },
+    {
+      "id": "controlled/5/speed/medium",
+      "n": 15,
+      "completeA": 15,
+      "completeLegacy": 15,
+      "timeoutsA": 0,
+      "timeoutsLegacy": 0,
+      "delta": {
+        "n": 15,
+        "mean": -0.5977777777777438,
+        "min": -10.966666666666043,
+        "max": 20.233333333332183,
+        "faster": 10,
+        "slower": 5,
+        "tied": 0
+      },
+      "timesA": 95.97555555555269,
+      "timesLegacy": 96.57333333333044,
+      "placesA": {
+        "1": 7,
+        "2": 5,
+        "3": 3
+      },
+      "placesLegacy": {
+        "1": 7,
+        "2": 3,
+        "3": 5
+      },
+      "bumpsA": 1.9333333333333333,
+      "bumpsLegacy": 2.8666666666666667,
+      "recoveryA": 2.7711111111111086,
+      "recoveryLegacy": 4.095555555555549,
+      "burstsA": 23.8,
+      "burstsLegacy": 23.533333333333335,
+      "routeSecondsA": {
+        "main": 815.7333333333255,
+        "mezzanine": 623.899999999998
+      },
+      "routeSecondsLegacy": {
+        "main": 929.2666666666523,
+        "mezzanine": 519.3333333333321
+      }
+    },
+    {
+      "id": "controlled/5/speed/large",
+      "n": 15,
+      "completeA": 15,
+      "completeLegacy": 15,
+      "timeoutsA": 0,
+      "timeoutsLegacy": 0,
+      "delta": {
+        "n": 15,
+        "mean": -0.7044444444444043,
+        "min": -17.233333333332354,
+        "max": 10.999999999999375,
+        "faster": 8,
+        "slower": 7,
+        "tied": 0
+      },
+      "timesA": 98.29555555555255,
+      "timesLegacy": 98.99999999999694,
+      "placesA": {
+        "1": 4,
+        "2": 7,
+        "3": 4
+      },
+      "placesLegacy": {
+        "1": 3,
+        "2": 6,
+        "3": 6
+      },
+      "bumpsA": 3,
+      "bumpsLegacy": 2.8,
+      "recoveryA": 4.108888888888882,
+      "recoveryLegacy": 3.844444444444439,
+      "burstsA": 24.533333333333335,
+      "burstsLegacy": 24.266666666666666,
+      "routeSecondsA": {
+        "main": 808.9999999999926,
+        "mezzanine": 665.4333333333315
+      },
+      "routeSecondsLegacy": {
+        "main": 908.4333333333202,
+        "mezzanine": 576.5666666666647
+      }
+    },
+    {
+      "id": "controlled/6/plain/small",
+      "n": 15,
+      "completeA": 15,
+      "completeLegacy": 15,
+      "timeoutsA": 0,
+      "timeoutsLegacy": 0,
+      "delta": {
+        "n": 15,
+        "mean": 0,
+        "min": 0,
+        "max": 0,
+        "faster": 0,
+        "slower": 0,
+        "tied": 15
+      },
+      "timesA": 94.20222222221943,
+      "timesLegacy": 94.20222222221943,
+      "placesA": {
+        "1": 3,
+        "2": 7,
+        "3": 5
+      },
+      "placesLegacy": {
+        "1": 3,
+        "2": 7,
+        "3": 5
+      },
+      "bumpsA": 3.7333333333333334,
+      "bumpsLegacy": 3.7333333333333334,
+      "recoveryA": 5.086666666666659,
+      "recoveryLegacy": 5.086666666666659,
+      "burstsA": 20.466666666666665,
+      "burstsLegacy": 20.466666666666665,
+      "routeSecondsA": {
+        "main": 809.6333333333258,
+        "back-alley": 603.3999999999966
+      },
+      "routeSecondsLegacy": {
+        "main": 809.6333333333258,
+        "back-alley": 603.3999999999966
+      }
+    },
+    {
+      "id": "controlled/6/plain/medium",
+      "n": 15,
+      "completeA": 15,
+      "completeLegacy": 15,
+      "timeoutsA": 0,
+      "timeoutsLegacy": 0,
+      "delta": {
+        "n": 15,
+        "mean": 0,
+        "min": 0,
+        "max": 0,
+        "faster": 0,
+        "slower": 0,
+        "tied": 15
+      },
+      "timesA": 94.19555555555277,
+      "timesLegacy": 94.19555555555277,
+      "placesA": {
+        "1": 5,
+        "2": 5,
+        "3": 5
+      },
+      "placesLegacy": {
+        "1": 5,
+        "2": 5,
+        "3": 5
+      },
+      "bumpsA": 4.333333333333333,
+      "bumpsLegacy": 4.333333333333333,
+      "recoveryA": 5.728888888888883,
+      "recoveryLegacy": 5.728888888888883,
+      "burstsA": 20.266666666666666,
+      "burstsLegacy": 20.266666666666666,
+      "routeSecondsA": {
+        "main": 818.7666666666586,
+        "back-alley": 594.1666666666637
+      },
+      "routeSecondsLegacy": {
+        "main": 818.7666666666586,
+        "back-alley": 594.1666666666637
+      }
+    },
+    {
+      "id": "controlled/6/plain/large",
+      "n": 15,
+      "completeA": 15,
+      "completeLegacy": 15,
+      "timeoutsA": 0,
+      "timeoutsLegacy": 0,
+      "delta": {
+        "n": 15,
+        "mean": 0,
+        "min": 0,
+        "max": 0,
+        "faster": 0,
+        "slower": 0,
+        "tied": 15
+      },
+      "timesA": 93.51111111110839,
+      "timesLegacy": 93.51111111110839,
+      "placesA": {
+        "1": 7,
+        "2": 3,
+        "3": 5
+      },
+      "placesLegacy": {
+        "1": 7,
+        "2": 3,
+        "3": 5
+      },
+      "bumpsA": 5.533333333333333,
+      "bumpsLegacy": 5.533333333333333,
+      "recoveryA": 7.313333333333328,
+      "recoveryLegacy": 7.313333333333328,
+      "burstsA": 21.066666666666666,
+      "burstsLegacy": 21.066666666666666,
+      "routeSecondsA": {
+        "main": 860.8999999999896,
+        "back-alley": 541.7666666666642
+      },
+      "routeSecondsLegacy": {
+        "main": 860.8999999999896,
+        "back-alley": 541.7666666666642
+      }
+    },
+    {
+      "id": "controlled/6/speed/small",
+      "n": 15,
+      "completeA": 15,
+      "completeLegacy": 15,
+      "timeoutsA": 0,
+      "timeoutsLegacy": 0,
+      "delta": {
+        "n": 15,
+        "mean": 1.1999999999999318,
+        "min": -13.766666666665884,
+        "max": 10.566666666666066,
+        "faster": 6,
+        "slower": 9,
+        "tied": 0
+      },
+      "timesA": 93.0088888888862,
+      "timesLegacy": 91.80888888888626,
+      "placesA": {
+        "1": 4,
+        "2": 4,
+        "3": 7
+      },
+      "placesLegacy": {
+        "1": 5,
+        "2": 2,
+        "3": 8
+      },
+      "bumpsA": 3.7333333333333334,
+      "bumpsLegacy": 5.466666666666667,
+      "recoveryA": 5.302222222222212,
+      "recoveryLegacy": 7.711111111111107,
+      "burstsA": 19.666666666666668,
+      "burstsLegacy": 18.6,
+      "routeSecondsA": {
+        "main": 660.2666666666677,
+        "back-alley": 734.8666666666635
+      },
+      "routeSecondsLegacy": {
+        "main": 839.5999999999908,
+        "back-alley": 537.533333333331
+      }
+    },
+    {
+      "id": "controlled/6/speed/medium",
+      "n": 15,
+      "completeA": 15,
+      "completeLegacy": 15,
+      "timeoutsA": 0,
+      "timeoutsLegacy": 0,
+      "delta": {
+        "n": 15,
+        "mean": 2.8822222222220586,
+        "min": -15.233333333332467,
+        "max": 16.46666666666573,
+        "faster": 4,
+        "slower": 11,
+        "tied": 0
+      },
+      "timesA": 92.77999999999729,
+      "timesLegacy": 89.89777777777525,
+      "placesA": {
+        "1": 5,
+        "2": 5,
+        "3": 5
+      },
+      "placesLegacy": {
+        "1": 7,
+        "2": 4,
+        "3": 4
+      },
+      "bumpsA": 4.533333333333333,
+      "bumpsLegacy": 3.6666666666666665,
+      "recoveryA": 6.444444444444431,
+      "recoveryLegacy": 4.997777777777768,
+      "burstsA": 19.933333333333334,
+      "burstsLegacy": 20.066666666666666,
+      "routeSecondsA": {
+        "main": 716.8333333333311,
+        "back-alley": 674.8666666666643
+      },
+      "routeSecondsLegacy": {
+        "main": 675.9333333333335,
+        "back-alley": 672.533333333331
+      }
+    },
+    {
+      "id": "controlled/6/speed/large",
+      "n": 15,
+      "completeA": 15,
+      "completeLegacy": 15,
+      "timeoutsA": 0,
+      "timeoutsLegacy": 0,
+      "delta": {
+        "n": 15,
+        "mean": -0.02222222222222096,
+        "min": -15.499999999999119,
+        "max": 12.833333333332604,
+        "faster": 7,
+        "slower": 8,
+        "tied": 0
+      },
+      "timesA": 91.73777777777512,
+      "timesLegacy": 91.75999999999735,
+      "placesA": {
+        "1": 6,
+        "2": 6,
+        "3": 3
+      },
+      "placesLegacy": {
+        "1": 3,
+        "2": 9,
+        "3": 3
+      },
+      "bumpsA": 4.466666666666667,
+      "bumpsLegacy": 4.4,
+      "recoveryA": 6.09333333333332,
+      "recoveryLegacy": 6.037777777777765,
+      "burstsA": 19.6,
+      "burstsLegacy": 19.666666666666668,
+      "routeSecondsA": {
+        "main": 759.3333333333287,
+        "back-alley": 616.7333333333318
+      },
+      "routeSecondsLegacy": {
+        "main": 802.0666666666597,
+        "back-alley": 574.3333333333314
+      }
+    },
+    {
+      "id": "random/1/speed/large",
+      "n": 7,
+      "completeA": 7,
+      "completeLegacy": 7,
+      "timeoutsA": 0,
+      "timeoutsLegacy": 0,
+      "delta": {
+        "n": 7,
+        "mean": -4.747619047618778,
+        "min": -14.233333333332524,
+        "max": 9.366666666666134,
+        "faster": 5,
+        "slower": 2,
+        "tied": 0
+      },
+      "timesA": 137.50952380951858,
+      "timesLegacy": 142.25714285713738,
+      "placesA": {
+        "1": 2,
+        "2": 3,
+        "3": 2
+      },
+      "placesLegacy": {
+        "1": 2,
+        "2": 2,
+        "3": 3
+      },
+      "bumpsA": 8.428571428571429,
+      "bumpsLegacy": 10.714285714285714,
+      "recoveryA": 11.08571428571426,
+      "recoveryLegacy": 13.728571428571408,
+      "burstsA": 28.428571428571427,
+      "burstsLegacy": 29.571428571428573,
+      "routeSecondsA": {
+        "main": 962.56666666663
+      },
+      "routeSecondsLegacy": {
+        "main": 995.7999999999616
+      }
+    },
+    {
+      "id": "random/1/speed/medium",
+      "n": 4,
+      "completeA": 4,
+      "completeLegacy": 4,
+      "timeoutsA": 0,
+      "timeoutsLegacy": 0,
+      "delta": {
+        "n": 4,
+        "mean": -4.349999999999753,
+        "min": -7.5666666666662366,
+        "max": -2.0333333333332178,
+        "faster": 4,
+        "slower": 0,
+        "tied": 0
+      },
+      "timesA": 133.89166666666165,
+      "timesLegacy": 138.2416666666614,
+      "placesA": {
+        "1": 2,
+        "2": 1,
+        "3": 1
+      },
+      "placesLegacy": {
+        "1": 2,
+        "2": 2
+      },
+      "bumpsA": 6.75,
+      "bumpsLegacy": 9.5,
+      "recoveryA": 9.48333333333331,
+      "recoveryLegacy": 13.358333333333304,
+      "burstsA": 25.5,
+      "burstsLegacy": 28.5,
+      "routeSecondsA": {
+        "main": 535.5666666666466
+      },
+      "routeSecondsLegacy": {
+        "main": 552.9666666666456
+      }
+    },
+    {
+      "id": "random/1/speed/small",
+      "n": 4,
+      "completeA": 4,
+      "completeLegacy": 4,
+      "timeoutsA": 0,
+      "timeoutsLegacy": 0,
+      "delta": {
+        "n": 4,
+        "mean": -7.816666666666222,
+        "min": -38.63333333333114,
+        "max": 8.7999999999995,
+        "faster": 2,
+        "slower": 2,
+        "tied": 0
+      },
+      "timesA": 143.47499999999442,
+      "timesLegacy": 151.29166666666066,
+      "placesA": {
+        "1": 1,
+        "2": 1,
+        "3": 2
+      },
+      "placesLegacy": {
+        "1": 1,
+        "2": 1,
+        "3": 2
+      },
+      "bumpsA": 9.5,
+      "bumpsLegacy": 12.5,
+      "recoveryA": 13.183333333333344,
+      "recoveryLegacy": 16.35000000000008,
+      "burstsA": 28,
+      "burstsLegacy": 29.75,
+      "routeSecondsA": {
+        "main": 573.8999999999777
+      },
+      "routeSecondsLegacy": {
+        "main": 605.1666666666426
+      }
+    },
+    {
+      "id": "random/5/speed/large",
+      "n": 7,
+      "completeA": 7,
+      "completeLegacy": 7,
+      "timeoutsA": 0,
+      "timeoutsLegacy": 0,
+      "delta": {
+        "n": 7,
+        "mean": 1.5476190476189597,
+        "min": -14.333333333332519,
+        "max": 20.13333333333219,
+        "faster": 2,
+        "slower": 3,
+        "tied": 2
+      },
+      "timesA": 97.52380952380655,
+      "timesLegacy": 95.97619047618757,
+      "placesA": {
+        "1": 3,
+        "2": 2,
+        "3": 2
+      },
+      "placesLegacy": {
+        "1": 3,
+        "2": 3,
+        "3": 1
+      },
+      "bumpsA": 1.8571428571428572,
+      "bumpsLegacy": 1.8571428571428572,
+      "recoveryA": 2.4523809523809503,
+      "recoveryLegacy": 2.480952380952379,
+      "burstsA": 25.428571428571427,
+      "burstsLegacy": 26.857142857142858,
+      "routeSecondsA": {
+        "main": 393.89999999999554,
+        "mezzanine": 288.7666666666656
+      },
+      "routeSecondsLegacy": {
+        "main": 381.3666666666629,
+        "mezzanine": 290.46666666666556
+      }
+    },
+    {
+      "id": "random/5/speed/medium",
+      "n": 4,
+      "completeA": 4,
+      "completeLegacy": 4,
+      "timeoutsA": 0,
+      "timeoutsLegacy": 0,
+      "delta": {
+        "n": 4,
+        "mean": -0.474999999999973,
+        "min": -1.599999999999909,
+        "max": 0.13333333333332575,
+        "faster": 2,
+        "slower": 1,
+        "tied": 1
+      },
+      "timesA": 99.75833333333023,
+      "timesLegacy": 100.23333333333021,
+      "placesA": {
+        "2": 3,
+        "3": 1
+      },
+      "placesLegacy": {
+        "1": 1,
+        "2": 2,
+        "3": 1
+      },
+      "bumpsA": 1,
+      "bumpsLegacy": 1.5,
+      "recoveryA": 1.4083333333333339,
+      "recoveryLegacy": 2.1499999999999986,
+      "burstsA": 25.25,
+      "burstsLegacy": 25.75,
+      "routeSecondsA": {
+        "main": 200.89999999999884,
+        "mezzanine": 198.13333333333233
+      },
+      "routeSecondsLegacy": {
+        "main": 205.2999999999986,
+        "mezzanine": 195.63333333333247
+      }
+    },
+    {
+      "id": "random/5/speed/small",
+      "n": 4,
+      "completeA": 4,
+      "completeLegacy": 4,
+      "timeoutsA": 0,
+      "timeoutsLegacy": 0,
+      "delta": {
+        "n": 4,
+        "mean": 0.38333333333331154,
+        "min": -14.433333333332513,
+        "max": 12.533333333332621,
+        "faster": 2,
+        "slower": 2,
+        "tied": 0
+      },
+      "timesA": 100.20833333333022,
+      "timesLegacy": 99.82499999999689,
+      "placesA": {
+        "1": 2,
+        "3": 2
+      },
+      "placesLegacy": {
+        "1": 1,
+        "3": 3
+      },
+      "bumpsA": 4,
+      "bumpsLegacy": 2.75,
+      "recoveryA": 5.491666666666655,
+      "recoveryLegacy": 3.7499999999999964,
+      "burstsA": 23.25,
+      "burstsLegacy": 23.75,
+      "routeSecondsA": {
+        "main": 347.7666666666572,
+        "mezzanine": 53.066666666666215
+      },
+      "routeSecondsLegacy": {
+        "main": 296.39999999999344,
+        "mezzanine": 102.89999999999928
+      }
+    },
+    {
+      "id": "random/6/speed/large",
+      "n": 7,
+      "completeA": 7,
+      "completeLegacy": 7,
+      "timeoutsA": 0,
+      "timeoutsLegacy": 0,
+      "delta": {
+        "n": 7,
+        "mean": -4.82380952380925,
+        "min": -10.19999999999942,
+        "max": 2.7666666666665094,
+        "faster": 6,
+        "slower": 1,
+        "tied": 0
+      },
+      "timesA": 89.41904761904512,
+      "timesLegacy": 94.24285714285436,
+      "placesA": {
+        "1": 3,
+        "2": 3,
+        "3": 1
+      },
+      "placesLegacy": {
+        "1": 3,
+        "2": 1,
+        "3": 3
+      },
+      "bumpsA": 3,
+      "bumpsLegacy": 5.714285714285714,
+      "recoveryA": 3.861904761904758,
+      "recoveryLegacy": 7.447619047619033,
+      "burstsA": 21.142857142857142,
+      "burstsLegacy": 22,
+      "routeSecondsA": {
+        "main": 338.7666666666654,
+        "back-alley": 287.1666666666657
+      },
+      "routeSecondsLegacy": {
+        "main": 365.3666666666639,
+        "back-alley": 294.333333333332
+      }
+    },
+    {
+      "id": "random/6/speed/medium",
+      "n": 4,
+      "completeA": 4,
+      "completeLegacy": 4,
+      "timeoutsA": 0,
+      "timeoutsLegacy": 0,
+      "delta": {
+        "n": 4,
+        "mean": -1.3333333333332575,
+        "min": -5.499999999999687,
+        "max": 6.7999999999996135,
+        "faster": 3,
+        "slower": 1,
+        "tied": 0
+      },
+      "timesA": 92.71666666666397,
+      "timesLegacy": 94.04999999999723,
+      "placesA": {
+        "1": 1,
+        "2": 2,
+        "3": 1
+      },
+      "placesLegacy": {
+        "1": 1,
+        "2": 2,
+        "3": 1
+      },
+      "bumpsA": 3.25,
+      "bumpsLegacy": 3.5,
+      "recoveryA": 4.283333333333328,
+      "recoveryLegacy": 4.691666666666659,
+      "burstsA": 22,
+      "burstsLegacy": 21.75,
+      "routeSecondsA": {
+        "main": 174.2333333333337,
+        "back-alley": 196.63333333333242
+      },
+      "routeSecondsLegacy": {
+        "main": 178.96666666666675,
+        "back-alley": 197.23333333333238
+      }
+    },
+    {
+      "id": "random/6/speed/small",
+      "n": 4,
+      "completeA": 4,
+      "completeLegacy": 4,
+      "timeoutsA": 0,
+      "timeoutsLegacy": 0,
+      "delta": {
+        "n": 4,
+        "mean": 2.674999999999848,
+        "min": -4.63333333333307,
+        "max": 15.333333333332462,
+        "faster": 2,
+        "slower": 2,
+        "tied": 0
+      },
+      "timesA": 100.81666666666351,
+      "timesLegacy": 98.14166666666367,
+      "placesA": {
+        "1": 1,
+        "3": 3
+      },
+      "placesLegacy": {
+        "1": 1,
+        "2": 2,
+        "3": 1
+      },
+      "bumpsA": 6,
+      "bumpsLegacy": 4,
+      "recoveryA": 8.891666666666712,
+      "recoveryLegacy": 5.408333333333324,
+      "burstsA": 20.25,
+      "burstsLegacy": 20.75,
+      "routeSecondsA": {
+        "main": 200.49999999999886,
+        "back-alley": 202.7666666666654
+      },
+      "routeSecondsLegacy": {
+        "main": 191.5333333333327,
+        "back-alley": 201.03333333333217
+      }
+    },
+    {
+      "id": "forced/1/speed/small",
+      "n": 1,
+      "completeA": 0,
+      "completeLegacy": 0,
+      "timeoutsA": 1,
+      "timeoutsLegacy": 1,
+      "delta": {
+        "n": 0,
+        "mean": null,
+        "min": null,
+        "max": null,
+        "faster": 0,
+        "slower": 0,
+        "tied": 0
+      },
+      "timesA": null,
+      "timesLegacy": null,
+      "placesA": {
+        "3": 1
+      },
+      "placesLegacy": {
+        "2": 1
+      },
+      "bumpsA": 2,
+      "bumpsLegacy": 2,
+      "recoveryA": 2.9333333333333327,
+      "recoveryLegacy": 2.9333333333333327,
+      "burstsA": 3,
+      "burstsLegacy": 5,
+      "routeSecondsA": {
+        "main": 20.033333333333488
+      },
+      "routeSecondsLegacy": {
+        "main": 20.033333333333488
+      }
+    },
+    {
+      "id": "forced/1/speed/medium",
+      "n": 1,
+      "completeA": 0,
+      "completeLegacy": 0,
+      "timeoutsA": 1,
+      "timeoutsLegacy": 1,
+      "delta": {
+        "n": 0,
+        "mean": null,
+        "min": null,
+        "max": null,
+        "faster": 0,
+        "slower": 0,
+        "tied": 0
+      },
+      "timesA": null,
+      "timesLegacy": null,
+      "placesA": {
+        "1": 1
+      },
+      "placesLegacy": {
+        "3": 1
+      },
+      "bumpsA": 2,
+      "bumpsLegacy": 4,
+      "recoveryA": 2.8666666666666663,
+      "recoveryLegacy": 5.133333333333325,
+      "burstsA": 5,
+      "burstsLegacy": 6,
+      "routeSecondsA": {
+        "main": 20.033333333333488
+      },
+      "routeSecondsLegacy": {
+        "main": 20.033333333333488
+      }
+    },
+    {
+      "id": "forced/1/speed/large",
+      "n": 1,
+      "completeA": 0,
+      "completeLegacy": 0,
+      "timeoutsA": 1,
+      "timeoutsLegacy": 1,
+      "delta": {
+        "n": 0,
+        "mean": null,
+        "min": null,
+        "max": null,
+        "faster": 0,
+        "slower": 0,
+        "tied": 0
+      },
+      "timesA": null,
+      "timesLegacy": null,
+      "placesA": {
+        "2": 1
+      },
+      "placesLegacy": {
+        "1": 1
+      },
+      "bumpsA": 2,
+      "bumpsLegacy": 2,
+      "recoveryA": 2.8,
+      "recoveryLegacy": 2.8,
+      "burstsA": 5,
+      "burstsLegacy": 6,
+      "routeSecondsA": {
+        "main": 20.033333333333488
+      },
+      "routeSecondsLegacy": {
+        "main": 20.033333333333488
+      }
+    },
+    {
+      "id": "forced/5/speed/small",
+      "n": 1,
+      "completeA": 0,
+      "completeLegacy": 0,
+      "timeoutsA": 1,
+      "timeoutsLegacy": 1,
+      "delta": {
+        "n": 0,
+        "mean": null,
+        "min": null,
+        "max": null,
+        "faster": 0,
+        "slower": 0,
+        "tied": 0
+      },
+      "timesA": null,
+      "timesLegacy": null,
+      "placesA": {
+        "2": 1
+      },
+      "placesLegacy": {
+        "3": 1
+      },
+      "bumpsA": 2,
+      "bumpsLegacy": 2,
+      "recoveryA": 2.9333333333333327,
+      "recoveryLegacy": 2.9333333333333327,
+      "burstsA": 5,
+      "burstsLegacy": 5,
+      "routeSecondsA": {
+        "main": 20.033333333333488
+      },
+      "routeSecondsLegacy": {
+        "main": 20.033333333333488
+      }
+    },
+    {
+      "id": "forced/5/speed/medium",
+      "n": 1,
+      "completeA": 0,
+      "completeLegacy": 0,
+      "timeoutsA": 1,
+      "timeoutsLegacy": 1,
+      "delta": {
+        "n": 0,
+        "mean": null,
+        "min": null,
+        "max": null,
+        "faster": 0,
+        "slower": 0,
+        "tied": 0
+      },
+      "timesA": null,
+      "timesLegacy": null,
+      "placesA": {
+        "3": 1
+      },
+      "placesLegacy": {
+        "2": 1
+      },
+      "bumpsA": 3,
+      "bumpsLegacy": 2,
+      "recoveryA": 4.2999999999999945,
+      "recoveryLegacy": 2.8666666666666663,
+      "burstsA": 4,
+      "burstsLegacy": 5,
+      "routeSecondsA": {
+        "main": 20.033333333333488
+      },
+      "routeSecondsLegacy": {
+        "main": 20.033333333333488
+      }
+    },
+    {
+      "id": "forced/5/speed/large",
+      "n": 1,
+      "completeA": 0,
+      "completeLegacy": 0,
+      "timeoutsA": 1,
+      "timeoutsLegacy": 1,
+      "delta": {
+        "n": 0,
+        "mean": null,
+        "min": null,
+        "max": null,
+        "faster": 0,
+        "slower": 0,
+        "tied": 0
+      },
+      "timesA": null,
+      "timesLegacy": null,
+      "placesA": {
+        "1": 1
+      },
+      "placesLegacy": {
+        "1": 1
+      },
+      "bumpsA": 3,
+      "bumpsLegacy": 2,
+      "recoveryA": 4.199999999999995,
+      "recoveryLegacy": 2.8,
+      "burstsA": 5,
+      "burstsLegacy": 4,
+      "routeSecondsA": {
+        "main": 20.033333333333488
+      },
+      "routeSecondsLegacy": {
+        "main": 20.033333333333488
+      }
+    },
+    {
+      "id": "forced/6/speed/small",
+      "n": 1,
+      "completeA": 0,
+      "completeLegacy": 0,
+      "timeoutsA": 1,
+      "timeoutsLegacy": 1,
+      "delta": {
+        "n": 0,
+        "mean": null,
+        "min": null,
+        "max": null,
+        "faster": 0,
+        "slower": 0,
+        "tied": 0
+      },
+      "timesA": null,
+      "timesLegacy": null,
+      "placesA": {
+        "2": 1
+      },
+      "placesLegacy": {
+        "1": 1
+      },
+      "bumpsA": 2,
+      "bumpsLegacy": 2,
+      "recoveryA": 2.9333333333333327,
+      "recoveryLegacy": 2.9333333333333327,
+      "burstsA": 6,
+      "burstsLegacy": 5,
+      "routeSecondsA": {
+        "main": 20.033333333333488
+      },
+      "routeSecondsLegacy": {
+        "main": 20.033333333333488
+      }
+    },
+    {
+      "id": "forced/6/speed/medium",
+      "n": 1,
+      "completeA": 0,
+      "completeLegacy": 0,
+      "timeoutsA": 1,
+      "timeoutsLegacy": 1,
+      "delta": {
+        "n": 0,
+        "mean": null,
+        "min": null,
+        "max": null,
+        "faster": 0,
+        "slower": 0,
+        "tied": 0
+      },
+      "timesA": null,
+      "timesLegacy": null,
+      "placesA": {
+        "3": 1
+      },
+      "placesLegacy": {
+        "3": 1
+      },
+      "bumpsA": 2,
+      "bumpsLegacy": 5,
+      "recoveryA": 2.8666666666666663,
+      "recoveryLegacy": 6.699999999999986,
+      "burstsA": 3,
+      "burstsLegacy": 4,
+      "routeSecondsA": {
+        "main": 20.033333333333488
+      },
+      "routeSecondsLegacy": {
+        "main": 20.033333333333488
+      }
+    },
+    {
+      "id": "forced/6/speed/large",
+      "n": 1,
+      "completeA": 0,
+      "completeLegacy": 0,
+      "timeoutsA": 1,
+      "timeoutsLegacy": 1,
+      "delta": {
+        "n": 0,
+        "mean": null,
+        "min": null,
+        "max": null,
+        "faster": 0,
+        "slower": 0,
+        "tied": 0
+      },
+      "timesA": null,
+      "timesLegacy": null,
+      "placesA": {
+        "1": 1
+      },
+      "placesLegacy": {
+        "2": 1
+      },
+      "bumpsA": 2,
+      "bumpsLegacy": 4,
+      "recoveryA": 2.8,
+      "recoveryLegacy": 5.59999999999999,
+      "burstsA": 3,
+      "burstsLegacy": 6,
+      "routeSecondsA": {
+        "main": 20.033333333333488
+      },
+      "routeSecondsLegacy": {
+        "main": 20.033333333333488
+      }
+    }
+  ]
+}

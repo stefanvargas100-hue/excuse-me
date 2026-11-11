@@ -6,6 +6,7 @@ const key=r=>JSON.stringify([r.level,r.seed,r.kit,r.rotation,r.normal,r.collisio
 const groups=new Map();
 for(const a of rows.filter(r=>r.treatment==='A')){
  const legacy=rows.find(r=>r.treatment==='legacy'&&key(r)===key(a));assert.ok(legacy);
+ if(!a.normal&&!a.collisions&&a.kit==='plain')assert.deepEqual(a.bots,legacy.bots,'uncapped native races unchanged exactly');
  for(let i=0;i<a.bots.length;i++){
   const b=a.bots[i],old=legacy.bots[i];assert.deepEqual(b.look,old.look);assert.equal(b.pace,old.pace);assert.deepEqual(b.start,old.start);
   const id=[a.collisions?'forced':a.normal?'random':'controlled',a.level,a.kit,b.look.build].join('/');

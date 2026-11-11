@@ -15,3 +15,27 @@ Instrumentation: bumps are production `b.bumps`; recovery burden is accumulated 
 Tests first: the placeholder failed cache/population, repeated-contact/isolation and populated-repeat assertions; the implemented harness passes. The VM returns arrays from another realm, so serialization normalizes raw records before strict comparisons (no numeric tolerance was relaxed). Representative A speed-kit full races repeat exactly once per course; the bounded test also repeats Takeshita. Exact paired legacy/A baseline positions/outfit/pace equality is checked by the summary script.
 
 No real-phone handling, browser rendering, optimal human steering, medal recalibration, or overall balance approval is claimed. Compatibility isolation/UI normalization, independent review and integration approval remain required before publication and the separate real-phone trial.
+
+## Observed results
+
+All 630 native bots in 210 ordinary races finished: 540 controlled and 90 random-outfit bot attempts, with no ordinary timeout or player-finish censoring. All 18 bots in six deliberate 20-second contact cases timed out as designed; these runs are retained separately and excluded from finish-time comparisons. All 135 plain-kit paired bot records (45 races per treatment) matched exactly, including finish time, placement, collisions, burst observations and routes. Three complete controlled A speed races and three complete random-field A races (seed 42, one per course) repeated exactly. The full suite is 825/825 passing; build and diff checks passed.
+
+Controlled speed-kit results below have 15 complete pairs per row (five seeds x three slot rotations). Positive delta means A took longer; rank histograms count first/second/third among native bots only.
+
+| Course | Build | Mean legacy / A finish s | Mean paired delta s | Faster / slower under A | Legacy ranks 1/2/3 | A ranks 1/2/3 | Mean bumps legacy / A |
+|---|---|---|---|---|---|---|---|
+| Fifth Avenue | small | 133.59 / 136.74 | 3.15 | 8 / 7 | 6/7/2 | 6/4/5 | 7.27 / 9.13 |
+| Fifth Avenue | medium | 136.88 / 136.37 | -0.51 | 8 / 7 | 5/3/7 | 6/4/5 | 8.93 / 9.53 |
+| Fifth Avenue | large | 137.71 / 138.81 | 1.10 | 7 / 8 | 4/5/6 | 3/7/5 | 8.00 / 10.07 |
+| Subway | small | 99.09 / 99.85 | 0.76 | 9 / 6 | 5/6/4 | 4/3/8 | 1.80 / 2.07 |
+| Subway | medium | 96.57 / 95.98 | -0.60 | 10 / 5 | 7/3/5 | 7/5/3 | 2.87 / 1.93 |
+| Subway | large | 99.00 / 98.30 | -0.70 | 8 / 7 | 3/6/6 | 4/7/4 | 2.80 / 3.00 |
+| Takeshita | small | 91.81 / 93.01 | 1.20 | 6 / 9 | 5/2/8 | 4/4/7 | 5.47 / 3.73 |
+| Takeshita | medium | 89.90 / 92.78 | 2.88 | 4 / 11 | 7/4/4 | 5/5/5 | 3.67 / 4.53 |
+| Takeshita | large | 91.76 / 91.74 | -0.02 | 7 / 8 | 3/9/3 | 6/6/3 | 4.40 / 4.47 |
+
+Forced contacts: every bot registered at least 2 production bumps; minimum recorded slowdown exposure was 2.80s. Cross-floor probe frame bump increments totaled 0. Same-floor contacts were resolved by production geometry, without manually setting bump timers.
+
+The restored top-speed distinction does not guarantee a crowded finish improvement: large averaged +1.10s on Fifth Avenue, -0.70s on Subway and -0.02s on Takeshita, with slower individual large runs on every course. Small averaged slower on all three courses (+3.15/+0.76/+1.20s), while still beating its own legacy run in some seeds/slots. Medium stats are unchanged, yet its results shift because opponents, encounters and random-call order change. These are native-controller interactions, not evidence that medium physics changed or proof of human balance.
+
+In random-outfit races all 45 native bots per treatment finished. Legacy/A recorded 263/215 bumps and 1150/1102 observed burst episodes; varied gear/body and chaotic traffic prevent attributing these totals to a universal build advantage. Detailed finish distributions, slowdown exposure, burst observations and route times are preserved in bot-summary.json and every raw row. Large does not win every race; no production AI or tuning was changed to force a result. Normal-row kit labels describe the idle player kit, while the bots retain their random look objects.
