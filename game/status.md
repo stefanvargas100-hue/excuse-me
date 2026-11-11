@@ -1,5 +1,9 @@
 # Status
 
+## Continued playtest follow-ups - 2026-11-10
+- Director requested continued work. Resuming interrupted batch 10 in its preserved playtest-fixes workspace via batch-10b-recovery.md: checkpoint inherited WIP, merge current develop into worker branch only, finish host Start/Cup-points evidence, independent review before integration. Lead confirmed prior agent exited; no duplicate implementation worker.
+- Parallel batch-16-build-balance-study.md produces mechanics measurements and proposed large/small/medium tuning, without production changes. Proposed values still need Director approval. Shared-screen visual follow-up and tutorial/stage parity remain queued; main remains unchanged.
+
 ## Daily/Weekly playtest publication verified - 2026-11-10
 - Verified playtest build 11c3fde: Tests 42895513510 and downstream Pages 42896427872 succeeded; page and referenced main.js HTTP 200 with matching embedded ID at 2026-11-10T20:34:12Z. Worker report/evidence 02f326e integrated; evidence lives under reports/batch-14d-evidence/. Documentation HEAD is not the served build ID.
 - Classic, Daily and Weekly shared build stats/speed bonuses/existing pickups are available for phone playtest, with combo slowdown/zoom/tint removed. Prior integrated suite passed 816/816. Main unchanged and still requires explicit approval.

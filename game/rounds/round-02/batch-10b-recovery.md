@@ -1,0 +1,13 @@
+# Batch 10b: resume host Start and Cup points
+
+Builder: original Codex worker, default model/effort, existing playtest-fixes workspace. High online/scoring risk; independent review required.
+
+Read AGENTS.md, original batch-10-playtest-fixes.md and this follow-up via git show develop. Original task stopped on usage limit, not a completed report. Lead confirmed preserved modifications in nine tracked files plus before/after screenshots. Retain that work and your history; do not reset or replace the workspace.
+
+First inspect existing/running work before repeating checks. Commit the inherited WIP and evidence as an explicitly unvalidated checkpoint on your own branch, then merge current develop into your own branch so this batch is reviewed against the published movement/world/shortcut behavior. This merge is authorized only into your branch. Resolve overlapping game.js, duel.js, CSS and tests narrowly, preserving all current develop behavior outside original batch scope. If resolution needs an unrelated behavior decision, stop with exact conflict. Do not downgrade PROTO 8, cm2 ghosts, seeded mp2 keys, shared movement or world rendering. Historical screenshots/test logs are not fresh combined evidence.
+
+Finish the original acceptance criteria: host Start without separate Ready, guests ready/synchronization/compatibility gates intact, no automatic join countdown, host migration/cancellation/settings-reset coverage. Controls reachable at 320x568 and 390x844 with full roster/long names. Cup round +points and cumulative totals must agree, including zero, local/Friend Cup, no redraw/reconnect double award and calm/reduced-motion behavior. Trace scoring versus presentation and report which actually needed fixing.
+
+Original edit scope applies plus this report and batch-10b-evidence/. Related compatibility tests may be updated for a necessary protocol change, but do not bump protocols mechanically if behavior remains compatible; document the assessment. No track grouping, bots, spectating, body tuning or unrelated visual fixes.
+
+Test first for unfinished behavior. Existing evidence can establish prior failing assertions if preserved; do not claim tests ran now when inherited. Focused tests during recovery, then fit, full suite once after final changes, build and diff check. Fresh actual /playtest/ browser evidence with external requests blocked; no live writes or real-phone claims. Commit implementation and <=10-line reports/batch-10b-recovery.md. No integration, main/lead push, database, dependencies, deployment or subagents. After two failed attempts on the same issue report the narrow blocker.
