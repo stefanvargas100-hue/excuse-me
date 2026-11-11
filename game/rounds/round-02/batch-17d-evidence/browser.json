@@ -1,0 +1,226 @@
+{
+  "localOnly": true,
+  "base": "/playtest/",
+  "results": [
+    {
+      "width": 320,
+      "height": 568,
+      "samples": [
+        {
+          "name": "maximum",
+          "points": {
+            "speed": 13,
+            "accel": -6,
+            "rec": -4
+          },
+          "widths": [
+            100,
+            20,
+            30,
+            30
+          ],
+          "text": "Build stats - flat groundTop burst13.0 mphWalk 7.2 mph; boosts extra0-90% speed~0.94 sStamina refill13.23 sEmpty to full, while walkingBump slowdown1.43 sFit check +3 4 Formal pieces, Speed focus",
+          "overflow": false
+        },
+        {
+          "name": "minimum",
+          "points": {
+            "speed": -13,
+            "accel": 8,
+            "rec": 8
+          },
+          "widths": [
+            0,
+            90,
+            90,
+            90
+          ],
+          "text": "Build stats - flat groundTop burst11.1 mphWalk 6.2 mph; boosts extra0-90% speed~0.47 sStamina refill8.42 sEmpty to full, while walkingBump slowdown1.04 sFit check +1 Recovery focus",
+          "overflow": false
+        },
+        {
+          "name": "neutral",
+          "points": {
+            "speed": 0,
+            "accel": 2,
+            "rec": -2
+          },
+          "widths": [
+            50,
+            60,
+            40,
+            40
+          ],
+          "text": "Build stats - flat groundTop burst12.1 mphWalk 6.7 mph; boosts extra0-90% speed~0.60 sStamina refill12.08 sEmpty to full, while walkingBump slowdown1.37 sFit check 0 Match 3 pieces, or stack one stat",
+          "overflow": false
+        },
+        {
+          "name": "try-on",
+          "points": {
+            "speed": 3,
+            "accel": -2,
+            "rec": -1
+          },
+          "widths": [
+            62,
+            40,
+            45,
+            45
+          ],
+          "text": "If you wore it - build statsTop burst12.1 mph → 12.3 mphWalk 6.8 mph; boosts extra0-90% speed~0.60 s → ~0.73 sStamina refill12.08 s → 11.57 sEmpty to full, while walkingBump slowdown1.37 s → 1.33 sFit check 0 Match 3 pieces, or stack one stat",
+          "overflow": false
+        }
+      ],
+      "legacyMenu": "Single playerClassicEndlessPick a stage and go until you bump into someone.CompetitiveRace vs bots4 racersFirst to the finish. Your build and gear matter here.CompetitiveRace friendsLive, 2-8 playersMake a room, send the code, and race up to 7 friends on the same crowd, live.Daily run · Updated movement · 2026-11-11Shibuya CrossingPlayedPlayed today. A new crowd arrives tomorrow.Weekly run · Updated movement · 2026-W46Fifth AvenuePlayedPlayed this week. A new crowd arrives on Monday.",
+      "legacyStages": "AirportTerminal BEndlessRolling suitcases, people heading for gates, and a fast lane on the right.New YorkFifth AvenueEndlessNarrow sidewalk, lamp posts, hot dog carts, tourists who stop dead, and a crowd wave at every crosswalk.TokyoShibuya CrossingEndlessNight scramble. Crowds pour in from every side when the lights change. Tokyo keeps left.New YorkCentral ParkEndlessUnder the elms: joggers, dog walkers and park benches. Race to Bethesda Terrace.",
+      "menus": {
+        "old": "Single playerClassicEndlessPick a stage and go until you bump into someone.CompetitiveRace vs bots4 racersFirst to the finish. Your build and gear matter here.CompetitiveRace friendsLive, 2-8 playersMake a room, send the code, and race up to 7 friends on the same crowd, live.Daily run · Updated movement · 2026-11-11Shibuya CrossingPlayedPlayed today. A new crowd arrives tomorrow.Weekly run · Updated movement · 2026-W46Fifth AvenuePlayedPlayed this week. A new crowd arrives on Monday.",
+        "current": "Single playerClassicEndlessPick a stage and go until you bump into someone.CompetitiveRace vs bots4 racersFirst to the finish. Your build and gear matter here.CompetitiveRace friendsLive, 2-8 playersMake a room, send the code, and race up to 7 friends on the same crowd, live.Daily run · Updated movement · 2026-11-11Shibuya Crossing321 ptsPlayed today. A new crowd arrives tomorrow.Weekly run · Updated movement · 2026-W46Fifth Avenue321 ptsPlayed this week. A new crowd arrives on Monday.",
+        "race": "AirportTerminal B500 m · 1:51.1 · GoldRolling suitcases, people heading for gates, and a fast lane on the right.New YorkFifth Avenue600 mNarrow sidewalk, lamp posts, hot dog carts, tourists who stop dead, and a crowd wave at every crosswalk.TokyoShibuya Crossing360 mNight scramble. Crowds pour in from every side when the lights change. Tokyo keeps left.",
+        "oldStorage": {
+          "classic": "9999",
+          "race": "1",
+          "cup": "40:1.00"
+        },
+        "classicBest": 123,
+        "challengeBest": 222,
+        "cupBest": {
+          "points": 32,
+          "time": 999
+        }
+      },
+      "airport": {
+        "stage": "airport",
+        "rules": 2,
+        "category": "standard",
+        "initialForward": 20,
+        "initialReverse": 0,
+        "initialPeople": 46,
+        "currentPeople": 100,
+        "nativeBots": 3,
+        "currentReverse": 0,
+        "pz": 28.007667898731032,
+        "legacyGhostLoaded": false
+      },
+      "mixed": {
+        "joined": false,
+        "status": "Update the game on both phones: the host is on a different version. Then try again.",
+        "players": 0
+      },
+      "errors": [],
+      "blocked": [
+        "https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Permanent+Marker&display=swap"
+      ]
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "samples": [
+        {
+          "name": "maximum",
+          "points": {
+            "speed": 13,
+            "accel": -6,
+            "rec": -4
+          },
+          "widths": [
+            100,
+            20,
+            30,
+            30
+          ],
+          "text": "Build stats - flat groundTop burst13.0 mphWalk 7.2 mph; boosts extra0-90% speed~0.94 sStamina refill13.23 sEmpty to full, while walkingBump slowdown1.43 sFit check +3 4 Formal pieces, Speed focus",
+          "overflow": false
+        },
+        {
+          "name": "minimum",
+          "points": {
+            "speed": -13,
+            "accel": 8,
+            "rec": 8
+          },
+          "widths": [
+            0,
+            90,
+            90,
+            90
+          ],
+          "text": "Build stats - flat groundTop burst11.1 mphWalk 6.2 mph; boosts extra0-90% speed~0.47 sStamina refill8.42 sEmpty to full, while walkingBump slowdown1.04 sFit check +1 Recovery focus",
+          "overflow": false
+        },
+        {
+          "name": "neutral",
+          "points": {
+            "speed": 0,
+            "accel": 2,
+            "rec": -2
+          },
+          "widths": [
+            50,
+            60,
+            40,
+            40
+          ],
+          "text": "Build stats - flat groundTop burst12.1 mphWalk 6.7 mph; boosts extra0-90% speed~0.60 sStamina refill12.08 sEmpty to full, while walkingBump slowdown1.37 sFit check 0 Match 3 pieces, or stack one stat",
+          "overflow": false
+        },
+        {
+          "name": "try-on",
+          "points": {
+            "speed": 3,
+            "accel": -2,
+            "rec": -1
+          },
+          "widths": [
+            62,
+            40,
+            45,
+            45
+          ],
+          "text": "If you wore it - build statsTop burst12.1 mph → 12.3 mphWalk 6.8 mph; boosts extra0-90% speed~0.60 s → ~0.73 sStamina refill12.08 s → 11.57 sEmpty to full, while walkingBump slowdown1.37 s → 1.33 sFit check 0 Match 3 pieces, or stack one stat",
+          "overflow": false
+        }
+      ],
+      "legacyMenu": "Single playerClassicEndlessPick a stage and go until you bump into someone.CompetitiveRace vs bots4 racersFirst to the finish. Your build and gear matter here.CompetitiveRace friendsLive, 2-8 playersMake a room, send the code, and race up to 7 friends on the same crowd, live.Daily run · Updated movement · 2026-11-11Shibuya CrossingPlayedPlayed today. A new crowd arrives tomorrow.Weekly run · Updated movement · 2026-W46Fifth AvenuePlayedPlayed this week. A new crowd arrives on Monday.",
+      "legacyStages": "AirportTerminal BEndlessRolling suitcases, people heading for gates, and a fast lane on the right.New YorkFifth AvenueEndlessNarrow sidewalk, lamp posts, hot dog carts, tourists who stop dead, and a crowd wave at every crosswalk.TokyoShibuya CrossingEndlessNight scramble. Crowds pour in from every side when the lights change. Tokyo keeps left.New YorkCentral ParkEndlessUnder the elms: joggers, dog walkers and park benches. Race to Bethesda Terrace.",
+      "menus": {
+        "old": "Single playerClassicEndlessPick a stage and go until you bump into someone.CompetitiveRace vs bots4 racersFirst to the finish. Your build and gear matter here.CompetitiveRace friendsLive, 2-8 playersMake a room, send the code, and race up to 7 friends on the same crowd, live.Daily run · Updated movement · 2026-11-11Shibuya CrossingPlayedPlayed today. A new crowd arrives tomorrow.Weekly run · Updated movement · 2026-W46Fifth AvenuePlayedPlayed this week. A new crowd arrives on Monday.",
+        "current": "Single playerClassicEndlessPick a stage and go until you bump into someone.CompetitiveRace vs bots4 racersFirst to the finish. Your build and gear matter here.CompetitiveRace friendsLive, 2-8 playersMake a room, send the code, and race up to 7 friends on the same crowd, live.Daily run · Updated movement · 2026-11-11Shibuya Crossing321 ptsPlayed today. A new crowd arrives tomorrow.Weekly run · Updated movement · 2026-W46Fifth Avenue321 ptsPlayed this week. A new crowd arrives on Monday.",
+        "race": "AirportTerminal B500 m · 1:51.1 · GoldRolling suitcases, people heading for gates, and a fast lane on the right.New YorkFifth Avenue600 mNarrow sidewalk, lamp posts, hot dog carts, tourists who stop dead, and a crowd wave at every crosswalk.TokyoShibuya Crossing360 mNight scramble. Crowds pour in from every side when the lights change. Tokyo keeps left.",
+        "oldStorage": {
+          "classic": "9999",
+          "race": "1",
+          "cup": "40:1.00"
+        },
+        "classicBest": 123,
+        "challengeBest": 222,
+        "cupBest": {
+          "points": 32,
+          "time": 999
+        }
+      },
+      "airport": {
+        "stage": "airport",
+        "rules": 2,
+        "category": "standard",
+        "initialForward": 20,
+        "initialReverse": 0,
+        "initialPeople": 46,
+        "currentPeople": 99,
+        "nativeBots": 3,
+        "currentReverse": 0,
+        "pz": 28.055631027122576,
+        "legacyGhostLoaded": false
+      },
+      "mixed": {
+        "joined": false,
+        "status": "Update the game on both phones: the host is on a different version. Then try again.",
+        "players": 0
+      },
+      "errors": [],
+      "blocked": [
+        "https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Permanent+Marker&display=swap"
+      ]
+    }
+  ]
+}

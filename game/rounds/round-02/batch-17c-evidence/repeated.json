@@ -1,0 +1,1054 @@
+{
+  "repeated": [
+    {
+      "treatment": "legacy",
+      "level": 1,
+      "seed": 42,
+      "kit": "speed",
+      "rotation": 0,
+      "normal": false,
+      "collisions": false,
+      "seconds": 600,
+      "dt": 0.03333333333333333,
+      "elapsed": 140.03333333332796,
+      "frames": 4202,
+      "maxPeople": 410,
+      "treatmentVerified": true,
+      "crossRouteBumps": 0,
+      "collisionChecks": [],
+      "endReason": "all-bots-finished",
+      "player": {
+        "look": {
+          "shirtType": "suit",
+          "pantsType": "joggers",
+          "shoeType": "runners",
+          "hat": "cap",
+          "pack": "pack",
+          "body": "m",
+          "build": "small"
+        },
+        "points": {
+          "speed": 8,
+          "accel": 3,
+          "rec": -5
+        },
+        "effects": {
+          "speed": 1.048,
+          "accel": 4.0249999999999995,
+          "lat": 1.09,
+          "regen": 0.8,
+          "bumpT": 1.4625000000000001
+        },
+        "z": 375.28633604598696,
+        "bumps": 37,
+        "finished": false,
+        "policy": "idle physical player; no steering or actions"
+      },
+      "bots": [
+        {
+          "slot": 0,
+          "look": {
+            "shirtType": "suit",
+            "pantsType": "joggers",
+            "shoeType": "runners",
+            "hat": "cap",
+            "pack": "pack",
+            "body": "m",
+            "build": "small"
+          },
+          "points": {
+            "speed": 8,
+            "accel": 3,
+            "rec": -5
+          },
+          "pace": 0.98,
+          "start": {
+            "x": -1.2999999999999998,
+            "z": 0
+          },
+          "burstStarts": 26,
+          "burstSeconds": 30.20000000000066,
+          "dashStarts": 1,
+          "bumpSeconds": 9.63333333333331,
+          "routeSeconds": {
+            "main": 135.33333333332823
+          },
+          "z": 601.505539034409,
+          "speed": 1.1996237831280836e-8,
+          "done": true,
+          "timeout": false,
+          "finishTime": 135.33333333332823,
+          "place": 2,
+          "bumps": 7,
+          "calls": 10,
+          "routes": {
+            "150": "direct",
+            "290": "detour",
+            "440": "direct"
+          },
+          "sideChoices": {}
+        },
+        {
+          "slot": 1,
+          "look": {
+            "shirtType": "suit",
+            "pantsType": "joggers",
+            "shoeType": "runners",
+            "hat": "cap",
+            "pack": "pack",
+            "body": "m",
+            "build": "medium"
+          },
+          "points": {
+            "speed": 10,
+            "accel": -1,
+            "rec": -4
+          },
+          "pace": 1.02,
+          "start": {
+            "x": 1.2999999999999998,
+            "z": -0.3
+          },
+          "burstStarts": 26,
+          "burstSeconds": 30.100000000000655,
+          "dashStarts": 4,
+          "bumpSeconds": 10.033333333333308,
+          "routeSeconds": {
+            "main": 124.96666666666214
+          },
+          "z": 601.2529927783855,
+          "speed": 4.691401642325087e-28,
+          "done": true,
+          "timeout": false,
+          "finishTime": 124.96666666666214,
+          "place": 1,
+          "bumps": 7,
+          "calls": 11,
+          "routes": {
+            "150": "detour",
+            "290": "direct",
+            "440": "direct"
+          },
+          "sideChoices": {}
+        },
+        {
+          "slot": 2,
+          "look": {
+            "shirtType": "suit",
+            "pantsType": "joggers",
+            "shoeType": "runners",
+            "hat": "cap",
+            "pack": "pack",
+            "body": "m",
+            "build": "large"
+          },
+          "points": {
+            "speed": 10,
+            "accel": -5,
+            "rec": -3
+          },
+          "pace": 1.06,
+          "start": {
+            "x": -1.9,
+            "z": 0
+          },
+          "burstStarts": 31,
+          "burstSeconds": 38.13333333333373,
+          "dashStarts": 1,
+          "bumpSeconds": 16.799999999999994,
+          "routeSeconds": {
+            "main": 140.03333333332796
+          },
+          "z": 600,
+          "speed": 9.676354995580144,
+          "done": true,
+          "timeout": false,
+          "finishTime": 140.03333333332796,
+          "place": 3,
+          "bumps": 12,
+          "calls": 15,
+          "routes": {
+            "150": "direct",
+            "290": "detour",
+            "440": "detour"
+          },
+          "sideChoices": {}
+        }
+      ]
+    },
+    {
+      "treatment": "A",
+      "level": 1,
+      "seed": 42,
+      "kit": "speed",
+      "rotation": 0,
+      "normal": false,
+      "collisions": false,
+      "seconds": 600,
+      "dt": 0.03333333333333333,
+      "elapsed": 144.26666666666105,
+      "frames": 4329,
+      "maxPeople": 371,
+      "treatmentVerified": true,
+      "crossRouteBumps": 0,
+      "collisionChecks": [],
+      "endReason": "all-bots-finished",
+      "player": {
+        "look": {
+          "shirtType": "suit",
+          "pantsType": "joggers",
+          "shoeType": "runners",
+          "hat": "cap",
+          "pack": "pack",
+          "body": "m",
+          "build": "small"
+        },
+        "points": {
+          "speed": 7,
+          "accel": 3,
+          "rec": -5
+        },
+        "effects": {
+          "speed": 1.042,
+          "accel": 4.0249999999999995,
+          "lat": 1.09,
+          "regen": 0.8,
+          "bumpT": 1.4625000000000001
+        },
+        "z": 389.57505298709765,
+        "bumps": 37,
+        "finished": false,
+        "policy": "idle physical player; no steering or actions"
+      },
+      "bots": [
+        {
+          "slot": 0,
+          "look": {
+            "shirtType": "suit",
+            "pantsType": "joggers",
+            "shoeType": "runners",
+            "hat": "cap",
+            "pack": "pack",
+            "body": "m",
+            "build": "small"
+          },
+          "points": {
+            "speed": 7,
+            "accel": 3,
+            "rec": -5
+          },
+          "pace": 0.98,
+          "start": {
+            "x": -1.2999999999999998,
+            "z": 0
+          },
+          "burstStarts": 28,
+          "burstSeconds": 31.60000000000073,
+          "dashStarts": 1,
+          "bumpSeconds": 5.866666666666656,
+          "routeSeconds": {
+            "main": 129.63333333332855
+          },
+          "z": 601.7158179949644,
+          "speed": 4.1280795104427815e-27,
+          "done": true,
+          "timeout": false,
+          "finishTime": 129.63333333332855,
+          "place": 1,
+          "bumps": 4,
+          "calls": 10,
+          "routes": {
+            "150": "detour",
+            "290": "direct",
+            "440": "direct"
+          },
+          "sideChoices": {}
+        },
+        {
+          "slot": 1,
+          "look": {
+            "shirtType": "suit",
+            "pantsType": "joggers",
+            "shoeType": "runners",
+            "hat": "cap",
+            "pack": "pack",
+            "body": "m",
+            "build": "medium"
+          },
+          "points": {
+            "speed": 10,
+            "accel": -1,
+            "rec": -4
+          },
+          "pace": 1.02,
+          "start": {
+            "x": 1.2999999999999998,
+            "z": -0.3
+          },
+          "burstStarts": 28,
+          "burstSeconds": 32.8000000000007,
+          "dashStarts": 4,
+          "bumpSeconds": 15.766666666666621,
+          "routeSeconds": {
+            "main": 144.26666666666105
+          },
+          "z": 600,
+          "speed": 11.089619926099699,
+          "done": true,
+          "timeout": false,
+          "finishTime": 144.26666666666105,
+          "place": 3,
+          "bumps": 11,
+          "calls": 13,
+          "routes": {
+            "150": "detour",
+            "290": "direct",
+            "440": "detour"
+          },
+          "sideChoices": {}
+        },
+        {
+          "slot": 2,
+          "look": {
+            "shirtType": "suit",
+            "pantsType": "joggers",
+            "shoeType": "runners",
+            "hat": "cap",
+            "pack": "pack",
+            "body": "m",
+            "build": "large"
+          },
+          "points": {
+            "speed": 13,
+            "accel": -5,
+            "rec": -3
+          },
+          "pace": 1.06,
+          "start": {
+            "x": -1.9,
+            "z": 0
+          },
+          "burstStarts": 26,
+          "burstSeconds": 31.20000000000071,
+          "dashStarts": 1,
+          "bumpSeconds": 16.36666666666664,
+          "routeSeconds": {
+            "main": 135.23333333332823
+          },
+          "z": 601.0551361115332,
+          "speed": 7.005411580536818e-17,
+          "done": true,
+          "timeout": false,
+          "finishTime": 135.23333333332823,
+          "place": 2,
+          "bumps": 12,
+          "calls": 16,
+          "routes": {
+            "150": "detour",
+            "290": "direct",
+            "440": "detour"
+          },
+          "sideChoices": {}
+        }
+      ]
+    },
+    {
+      "treatment": "legacy",
+      "level": 5,
+      "seed": 42,
+      "kit": "speed",
+      "rotation": 0,
+      "normal": false,
+      "collisions": false,
+      "seconds": 600,
+      "dt": 0.03333333333333333,
+      "elapsed": 103.06666666666338,
+      "frames": 3093,
+      "maxPeople": 258,
+      "treatmentVerified": true,
+      "crossRouteBumps": 0,
+      "collisionChecks": [],
+      "endReason": "all-bots-finished",
+      "player": {
+        "look": {
+          "shirtType": "suit",
+          "pantsType": "joggers",
+          "shoeType": "runners",
+          "hat": "cap",
+          "pack": "pack",
+          "body": "m",
+          "build": "small"
+        },
+        "points": {
+          "speed": 8,
+          "accel": 3,
+          "rec": -5
+        },
+        "effects": {
+          "speed": 1.048,
+          "accel": 4.0249999999999995,
+          "lat": 1.09,
+          "regen": 0.8,
+          "bumpT": 1.4625000000000001
+        },
+        "z": 285.8873730898386,
+        "bumps": 23,
+        "finished": false,
+        "policy": "idle physical player; no steering or actions"
+      },
+      "bots": [
+        {
+          "slot": 0,
+          "look": {
+            "shirtType": "suit",
+            "pantsType": "joggers",
+            "shoeType": "runners",
+            "hat": "cap",
+            "pack": "pack",
+            "body": "m",
+            "build": "small"
+          },
+          "points": {
+            "speed": 8,
+            "accel": 3,
+            "rec": -5
+          },
+          "pace": 0.98,
+          "start": {
+            "x": -1.2999999999999998,
+            "z": 0
+          },
+          "burstStarts": 25,
+          "burstSeconds": 28.66666666666725,
+          "dashStarts": 0,
+          "bumpSeconds": 2.9333333333333327,
+          "routeSeconds": {
+            "main": 51.86666666666628,
+            "mezzanine": 51.199999999999655
+          },
+          "z": 450,
+          "speed": 8.066083605412485,
+          "done": true,
+          "timeout": false,
+          "finishTime": 103.06666666666338,
+          "place": 3,
+          "bumps": 2,
+          "calls": 2,
+          "routes": {},
+          "sideChoices": {
+            "mezzanine": true
+          }
+        },
+        {
+          "slot": 1,
+          "look": {
+            "shirtType": "suit",
+            "pantsType": "joggers",
+            "shoeType": "runners",
+            "hat": "cap",
+            "pack": "pack",
+            "body": "m",
+            "build": "medium"
+          },
+          "points": {
+            "speed": 10,
+            "accel": -1,
+            "rec": -4
+          },
+          "pace": 1.02,
+          "start": {
+            "x": 1.2999999999999998,
+            "z": -0.3
+          },
+          "burstStarts": 23,
+          "burstSeconds": 26.966666666667166,
+          "dashStarts": 1,
+          "bumpSeconds": 4.2999999999999945,
+          "routeSeconds": {
+            "main": 54.49999999999947,
+            "mezzanine": 46.23333333333327
+          },
+          "z": 451.8785125925028,
+          "speed": 0.000386979465303193,
+          "done": true,
+          "timeout": false,
+          "finishTime": 100.73333333333018,
+          "place": 2,
+          "bumps": 3,
+          "calls": 6,
+          "routes": {},
+          "sideChoices": {
+            "mezzanine": true
+          }
+        },
+        {
+          "slot": 2,
+          "look": {
+            "shirtType": "suit",
+            "pantsType": "joggers",
+            "shoeType": "runners",
+            "hat": "cap",
+            "pack": "pack",
+            "body": "m",
+            "build": "large"
+          },
+          "points": {
+            "speed": 10,
+            "accel": -5,
+            "rec": -3
+          },
+          "pace": 1.06,
+          "start": {
+            "x": -1.9,
+            "z": 0
+          },
+          "burstStarts": 24,
+          "burstSeconds": 27.73333333333387,
+          "dashStarts": 2,
+          "bumpSeconds": 1.400000000000001,
+          "routeSeconds": {
+            "main": 46.76666666666657,
+            "mezzanine": 44.36666666666671
+          },
+          "z": 451.51692928004826,
+          "speed": 3.9465954989105792e-22,
+          "done": true,
+          "timeout": false,
+          "finishTime": 91.13333333333073,
+          "place": 1,
+          "bumps": 1,
+          "calls": 4,
+          "routes": {},
+          "sideChoices": {
+            "mezzanine": true
+          }
+        }
+      ]
+    },
+    {
+      "treatment": "A",
+      "level": 5,
+      "seed": 42,
+      "kit": "speed",
+      "rotation": 0,
+      "normal": false,
+      "collisions": false,
+      "seconds": 600,
+      "dt": 0.03333333333333333,
+      "elapsed": 102.96666666666339,
+      "frames": 3090,
+      "maxPeople": 251,
+      "treatmentVerified": true,
+      "crossRouteBumps": 0,
+      "collisionChecks": [],
+      "endReason": "all-bots-finished",
+      "player": {
+        "look": {
+          "shirtType": "suit",
+          "pantsType": "joggers",
+          "shoeType": "runners",
+          "hat": "cap",
+          "pack": "pack",
+          "body": "m",
+          "build": "small"
+        },
+        "points": {
+          "speed": 7,
+          "accel": 3,
+          "rec": -5
+        },
+        "effects": {
+          "speed": 1.042,
+          "accel": 4.0249999999999995,
+          "lat": 1.09,
+          "regen": 0.8,
+          "bumpT": 1.4625000000000001
+        },
+        "z": 289.6575251797125,
+        "bumps": 20,
+        "finished": false,
+        "policy": "idle physical player; no steering or actions"
+      },
+      "bots": [
+        {
+          "slot": 0,
+          "look": {
+            "shirtType": "suit",
+            "pantsType": "joggers",
+            "shoeType": "runners",
+            "hat": "cap",
+            "pack": "pack",
+            "body": "m",
+            "build": "small"
+          },
+          "points": {
+            "speed": 7,
+            "accel": 3,
+            "rec": -5
+          },
+          "pace": 0.98,
+          "start": {
+            "x": -1.2999999999999998,
+            "z": 0
+          },
+          "burstStarts": 24,
+          "burstSeconds": 28.06666666666722,
+          "dashStarts": 0,
+          "bumpSeconds": 1.466666666666668,
+          "routeSeconds": {
+            "main": 52.366666666666255,
+            "mezzanine": 50.59999999999969
+          },
+          "z": 450,
+          "speed": 8.114220940121639,
+          "done": true,
+          "timeout": false,
+          "finishTime": 102.96666666666339,
+          "place": 3,
+          "bumps": 1,
+          "calls": 3,
+          "routes": {},
+          "sideChoices": {
+            "mezzanine": true
+          }
+        },
+        {
+          "slot": 1,
+          "look": {
+            "shirtType": "suit",
+            "pantsType": "joggers",
+            "shoeType": "runners",
+            "hat": "cap",
+            "pack": "pack",
+            "body": "m",
+            "build": "medium"
+          },
+          "points": {
+            "speed": 10,
+            "accel": -1,
+            "rec": -4
+          },
+          "pace": 1.02,
+          "start": {
+            "x": 1.2999999999999998,
+            "z": -0.3
+          },
+          "burstStarts": 22,
+          "burstSeconds": 26.20000000000046,
+          "dashStarts": 1,
+          "bumpSeconds": 11.466666666666637,
+          "routeSeconds": {
+            "main": 95.0333333333305
+          },
+          "z": 451.9354753267943,
+          "speed": 1.4447534200435555e-14,
+          "done": true,
+          "timeout": false,
+          "finishTime": 95.0333333333305,
+          "place": 1,
+          "bumps": 8,
+          "calls": 8,
+          "routes": {},
+          "sideChoices": {
+            "mezzanine": false
+          }
+        },
+        {
+          "slot": 2,
+          "look": {
+            "shirtType": "suit",
+            "pantsType": "joggers",
+            "shoeType": "runners",
+            "hat": "cap",
+            "pack": "pack",
+            "body": "m",
+            "build": "large"
+          },
+          "points": {
+            "speed": 13,
+            "accel": -5,
+            "rec": -3
+          },
+          "pace": 1.06,
+          "start": {
+            "x": -1.9,
+            "z": 0
+          },
+          "burstStarts": 24,
+          "burstSeconds": 27.966666666667216,
+          "dashStarts": 0,
+          "bumpSeconds": 8.39999999999998,
+          "routeSeconds": {
+            "main": 56.43333333333269,
+            "mezzanine": 45.69999999999997
+          },
+          "z": 451.78383331691595,
+          "speed": 0.23668656707207583,
+          "done": true,
+          "timeout": false,
+          "finishTime": 102.1333333333301,
+          "place": 2,
+          "bumps": 6,
+          "calls": 5,
+          "routes": {},
+          "sideChoices": {
+            "mezzanine": true
+          }
+        }
+      ]
+    },
+    {
+      "treatment": "legacy",
+      "level": 6,
+      "seed": 42,
+      "kit": "speed",
+      "rotation": 0,
+      "normal": false,
+      "collisions": false,
+      "seconds": 600,
+      "dt": 0.03333333333333333,
+      "elapsed": 95.89999999999712,
+      "frames": 2878,
+      "maxPeople": 154,
+      "treatmentVerified": true,
+      "crossRouteBumps": 0,
+      "collisionChecks": [],
+      "endReason": "all-bots-finished",
+      "player": {
+        "look": {
+          "shirtType": "suit",
+          "pantsType": "joggers",
+          "shoeType": "runners",
+          "hat": "cap",
+          "pack": "pack",
+          "body": "m",
+          "build": "small"
+        },
+        "points": {
+          "speed": 8,
+          "accel": 3,
+          "rec": -5
+        },
+        "effects": {
+          "speed": 1.048,
+          "accel": 4.0249999999999995,
+          "lat": 1.09,
+          "regen": 0.8,
+          "bumpT": 1.4625000000000001
+        },
+        "z": 262.8395030869539,
+        "bumps": 27,
+        "finished": false,
+        "policy": "idle physical player; no steering or actions"
+      },
+      "bots": [
+        {
+          "slot": 0,
+          "look": {
+            "shirtType": "suit",
+            "pantsType": "joggers",
+            "shoeType": "runners",
+            "hat": "cap",
+            "pack": "pack",
+            "body": "m",
+            "build": "small"
+          },
+          "points": {
+            "speed": 8,
+            "accel": 3,
+            "rec": -5
+          },
+          "pace": 0.98,
+          "start": {
+            "x": -1.2999999999999998,
+            "z": 0
+          },
+          "burstStarts": 21,
+          "burstSeconds": 24.26666666666703,
+          "dashStarts": 2,
+          "bumpSeconds": 5.433333333333324,
+          "routeSeconds": {
+            "main": 45.79999999999996,
+            "back-alley": 50.09999999999972
+          },
+          "z": 360,
+          "speed": 4.6862623137252255,
+          "done": true,
+          "timeout": false,
+          "finishTime": 95.89999999999712,
+          "place": 3,
+          "bumps": 4,
+          "calls": 6,
+          "routes": {},
+          "sideChoices": {
+            "back-alley": true
+          }
+        },
+        {
+          "slot": 1,
+          "look": {
+            "shirtType": "suit",
+            "pantsType": "joggers",
+            "shoeType": "runners",
+            "hat": "cap",
+            "pack": "pack",
+            "body": "m",
+            "build": "medium"
+          },
+          "points": {
+            "speed": 10,
+            "accel": -1,
+            "rec": -4
+          },
+          "pace": 1.02,
+          "start": {
+            "x": 1.2999999999999998,
+            "z": -0.3
+          },
+          "burstStarts": 19,
+          "burstSeconds": 25.20000000000041,
+          "dashStarts": 1,
+          "bumpSeconds": 0,
+          "routeSeconds": {
+            "main": 35.60000000000054,
+            "back-alley": 47.83333333333318
+          },
+          "z": 361.12898088790195,
+          "speed": 2.97561928004459e-23,
+          "done": true,
+          "timeout": false,
+          "finishTime": 83.43333333333116,
+          "place": 1,
+          "bumps": 0,
+          "calls": 3,
+          "routes": {},
+          "sideChoices": {
+            "back-alley": true
+          }
+        },
+        {
+          "slot": 2,
+          "look": {
+            "shirtType": "suit",
+            "pantsType": "joggers",
+            "shoeType": "runners",
+            "hat": "cap",
+            "pack": "pack",
+            "body": "m",
+            "build": "large"
+          },
+          "points": {
+            "speed": 10,
+            "accel": -5,
+            "rec": -3
+          },
+          "pace": 1.06,
+          "start": {
+            "x": -1.9,
+            "z": 0
+          },
+          "burstStarts": 20,
+          "burstSeconds": 23.700000000000337,
+          "dashStarts": 1,
+          "bumpSeconds": 5.299999999999991,
+          "routeSeconds": {
+            "main": 43.50000000000009,
+            "back-alley": 46.06666666666661
+          },
+          "z": 361.13849951897726,
+          "speed": 8.174072159052342e-12,
+          "done": true,
+          "timeout": false,
+          "finishTime": 89.56666666666415,
+          "place": 2,
+          "bumps": 4,
+          "calls": 5,
+          "routes": {},
+          "sideChoices": {
+            "back-alley": true
+          }
+        }
+      ]
+    },
+    {
+      "treatment": "A",
+      "level": 6,
+      "seed": 42,
+      "kit": "speed",
+      "rotation": 0,
+      "normal": false,
+      "collisions": false,
+      "seconds": 600,
+      "dt": 0.03333333333333333,
+      "elapsed": 99.8999999999969,
+      "frames": 2998,
+      "maxPeople": 147,
+      "treatmentVerified": true,
+      "crossRouteBumps": 0,
+      "collisionChecks": [],
+      "endReason": "all-bots-finished",
+      "player": {
+        "look": {
+          "shirtType": "suit",
+          "pantsType": "joggers",
+          "shoeType": "runners",
+          "hat": "cap",
+          "pack": "pack",
+          "body": "m",
+          "build": "small"
+        },
+        "points": {
+          "speed": 7,
+          "accel": 3,
+          "rec": -5
+        },
+        "effects": {
+          "speed": 1.042,
+          "accel": 4.0249999999999995,
+          "lat": 1.09,
+          "regen": 0.8,
+          "bumpT": 1.4625000000000001
+        },
+        "z": 309.8722647313485,
+        "bumps": 20,
+        "finished": false,
+        "policy": "idle physical player; no steering or actions"
+      },
+      "bots": [
+        {
+          "slot": 0,
+          "look": {
+            "shirtType": "suit",
+            "pantsType": "joggers",
+            "shoeType": "runners",
+            "hat": "cap",
+            "pack": "pack",
+            "body": "m",
+            "build": "small"
+          },
+          "points": {
+            "speed": 7,
+            "accel": 3,
+            "rec": -5
+          },
+          "pace": 0.98,
+          "start": {
+            "x": -1.2999999999999998,
+            "z": 0
+          },
+          "burstStarts": 20,
+          "burstSeconds": 24.00000000000035,
+          "dashStarts": 0,
+          "bumpSeconds": 1.466666666666668,
+          "routeSeconds": {
+            "main": 39.96666666666696,
+            "back-alley": 50.266666666666374
+          },
+          "z": 361.8883959037562,
+          "speed": 8.268143215943435e-18,
+          "done": true,
+          "timeout": false,
+          "finishTime": 90.23333333333078,
+          "place": 2,
+          "bumps": 1,
+          "calls": 5,
+          "routes": {},
+          "sideChoices": {
+            "back-alley": true
+          }
+        },
+        {
+          "slot": 1,
+          "look": {
+            "shirtType": "suit",
+            "pantsType": "joggers",
+            "shoeType": "runners",
+            "hat": "cap",
+            "pack": "pack",
+            "body": "m",
+            "build": "medium"
+          },
+          "points": {
+            "speed": 10,
+            "accel": -1,
+            "rec": -4
+          },
+          "pace": 1.02,
+          "start": {
+            "x": 1.2999999999999998,
+            "z": -0.3
+          },
+          "burstStarts": 20,
+          "burstSeconds": 24.00000000000035,
+          "dashStarts": 3,
+          "bumpSeconds": 14.166666666666627,
+          "routeSeconds": {
+            "main": 52.53333333333291,
+            "back-alley": 47.36666666666654
+          },
+          "z": 360,
+          "speed": 3.7813446620493014,
+          "done": true,
+          "timeout": false,
+          "finishTime": 99.8999999999969,
+          "place": 3,
+          "bumps": 10,
+          "calls": 3,
+          "routes": {},
+          "sideChoices": {
+            "back-alley": true
+          }
+        },
+        {
+          "slot": 2,
+          "look": {
+            "shirtType": "suit",
+            "pantsType": "joggers",
+            "shoeType": "runners",
+            "hat": "cap",
+            "pack": "pack",
+            "body": "m",
+            "build": "large"
+          },
+          "points": {
+            "speed": 13,
+            "accel": -5,
+            "rec": -3
+          },
+          "pace": 1.06,
+          "start": {
+            "x": -1.9,
+            "z": 0
+          },
+          "burstStarts": 17,
+          "burstSeconds": 20.266666666666833,
+          "dashStarts": 1,
+          "bumpSeconds": 5.59999999999999,
+          "routeSeconds": {
+            "main": 45.59999999999997,
+            "back-alley": 44.60000000000003
+          },
+          "z": 360.87835763723615,
+          "speed": 3.3330238087432633e-18,
+          "done": true,
+          "timeout": false,
+          "finishTime": 90.19999999999744,
+          "place": 1,
+          "bumps": 4,
+          "calls": 5,
+          "routes": {},
+          "sideChoices": {
+            "back-alley": true
+          }
+        }
+      ]
+    }
+  ],
+  "counts": {
+    "ordinary": 630,
+    "ordinaryFinished": 630,
+    "probe": 18,
+    "probeTimeout": 18
+  },
+  "independentFifthLargeDelta": 1.1022222222221596
+}

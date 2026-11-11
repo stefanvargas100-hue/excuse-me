@@ -14,7 +14,7 @@ test('room sharing sends the tagged Subway ghost and receives route positions',a
  const {readyPlayers}=require('./harness'),members=[],sent=[];
  const factory=()=>{const m={handlers:[],joined:false};return {join:async()=>{m.joined=true;members.push(m);},leave:()=>{},onMessage:f=>m.handlers.push(f),onClose:()=>{},send:(ev,d)=>{sent.push([ev,d]);const copy=JSON.parse(JSON.stringify(d));for(const o of members)if(o!==m)Promise.resolve().then(()=>o.handlers.forEach(f=>f(ev,copy)));}};};
  const host=load(undefined,{seed:4}),guest=load(undefined,{seed:5});host.useRoomFactory(factory);guest.useRoomFactory(factory);const code=await host.hostRoom(5);await guest.joinRoom(code);await new Promise(r=>setTimeout(r,5));await readyPlayers([host,guest]);
- host.storage.excuseme_ghost_race_subway=JSON.stringify([0,0,0,400]);host.storage['excuseme_ghost_race_subway:sr2']=JSON.stringify([0,0,0,450]);host.hostStart();await new Promise(r=>setTimeout(r,10));
+ host.storage.excuseme_ghost_race_subway=JSON.stringify([0,0,0,400]);host.storage['excuseme_ghost_race_subway:sr2:standard:r2']=JSON.stringify([0,0,0,450]);host.hostStart();await new Promise(r=>setTimeout(r,10));
  const ghost=sent.find(([ev,d])=>ev==='ghost'&&d.kind==='race');assert.ok(ghost);assert.equal(ghost[1].ghost.pts.at(-1),450,'send the new course, never legacy');
  host.S.duel.send('pos',{n:1,x:0,z:150,vx:0,s:4,route:'mezzanine'});await new Promise(r=>setTimeout(r,5));const peer=Object.values(guest.S.duel.peers).find(p=>!p.ai);assert.equal(peer.remote.sample(guest.S.clock).route,'mezzanine');host.leaveRoom();guest.leaveRoom();
 });

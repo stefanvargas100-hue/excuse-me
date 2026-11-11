@@ -1,0 +1,45 @@
+{
+  "source": "Observed assertion output from initial pre-implementation executions in this task; narrative summary, not a rerun of the old source",
+  "red": [
+    {
+      "test": "new and omitted standard records",
+      "actual": 1,
+      "expected": 2
+    },
+    {
+      "test": "Challenge competitive identity",
+      "actual": 1,
+      "expected": 2
+    },
+    {
+      "test": "new seeded identity",
+      "actual": "mp2",
+      "expected": "mp3"
+    },
+    {
+      "test": "actual preview output",
+      "actual": "Race stats - flat ground; width:115%",
+      "expected": "Build stats; width:100%"
+    },
+    {
+      "test": "reject protocol 8 hello",
+      "actualRosterLength": 2,
+      "expectedRosterLength": 1
+    },
+    {
+      "test": "reject wrong ghost identity",
+      "actual": "friend ghost persisted",
+      "expected": "storage unchanged"
+    }
+  ],
+  "green": {
+    "combinedFocused": 42,
+    "fullSuite": 855,
+    "fullFailures": 0,
+    "build": "pass",
+    "browserViewports": [
+      "320x568",
+      "390x844"
+    ]
+  }
+}

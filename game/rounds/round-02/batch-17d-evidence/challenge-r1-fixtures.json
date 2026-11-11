@@ -1,0 +1,77 @@
+[
+  {
+    "week": "2025-W01",
+    "rules": 1,
+    "level": 2,
+    "seed": "wchal:2025-W01:r1",
+    "outfit": {
+      "body": "m",
+      "build": "medium",
+      "shirtType": "puffer",
+      "pantsType": "pencil",
+      "shoeType": "platforms",
+      "hat": "bucket",
+      "pack": "pack"
+    }
+  },
+  {
+    "week": "2026-W45",
+    "rules": 1,
+    "level": 0,
+    "seed": "wchal:2026-W45:r1",
+    "outfit": {
+      "body": "m",
+      "build": "small",
+      "shirtType": "varsity",
+      "pantsType": "flares",
+      "shoeType": "platforms",
+      "hat": "fedora",
+      "pack": "sling"
+    }
+  },
+  {
+    "week": "2026-W46",
+    "rules": 1,
+    "level": 2,
+    "seed": "wchal:2026-W46:r1",
+    "outfit": {
+      "body": "m",
+      "build": "large",
+      "shirtType": "tank",
+      "pantsType": "jeans",
+      "shoeType": "dad",
+      "hat": "fedora",
+      "pack": "pack"
+    }
+  },
+  {
+    "week": "2026-W53",
+    "rules": 1,
+    "level": 2,
+    "seed": "wchal:2026-W53:r1",
+    "outfit": {
+      "body": "f",
+      "build": "medium",
+      "shirtType": "velour",
+      "pantsType": "slacks",
+      "shoeType": "boots",
+      "hat": "beret",
+      "pack": "sling"
+    }
+  },
+  {
+    "week": "2027-W01",
+    "rules": 1,
+    "level": 2,
+    "seed": "wchal:2027-W01:r1",
+    "outfit": {
+      "body": "m",
+      "build": "small",
+      "shirtType": "tank",
+      "pantsType": "slacks",
+      "shoeType": "slides",
+      "hat": "visor",
+      "pack": "fanny"
+    }
+  }
+]

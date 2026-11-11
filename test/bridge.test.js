@@ -26,7 +26,7 @@ test('both tower portals contain runners and bots, and release them afterward',(
 test('bridge route choices avoid towers and keep records versioned',()=>{
  const E=bridge('race');const zones=E.routeZones('bridge');assert.equal(zones.length,2);
  for(const z of zones){assert.ok(Math.abs(z.z-195)>35&&Math.abs(z.z-415)>35);const op=E.routeOpenings('bridge',z);assert.ok(op.every(([a,b])=>b-a>=1));}
- E.S.race.countT=0;E.S.pz=601;E.S.people=[];E.tick(1/30);assert.ok(E.storage['excuseme_race_best_bridge:rt1']);
+ E.S.race.countT=0;E.S.pz=601;E.S.people=[];E.tick(1/30);assert.ok(E.storage['excuseme_race_best_bridge:rt1:standard:r2']);
 });
 test('a full generated bridge race reaches Manhattan',()=>{
  const E=bridge('race');for(let i=0;i<15000&&!E.S.race.finished;i++)E.tick(1/30);assert.equal(E.S.race.finished,true);assert.ok(E.S.pz>=600);

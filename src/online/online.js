@@ -1,3 +1,4 @@
+import { raceBoardId } from '../sim/runopts.js';
 import { isSeeded, seededKey } from '../sim/seeded-rules.js';
 import { classicTag } from '../sim/classic-rules.js';
 import { RACE_SUBMIT_ENABLED, encodeRaceTime, validRaceTime } from './boards.js';
@@ -17,7 +18,7 @@ const KEY = 'sb_publishable_FoFHiii4XagCq3-oi3ygQg_UcyZNoJn';
 const offlineFetch = () => Promise.reject(new Error('playtest'));
 const net = typeof fetch === 'function' ? createBoard({ fetch: PLAYTEST ? offlineFetch : (...a) => fetch(...a), url: URL, key: KEY, store, profile: () => ({ level: account.level(), title: account.title().name, pic: account.pic().glyph }) }) : null;
 
-export const boardId = (mode, key) => mode + ':' + (isSeeded(mode) ? seededKey(key) : key) + (mode === 'classic' ? classicTag : '');
+export const boardId = (mode, key) => mode === 'race' ? raceBoardId(key) : mode + ':' + (isSeeded(mode) ? seededKey(key) : key) + (mode === 'classic' ? classicTag : '');
 
 export function flushScores() { if (net) net.flush(); }
 

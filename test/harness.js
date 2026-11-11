@@ -37,8 +37,9 @@ function load(sourceFile, opts) {
     return elements.get(id);
   }
   // the game is ES modules; bundle them into one script so each load() gets its own independent copy of the game state
+  const compatibility = opts?.compat ? { stdin: { contents: "import '../src/main.js'; import * as identity from '../src/sim/runopts.js'; import * as seeded from '../src/sim/seeded-rules.js'; import {renderStats} from '../src/render/preview.js'; import {bestOf} from '../src/sim/state.js'; import {raceBest} from '../src/sim/race.js'; import {cupBest,challengeBest} from '../src/sim/game.js'; import * as online from '../src/online/online.js'; import {PROTO} from '../src/online/duel.js'; Object.assign(window.__excuse,{...identity,...seeded,...online,renderStats,bestOf,raceBest,cupBest,challengeBest,PROTO});", resolveDir: __dirname } } : null;
   const presentation = opts?.presentation ? { stdin: { contents: "import '../src/main.js'; import {refreshDuelResults,forfeitDuel} from '../src/sim/game.js'; import {setEndShown,setCalm} from '../src/sim/state.js'; Object.assign(window.__excuse,{refreshDuelResults,forfeitDuel,setEndShown,setCalm});", resolveDir: __dirname } } : null;
-  const code = esbuild.buildSync({ ...(presentation || (opts?.seeded ? { stdin: { contents: "import '../src/main.js'; import {extendClassicPickups} from '../src/sim/powerups.js'; import {R,setR,mulberry32} from '../src/config/util.js'; Object.assign(window.__excuse,{extendClassicPickups,setR,mulberry32,random:()=>R()});", resolveDir: __dirname } } : { entryPoints: [sourceFile || path.join(__dirname, '..', 'src', 'main.js')] })), bundle: true, format: 'iife', write: false, logLevel: 'silent' }).outputFiles[0].text;
+  const code = esbuild.buildSync({ ...(compatibility || presentation || (opts?.seeded ? { stdin: { contents: "import '../src/main.js'; import {extendClassicPickups} from '../src/sim/powerups.js'; import {R,setR,mulberry32} from '../src/config/util.js'; Object.assign(window.__excuse,{extendClassicPickups,setR,mulberry32,random:()=>R()});", resolveDir: __dirname } } : { entryPoints: [sourceFile || path.join(__dirname, '..', 'src', 'main.js')] })), bundle: true, format: 'iife', write: false, logLevel: 'silent' }).outputFiles[0].text;
   const store = { excuseme_tut: '1' };   // skip the first-run tutorial
   const win = {
     innerWidth: 390, innerHeight: 844, devicePixelRatio: 2,
@@ -48,7 +49,7 @@ function load(sourceFile, opts) {
     AudioContext: undefined, webkitAudioContext: undefined
   };
   const sandbox = {
-    window: win, console, Math, Date, JSON, Object, Array, Set, Map, Number, String, Symbol, Promise, Float32Array, Float64Array, Uint8Array, Int32Array, Uint32Array,
+    window: win, ...(opts?.fetch ? {fetch:opts.fetch}:{}), console, Math, Date, JSON, Object, Array, Set, Map, Number, String, Symbol, Promise, Float32Array, Float64Array, Uint8Array, Int32Array, Uint32Array,
     setTimeout, clearTimeout, setInterval() { return 0; }, clearInterval() {},
     performance: { now: () => 0 },
     document: { getElementById: () => stub(), querySelectorAll: () => [], querySelector: () => stub(), createElement: () => stub(), createTextNode: () => stub(), createDocumentFragment: () => stub(), addEventListener() {}, body: stub(), documentElement: stub(), hidden: false, fonts: { ready: Promise.resolve() } },

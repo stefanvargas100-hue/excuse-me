@@ -1,0 +1,331 @@
+✔ bridge appends fifth stage and supports its three looks throughout the course (269.2843ms)
+✔ bridge drawing never changes the simulation (669.5031ms)
+✔ classic continues beyond the bridge race finish (156.1297ms)
+✔ bridge furniture fits the promenade and leaves the centre and tower approaches clear (83.2906ms)
+✔ both tower portals contain runners and bots, and release them afterward (88.0373ms)
+✔ bridge route choices avoid towers and keep records versioned (126.7743ms)
+✔ a full generated bridge race reaches Manhattan (21439.2551ms)
+✔ new and omitted standard records isolate r1 without migrating legacy values (187.6032ms)
+✔ Challenge competitive r2 preserves frozen r1 course seed and outfit fixtures (101.4657ms)
+✔ captured seeded mp2 remains mp2 while new identities are mp3 and period eligibility stays used (106.024ms)
+✔ actual preview output normalizes speed through 13, preserves neutral and try-on numbers (102.8198ms)
+✔ actual submissions preserve captured mp2 and pending queue strings; current Classic top fetch is isolated and races remain disabled (102.6903ms)
+✔ actual current best and ghost reads ignore retained cm2/r1/Cup r3 and write compatible keys only (170.6458ms)
+✔ protocol 9 rejects old/missing hello before roster or readiness mutations (197.3448ms)
+✔ actual room sender/receiver share route-only and side-route ghost keys; invalid identities never persist (695.9431ms)
+✔ old/missing peer packets cannot alter a compatible roster, readiness, rematch or Cup (146.3649ms)
+✔ the host picks the format; guests see it; everyone starts the same elimination race (584.9893ms)
+✔ a normal room is unchanged: no checkpoints (316.0814ms)
+✔ the host eliminates the last racer and every phone ends up with the same list (648.3533ms)
+✖ repeated, reordered, wrong-race, non-host and unknown decisions eliminate nobody wrongly (339.239ms)
+✔ a decision cannot eliminate more racers than there are checkpoints, or the winner (197.219ms)
+✔ a paused room eliminates nobody until everyone who paused is ready (554.448ms)
+✔ a racer who leaves at the checkpoint is not counted as eliminated; the next-last goes instead, once (583.7508ms)
+✔ an eliminated host keeps deciding for the others until there is a winner (1046.2009ms)
+✔ if the host leaves, the elimination race ends for everyone with no winner (214.4785ms)
+✔ rewards: friend rooms keep their exclusion from unlock progress (715.128ms)
+✔ a rematch keeps the elimination format (700.3165ms)
+✔ the host sets up a Cup and guests see what was chosen; stages show their name, not the city (371.7919ms)
+✔ guests are told which stages and bots the host picked; the host is told what is missing (230.0122ms)
+✔ the room status names the stage rather than the city (185.9285ms)
+✔ a Cup cannot start with one real player, or without 4 different stages (386.1878ms)
+✔ changing the Cup after everyone is ready asks everyone to ready again (199.0687ms)
+✔ normal friend races are untouched: standard run, no Cup or bot messages, no Cup fields on the roster (183.4695ms)
+✔ a full 4-race Cup with 2 phones (570.0198ms)
+✔ a full 4-race Cup with 3 phones (751.2717ms)
+✔ a full 4-race Cup with 8 phones (1598.0757ms)
+✔ the host can start the next race only after the results are in (232.269ms)
+✔ between races the end screen shows the Cup and the right button on each phone (187.7955ms)
+✔ final standings offer a new Cup, not a rematch (434.9439ms)
+✔ bots run on the host and appear on guests through one combined message (328.8103ms)
+✔ bots use the Cup difficulty, and the saved setting neither applies nor changes (108.1328ms)
+✔ bots keep running and reporting after the host has finished, and a finished bot shows on guests (358.5875ms)
+✔ host-run bots give the host nothing a guest lacks (111.13ms)
+✔ a guest beating the host counts the same, and same-named friends stay separate (169.0339ms)
+✔ nothing is paid or recorded in a Cup (453.7181ms)
+✔ a guest leaving mid-race: a bot takes over from where they were, with their name and points (669.5757ms)
+✔ a guest leaving between races: a bot runs for them from the next race, and nobody can rejoin (285.9075ms)
+✔ the last guest leaving: the host plays on against bots, and can still start the next race (245.8232ms)
+✔ a guest who goes silent is treated as leaving (408.778ms)
+✔ the host leaving mid-race: the next player hosts, the bots carry on, and the race counts (344.3182ms)
+✔ the host leaving between races: the last guest hosts and plays on against bots (202.9716ms)
+✔ the host going silent hands the Cup over the same way (394.2421ms)
+✔ a lost result heals by itself on the next report (250.0376ms)
+✔ a phone that missed the results will not start the next race on old information; the next try works (219.1223ms)
+✔ repeated and late results change nothing (313.9078ms)
+✖ mismatched versions: the update message, and Cup messages from another version are ignored (63.6491ms)
+✔ a malformed setup is dropped before a Cup exists, and no race can start from it (390.9924ms)
+✔ malformed results are dropped whole, never partly applied (470.2798ms)
+✖ malformed bot messages are dropped whole (407.799ms)
+✔ a guest cannot fake a bot by sending under its id (125.9868ms)
+# measure (simulated connection, host alone after the guest left, 7 host-run bots): host sends 10.2 msg/s, 4.3 bots/s, 4.3 pos/s; combined bot message 365 bytes; cup message 622 bytes; {"pos":86,"bots":86,"lobby:go":1,"pause":10,"outcomes":10,"cup":10}
+✔ measure: a host with 7 bots stays within the message budget (2165.2576ms)
+# measure (simulated connection, 8 phones, long names): final results message 2495 bytes
+✔ measure: the largest Cup results message stays under 8 KB (1034.377ms)
+✔ a Cup pauser who departs by leave releases the remaining racers (173.4157ms)
+✔ a Cup pauser who departs by timeout releases the remaining racers (421.2127ms)
+✔ a finished Cup racer pruned by heartbeat is left on every phone and a bot next race (468.7716ms)
+✔ Friend Cup shows a round award separately from total after human finishers (185.8797ms)
+✔ Friend Cup Pending, authoritative redraw and fresh duel replacement never reaward (312.5153ms)
+✔ Friend Cup calm preserves award, totals and immediate controls (186.1652ms)
+✔ Friend Cup reduced preserves award, totals and immediate controls (171.1864ms)
+✔ DNF retains its placed award; incomplete results show Pending and zero total (171.4435ms)
+✔ 2 through 8 players get ordered, unique bots and independent same-name friends (2.6575ms)
+✔ four races score all racers fairly and finish identically on two phones (1.025ms)
+✔ leaving preserves identity and totals, takeover keeps earning, and host exit counts only finished races (0.4193ms)
+✔ setup rejects malformed network values without throwing and strips extra fields (0.3919ms)
+✔ invalid local setups and race rows are rejected without changing inputs (0.4688ms)
+✔ Subway Platform is valid in a shared Friend Cup setup and race order (0.1794ms)
+✔ a ghost that is sent to someone is thinned to one point every 2 seconds and keeps its last point (1.1134ms)
+✔ anything odd is thrown away: bad types, wild positions, too long, bad step (0.2507ms)
+✔ a friend ghost is kept per stage and kind, newest wins per friend, and only 4 friends are kept (1.6399ms)
+✔ a bad ghost is never saved, and names are cleaned (0.1544ms)
+✔ old-room close callbacks cannot damage a replacement room (173.1083ms)
+✔ brief lobby drop reconnects with the same player and no duplicate roster entry (225.5716ms)
+✔ late packets and duplicate start cannot reset a race or alter a rematch (183.6828ms)
+✔ a racer who never sends a first snapshot becomes DNF on wall-clock timeout (187.2294ms)
+✔ backgrounding during a race forfeits it; return cannot resurrect that runner (120.887ms)
+✔ host departure during a race preserves the departed row and lets guests finish (232.3518ms)
+✔ finished racers repeat their finish and late delivery refreshes both result boards (105.0024ms)
+✔ guest can leave and rejoin lobby; delayed bye from old identity is harmless (86.5684ms)
+✔ host loss closes guest lobby after grace; background lobby can return before grace (79.3213ms)
+✔ brief race drop recovers without DNF, with the same race and player (126.8816ms)
+✔ a lost rematch request is repeated instead of leaving the room waiting forever (101.3733ms)
+✔ out-of-order roster revisions cannot resurrect a player who left (144.3971ms)
+✔ a racer that keeps the socket alive but never finishes cannot block final results forever (163.5888ms)
+✔ missing a start while briefly offline cannot leave a guest stuck in the lobby (93.8062ms)
+✔ host repeats accepted finishes even after the finished guest leaves (149.9354ms)
+✔ host timeout verdict reaches a returned guest instead of two conflicting winners (104.9258ms)
+✔ host vanishing immediately after the first roster cannot leave a guest stuck (70.9207ms)
+✔ a cancelled pending join cannot close a newer room when its rejection arrives (25.2444ms)
+✔ a backgrounded guest clears readiness so the host cannot start a suspended race (62.3373ms)
+✔ after host departure both result screens offer a working path to create a fresh room (198.9818ms)
+✔ a paused guest reconnects with the same vote and can release the room (85.7899ms)
+✔ backgrounding or timing out a pauser releases every other racer (225.5068ms)
+✔ a missed ready message is repaired by the next pause heartbeat (82.6876ms)
+✔ incompatible start packets cannot start a joined guest on different rules (92.5505ms)
+✔ host refuses missing and incompatible protocol versions without adding racers (61.9345ms)
+✔ guest refuses an incompatible host roster and closes its pending join (66.7851ms)
+✔ everyone in the room sees the same list of players, host first (544.1686ms)
+✔ the host cannot start alone, and starting puts everyone on the same race (846.9798ms)
+✔ only the host can start a race (182.1284ms)
+✔ a start message from someone who is not the host is ignored (200.1206ms)
+✔ each phone drives only its own runner (230.8349ms)
+✔ reports from someone who is not in the race are thrown away (215.7614ms)
+✔ a player who leaves the lobby disappears from everyone's list (167.66ms)
+✔ when the host leaves the lobby the others are told (152.7051ms)
+✔ one player quitting mid-race drops only their runner (266.1456ms)
+✔ a silent player is dropped after the wall-clock grace period, the rest keep racing (215.0795ms)
+✔ with 3 or 4 players position reports slow down to protect the shared connection (398.682ms)
+✔ rematch in a 3-player room needs all three, then the host starts a new race (1309.5891ms)
+✔ if someone leaves while others wait on a rematch, the rest can still rematch (1008.683ms)
+✔ three players finishing: places are 1, 2, 3 for everyone by finish time (994.087ms)
+✔ the host can change the stage after making the room; guests see it and everyone races on it (136.1065ms)
+✔ any racer pauses the room; all pausers resume before the clock and countdown run (179.9085ms)
+✔ a pauser leaving releases the room and stale or unknown pause messages are ignored (93.9563ms)
+✔ pause messages are ordered per racer and belong to the current race (78.7614ms)
+✔ a lost pauser removed by the host roster also releases the pause on other guests (124.1572ms)
+✖ each stage has its own race board (2.8666ms)
+✔ faster times score higher and display hundredths (0.2654ms)
+✔ unapplied migration leaves race coming soon (0.1523ms)
+C:\Users\stefa\orca\workspaces\Excuse-Me\cap-trial\test\routes.test.js:98
+    assert.ok(E.storage['excuseme_race_best_' + id + ':rt1':standard:r2], id + ': a new record lives under the versioned key');
+                                                           ^
+
+SyntaxError: Unexpected token ':'
+    at wrapSafe (node:internal/modules/cjs/loader:1861:18)
+    at Module._compile (node:internal/modules/cjs/loader:1903:20)
+    at Object..js (node:internal/modules/cjs/loader:2060:10)
+    at Module.load (node:internal/modules/cjs/loader:1651:32)
+    at Module._load (node:internal/modules/cjs/loader:1443:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47
+
+Node.js v24.22.1
+✖ test\routes.test.js (45.9156ms)
+✔ daily small m matches Classic movement (269.4148ms)
+✔ daily small f matches Classic movement (175.5444ms)
+✔ daily medium m matches Classic movement (175.4766ms)
+✔ daily medium f matches Classic movement (127.2572ms)
+✔ daily large m matches Classic movement (115.6861ms)
+✔ daily large f matches Classic movement (146.904ms)
+✔ weekly small m matches Classic movement (92.976ms)
+✔ weekly small f matches Classic movement (109.8208ms)
+✔ weekly medium m matches Classic movement (118.039ms)
+✔ weekly medium f matches Classic movement (111.2745ms)
+✔ weekly large m matches Classic movement (95.3978ms)
+✔ weekly large f matches Classic movement (115.6949ms)
+✔ daily isolated score, frozen identity, pickups and reset (80.026ms)
+✔ weekly isolated score, frozen identity, pickups and reset (50.7111ms)
+✔ daily refill, clear, fatal contact, expiry and frozen loadout (56.5247ms)
+✔ weekly refill, clear, fatal contact, expiry and frozen loadout (46.2097ms)
+✔ daily stage 0 null direct pickup RNG isolation (105.3868ms)
+✔ daily stage 0 tired direct pickup RNG isolation (79.3075ms)
+✔ daily stage 0 rush direct pickup RNG isolation (71.1287ms)
+✔ daily stage 0 phones direct pickup RNG isolation (93.5413ms)
+✔ daily stage 1 null direct pickup RNG isolation (67.3807ms)
+✔ daily stage 1 tired direct pickup RNG isolation (60.6409ms)
+✔ daily stage 1 rush direct pickup RNG isolation (60.9449ms)
+✔ daily stage 1 phones direct pickup RNG isolation (59.631ms)
+✔ daily stage 2 null direct pickup RNG isolation (59.4202ms)
+✔ daily stage 2 tired direct pickup RNG isolation (53.0376ms)
+✔ daily stage 2 rush direct pickup RNG isolation (73.0784ms)
+✔ daily stage 2 phones direct pickup RNG isolation (81.5221ms)
+✔ daily stage 3 null direct pickup RNG isolation (55.5075ms)
+✔ daily stage 3 tired direct pickup RNG isolation (69.5953ms)
+✔ daily stage 3 rush direct pickup RNG isolation (75.8114ms)
+✔ daily stage 3 phones direct pickup RNG isolation (92.5001ms)
+✔ daily stage 4 null direct pickup RNG isolation (76.1336ms)
+✔ daily stage 4 tired direct pickup RNG isolation (57.8251ms)
+✔ daily stage 4 rush direct pickup RNG isolation (83.4824ms)
+✔ daily stage 4 phones direct pickup RNG isolation (70.9615ms)
+✔ weekly stage 0 null direct pickup RNG isolation (45.99ms)
+✔ weekly stage 0 tired direct pickup RNG isolation (46.3654ms)
+✔ weekly stage 0 rush direct pickup RNG isolation (57.4011ms)
+✔ weekly stage 0 phones direct pickup RNG isolation (45.5507ms)
+✔ weekly stage 1 null direct pickup RNG isolation (50.2555ms)
+✔ weekly stage 1 tired direct pickup RNG isolation (45.8955ms)
+✔ weekly stage 1 rush direct pickup RNG isolation (46.0698ms)
+✔ weekly stage 1 phones direct pickup RNG isolation (45.408ms)
+✔ weekly stage 2 null direct pickup RNG isolation (39.0358ms)
+✔ weekly stage 2 tired direct pickup RNG isolation (47.2497ms)
+✔ weekly stage 2 rush direct pickup RNG isolation (38.708ms)
+✔ weekly stage 2 phones direct pickup RNG isolation (49.4943ms)
+✔ weekly stage 3 null direct pickup RNG isolation (42.9752ms)
+✔ weekly stage 3 tired direct pickup RNG isolation (49.7633ms)
+✔ weekly stage 3 rush direct pickup RNG isolation (39.0657ms)
+✔ weekly stage 3 phones direct pickup RNG isolation (50.8975ms)
+✔ weekly stage 4 null direct pickup RNG isolation (40.6207ms)
+✔ weekly stage 4 tired direct pickup RNG isolation (47.0077ms)
+✔ weekly stage 4 rush direct pickup RNG isolation (39.1654ms)
+✔ weekly stage 4 phones direct pickup RNG isolation (57.9579ms)
+✔ daily actual clock boundary retains captured score and rewards once (31.4109ms)
+✔ weekly actual clock boundary retains captured score and rewards once (26.3527ms)
+✔ daily upgrade marker retained and boost expires (26.2145ms)
+✔ weekly upgrade marker retained and boost expires (19.2969ms)
+✔ daily razor pass grants Classic stamina and near bonus; no ghosts or extra quit rewards (91.7173ms)
+✔ weekly razor pass grants Classic stamina and near bonus; no ghosts or extra quit rewards (113.2584ms)
+✔ Subway hard stairs and mezzanine save 3-8% on a scripted complete drive (16.9358ms)
+✔ route entry is local, persists until exit and then rejoins (0.2072ms)
+✔ remote interpolation carries route immediately (4.7301ms)
+✔ crowd on the platform cannot collide with a mezzanine racer (135.3334ms)
+✔ remote racers on a different floor do not push the player (114.5603ms)
+✔ a mezzanine shout cannot move shoppers on the platform (164.4959ms)
+✔ old untagged friend ghosts cannot compete on the side-route course (13.827ms)
+✔ room sharing sends the tagged Subway ghost and receives route positions (236.8137ms)
+✔ back alley scripted drive is no faster and within 1% of main (17.4425ms)
+✔ spill floor isolation {"runner":"mezzanine","spill":""} (81.344ms)
+✔ spill floor isolation {"runner":"","spill":"mezzanine"} (100.6288ms)
+✔ spill floor isolation {"runner":"mezzanine","spill":"mezzanine"} (52.5221ms)
+✔ spill floor isolation {"runner":"","spill":""} (48.4471ms)
+✔ mezzanine has deterministic real props and pedestrians with safe stairs and gaps (115.3794ms)
+✔ mezzanine population cannot collide or shout across floors in either direction (102.6591ms)
+✔ mezzanine player and bot rejoin after their route exit (39.4048ms)
+✔ back-alley has deterministic real props and pedestrians with safe stairs and gaps (112.8787ms)
+✔ back-alley population cannot collide or shout across floors in either direction (87.2809ms)
+✔ back-alley player and bot rejoin after their route exit (77.4448ms)
+✔ only populated route stages get new record/ghost course tags (11.7169ms)
+✔ bots get the same mezzanine cruise benefit as players (90.7825ms)
+✔ route generation repeats for race and friend-course seeds (195.8713ms)
+✔ generated route barriers collide on their own floor and leave the centre traversable (78.9851ms)
+✔ sr1 friend ghosts remain saved but cannot compete on sr2 courses (6.825ms)
+✔ unseeded offline races still repeat route-local actor identities (45.7697ms)
+✔ split distances are quarters of the goal (1.3143ms)
+✔ ghost time interpolates the first crossing despite backtracking (0.1607ms)
+✔ unreached distances return null, including empty samples (0.0993ms)
+✔ deltas have one decimal and signs except rounded zero (0.1477ms)
+✔ saved ghost splits use recorded points even with the visible ghost cleared, and show once per run (127.4067ms)
+✔ no splits without a saved best or beyond its last distance (108.5058ms)
+✔ Cup, Practice, Weekly, Classic and friend rooms never show splits (79.8495ms)
+✔ split colour matches what the player reads, so a rounded level split is never red (0.1489ms)
+ℹ tests 224
+ℹ suites 0
+ℹ pass 219
+ℹ fail 5
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 22907.5906
+
+✖ failing tests:
+
+test at test\elimroom.test.js:84:1
+✖ repeated, reordered, wrong-race, non-host and unknown decisions eliminate nobody wrongly (339.239ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+
+  + '[]'
+  - '["1abssupz"]'
+
+      at eq (C:\Users\stefa\orca\workspaces\Excuse-Me\cap-trial\test\elimroom.test.js:31:32)
+      at TestContext.<anonymous> (C:\Users\stefa\orca\workspaces\Excuse-Me\cap-trial\test\elimroom.test.js:93:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '[]',
+    expected: '["1abssupz"]',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\friendcup-room.test.js:536:1
+✖ mismatched versions: the update message, and Cup messages from another version are ignored (63.6491ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  9 !== 8
+
+      at TestContext.<anonymous> (C:\Users\stefa\orca\workspaces\Excuse-Me\cap-trial\test\friendcup-room.test.js:538:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 9,
+    expected: 8,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\friendcup-room.test.js:599:1
+✖ malformed bot messages are dropped whole (407.799ms)
+  AssertionError [ERR_ASSERTION]: the good one is
+      at TestContext.<anonymous> (C:\Users\stefa\orca\workspaces\Excuse-Me\cap-trial\test\friendcup-room.test.js:616:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at test\race-boards.test.js:3:1
+✖ each stage has its own race board (2.8666ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+
+  + 'race:park_r2'
+  - 'race:park_rt1_r2'
+                ^
+
+      at C:\Users\stefa\orca\workspaces\Excuse-Me\cap-trial\test\race-boards.test.js:3:200
+      at Array.forEach (<anonymous>)
+      at TestContext.<anonymous> (C:\Users\stefa\orca\workspaces\Excuse-Me\cap-trial\test\race-boards.test.js:3:177)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'race:park_r2',
+    expected: 'race:park_rt1_r2',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\routes.test.js:1:1
+✖ test\routes.test.js (45.9156ms)
+  'test failed'

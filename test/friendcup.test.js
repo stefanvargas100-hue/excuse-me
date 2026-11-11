@@ -10,7 +10,7 @@ const rows = c => C.cupRacers(c).map((r, i) => ({ id: r.id, place: i + 1, time: 
 const freeze = x => { if (x && typeof x === 'object') { Object.values(x).forEach(freeze); Object.freeze(x); } return x; };
 
 test('2 through 8 players get ordered, unique bots and independent same-name friends', () => {
-  assert.deepEqual([C.FRIEND_CUP_RULES, C.CUP_RACES, C.CUP_RACERS, C.BOT_LEVELS], [1, 4, 8, 3]);
+  assert.deepEqual([C.FRIEND_CUP_RULES, C.CUP_RACES, C.CUP_RACERS, C.BOT_LEVELS], [2, 4, 8, 3]);
   for (let n = 2; n <= 8; n++) {
     const c = make(n), racers = C.cupRacers(c);
     assert.equal(racers.length, 8);

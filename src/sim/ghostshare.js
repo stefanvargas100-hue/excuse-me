@@ -1,6 +1,4 @@
-import { classicTag } from './classic-rules.js';
-import { sideRoutes } from '../config/side-routes.js';
-import { courseTag } from '../config/routes.js';
+import { friendGhostKey } from './runopts.js';
 /* ---------- sharing ghosts: packing, checking and keeping the ghosts of friends ----------
    A ghost is a list of positions [x, z, x, z, ...] sampled every `step` seconds. Your own is recorded every 0.4 s; a ghost that
    is sent to someone else is thinned to one sample every 2 s, which is plenty to see a runner and keeps messages small.
@@ -39,7 +37,7 @@ export const cleanFriendName = raw => {
   return s || 'Friend';
 };
 
-const friendKey = (kind, levelId) => 'excuseme_fg_' + (kind === 'race' ? 'race' : 'classic') + '_' + levelId + (kind === 'race' && sideRoutes(levelId).length ? courseTag(levelId) : kind === 'classic' ? classicTag : '');
+const friendKey = friendGhostKey;
 const readList = (store, key) => { try { const v = JSON.parse(store.get(key, '[]')); return Array.isArray(v) ? v : []; } catch (e) { return []; } };
 
 // Friends' ghosts for one stage: newest first, at most MAX_FRIEND_GHOSTS.

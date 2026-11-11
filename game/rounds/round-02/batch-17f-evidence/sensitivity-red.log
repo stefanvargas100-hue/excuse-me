@@ -1,0 +1,30 @@
+✖ actual room sender/receiver share route-only and side-route ghost keys; invalid identities never persist (147.8975ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 206.3545
+
+✖ failing tests:
+
+test at game\rounds\round-02\batch-17f-evidence\mutation\test\cap-wire-compatibility.test.js:10:1
+✖ actual room sender/receiver share route-only and side-route ghost keys; invalid identities never persist (147.8975ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+
+  + '{"excuseme_tut":"1","excuseme_online_name":"\\"Cosmic Walker 84\\"","excuseme_fg_race_airport:rt1:standard:r2":"[{\\"name\\":\\"Lucky Walker 61\\",\\"step\\":2,\\"pts\\":[0,0,0,12],\\"t\\":1794420113450}]"}'
+  - '{"excuseme_tut":"1","excuseme_online_name":"\\"Cosmic Walker 84\\""}'
+
+      at TestContext.<anonymous> (C:\Users\stefa\orca\workspaces\Excuse-Me\cap-review\game\rounds\round-02\batch-17f-evidence\mutation\test\cap-wire-compatibility.test.js:16:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '{"excuseme_tut":"1","excuseme_online_name":"\\"Cosmic Walker 84\\"","excuseme_fg_race_airport:rt1:standard:r2":"[{\\"name\\":\\"Lucky Walker 61\\",\\"step\\":2,\\"pts\\":[0,0,0,12],\\"t\\":1794420113450}]"}',
+    expected: '{"excuseme_tut":"1","excuseme_online_name":"\\"Cosmic Walker 84\\""}',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

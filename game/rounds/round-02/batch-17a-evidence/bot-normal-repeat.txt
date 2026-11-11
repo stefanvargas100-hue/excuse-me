@@ -1,0 +1,1 @@
+PASS: complete A random-outfit seed 42 races repeat exactly on Fifth Avenue, Subway and Takeshita.

@@ -36,7 +36,9 @@ function fromRaw(E,look,option,nonBuild){
  if(option==='B')out.speed=clamp(nonBuild.speed+b.speed,13);
  return out;
 }
-function effectivePoints(E,look,option='current'){return fromRaw(E,look,option,rawPoints(E,look));}
+// 'current' preserves the historical pre-trial analytical baseline.
+// 'active' uses production stats; A remains the independent treatment reference.
+function effectivePoints(E,look,option='current'){if(option==='active')return {...E.statsOf(look)};return fromRaw(E,look,option,rawPoints(E,look));}
 function enumerate(){
  const E=load(), options=['current','candidate','A','B'], builds=['small','medium','large'];
  const results=Object.fromEntries(options.map(o=>[o,{loadoutsPerBuild:0,capApplied:0,atSpeedBoundary:0,largeEqualsMedium:0,largeEqualsMediumWithAccelCost:0,smallEqualsMedium:0,smallEqualsLarge:0,speedChanges:Object.fromEntries(builds.map(b=>[b,{up:0,down:0,same:0}])),speedRange:Object.fromEntries(builds.map(b=>[b,{min:Infinity,max:-Infinity}]))}]));
@@ -54,7 +56,7 @@ function enumerate(){
     if(Math.abs(input)>limit)r.capApplied++;
     if(Math.abs(input)>=limit)r.atSpeedBoundary++;
     r.speedRange[build].min=Math.min(r.speedRange[build].min,st.speed);r.speedRange[build].max=Math.max(r.speedRange[build].max,st.speed);
-    if(option==='current'||((option==='A'||option==='B')&&Math.abs(nonBuild.speed)+3<10)){
+    if(option==='A'){
      const current=E.statsOf({...look,build});
      for(const k in current)if(current[k]!==st[k])throw Error('analytical stats mismatch');
      checks++;
@@ -70,4 +72,4 @@ function enumerate(){
  walk(0,{});return {definition:'All current ITEM_STATS slot combinations x two bodies; cap counts across three builds; pair counts per same-gear/body tuple; not usage frequencies',analyticalChecks:checks,results};
 }
 module.exports={measure,effectivePoints,enumerate};
-if(require.main===module){const rows=[];for(const option of ['current','candidate','A','B'])for(const body of ['m','f'])for(const [kit,items]of Object.entries(gear))for(const build of ['small','medium','large'])rows.push({option,kit,...measure({...items,body,build},option)});console.log(JSON.stringify({command:'node tools/build-balance.cjs',seed:SEED,dt:DT,rows,enumeration:enumerate()},null,2));}
+if(require.main===module){const rows=[];for(const option of ['current','candidate','A','B','active'])for(const body of ['m','f'])for(const [kit,items]of Object.entries(gear))for(const build of ['small','medium','large'])rows.push({option,kit,...measure({...items,body,build},option)});console.log(JSON.stringify({command:'node tools/build-balance.cjs',seed:SEED,dt:DT,rows,enumeration:enumerate()},null,2));}

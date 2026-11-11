@@ -40,7 +40,7 @@ test('the run is a solo timed race: no bots, no pickups, countdown, locked seed 
   assert.strictEqual(E.S.run.category, 'challenge');
   assert.strictEqual(E.S.race.bots.length, 0); assert.strictEqual(E.S.race.pickups.length, 0);
   assert.strictEqual(E.S.race.countT, 3, 'normal countdown');
-  const c = E.S.challenge; assert.ok(c.week && c.rules === 1);
+  const c = E.S.challenge; assert.ok(c.week && c.rules === 2);
   assert.strictEqual(E.S.seed, c.seed);
 });
 
@@ -69,7 +69,7 @@ test('random crowd events, rivals and rush hour are off, so nobody gets a differ
 test('finishing stores a best time under the challenge key only; slower runs do not replace it; nothing else is paid', () => {
   const E = begin(); const xp0 = E.xp(), races0 = E.tallyOf('races');
   finish(E);
-  const week = E.S.challenge.week, key = 'excuseme_wchal_' + week + ':challenge:r1';
+  const week = E.S.challenge.week, key = 'excuseme_wchal_' + week + ':challenge:r2';
   const t1 = parseFloat(E.storage[key]); assert.ok(t1 > 0, 'stored ' + E.storage[key]);
   assert.strictEqual(E.xp(), xp0); assert.strictEqual(E.tallyOf('races'), races0);
   assert.strictEqual(E.storage['excuseme_race_best_airport:rt1'], undefined); assert.ok(!Object.keys(E.storage).some(k => /ghost/.test(k)));
@@ -94,7 +94,7 @@ test('a run is filed under the week it started, even if the finish is after the 
   const E = begin(D(SUN_END - 20000));   // 20 seconds before the reset
   const week = E.S.challenge.week;
   finish(E);
-  assert.ok(E.storage['excuseme_wchal_' + week + ':challenge:r1'], 'filed under the starting week');
+  assert.ok(E.storage['excuseme_wchal_' + week + ':challenge:r2'], 'filed under the starting week');
   assert.strictEqual(week, E.utcWeekKey(D(MON)), 'the starting week is the one that ended');
 });
 

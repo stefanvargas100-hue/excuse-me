@@ -1,4 +1,4 @@
-import { BODIES, BUILDS, ITEM_STATS, STYLE_NAMES, fitOf, styleLabel, STAT_CAP, statHint, statDetails, statsOf } from '../config/stats.js';
+import { BODIES, BUILDS, ITEM_STATS, STYLE_NAMES, fitOf, styleLabel, STAT_CAPS, statHint, statDetails, statsOf } from '../config/stats.js';
 import { $, ctx, setCtx } from '../dom.js';
 import { CX, DPR, F, H, HOR, VX, VY, VZ, W, setCX, setF, setH, setHOR, setVX, setVY, setVZ, setW } from './camera.js';
 import { drawPerson } from './figures.js';
@@ -29,7 +29,7 @@ const optOf = key => LOOK_OPTS.find(o => o.key === key);
 const nameOf = (o, val) => { const v = o.vals.find(x => Array.isArray(x) && x[0] === val); return v ? v[1] : ''; };
 
 // Live bars for the three race stats. They only change with build and gear types, never with colours.
-function renderStats(tryOn) {
+export function renderStats(tryOn) {
   const box = $('statBars'); if (!box) return;
   const now = statsOf(LOOK), s = tryOn ? statsOf({ ...LOOK, ...tryOn }) : now;
   const values = statDetails(s), was = statDetails(now);
@@ -37,13 +37,13 @@ function renderStats(tryOn) {
     const points = s[key], cls = points > 0 ? 'up' : points < 0 ? 'down' : '';
     const fmt = v => (field === 'accel90' ? '~' : '') + v.toFixed(unit === 'mph' ? 1 : 2) + ' ' + unit;
     const label = tryOn && s[key] !== now[key] ? fmt(was[field]) + ' &rarr; ' + fmt(values[field]) : fmt(values[field]);
-    return '<div class="stat"><div class="statl"><span>' + name + '</span><span class="' + cls + '">' + label + '</span></div>' + (help ? '<div class="stathelp">' + help + '</div>' : '') + '<div class="statb"><i class="' + cls + '" style="width:' + ((points + STAT_CAP) / (2 * STAT_CAP) * 100).toFixed(0) + '%"></i></div></div>';
+    return '<div class="stat"><div class="statl"><span>' + name + '</span><span class="' + cls + '">' + label + '</span></div>' + (help ? '<div class="stathelp">' + help + '</div>' : '') + '<div class="statb"><i class="' + cls + '" style="width:' + Math.max(0, Math.min(100, (points + STAT_CAPS[key]) / (2 * STAT_CAPS[key]) * 100)).toFixed(0) + '%"></i></div></div>';
   };
   const fit = fitOf({ ...LOOK, ...tryOn }), why = [];
   if (fit.stylePts) why.push(fit.count === 5 ? 'Full ' + STYLE_NAMES[fit.style] + ' set' : fit.count + ' ' + STYLE_NAMES[fit.style] + ' pieces');
   if (fit.focusPts) why.push(fit.focus + ' focus');
   const fitRow = '<div class="fit' + (fit.boost ? ' on' : '') + '"><b>Fit check ' + (fit.boost ? '+' + fit.boost : '0') + '</b> ' + (why.join(', ') || 'Match 3 pieces, or stack one stat') + '</div>';
-  box.innerHTML = '<div class="statn">' + (tryOn ? 'If you wore it - race only' : 'Race stats - flat ground') + '</div>' + row('Top burst', 'speed', 'burstMph', 'mph', 'Walk ' + values.walkMph.toFixed(1) + ' mph; boosts extra') + row('0-90% speed', 'accel', 'accel90', 's') + row('Stamina refill', 'rec', 'refillSeconds', 's', 'Empty to full, while walking') + row('Bump slowdown', 'rec', 'bumpSeconds', 's') + fitRow;
+  box.innerHTML = '<div class="statn">' + (tryOn ? 'If you wore it - build stats' : 'Build stats - flat ground') + '</div>' + row('Top burst', 'speed', 'burstMph', 'mph', 'Walk ' + values.walkMph.toFixed(1) + ' mph; boosts extra') + row('0-90% speed', 'accel', 'accel90', 's') + row('Stamina refill', 'rec', 'refillSeconds', 's', 'Empty to full, while walking') + row('Bump slowdown', 'rec', 'bumpSeconds', 's') + fitRow;
 }
 
 function refreshLook() {

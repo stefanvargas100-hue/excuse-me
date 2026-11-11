@@ -19,7 +19,7 @@ test('deltas have one decimal and signs except rounded zero', () => {
   assert.equal(splitText(-0.44), '-0.4'); assert.equal(splitText(1.24), '+1.2');
   for (const n of [0, -0, 0.04, -0.04]) assert.equal(splitText(n), '0.0');
 });
-const key = 'excuseme_ghost_race_airport:rt1';
+const key = 'excuseme_ghost_race_airport:rt1:standard:r2';
 function begin(E, opts) { E.setLevel(0); E.start('race', undefined, opts); E.S.race.countT = 0; }
 function crossing(E, fraction, time = 1) {
   E.S.pops.length = 0; E.S.pz = E.LV.goal * fraction; E.S.time = time; E.S.people.length = 0; E.S.nextChunk = E.S.pz + 100; E.tick(0);

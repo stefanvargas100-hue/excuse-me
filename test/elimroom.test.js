@@ -83,7 +83,7 @@ test('the host eliminates the last racer and every phone ends up with the same l
 
 test('repeated, reordered, wrong-race, non-host and unknown decisions eliminate nobody wrongly', async () => {
   const { games, ids } = await elimRace(4);
-  const g = games[1], host = hostId(g), seed = g.S.duel.seed, msg = (over = {}) => ({ id: host, race: seed, rev: 1, out: [ids[3]], ...over });
+  const g = games[1], host = hostId(g), seed = g.S.duel.seed, msg = (over = {}) => ({ proto: 9, id: host, race: seed, rev: 1, out: [ids[3]], ...over });
   g.injectRoomMessage('elim', msg({ id: ids[2] }));                  // a guest pretending to be the host
   g.injectRoomMessage('elim', msg({ race: 'other:1' }));             // another race
   g.injectRoomMessage('elim', msg({ out: ['nobody'] }));             // an id that is not in the room
@@ -105,7 +105,7 @@ test('repeated, reordered, wrong-race, non-host and unknown decisions eliminate 
 test('a decision cannot eliminate more racers than there are checkpoints, or the winner', async () => {
   const { games, ids } = await elimRace(3);
   const g = games[0 + 1], host = hostId(g), seed = g.S.duel.seed;
-  g.injectRoomMessage('elim', { id: host, race: seed, rev: 1, out: [ids[2], ids[1], ids[0]] });   // 3 racers: only 2 can go
+  g.injectRoomMessage('elim', { proto: 9,  id: host, race: seed, rev: 1, out: [ids[2], ids[1], ids[0]] });   // 3 racers: only 2 can go
   assert.ok(g.S.race.elim.out.length <= 2);
   assert.ok(!outIds(g).includes(ids[0]) || g.S.race.elim.out.length <= 2);
 });

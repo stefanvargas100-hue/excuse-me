@@ -1,0 +1,9 @@
+? nobody who crosses the corridor is generated inside the walkway stretches (99.3935ms)
+? tests 825
+? suites 0
+? pass 825
+? fail 0
+? cancelled 0
+? skipped 0
+? todo 0
+? duration_ms 169832.9775
