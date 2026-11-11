@@ -3,6 +3,7 @@
 One entry per problem. Add to its count when it happens again. The choice of permanent fix is explained in `studio/lead-playbook.md`.
 
 - 2026-11-11, host/Cup integration: full suite 828/829, unseeded airport belt test observed 28/911 reverse-belt samples against 3% limit. Builder 829/829 differed. Cause/attribution not yet established; batch-10f owns seeded reproduction and correction without weakening the assertion. Publication held; original log retained under batch-10f-evidence/.
+- 2026-11-11 resolution: batch 10f proves inherited reverse-belt spawning with fixed seed 35. genChunk-only placement correction plus deterministic generation/threshold regressions preserves the 3% check; final lead suite 837/837. Two intermediate suites failed because a newline-sensitive edit left an unintended mk hook; final source was inspected and the explicit-placement regression passed after removal. All evidence now in the round's batch-10f-evidence/; publish only with the pending competition identity package.
 
 | Problem | Cause | Seen | Batches | Permanent fix |
 |---|---|---|---|---|
