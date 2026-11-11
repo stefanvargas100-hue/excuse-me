@@ -1,5 +1,9 @@
 # Status
 
+## Delayed shortcut verification archived; current work unchanged - 2026-11-10
+- Integrated evidence-only e075ce9: original shortcut Tests/Pages succeeded for 2d712c0; resumed HTTP capture instead found newer 11c3fde (200). Worker outcome stays partial for its historical matching-ID requirement, not a current publication failure. Earlier direct lead verification and later independently verified 11c3fde remain separate evidence; no rollback/redeploy or new gameplay testing warranted.
+- Host/Cup recovery restarted successfully as ctx_3b1bdc547b4a on original task task_c71dafd399d4 and preserved playtest-fixes workspace; required batch-10b recovery brief delivered. Cap/evidence review passed; compatibility/UI companion waits for shared files. Main remains unchanged and unapproved.
+
 ## Cap review passed; shared-file recovery precedes companion - 2026-11-10
 - Independent cap review 2d9a79c passes approved stats/native-bot evidence: 24 focused checks, six exact full-race reproductions, all 72 historical rows, independent aggregation, build/diff pass. Full 825/825 accepted from builder. No integration or publication yet.
 - Companion must resolve S2 proposed Challenge content reset by separating competition identity from existing content seed; S3 menu old/new score reads, captured mp2 identity suffix preservation and preview +/-13 normalization are required. Preserve weekly content, reset clocks, attempts, legacy saves/queues; no extra tuning or database work.
