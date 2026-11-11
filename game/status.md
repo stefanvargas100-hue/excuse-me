@@ -1,5 +1,10 @@
 # Status
 
+## Build-cap trial proposal awaiting Director approval - 2026-11-10
+- Integrated measurement-only study f315020 from build-balance-study; no production tuning. Lead reran 3/3 tool tests and diff check; full gameplay/build exempt for study-only scope. Original 36 cases preserved, 72 comparison rows and exhaustive 174,240 same-gear/body tuples per build recorded.
+- Recommend treatment A for controlled playtest trial: cap non-build speed contributions at +/-10, then add original build speed points; acceleration/recovery unchanged. This removes all measured same-gear speed ties, but lowers small speed in 2.76% of enumerated tuples. Example male speed kit: large 3.180 -> 3.234 m/s, small 3.144 -> 3.126, medium unchanged. Plain kit unchanged. This does not prove competitive balance.
+- Director approval pending before implementation; see batch-16-build-proposal.md. Earlier +4/-3/-1 proposal withdrawn. Any implementation needs explicit score/ghost/multiplayer compatibility planning and phone trial. Main unchanged; host/Cup batch 10 recovery remains assigned separately.
+
 ## Build balance study needs cap disposition - 2026-11-10
 - Batch 16 study ef9bfbb/report c52656c reports 36 deterministic actual-tick cases, 2 focused tests and exact repeatability; no production changes. Large has modest clear-cruise benefit but speed gear can cap medium/large equally while retaining large acceleration cost.
 - Proposed +4/-3/-1 does not resolve capped gear weakness and reduces plain repeated-burst average. Lead assigned bounded batch-16b-cap-study.md to compare two in-memory speed-cap treatments before recommending values for Director approval. Not integrated or approved tuning; human crowded/shortcut balance remains unproved.
