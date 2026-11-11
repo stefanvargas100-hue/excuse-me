@@ -1,5 +1,37 @@
 # Status
 
+## Host/Cup integrated; publication held on belt test - 2026-11-11
+- Independent 10d review 94329e3 passes: 150 focused checks, expected pre-fix failures, local browser at both widths including secondary-control scrolling, build/diff and no introduced fit findings. Integrated builder/reviewer in 22e4c67. Clean merged workspaces/branches removed after ancestry checks.
+- Lead combined suite: 828/829; airport crowd reverse-belt assertion failed (28/911 sampled positions, limit 3%). Build/diff pass. Batch-10f-belt-check.md assigns deterministic reproduction, baseline attribution and bounded fix; no publishing until resolved. Latest verified playtest remains 11c3fde. Batch-10e publication brief is prepared but not dispatched.
+- Batch-17d-cap-compatibility.md authorizes the sequential compatibility/UI companion on preserved cap-trial, with reviewed host/Cup merged there first. Exact approved speed formula only; retain Challenge content and Daily/Weekly attempts while isolating records/ghosts/peers. Parallel belt work has disjoint ownership. Cap review remains required before integration; main approval and queued visual pass remain outstanding.
+
+## Host/Cup acceptance complete; independent review next - 2026-11-11
+- Batch 10c implementation/evidence 17fb564 and report d025d88 preserve scoring and PROTO 8 while preventing duplicate award animations on fresh equivalent state. Builder reports 829/829 full tests, focused 120/120 and presentation 62/62, build/diff pass; local eight-page browser checks exercise enabled controls and completed animations at both widths.
+- Lead inspected semantic-key diff and narrow host/standings plus 390px local results screenshots. Comparable fit evidence reports 32 baseline failures versus 31 candidate, zero introduced. Independent batch-10d-review.md audits complete host/Cup delta, start guards, award lifecycle, screenshots and evidence before integration. Actual transport reconnect, browser dropped-ack cancellation and real phones remain unverified; simulated checks are separate.
+- Cap trial/review remain ready for the sequential compatibility/UI companion after host/Cup review and integration. No publication or main merge in this checkpoint; latest verified playtest remains 11c3fde. Queued visual pass remains required before approved main update.
+
+## Host/Cup recovered; acceptance gaps assigned - 2026-11-10
+- Batch 10b preserved WIP 12ef711, merged develop 0cb02c8 and implemented 422ad69/report 3c2b9f4. Reported 822/822 suite before final wording, focused/build/diff pass. Lead inspected diff and 320px full-lobby/standings images; scoring defect not found, +round points presentation added, host separate Ready removed using existing protocol.
+- Batch-10c-acceptance.md returns missing zero/motion/redraw/reconnect tests and enabled-control evidence to same worker; investigates inconsistent current/next race labels in captured fixture. Broad fit 31 failures require comparable baseline evidence before calling them inherited. Not integrated. Cap compatibility remains sequenced after shared-file completion; main unapproved.
+
+## Delayed shortcut verification archived; current work unchanged - 2026-11-10
+- Integrated evidence-only e075ce9: original shortcut Tests/Pages succeeded for 2d712c0; resumed HTTP capture instead found newer 11c3fde (200). Worker outcome stays partial for its historical matching-ID requirement, not a current publication failure. Earlier direct lead verification and later independently verified 11c3fde remain separate evidence; no rollback/redeploy or new gameplay testing warranted.
+- Host/Cup recovery restarted successfully as ctx_3b1bdc547b4a on original task task_c71dafd399d4 and preserved playtest-fixes workspace; required batch-10b recovery brief delivered. Cap/evidence review passed; compatibility/UI companion waits for shared files. Main remains unchanged and unapproved.
+
+## Cap review passed; shared-file recovery precedes companion - 2026-11-10
+- Independent cap review 2d9a79c passes approved stats/native-bot evidence: 24 focused checks, six exact full-race reproductions, all 72 historical rows, independent aggregation, build/diff pass. Full 825/825 accepted from builder. No integration or publication yet.
+- Companion must resolve S2 proposed Challenge content reset by separating competition identity from existing content seed; S3 menu old/new score reads, captured mp2 identity suffix preservation and preview +/-13 normalization are required. Preserve weekly content, reset clocks, attempts, legacy saves/queues; no extra tuning or database work.
+- Batch 10 worker was proven exited but dispatch remained unsettled; retry was safely refused. Guarded worker-stop confirmed stopped for ctx_65467018af79, preserving workspace/WIP. Retry same task in playtest-fixes with batch-10b-recovery.md before shared compatibility edits. This replaces the ineffective earlier resume message, not the original task or its preserved work.
+
+## Cap trial implemented; independent review assigned - 2026-11-10
+- Builder 61b9edb/db0f0b4 reports approved A formula, 522,720 loadout checks, 825/825 full tests/build passing, 630/630 bots finishing 210 normal races and six deliberate 20s contact trials (18 timeouts retained). Lead inspected formula/helper/evidence: large speed-kit mean finish deltas Fifth +1.10s, Subway -0.70s, Takeshita -0.02s; no consistent crowded winner. Not published.
+- Batch-17c-cap-review.md assigns independent code/measurement audit and representative reproductions. Batch-17b remains a proposed compatibility/UI companion, not implementation authorization; preserve existing deterministic Challenge content while deciding minimal identity isolation. Main still requires approval.
+- Batch 10 remains unresolved: worker-show reports exited and retained; prior resume message has not established completion. Its preserved WIP/shared-file ownership must be recovered or explicitly released before companion edits. Do not assume a sent message means active work.
+
+## Approved cap trial: bot validation requested - 2026-11-10
+- Director explicitly requested testing with bots. Active cap-trial worker receives batch-17a-bot-validation.md: paired legacy/A populated races with native bot AI, fixed seeds, balanced positions, all builds and plain/capped gear, plus real collision evidence and reproducible results. No additional tuning authorized.
+- Compatibility companion and independent review still precede integration/publication; bot results must be distinguished from phone handling checks. Main remains unapproved. Batch 10 retains shared-file ownership.
+
 ## Treatment A trial approved - 2026-11-10
 - Director approved implementing/testing treatment A for playtest. Batch-17a-approved-cap-trial.md assigns stats-only implementation plus exhaustive and real-tick checks, original build rows unchanged. No additional tuning approval needed for that exact formula.
 - Batch 10 recovery owns shared UI/game/network files, so 17a cannot edit those concurrently. Required sequential compatibility companion will isolate records/ghosts/boards and mixed-version races and address any stat-display assumptions before trial integration/publication. Main remains unapproved; phone/crowded balance remains human validation.

@@ -54,8 +54,8 @@ export function createStartCoordinator({ id, hostId, now, send, onStart = () => 
     } else { report(); changed(); }
     return true;
   }
-  function canStart() {
-    return host && connected && compatible && phase === 'idle' && players.length >= 2 && players.every(p => p.ready && p.connected && p.clock && p.protocol === START_PROTOCOL && (p.id === id || now() - p.seen <= FRESH));
+  function canStart(hostIntent = false) {
+    return host && connected && compatible && phase === 'idle' && players.length >= 2 && players.every(p => (p.ready || (hostIntent && p.id === id)) && p.connected && p.clock && p.protocol === START_PROTOCOL && (p.id === id || now() - p.seen <= FRESH));
   }
   function sendPlan() {
     if (!plan) return;

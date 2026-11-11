@@ -1,0 +1,66 @@
+✖ round award and cumulative Cup points remain distinct over multiple rounds (125.6737ms)
+✖ Friend Cup shows a round award separately from total after human finishers (270.1486ms)
+✖ Start confirms host intent without a separate Ready or automatic countdown (136.656ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 0
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 329.3049
+
+✖ failing tests:
+
+test at test\cup-flow.test.js:145:1
+✖ round award and cumulative Cup points remain distinct over multiple rounds (125.6737ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'Bumps'
+  - 'Round points'
+  
+      at TestContext.<anonymous> (C:\Users\stefa\orca\workspaces\Excuse-Me\playtest-fixes\test\cup-flow.test.js:147:9)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Bumps',
+    expected: 'Round points',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\friendcup-room.test.js:699:1
+✖ Friend Cup shows a round award separately from total after human finishers (270.1486ms)
+  AssertionError [ERR_ASSERTION]: '0' == '+10 points'
+      at TestContext.<anonymous> (C:\Users\stefa\orca\workspaces\Excuse-Me\playtest-fixes\test\friendcup-room.test.js:703:9)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '0',
+    expected: '+10 points',
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at test\ready-start.test.js:85:1
+✖ Start confirms host intent without a separate Ready or automatic countdown (136.656ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  false !== true
+  
+      at TestContext.<anonymous> (C:\Users\stefa\orca\workspaces\Excuse-Me\playtest-fixes\test\ready-start.test.js:87:9)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

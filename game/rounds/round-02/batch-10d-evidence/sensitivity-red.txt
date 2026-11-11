@@ -1,0 +1,46 @@
+✖ local award persists without replay on redraw or fresh equivalent model (121.1285ms)
+✖ Friend Cup Pending, authoritative redraw and fresh duel replacement never reaward (394.2669ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 0
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 455.4686
+
+✖ failing tests:
+
+test at test\cup-flow.test.js:154:1
+✖ local award persists without replay on redraw or fresh equivalent model (121.1285ms)
+  AssertionError [ERR_ASSERTION]: fresh equivalent model must not repeat the visual award
+
+  2 !== 1
+
+      at TestContext.<anonymous> (C:\Users\stefa\AppData\Local\Temp\host-cup-review-ZPDVDE\test\cup-flow.test.js:160:9)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 2,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\friendcup-room.test.js:711:1
+✖ Friend Cup Pending, authoritative redraw and fresh duel replacement never reaward (394.2669ms)
+  AssertionError [ERR_ASSERTION]: fresh equivalent duel must not repeat visual award
+      at TestContext.<anonymous> (C:\Users\stefa\AppData\Local\Temp\host-cup-review-ZPDVDE\test\friendcup-room.test.js:722:9)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 2,
+    expected: 1,
+    operator: '==',
+    diff: 'simple'
+  }

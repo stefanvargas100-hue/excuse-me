@@ -1,5 +1,7 @@
 # Batch 10b: resume host Start and Cup points
 
+Recovery checkpoint 2026-11-10: original worker exited at usage limit and its task remained unsettled despite a later message. Lead confirmed exit and guarded stop. A replacement Codex attempt on the SAME task/workspace is authorized to complete this brief. Inspect and preserve existing WIP first; original report/tests are historical. Cap trial branches remain unintegrated and must not be merged into this branch. Current develop documentation contains their pending plans, not new production stats.
+
 Builder: original Codex worker, default model/effort, existing playtest-fixes workspace. High online/scoring risk; independent review required.
 
 Read AGENTS.md, original batch-10-playtest-fixes.md and this follow-up via git show develop. Original task stopped on usage limit, not a completed report. Lead confirmed preserved modifications in nine tracked files plus before/after screenshots. Retain that work and your history; do not reset or replace the workspace.

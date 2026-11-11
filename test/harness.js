@@ -37,7 +37,8 @@ function load(sourceFile, opts) {
     return elements.get(id);
   }
   // the game is ES modules; bundle them into one script so each load() gets its own independent copy of the game state
-  const code = esbuild.buildSync({ ...(opts?.seeded ? { stdin: { contents: "import '../src/main.js'; import {extendClassicPickups} from '../src/sim/powerups.js'; import {R,setR,mulberry32} from '../src/config/util.js'; Object.assign(window.__excuse,{extendClassicPickups,setR,mulberry32,random:()=>R()});", resolveDir: __dirname } } : { entryPoints: [sourceFile || path.join(__dirname, '..', 'src', 'main.js')] }), bundle: true, format: 'iife', write: false, logLevel: 'silent' }).outputFiles[0].text;
+  const presentation = opts?.presentation ? { stdin: { contents: "import '../src/main.js'; import {refreshDuelResults,forfeitDuel} from '../src/sim/game.js'; import {setEndShown,setCalm} from '../src/sim/state.js'; Object.assign(window.__excuse,{refreshDuelResults,forfeitDuel,setEndShown,setCalm});", resolveDir: __dirname } } : null;
+  const code = esbuild.buildSync({ ...(presentation || (opts?.seeded ? { stdin: { contents: "import '../src/main.js'; import {extendClassicPickups} from '../src/sim/powerups.js'; import {R,setR,mulberry32} from '../src/config/util.js'; Object.assign(window.__excuse,{extendClassicPickups,setR,mulberry32,random:()=>R()});", resolveDir: __dirname } } : { entryPoints: [sourceFile || path.join(__dirname, '..', 'src', 'main.js')] })), bundle: true, format: 'iife', write: false, logLevel: 'silent' }).outputFiles[0].text;
   const store = { excuseme_tut: '1' };   // skip the first-run tutorial
   const win = {
     innerWidth: 390, innerHeight: 844, devicePixelRatio: 2,
@@ -79,6 +80,7 @@ function load(sourceFile, opts) {
   E.advance = ms => { now += ms; lobbyTime += ms; for (const fn of [...intervals.values()]) fn(); };
   E.visibility = hidden => { sandbox.document.hidden = hidden; for (const [t, fn] of docListeners) if (t === 'visibilitychange') fn(); };
   E.element = element;
+  if (opts?.presentation) E.reduceMotion = value => { win.matchMedia = () => ({ matches: value, addEventListener() {} }); };
   return E;
 }
 async function readyPlayers(games) {

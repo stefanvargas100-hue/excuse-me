@@ -1,3 +1,4 @@
+import { mkdirSync } from 'node:fs';
 import { preview } from 'vite';
 import { chromium } from 'playwright';
 import { fitProblems } from './fit-rules.mjs';
@@ -7,6 +8,8 @@ const sizes = [
   { width: 390, height: 844, touch: true },
   { width: 1280, height: 800, touch: false },
 ];
+const evidence = process.env.BATCH10_EVIDENCE;
+if (evidence) mkdirSync(evidence, { recursive: true });
 const selfTest = process.argv.includes('--self-test');
 let server, browser, problems = 0, checked = 0, detected = 0;
 const line = (size, screen, element, problem) => {
@@ -83,17 +86,19 @@ async function measure(page, screen) {
 }
 
 try {
-  server = await preview({ preview: { host: '127.0.0.1', port: 0, open: false } });
+  server = await preview({ ...(evidence ? { base: '/playtest/' } : {}), preview: { host: '127.0.0.1', port: 0, open: false } });
   const address = server.httpServer.address();
-  const url = `http://127.0.0.1:${address.port}`;
+  const origin = `http://127.0.0.1:${address.port}`;
+  const url = origin + (evidence ? '/playtest/' : '/');
   browser = await chromium.launch();
   for (const viewport of sizes) {
     const size = `${viewport.width}x${viewport.height}`;
     // A non-persistent context has no cookies or saves from previous runs/sizes.
     const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height }, hasTouch: viewport.touch, isMobile: viewport.touch });
-    await context.route(/^https?:\/\/([^/]+\.)?supabase\.co(?::\d+)?\//i, route => route.abort());
+    await context.route('**/*', route => new URL(route.request().url()).origin === origin ? route.continue() : route.abort());
     // Keep a valid generated-length name reproducible, including its small-screen fit.
     await context.addInitScript(() => {
+      const NativeDate = Date; window.Date = class extends NativeDate { constructor(...args) { super(...(args.length ? args : ['2026-11-10T12:00:00Z'])); } static now() { return NativeDate.parse('2026-11-10T12:00:00Z'); } };
       if (!localStorage.getItem('excuseme_online_name')) localStorage.setItem('excuseme_online_name', JSON.stringify('Breezy Commuter 37'));
     });
     const page = await context.newPage();
@@ -122,8 +127,8 @@ try {
       for (let i = 0; i < 14; i++) E.tick(1 / 30);
       E.S.pz = E.LV.goal + 1;
       for (let i = 0; i < 90; i++) E.tick(1 / 30);
-      // between races the host's button is the longest label it can show
-      if (races < 4) document.getElementById('again').textContent = 'Start race 4 · Shibuya Crossing';
+      // Synthetic standalone fixture: next label follows its actual model.
+      if (races < 4) document.getElementById('again').textContent = 'Start race ' + (races + 1) + ' \u00b7 ' + E.LEVELS[model.stages[races]].name;
     }, races);
     const routes = [
       ['start', home], ['play', play],
@@ -171,7 +176,7 @@ try {
       }],
       ['friend cup setup full', async () => {
         await routes.find(r => r[0] === 'friend cup setup')[1]();
-        await page.evaluate(() => { const E = window.__excuse; for (let i = 2; i <= 8; i++) E.injectRoomMessage('hello', { id: 'pl00000' + i, proto: E.PROTO, name: 'Hurried Tourist ' + (10 + i), look: {} }); });
+        await page.evaluate(() => { const E = window.__excuse; for (let i = 2; i <= 8; i++) E.injectRoomMessage('hello', { id: 'pl00000' + i, proto: E.PROTO, startProtocol: 2, name: 'Hurried Tourist ' + (10 + i), look: {} }); });
         await page.locator('#friendHost .friendroster li:not(.empty)').nth(7).waitFor();
       }],
       ['friend cup guest', async () => {
@@ -199,12 +204,12 @@ try {
         await home();
         await page.evaluate(() => {
           const E = window.__excuse; E.startCup();
-          for (let round = 0; round < 3; round++) {
+          for (let round = 0; round < 4; round++) {
             E.S.race.countT = 0; E.S.people.length = 0;
             for (let i = 0; i < 14; i++) E.tick(1 / 30);
             E.S.pz = E.LV.goal + 1;
             for (let i = 0; i < 90; i++) E.tick(1 / 30);
-            if (round < 2) E.nextCupRound();
+            if (round < 3) E.nextCupRound();
           }
         });
       }],
@@ -214,6 +219,16 @@ try {
         await open();
         const screen = name === 'NYC Cup' || name === 'stages saved best' ? 'stages' : name.startsWith('friend cup setup') || name === 'friend cup guest' ? 'friend' : name === 'race end' || name === 'cup final' || name.startsWith('friend cup ') ? 'end' : name;
         const m = await measure(page, screen);
+        if (evidence && viewport.touch && (name === 'friend cup setup full' || name === 'friend cup guest' || name === 'friend cup standings' || name === 'cup final')) {
+          await page.screenshot({ path: evidence + '/' + name.replace(/ /g, '-') + '-' + size + '.png' });
+          if (name === 'friend cup setup full' || name === 'friend cup guest') {
+            const control = page.locator(name === 'friend cup guest' ? '#friendReady' : '#friendStart');
+            await control.scrollIntoViewIfNeeded();
+            const bounds = await control.boundingBox();
+            if (!bounds || bounds.y < 0 || bounds.y + bounds.height > viewport.height) line(size, name, 'action', 'action unreachable');
+            await page.screenshot({ path: evidence + '/' + name.replace(/ /g, '-') + '-action-' + size + '.png' });
+          }
+        }
         if (name === 'end' || name === 'cup final' || name === 'friend cup standings' || name === 'friend cup final') {
           const rows = await page.locator('#raceBoard li').count();
           if (rows !== 8) line(size, name, '#raceBoard', 'expected 8 rows, got ' + rows);

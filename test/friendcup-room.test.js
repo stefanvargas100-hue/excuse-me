@@ -222,6 +222,11 @@ test('final standings offer a new Cup, not a rematch', async () => {
     assert.doesNotMatch(g.element('again').textContent, /Rematch/);
     assert.match(g.element('again').textContent, /new Cup/);
     assert.match(g.element('endEyebrow').textContent, /final/i);
+    const model=g.friendCup(),before=J(model),mine=me(g);
+    const total=model.rounds.reduce((sum,round)=>sum+POINTS[round.find(r=>r.id===mine).place-1],0);
+    assert.strictEqual(g.element('sBest').textContent,String(total));
+    assert.strictEqual(g.element('sChain').textContent,'+'+POINTS[model.rounds[3].find(r=>r.id===mine).place-1]+' points');
+    tickAll([g],40);assert.strictEqual(J(g.friendCup()),before);
   }
   assert.match(games[0].element('endTitle').textContent, /Cup winner/);
 });
@@ -694,4 +699,46 @@ test('a finished Cup racer pruned by heartbeat is left on every phone and a bot 
   const runner = host.S.race.bots.find(b => b.peerId === ids[2]);
   assert.ok(runner.aiBot && !runner.remote, 'host runs the takeover immediately');
   assert.ok(games[1].S.race.bots.find(b => b.peerId === ids[2]).aiBot);
+});
+
+test('Friend Cup shows a round award separately from total after human finishers',async()=>{
+ const L=await cup(2,{load:{dom:true}});await finishOrder(L.games,[0,1]);
+ tickAll(L.games,300);await settle();
+ for(const g of L.games){const total=g.friendCupStandings().find(r=>r.id===me(g)).points;
+ assert.equal(g.element('sChain').textContent,'+'+total+' points');}
+});
+
+test('Friend Cup Pending, authoritative redraw and fresh duel replacement never reaward',async()=>{
+ const L=await cup(2,{load:{dom:true,presentation:true}});const [h,g]=L.games; let animations=0;
+ g.element('sChain').animate=()=>{animations++;};
+ await finishOrder(L.games,[1]);tickAll(L.games,40);await settle();
+ assert.equal(g.element('sChain').textContent,'Pending');assert.equal(g.element('sBest').textContent,'0');assert.equal(animations,0);
+ await finishOrder(L.games,[0]);tickAll(L.games,40);await settle();
+ assert.equal(g.element('sChain').textContent,'+10 points');assert.equal(animations,1);
+ const before=J(g.friendCup());g.refreshDuelResults();assert.equal(animations,1);
+ const message=JSON.parse(J(cupMessages(L.H).at(-1).data));message.rev+=1;
+ g.injectRoomMessage('cup',message);await settle();assert.equal(J(g.friendCup()),before);assert.equal(animations,1);
+ g.S.duel={...g.S.duel,cup:{...g.S.duel.cup,model:JSON.parse(before)}};g.refreshDuelResults();
+ assert.equal(animations,1,'fresh equivalent duel must not repeat visual award');
+ assert.equal(J(g.friendCup()),before);assert.equal(g.element('sChain').textContent,'+10 points');
+ await next(L);await finishOrder(L.games,[1,0]);tickAll(L.games,40);await settle();
+ assert.equal(animations,2);assert.equal(g.element('sChain').textContent,'+10 points');assert.equal(g.element('sBest').textContent,'20');
+});
+for(const mode of ['calm','reduced']) test('Friend Cup '+mode+' preserves award, totals and immediate controls',async()=>{
+ const L=await cup(2,{load:{dom:true,presentation:true}});let animations=0;
+ for(const g of L.games){g.element('sChain').animate=()=>{animations++;};if(mode==='calm')g.setCalm(true);else g.reduceMotion(true);}
+ await finishOrder(L.games,[0,1]);tickAll(L.games,40);await settle();
+ assert.equal(animations,0);for(const g of L.games)assert.match(g.element('sChain').textContent,/^\+[1-9][0-9]* points$/);
+ assert.equal(L.host.element('again').disabled,false);await next(L);assert.equal(L.host.state,'play');
+});
+
+test('DNF retains its placed award; incomplete results show Pending and zero total',async()=>{
+ const L=await cup(2,{load:{dom:true,presentation:true}});const [h,g]=L.games;
+ // This is the existing production forfeit action, exported only by the test harness.
+ g.forfeitDuel();g.S.duel.send('dnf',{});tickAll(L.games,40);await settle();
+ assert.equal(g.element('sScore').textContent,'DNF');assert.equal(g.element('sChain').textContent,'Pending');
+ assert.equal(g.element('sBest').textContent,'0');await finishOrder(L.games,[0]);tickAll(L.games,40);await settle();
+ const m=g.friendCup(),mine=m.rounds[0].find(r=>r.id===me(g));
+ assert.equal(mine.time,null);assert.equal(g.element('sChain').textContent,'+'+POINTS[mine.place-1]+' points');
+ const before=J(m);g.refreshDuelResults();assert.equal(J(g.friendCup()),before);
 });
