@@ -1,0 +1,30 @@
+[
+  {
+    "width": 320,
+    "readyAndStartClicked": true,
+    "synchronizedSeed": "56TN-ntrq77om:race1",
+    "stableAwardAnimations": 1,
+    "scoresUnchangedOnReplacement": true,
+    "currentRace": 1,
+    "nextRace": 2,
+    "localModes": [
+      "default",
+      "calm",
+      "reduced"
+    ]
+  },
+  {
+    "width": 390,
+    "readyAndStartClicked": true,
+    "synchronizedSeed": "HSFJ-ikyuu9im:race1",
+    "stableAwardAnimations": 1,
+    "scoresUnchangedOnReplacement": true,
+    "currentRace": 1,
+    "nextRace": 2,
+    "localModes": [
+      "default",
+      "calm",
+      "reduced"
+    ]
+  }
+]

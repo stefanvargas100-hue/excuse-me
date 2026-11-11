@@ -1,0 +1,15 @@
+{
+  "baseline": 32,
+  "candidate": 31,
+  "shared": 31,
+  "introduced": [],
+  "resolved": [
+    "320x568 | friend cup setup full | div.card.full \"‹Race friends Race up to 7 fri\" | vertical overflow (21.00px)"
+  ],
+  "environment": {
+    "browser": "1.65.0",
+    "date": "2026-11-10T12:00:00Z",
+    "fonts": "same installed browser fonts, all external requests blocked",
+    "fixtures": "candidate fit script and rules used unchanged for both"
+  }
+}

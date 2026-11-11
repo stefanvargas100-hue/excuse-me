@@ -47,8 +47,8 @@ function showRoster(players) {
   const n = players.length;
   const lobby = roomLobbyState(), mine = players.find(p => p.me);
   $('friendStart').disabled = !canStartRoom();
-  $('friendStart').textContent = lobby.busy ? 'Preparing race...' : canStartRoom() ? 'Start race (' + n + ' players)' : n >= 2 ? 'Ready ' + players.filter(p => p.ready).length + '/' + n : 'Start race';
-  $('friendReady').hidden = !n || lobby.phase === 'running';
+  $('friendStart').textContent = lobby.busy ? 'Preparing race...' : canStartRoom() ? 'Start race (' + n + ' players)' : 'Start race';
+  $('friendReady').hidden = !n || isHost() || lobby.phase === 'running';
   $('friendReady').disabled = lobby.pending || (!lobby.canReady && !(mine?.ready && lobby.busy));
   $('friendReady').textContent = lobby.pending ? 'Confirming...' : mine?.ready ? 'Not ready' : 'Ready';
   $('friendReady').setAttribute('aria-pressed', String(!!mine?.ready));
