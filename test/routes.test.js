@@ -95,6 +95,7 @@ test('a stage with routes keeps its race records and ghosts under a versioned ke
     E.S.race.countT = 0; E.S.people.length = 0;
     E.S.pz = E.LV.goal + 1; for (let i = 0; i < 90; i++) E.tick(DT);
     assert.strictEqual(E.storage['excuseme_race_best_' + id], '55.00', id + ': the old record is preserved, not overwritten');
-    assert.ok(E.storage['excuseme_race_best_' + id + ':rt1'], id + ': a new record lives under the versioned key');
+    assert.ok(E.storage['excuseme_race_best_' + id + ':rt1:standard:r2'], id + ': a new record lives under the versioned key');
   }
 });
+

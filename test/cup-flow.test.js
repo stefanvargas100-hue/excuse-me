@@ -45,7 +45,7 @@ test('a completed cup pays XP once by final place and keeps a separate personal 
   assert.equal(c.rounds.length, 4); assert.equal(c.done, true); assert.equal(c.place, 1);
   assert.equal(E.xp() - xp0, 60); assert.equal(E.S.xpGained, 60);
   assert.equal(E.tallyOf('races'), races0, 'rounds do not feed ordinary unlock progress');
-  const key = 'excuseme_cup_nyc:r3', saved = E.storage[key];
+  const key = 'excuseme_cup_nyc:r4', saved = E.storage[key];
   assert.match(saved, /^40:\d+\.\d\d$/);
   assert.ok(!Object.keys(E.storage).some(k => /race_best|ghost/.test(k)));
   E.nextCupRound(); E.tick(DT);   // no fifth round, and nothing more is paid
@@ -54,12 +54,12 @@ test('a completed cup pays XP once by final place and keeps a separate personal 
 
 test('a worse cup does not replace the best; a better one does', () => {
   const E = begin();
-  E.storage['excuseme_cup_nyc:r3'] = '40:1.00';
+  E.storage['excuseme_cup_nyc:r4'] = '40:1.00';
   playCup(E);
-  assert.equal(E.storage['excuseme_cup_nyc:r3'], '40:1.00', 'same points but slower');
-  const F = begin(); F.storage['excuseme_cup_nyc:r3'] = '12:999.00';
+  assert.equal(E.storage['excuseme_cup_nyc:r4'], '40:1.00', 'same points but slower');
+  const F = begin(); F.storage['excuseme_cup_nyc:r4'] = '12:999.00';
   playCup(F, [1, 1, 1, 1]);   // second every round: 32 points
-  assert.match(F.storage['excuseme_cup_nyc:r3'], /^32:/);
+  assert.match(F.storage['excuseme_cup_nyc:r4'], /^32:/);
   assert.equal(F.cupState().newBest, true);
 });
 
@@ -131,7 +131,7 @@ test('ordinary Race vs bots retains three bots', () => {
 test('previous rules best remains stored under its old key', () => {
   const E = begin(); E.storage['excuseme_cup_nyc:r2'] = '30:1.00'; playCup(E);
   assert.equal(E.storage['excuseme_cup_nyc:r2'], '30:1.00');
-  assert.match(E.storage['excuseme_cup_nyc:r3'], /^40:/);
+  assert.match(E.storage['excuseme_cup_nyc:r4'], /^40:/);
 });
 
 test('nobody gets a head start: every Cup racer starts level with the player', () => {

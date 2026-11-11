@@ -1,5 +1,5 @@
-import { CLASSIC_RULES, classicTag } from '../sim/classic-rules.js';
-import { courseTag } from '../config/routes.js';
+import { ghostKeyFor, ghostIdentity } from '../sim/runopts.js';
+import { classicTag } from '../sim/classic-rules.js';
 import { sideRoutes } from '../config/side-routes.js';
 /* ---------- live race with 1 to 7 friends (a room of up to 8 phones) ----------
    The host makes a room code, friends join with the code or a link, the host presses Start. All phones then build the same
@@ -68,7 +68,7 @@ const cupLooks = {};      // id -> look, kept so a bot taking over from a player
 const RACE_SEED = /:race\d+$/;
 // Room protocol version. Race layouts and the start handshake must be identical on every phone, so phones on different builds
 // refuse each other instead of racing on different crowds. Raise it whenever a change would make layouts or rules differ.
-export const PROTO = 8;
+export const PROTO = 9;
 let myId = '', hostId = '', roster = [];        // roster: [{ id, name, look }], the host first, me included
 let inRoster = false, raced = false, hostGone = false, lastStatus = '', joinWaiter = null;
 let wantMe = false; const wants = new Set();    // rematch: everyone still in the room has to ask
@@ -83,17 +83,21 @@ const others = () => roster.filter(p => p.id !== myId);
 
 /* ---- ghosts: friends in a room swap their best runs for the stage, and keep them on their own phone (nothing goes to a server) ---- */
 function sendMyGhosts(level) {
-  const L = LEVELS[level]; if (!L || !room) return;
+  const L = LEVELS[level]; if (!room || !L) return;
   for (const kind of ['classic', 'race']) {
-    let pts = null; try { pts = JSON.parse(store.get((kind === 'race' ? 'excuseme_ghost_race_' : 'excuseme_ghost_') + L.id + (kind === 'race' && sideRoutes(L.id).length ? courseTag(L.id) : kind === 'classic' ? classicTag : ''), 'null')); } catch (e) {}
-    const g = packGhost(pts); if (g) room.send('ghost', { id: myId, kind: kind === 'classic' ? 'classic' + classicTag : kind, level, rules: kind === 'classic' ? CLASSIC_RULES : undefined, ghost: g });
+    let pts = null; try { pts = JSON.parse(store.get(ghostKeyFor(kind, L.id), 'null')); } catch (e) {}
+    const ghost = packGhost(pts);
+    if (ghost) room.send('ghost', { id: myId, ...ghostIdentity(kind, L.id), level, ghost });
   }
 }
 function receiveGhost(from, data) {
-  const p = from && roster.find(r => r.id === from);   // only people in this room; their name comes from the room list
-  const kind = data.kind === 'classic' + classicTag && data.rules === CLASSIC_RULES ? 'classic' : data.kind === 'race' ? 'race' : null;
-  if (!p || !LEVELS[data.level] || !kind) return;
-  saveFriendGhost(store, kind, LEVELS[data.level].id, p.name, data.ghost);
+  const p = roster.find(p => p.id === from), L = LEVELS[data.level];
+  if (!p || !Number.isInteger(data.level) || !L || data.level !== levelIdx) return;
+  const kind = data.kind === 'race' ? 'race' : data.kind === 'classic' + classicTag ? 'classic' : null;
+  if (!kind) return;
+  const identity = ghostIdentity(kind, L.id);
+  if (data.rules !== identity.rules || data.course !== identity.course || data.stage !== identity.stage) return;
+  saveFriendGhost(store, kind, L.id, p.name, data.ghost);
 }
 
 /* ---- one race at a time ---- */
@@ -424,6 +428,7 @@ function onMessage(ev, data) {
   if (from && from === myId) return;
   if (sessionId && data.session && data.session !== sessionId) return;
   if (retired.has(from)) return;
+  if (!['hello', 'roster', 'full'].includes(ev) && (data.proto !== PROTO || !from || !roster.some(p => p.id === from))) return;
   if (from && roster.some(p => p.id === from)) seenAt[from] = Date.now();
   if (ev.startsWith('lobby:')) { if (lobby) lobby.receive(ev.slice(6), data); return; }
   if (ev === 'hello') {
@@ -611,6 +616,9 @@ function heartbeat() {
 }
 
 function bindRoom(r, epoch) {
+  // All packets, including reconnect and host handover traffic, carry the physics protocol.
+  const send = r.send.bind(r);
+  r.send = (event, data) => send(event, { ...data, proto: PROTO });
   r.onMessage((ev, data) => { if (room === r && generation === epoch) onMessage(ev, data); });
   r.onClose(() => {
     if (room !== r || generation !== epoch) return;

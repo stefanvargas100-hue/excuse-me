@@ -1,3 +1,4 @@
+import { raceBoardId } from '../sim/runopts.js';
 import { seededIdentity } from '../sim/seeded-rules.js';
 import { classicTag } from '../sim/classic-rules.js';
 /* ---------- which leaderboard to show ---------- */
@@ -15,7 +16,7 @@ export const BOARD_TABS = [
 ];
 
 export function boardIdFor(tab, stage) {
-  if (tab === 'race') return 'race:' + LEVELS[stage].id;
+  if (tab === 'race') return raceBoardId(LEVELS[stage].id);
   if (tab === 'daily') return seededIdentity('daily', todayKey()).board;
   if (tab === 'weekly') return seededIdentity('weekly', weekKey()).board;
   if (tab === 'challenge') return boardNameFor(utcWeekKey(), CHALLENGE_RULES);

@@ -4,9 +4,11 @@ import { randomLoadout } from './stats.js';
 /* ---------- weekly challenge: one course, one supplied outfit, one clock for everybody ----------
    A challenge week runs Monday 00:00 UTC to Sunday 23:59 UTC, whatever the phone's own clock and time zone say. The stage, the
    crowd seed and the outfit (body, build, headpiece, top, bottoms, shoes, back item: everything that has stats) come only from the
-   week id and the rules version. Your saved outfit and unlocks play no part. CHALLENGE_RULES goes up when the course, rules or
-   supplied-outfit recipe change, which starts a separate board and separate personal bests. */
-export const CHALLENGE_RULES = 1;
+   week id and the frozen content version. Your saved outfit and unlocks play no part. CHALLENGE_RULES versions
+   competitive records/boards only; content recipe changes require separate approval. */
+export const CHALLENGE_RULES = 2;
+// Freeze the approved course/outfit/crowd recipe independently of competition identity.
+const CHALLENGE_CONTENT_RULES = 1;
 
 // Migration 0002 was applied and verified against the live database on 2026-11-08.
 // Disable this before rolling back the migration. The time trial also works offline.
@@ -30,7 +32,7 @@ export function challengeRemainingMs(date) {
 const STAGES = [0, 2];
 
 export function challengeFor(week) {
-  const seed = 'wchal:' + week + ':r' + CHALLENGE_RULES, rng = mulberry32(hashStr(seed + ':outfit'));
+  const seed = 'wchal:' + week + ':r' + CHALLENGE_CONTENT_RULES, rng = mulberry32(hashStr(seed + ':outfit'));
   const body = rng() < 0.5 ? 'm' : 'f';
   return { week, rules: CHALLENGE_RULES, level: STAGES[hashStr(seed + ':stage') % STAGES.length], seed, outfit: { body, ...randomLoadout(rng) } };
 }

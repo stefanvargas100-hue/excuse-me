@@ -336,8 +336,8 @@ test('a guest beating the host counts the same, and same-named friends stay sepa
 test('nothing is paid or recorded in a Cup', async () => {
   const L = await cup(2), { H, games, host, ids } = L;
   const before = games.map(g => ({ xp: g.xp(), tally: J(g.tallySnapshot()), store: J(g.storage) }));
-  host.injectRoomMessage('ghost', { id: ids[1], kind: 'race', level: 0, ghost: 'abc' });
-  games[1].injectRoomMessage('ghost', { id: ids[0], kind: 'race', level: 0, ghost: 'abc' });
+  host.injectRoomMessage('ghost', { proto: 9,  id: ids[1], kind: 'race', level: 0, ghost: 'abc' });
+  games[1].injectRoomMessage('ghost', { proto: 9,  id: ids[0], kind: 'race', level: 0, ghost: 'abc' });
   for (let k = 0; k < 4; k++) {
     tickAll(games, 6); await settle();
     for (const g of games) { g.track('passes'); g.track('wins'); }   // what a pass or a win would record in an ordinary race
@@ -399,7 +399,7 @@ test('a guest leaving between races: a bot runs for them from the next race, and
   assert.ok(guests[0].S.race.bots.find(b => b.peerId === id).aiBot);
   // the old identity is ignored, and a fresh join is refused
   const size = host.lobbyPlayers().length;
-  host.injectRoomMessage('hello', { id, proto: host.PROTO, name: 'Back' }); await settle();
+  host.injectRoomMessage('hello', { proto: 9,  id, proto: host.PROTO, name: 'Back' }); await settle();
   assert.strictEqual(host.lobbyPlayers().length, size);
   const again = load(); again.useRoomFactory(H.factory);
   assert.strictEqual(await again.joinRoom(code), false);
@@ -522,7 +522,7 @@ test('repeated and late results change nothing', async () => {
   assert.strictEqual(J(guest.friendCup()), state);
   guest.injectRoomMessage('cup', early); await settle();            // a late, older copy
   assert.strictEqual(J(guest.friendCup()), state);
-  guest.injectRoomMessage('cup', { ...early, rev: after.rev + 50 }); await settle();   // older results with a newer number
+  guest.injectRoomMessage('cup', { proto: 9,  ...early, rev: after.rev + 50 }); await settle();   // older results with a newer number
   assert.strictEqual(J(guest.friendCup()), state, 'results never go backwards');
   await next(L);
   tickAll(games, 6); await settle();
@@ -535,10 +535,10 @@ test('repeated and late results change nothing', async () => {
 /* ---- bad input ---- */
 test('mismatched versions: the update message, and Cup messages from another version are ignored', async () => {
   const L = await room(2), { host, guests, H } = L;
-  assert.strictEqual(host.PROTO, 8);
+  assert.strictEqual(host.PROTO, 9);
   const newer = load(); newer.useRoomFactory(H.factory);
   const before = host.lobbyPlayers().length;
-  host.injectRoomMessage('hello', { id: 'oldphone', proto: host.PROTO - 1, name: 'Old' }); await settle();
+  host.injectRoomMessage('hello', { proto: 9,  id: 'oldphone', proto: host.PROTO - 1, name: 'Old' }); await settle();
   assert.strictEqual(host.lobbyPlayers().length, before);
   const full = H.log.filter(m => m.ev === 'full').at(-1);
   assert.strictEqual(full.data.why, 'version');
@@ -547,7 +547,7 @@ test('mismatched versions: the update message, and Cup messages from another ver
   await readyPlayers(L.games);
   host.hostStart(); await settle(); await settle();
   const m = cupMessages(H).at(-1).data, state = J(guests[0].friendCup());
-  guests[0].injectRoomMessage('cup', { ...m, rev: m.rev + 5, proto: host.PROTO - 1, rounds: [] }); await settle();
+  guests[0].injectRoomMessage('cup', { proto: 9,  ...m, rev: m.rev + 5, proto: host.PROTO - 1, rounds: [] }); await settle();
   assert.strictEqual(J(guests[0].friendCup()), state);
 });
 
@@ -557,7 +557,7 @@ test('a malformed setup is dropped before a Cup exists, and no race can start fr
   const racers = [{ id: ids[0], name: 'Host', bot: false, left: false }, { id: ids[1], name: 'Guest', bot: false, left: false }];
   ['Mia', 'Leo', 'Ava', 'Zoe', 'Noah', 'Yuki'].forEach((name, i) => racers.push({ id: 'bot:' + i, name, bot: true, left: false }));
   const setup = { seed: 'abcd-efgh', stages: [0, 1, 2, 3], difficulty: 1, racers };
-  const send = (over, base = {}) => guest.injectRoomMessage('cup', { id: ids[0], proto: host.PROTO, rev: 1000 + send.n++, left: [], rounds: [], setup, ...base, ...over });
+  const send = (over, base = {}) => guest.injectRoomMessage('cup', { proto: 9,  id: ids[0], proto: host.PROTO, rev: 1000 + send.n++, left: [], rounds: [], setup, ...base, ...over });
   send.n = 0;
   const bad = [
     { setup: null }, { setup: 7 }, { setup: {} }, { setup: { ...setup, stages: [0, 0, 1, 2] } }, { setup: { ...setup, stages: [0, 1, 2] } }, { setup: { ...setup, stages: [0, 1, 2, 9] } },
@@ -589,10 +589,10 @@ test('malformed results are dropped whole, never partly applied', async () => {
     { rounds: [r1, r2, 'nope'] }, { rounds: [r1, r2, null] }, { rounds: [r1, r2, r1, r2, r1] }, { rounds: { length: 3 } },
     { setup: { ...m.setup, seed: 'different' } }, { setup: { ...m.setup, difficulty: (m.setup.difficulty + 1) % 3 } }
   ];
-  for (const b of bad) { guest.injectRoomMessage('cup', { ...m, rev: rev++, ...b }); await settle(); assert.strictEqual(J(guest.friendCup()), state, 'dropped: ' + J(b).slice(0, 80)); }
-  guest.injectRoomMessage('cup', { ...m, rev: rev++, id: ids[1] }); guest.injectRoomMessage('cup', { ...m, rev: rev++, id: 'zzzzzzzz' }); await settle();
+  for (const b of bad) { guest.injectRoomMessage('cup', { proto: 9,  ...m, rev: rev++, ...b }); await settle(); assert.strictEqual(J(guest.friendCup()), state, 'dropped: ' + J(b).slice(0, 80)); }
+  guest.injectRoomMessage('cup', { proto: 9,  ...m, rev: rev++, id: ids[1] }); guest.injectRoomMessage('cup', { proto: 9,  ...m, rev: rev++, id: 'zzzzzzzz' }); await settle();
   assert.strictEqual(J(guest.friendCup()), state, 'nobody but the host');
-  host.injectRoomMessage('cup', { ...m, rev: rev++, rounds: [], id: ids[1] }); await settle();
+  host.injectRoomMessage('cup', { proto: 9,  ...m, rev: rev++, rounds: [], id: ids[1] }); await settle();
   assert.strictEqual(host.friendCup().rounds.length, 2, 'the host never takes results from anyone');
 });
 
@@ -600,7 +600,7 @@ test('malformed bot messages are dropped whole', async () => {
   const L = await cup(3), { games, ids } = L, guest = games[1];
   tickAll([guest], 6);
   const seed = guest.S.seed, peer = id => guest.S.duel.peers[id];
-  const good = ['bot:0', 1, 5, 0, 2, null], msg = o => ({ id: ids[0], race: seed, n: 5, rows: [good], ...o });
+  const good = ['bot:0', 1, 5, 0, 2, null], msg = o => ({ proto: 9, id: ids[0], race: seed, n: 5, rows: [good], ...o });
   const bad = [
     { rows: 'x' }, { rows: [good, 'x'] }, { rows: [good, ['bot:1', 1, 5, 0, 2]] }, { rows: [good, ['bot:1', 'a', 5, 0, 2, null]] }, { rows: [good, ['bot:1', 1e6, 5, 0, 2, null]] }, { rows: [good, ['bot:1', NaN, 5, 0, 2, null]] },
     { rows: [good, ['bot:1', 1, 5, 0, 99, null]] }, { rows: [good, ['nobody', 1, 5, 0, 2, null]] }, { rows: [good, ['__proto__', 1, 5, 0, 2, null]] }, { rows: [good, [ids[1], 1, 5, 0, 2, null]] }, { rows: [good, ['bot:1', 1, 5, 0, 2, -3]] },
@@ -626,9 +626,9 @@ test('a guest cannot fake a bot by sending under its id', async () => {
   const L = await cup(2), { games, host, ids } = L;
   tickAll(games, 3);
   const b = botsOf(host)[0], z = b.z;
-  host.injectRoomMessage('pos', { id: 'bot:0', n: 99, x: 0, z: 100, vx: 0, s: 1, race: host.S.seed });
-  host.injectRoomMessage('fin', { id: 'bot:0', ft: 1, race: host.S.seed });
-  host.injectRoomMessage('bots', { id: ids[1], race: host.S.seed, n: 9, rows: [['bot:0', 0, 100, 0, 1, 1]] });
+  host.injectRoomMessage('pos', { proto: 9,  id: 'bot:0', n: 99, x: 0, z: 100, vx: 0, s: 1, race: host.S.seed });
+  host.injectRoomMessage('fin', { proto: 9,  id: 'bot:0', ft: 1, race: host.S.seed });
+  host.injectRoomMessage('bots', { proto: 9,  id: ids[1], race: host.S.seed, n: 9, rows: [['bot:0', 0, 100, 0, 1, 1]] });
   await settle();
   tickAll([host], 1);
   assert.ok(b.z < z + 1); assert.strictEqual(b.done, false);
