@@ -1,0 +1,13 @@
+✔ protocol 9 rejects old/missing hello before roster or readiness mutations (80.1422ms)
+✔ actual room sender/receiver share route-only and side-route ghost keys; invalid identities never persist (340.2889ms)
+✔ old/missing peer packets cannot alter a compatible roster, readiness, rematch or Cup (37.105ms)
+✔ old host/new guest and new host/old guest fail through real join callers with readable update messages (247.9671ms)
+✔ airport Friend Cup stays on new rules/protocol with generated crowd and suppressed ordinary records (62.0037ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 830.4801

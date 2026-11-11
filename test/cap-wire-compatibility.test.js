@@ -8,7 +8,7 @@ test('protocol 9 rejects old/missing hello before roster or readiness mutations'
  assert.ok(sent.some(([ev,d])=>ev==='full'&&d.why==='version'));
 });
 test('actual room sender/receiver share route-only and side-route ghost keys; invalid identities never persist',async()=>{
- for(const level of [0,1,5,6]){const {h,g,sent}=await pair(level),id=h.LEVELS[level].id,who=g.lobbyPlayers().find(p=>p.me).id;
+ for(const level of [0,1,2,3,4,5,6]){const {h,g,sent}=await pair(level),id=h.LEVELS[level].id,who=g.lobbyPlayers().find(p=>p.me).id;
   const identity=h.ghostIdentity?h.ghostIdentity('race',id):{kind:'race',rules:2,stage:id,course:':rt1'};
   const ghost={step:2,pts:[0,0,0,12]};
   const before=JSON.stringify(h.storage);
@@ -32,4 +32,9 @@ test('old host/new guest and new host/old guest fail through real join callers w
   const {h,g,joined}=await pair(0,(index,event,d)=>{if(index===endpoint&&(event==='hello'||event==='roster'))d.proto=proto;return d;});
   assert.equal(joined,false);assert.notEqual(g.state,'play');assert.equal(g.canStartRoom(),false);assert.match(g.element('friendStatus').textContent,/update|different version/i);h.leaveRoom();g.leaveRoom();
  }
+});
+test('airport Friend Cup stays on new rules/protocol with generated crowd and suppressed ordinary records',async()=>{
+ const {h,g}=await pair(0);h.setRoomCup({stages:[0,1,2,3],difficulty:1});await settle();await readyPlayers([h,g]);h.hostStart();await settle();
+ for(const e of [h,g]){assert.equal(e.LV.id,'airport');assert.equal(e.S.run.category,'friendcup');assert.equal(e.S.run.rules,2);assert.equal(e.S.run.policy.records,false);assert.equal(e.S.run.policy.ghosts,false);assert.equal(e.S.people.filter(p=>!p.prop&&p.z>30&&p.z<76&&p.x>3.9&&p.x<=5.9).length,0);}
+ h.leaveRoom();g.leaveRoom();
 });

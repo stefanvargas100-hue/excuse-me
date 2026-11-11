@@ -89,6 +89,19 @@
           "time": 999
         }
       },
+      "airport": {
+        "stage": "airport",
+        "rules": 2,
+        "category": "standard",
+        "initialForward": 20,
+        "initialReverse": 0,
+        "initialPeople": 46,
+        "currentPeople": 100,
+        "nativeBots": 3,
+        "currentReverse": 0,
+        "pz": 28.007667898731032,
+        "legacyGhostLoaded": false
+      },
       "mixed": {
         "joined": false,
         "status": "Update the game on both phones: the host is on a different version. Then try again.",
@@ -185,6 +198,19 @@
           "points": 32,
           "time": 999
         }
+      },
+      "airport": {
+        "stage": "airport",
+        "rules": 2,
+        "category": "standard",
+        "initialForward": 20,
+        "initialReverse": 0,
+        "initialPeople": 46,
+        "currentPeople": 99,
+        "nativeBots": 3,
+        "currentReverse": 0,
+        "pz": 28.055631027122576,
+        "legacyGhostLoaded": false
       },
       "mixed": {
         "joined": false,

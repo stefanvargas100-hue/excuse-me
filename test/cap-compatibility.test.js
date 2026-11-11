@@ -32,3 +32,9 @@ test('actual current best and ghost reads ignore retained cm2/r1/Cup r3 and writ
  e.start('race');e.S.race.countT=0;e.S.ghostRec=[0,0,0,20];e.S.pz=e.LV.goal+1;e.tick(.01);assert.ok(e.storage['excuseme_race_best_airport:rt1:standard:r2']);assert.ok(e.storage[e.ghostKeyFor('race','airport')]);
  for(const [k,v]of Object.entries(old))assert.equal(e.storage[k],v);
 });
+test('bundled Terminal B generation uses unpublished r2/category identities without reseeding Challenge',()=>{
+ const sample=e=>{const people=e.S.people.filter(p=>!p.prop&&p.z>30&&p.z<76);assert.equal(people.filter(p=>p.x>3.9&&p.x<=5.9).length,0);assert.ok(people.some(p=>p.x>1.8&&p.x<=3.8),'forward crowd remains populated');};
+ for(const category of ['standard','practice','elimination']){const e=game({seed:35});e.setLevel(0);e.start('race',undefined,{run:{category,seed:'airport35'}});sample(e);assert.equal(e.S.run.rules,2);if(category!=='standard')assert.equal(e.S.run.policy.records,false);}
+ const e=game({seed:35});e.startChallenge(new Date('2026-11-02T12:00:00Z'));assert.equal(e.LV.id,'airport');assert.equal(e.S.challenge.rules,2);assert.equal(e.S.challenge.seed,'wchal:2026-W45:r1');assert.equal(e.S.run.rules,2);sample(e);
+ e.startCup();assert.equal(e.S.run.rules,4);assert.notEqual(e.LV.id,'airport','NYC Cup has no airport stage; no format change');
+});
