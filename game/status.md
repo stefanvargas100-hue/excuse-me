@@ -1,5 +1,10 @@
 # Status
 
+## Cap review passed; shared-file recovery precedes companion - 2026-11-10
+- Independent cap review 2d9a79c passes approved stats/native-bot evidence: 24 focused checks, six exact full-race reproductions, all 72 historical rows, independent aggregation, build/diff pass. Full 825/825 accepted from builder. No integration or publication yet.
+- Companion must resolve S2 proposed Challenge content reset by separating competition identity from existing content seed; S3 menu old/new score reads, captured mp2 identity suffix preservation and preview +/-13 normalization are required. Preserve weekly content, reset clocks, attempts, legacy saves/queues; no extra tuning or database work.
+- Batch 10 worker was proven exited but dispatch remained unsettled; retry was safely refused. Guarded worker-stop confirmed stopped for ctx_65467018af79, preserving workspace/WIP. Retry same task in playtest-fixes with batch-10b-recovery.md before shared compatibility edits. This replaces the ineffective earlier resume message, not the original task or its preserved work.
+
 ## Cap trial implemented; independent review assigned - 2026-11-10
 - Builder 61b9edb/db0f0b4 reports approved A formula, 522,720 loadout checks, 825/825 full tests/build passing, 630/630 bots finishing 210 normal races and six deliberate 20s contact trials (18 timeouts retained). Lead inspected formula/helper/evidence: large speed-kit mean finish deltas Fifth +1.10s, Subway -0.70s, Takeshita -0.02s; no consistent crowded winner. Not published.
 - Batch-17c-cap-review.md assigns independent code/measurement audit and representative reproductions. Batch-17b remains a proposed compatibility/UI companion, not implementation authorization; preserve existing deterministic Challenge content while deciding minimal identity isolation. Main still requires approval.
