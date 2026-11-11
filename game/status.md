@@ -1,5 +1,10 @@
 # Status
 
+## Host/Cup acceptance complete; independent review next - 2026-11-11
+- Batch 10c implementation/evidence 17fb564 and report d025d88 preserve scoring and PROTO 8 while preventing duplicate award animations on fresh equivalent state. Builder reports 829/829 full tests, focused 120/120 and presentation 62/62, build/diff pass; local eight-page browser checks exercise enabled controls and completed animations at both widths.
+- Lead inspected semantic-key diff and narrow host/standings plus 390px local results screenshots. Comparable fit evidence reports 32 baseline failures versus 31 candidate, zero introduced. Independent batch-10d-review.md audits complete host/Cup delta, start guards, award lifecycle, screenshots and evidence before integration. Actual transport reconnect, browser dropped-ack cancellation and real phones remain unverified; simulated checks are separate.
+- Cap trial/review remain ready for the sequential compatibility/UI companion after host/Cup review and integration. No publication or main merge in this checkpoint; latest verified playtest remains 11c3fde. Queued visual pass remains required before approved main update.
+
 ## Host/Cup recovered; acceptance gaps assigned - 2026-11-10
 - Batch 10b preserved WIP 12ef711, merged develop 0cb02c8 and implemented 422ad69/report 3c2b9f4. Reported 822/822 suite before final wording, focused/build/diff pass. Lead inspected diff and 320px full-lobby/standings images; scoring defect not found, +round points presentation added, host separate Ready removed using existing protocol.
 - Batch-10c-acceptance.md returns missing zero/motion/redraw/reconnect tests and enabled-control evidence to same worker; investigates inconsistent current/next race labels in captured fixture. Broad fit 31 failures require comparable baseline evidence before calling them inherited. Not integrated. Cap compatibility remains sequenced after shared-file completion; main unapproved.
