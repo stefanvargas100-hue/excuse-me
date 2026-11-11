@@ -695,3 +695,10 @@ test('a finished Cup racer pruned by heartbeat is left on every phone and a bot 
   assert.ok(runner.aiBot && !runner.remote, 'host runs the takeover immediately');
   assert.ok(games[1].S.race.bots.find(b => b.peerId === ids[2]).aiBot);
 });
+
+test('Friend Cup shows a round award separately from total after human finishers',async()=>{
+ const L=await cup(2,{load:{dom:true}});await finishOrder(L.games,[0,1]);
+ tickAll(L.games,300);await settle();
+ for(const g of L.games){const total=g.friendCupStandings().find(r=>r.id===me(g)).points;
+ assert.equal(g.element('sChain').textContent,'+'+total+' points');}
+});

@@ -686,7 +686,7 @@ export function setRoomReady(ready) {
   if (!ok) lobbyNotice = previous;
   return ok;
 }
-export const canStartRoom = () => !!(!raced && lobby?.canStart() && (!cupCfg || validCup(cupCfg)));
+export const canStartRoom = () => !!(!raced && lobby?.canStart(true) && (!cupCfg || validCup(cupCfg)));
 export const lobbyStatus = () => lastStatus;
 export const roomLevel = () => levelIdx;
 // The host can change the stage any time before Start; everyone sees it on the next roster.
@@ -741,6 +741,8 @@ export function requestRematch() {
 }
 export function hostStart() {
   if (role !== 'host' || !room || disconnectedAt !== null || !canStartRoom()) return;
+  // The button confirms host intent using the unchanged readiness wire protocol.
+  if (!lobby.setReady(true)) return;
   if (cupCfg) {
     rememberLooks();
     cup = newFriendCup({ seed: code + '-' + newId(), stages: cupCfg.stages, difficulty: cupCfg.difficulty, players: roster.map(p => ({ id: p.id, name: cleanName(p.name) })), rand: Math.random });

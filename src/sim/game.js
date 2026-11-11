@@ -18,7 +18,7 @@ import { PERFECT_SPEED, banner } from './actions.js';
 import { collide, updMe, updPeople } from './crowd.js';
 import { genChunk, runEvent, scramble, seeded, spawnFast, spawnRival, updXings, walker } from './people.js';
 import { STREAK_SPEED, addPop, nearMul, onPass } from './scoring.js';
-import { S, bestOf, endShown, goalOf, reset, setEndShown, setNextRun, setRaceBuild, setState, state } from './state.js';
+import { S, bestOf, calm, endShown, goalOf, reset, setEndShown, setNextRun, setRaceBuild, setState, state } from './state.js';
 import { startSlot } from './startgrid.js';
 import { BUMP_SPEED, stepRemotes, stepCupField, addCupBot, addRemoteRacer, draftMul, finishRace, fmtTime, initRace, leadZ, ordinal, raceBest, raceCollide, raceCountdown, racePace, rearZ, standings, updRace } from './race.js';
 import { updCars } from './traffic.js';
@@ -38,7 +38,7 @@ import { flushScores, showRunBoard, submitRaceTime, submitBestRun, submitChallen
 import { BOT_NAMES } from '../config/names.js';
 import { LOOK } from '../save/progress.js';
 import { CUP_RACERS, CUP_RACES, FRIEND_CUP_RULES, friendCupOver, standings as friendCupTable } from './friendcup.js';
-import { CUP_RULES, CUP_STAGES, addRound, betterCup, cupDone, cupPlace, cupPoints, cupTable, cupTime, cupXp, decodeCup, encodeCup, newCup } from './cup.js';
+import { CUP_RULES, CUP_STAGES, addRound, betterCup, cupDone, cupPlace, cupPoints, cupTable, cupTime, cupXp, pointsFor, decodeCup, encodeCup, newCup } from './cup.js';
 import { CHALLENGE_SUBMIT_ENABLED, challengeFor, utcWeekKey, validChallengeTime } from '../config/challenge.js';
 
 
@@ -370,6 +370,19 @@ function showChallengeEnd() {
   $('end').hidden = false;
 }
 
+// Presentation never changes scores. Remember each round even if standings redraw.
+const cupAwardsShown = new WeakMap();
+function showCupAward(model, round, points) {
+  setStat('sChain', 'Round points', points === null ? 'Pending' : '+' + points + ' points');
+  if (points === null) return;
+  let seen = cupAwardsShown.get(model);
+  if (!seen) { seen = new Set(); cupAwardsShown.set(model, seen); }
+  if (seen.has(round)) return;
+  seen.add(round);
+  if (!calm && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    $('sChain').animate?.([{ transform: 'translateY(5px)', opacity: .5 }, { transform: 'translateY(0)', opacity: 1 }], { duration: 450 });
+  }
+}
 function showCupEnd() {
   const m = S.cup.model, done = cupDone(m), R = S.race, place = R.place, cp = cupPlace(m), n = R.board.length, table = cupTable(m);
   setPodium(R.board, S.me, R.bots);
@@ -379,6 +392,7 @@ function showCupEnd() {
   $('sScoreLabel').textContent = 'Round time'; $('sScore').textContent = fmtTime(S.time);
   setStat('sBest', done ? 'Cup points' : 'Cup points so far', cupPoints(m) + (done && S.cup.newBest ? ' · new best' : ''));
   setStat('sDist', 'Round place', ordinal(place) + ' of ' + n); setStat('sChain', 'Bumps', String(S.bumps));
+  showCupAward(m, m.rounds.length, pointsFor(m.rounds.at(-1)?.place));
   setExtraStats(false);
   const bd = $('raceBoard'); bd.hidden = false; bd.innerHTML = '';
   table.forEach((r, i) => { const li = document.createElement('li'); if (r.me) li.className = 'me'; li.textContent = (i + 1) + '. ' + r.name + ' · ' + r.points + ' pts'; bd.appendChild(li); });
@@ -401,7 +415,8 @@ function showFriendCupEnd() {
   $('endLead').hidden = true;
   $('sScoreLabel').textContent = 'Race time'; $('sScore').textContent = restarting ? '-' : D.dnf ? 'DNF' : fmtTime(D.finish ?? S.time);
   setStat('sBest', over ? 'Cup points' : 'Cup points so far', String(pts));
-  setStat('sDist', 'Race place', mine ? ordinal(place) + ' of ' + CUP_RACERS : '-'); setStat('sChain', 'Bumps', String(S.bumps));
+  setStat('sDist', 'Race place', mine ? ordinal(place) + ' of ' + CUP_RACERS : '-');
+  showCupAward(D, C.race, mine ? pointsFor(mine.place) : null);
   setExtraStats(false);
   const bd = $('raceBoard'); bd.hidden = false; bd.innerHTML = '';
   table.forEach((r, i) => {

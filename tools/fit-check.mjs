@@ -1,3 +1,4 @@
+import { mkdirSync } from 'node:fs';
 import { preview } from 'vite';
 import { chromium } from 'playwright';
 import { fitProblems } from './fit-rules.mjs';
@@ -7,6 +8,8 @@ const sizes = [
   { width: 390, height: 844, touch: true },
   { width: 1280, height: 800, touch: false },
 ];
+const evidence = process.env.BATCH10_EVIDENCE;
+if (evidence) mkdirSync(evidence, { recursive: true });
 const selfTest = process.argv.includes('--self-test');
 let server, browser, problems = 0, checked = 0, detected = 0;
 const line = (size, screen, element, problem) => {
@@ -214,6 +217,9 @@ try {
         await open();
         const screen = name === 'NYC Cup' || name === 'stages saved best' ? 'stages' : name.startsWith('friend cup setup') || name === 'friend cup guest' ? 'friend' : name === 'race end' || name === 'cup final' || name.startsWith('friend cup ') ? 'end' : name;
         const m = await measure(page, screen);
+        if (evidence && viewport.touch && (name === 'friend cup setup full' || name === 'friend cup guest' || name === 'friend cup standings' || name === 'cup final')) {
+          await page.screenshot({ path: evidence + '/' + name.replace(/ /g, '-') + '-' + size + '.png' });
+        }
         if (name === 'end' || name === 'cup final' || name === 'friend cup standings' || name === 'friend cup final') {
           const rows = await page.locator('#raceBoard li').count();
           if (rows !== 8) line(size, name, '#raceBoard', 'expected 8 rows, got ' + rows);

@@ -141,3 +141,12 @@ test('nobody gets a head start: every Cup racer starts level with the player', (
     finish(E); if (round < 3) E.nextCupRound();
   }
 });
+
+test('round award and cumulative Cup points remain distinct over multiple rounds',()=>{
+ const E=load(undefined,{seed:3,dom:true});E.startCup();finish(E);
+ assert.equal(E.element('sChain').previousElementSibling.textContent,'Round points');
+ assert.equal(E.element('sChain').textContent,'+10 points');
+ E.nextCupRound();finish(E,1);
+ assert.equal(E.element('sChain').textContent,'+8 points');
+ assert.match(E.element('sBest').textContent,/18/);
+});
