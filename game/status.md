@@ -1,5 +1,15 @@
 # Status
 
+## Batch 18 building: lobby track groups and Cup bot count - 2026-11-11
+
+**Updated:** 2026-11-11, by Claude (lead). Adds to the published-playtest section below, which still applies.
+- Director said "continue with the build". Lead chose the highest-priority Director-requested work that needs no further design approval: playtest-followup package 1 remainder. Plan `game/rounds/round-02/batch-18-lobby-groups-bots.md`; Codex defaults in `lobby-groups`, dispatch ctx_d8c577061f4d, task task_3aa55ebb6ee8.
+- Scope: stage chips grouped by `city` under expandable buttons; host-chosen Friend Cup bot count 0 to free seats, default fill to 8; PROTO bump from 9. Lead decision: bots stay Cup-only (plain friend races and Elimination have none today); extending them is a Director call.
+- It owns shared files (`duel.js`, `friend.js`, `index.html`, `style.css`), so nothing else touching those runs in parallel. High risk: independent review before integration.
+- **Next action:** when batch 18 reports, review with process-review, then assign an independent review brief (batch-18b). After integration and suite, push develop and verify publication as in 17g.
+- **Waiting on the Director:** phone playtest of 9b2cafd; approval of package 4 designs (Cup group presets / four custom slots with repeats, finish spectating) before they are built; whether bots should also join plain friend races.
+- Queue after 18: package 4 once approved, tutorial movement parity, then the Claude Fable visual pass (after the lobby structure settles, required before main).
+
 ## Combined update published to playtest; Director playtest next - 2026-11-11
 
 **Updated:** 2026-11-11, by Claude (lead). Supersedes the section directly below.
