@@ -1,9 +1,10 @@
-<!-- Lead checks before sending, each from a real past mistake:
+﻿<!-- Lead checks before sending, each from a real past mistake:
   1. Rules: does anything here conflict with AGENTS.md, this plan's other lines, or Orca's worker instructions?
   2. Numbers: did I measure each target against what it really has to fit, not just the first limit I thought of? If a target comes from my own trial, is the trial script committed or its method written out, so the worker can reproduce my baseline first?
   3. Claims: did I check every file, flag and fact I name, instead of assuming it?
   4. Scope: can the worker finish using only the files listed? Search the tests for any value the plan changes.
   5. Fairness: for each game rule, did I say what it must keep fair for players, not just its limits? When extending a rule to another mode, name the target modes and explicitly preserve existing behavior in unaffected modes; do not accidentally turn a new-mode constraint into a global rule.
+  6. Evidence: for each screenshot or browser check I ask for, did I name an existing capture method or evidence folder that already does it (host and guest pages need real joined pages, not a DOM fixture)?
   Delete this comment in the real plan. -->
 # Round NN, batch NN: <title>
 
