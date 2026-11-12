@@ -1,5 +1,15 @@
 # Status
 
+## Combined update published to playtest; Director playtest next - 2026-11-11
+
+**Updated:** 2026-11-11, by Claude (lead). Supersedes the section directly below.
+- **Published playtest: 9b2cafd, verified.** Batch 17g report 89ab174: Tests run 43124902778 and downstream Pages run 43126173245 succeeded; playtest HTML and main.js HTTP 200 with marker 9b2cafd at 2026-11-12T00:18:33Z. Lead repeated the HTTP/marker check directly and it matched. Pages workflow ran from origin/main 30d0cd4 (local main 72f05e3 is ahead and unpushed; main unapproved).
+- Report/evidence merged locally as f66f195 and **not pushed**: develop is ahead of origin by documentation only. Pushing rebuilds the playtest under a new build ID, so push only with the next real change. Evidence file tests-summary.txt keeps three trailing spaces from the raw CI log (S4, left as captured).
+- publication-17g workspace and branch removed after merge. belt-check, visual-pass and art-styles preserved.
+- Contents now on the playtest link: cap treatment A with compatibility/stat display (PROTO 9, new competition identities), airport crowd correction, Host/Cup changes.
+- **Next action:** Director playtests on phone. Then the queued Claude Fable visual pass (required before main), and the open items under "Remaining studio work" below. Main needs explicit Director approval.
+- Still unverified: real-phone feel, human balance, transport reconnect/reload, dropped-ack cancellation, installed service-worker updates, deployed-schema acceptance.
+
 ## Combined update pushed; publication verification assigned - 2026-11-11
 
 **Updated:** 2026-11-11, by Claude (lead). This checkpoint supersedes the "Now" and "Next action" of the handoff section below; the rest of that section still applies.
