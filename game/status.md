@@ -12,6 +12,7 @@
 - Publication status is in the last bullet of this section. If that bullet says unverified, verify before telling anyone the playtest has batch 18: Tests run and Pages run for the pushed SHA succeeded, and `https://stefanvargas100-hue.github.io/excuse-me/playtest/assets/main.js` returns 200 and contains the short SHA.
 - No workers are running. lobby-groups and lobby-review workspaces and branches were removed after the merge. belt-check (untracked baseline, do not clean), visual-pass and art-styles workspaces are preserved.
 - Bots stay Cup-only by lead decision; plain friend races and Elimination have none.
+- **Published playtest: 15186e9, verified by the lead directly (no worker).** Tests run 43132805791 succeeded for 15186e9; downstream Pages run 43133552714 succeeded; playtest HTML and assets/main.js HTTP 200 with marker 15186e9 at 2026-11-12T01:18:31Z. This bullet is a local documentation commit made after the push, so local develop is ahead of origin by documentation only.
 
 ### Next action
 Start a fresh lead session. Ask the Director for the three open decisions below; without them, the next buildable item needing no design approval is tutorial movement parity (`game/todo.md`), then the Claude Fable visual pass once the lobby structure is settled (required before main).
