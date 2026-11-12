@@ -1,5 +1,14 @@
 # Status
 
+## Combined update pushed; publication verification assigned - 2026-11-11
+
+**Updated:** 2026-11-11, by Claude (lead). This checkpoint supersedes the "Now" and "Next action" of the handoff section below; the rest of that section still applies.
+- Postmerge build on develop passed (93 modules, main.js 342.15 kB) and `git diff --check` passed, closing the gap left by the handoff. Suite stays 855/855 from the saved log; no source changed since.
+- Develop pushed with this checkpoint. The published build ID is the commit that added `game/rounds/round-02/batch-17g-publication-check.md`; find it with `git log -1 -- <that file>`. Later documentation commits are not the served build.
+- Batch 17g (Codex defaults, evidence only) verifies Tests, Pages and HTTP 200 with the matching build marker. **Do not claim the playtest is published until its report says so.** Last verified playtest is still 11c3fde.
+- Cleanup done: cap-trial and cap-review were clean and merged; workspaces and branches removed. belt-check, visual-pass and art-styles workspaces preserved.
+- **Next action:** when 17g reports, review it, merge its report/evidence into develop locally, remove its workspace, and tell the Director the playtest is ready (or what stage failed). Do not push the report merge on its own: a push changes the served build ID. Then the Director playtests; main still needs explicit approval and the queued visual pass first.
+
 ## Lead handoff: combined update integrated, publication pending - 2026-11-11
 
 **Updated:** 2026-11-11, by Codex. This checkpoint supersedes all older sections below.
