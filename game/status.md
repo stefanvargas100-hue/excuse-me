@@ -1,5 +1,39 @@
 # Status
 
+## Lead handoff: combined update integrated, publication pending - 2026-11-11
+
+**Updated:** 2026-11-11, by Codex. This checkpoint supersedes all older sections below.
+**Lead branch:** develop, gameplay/integration HEAD ab43d52; handoff commit follows it.
+**Published playtest:** last verified 11c3fde at https://stefanvargas100-hue.github.io/excuse-me/playtest/. Local origin/develop also points there; no new remote verification in this handoff.
+**Main:** local main 72f05e3; no main merge performed or authorized for this bundle.
+
+### Now
+- Round 02, integration validation before playtest publication. Independent combined review f966d84 PASS was merged into develop as ab43d52, including cap implementation 5a5551d/report 5f6a580 and prior review history. Candidate and reviewer work are preserved in Git; do not reimplement or re-review cleared findings without new evidence.
+- Lead integration suite on ab43d52 finished 855/855, zero failed/skipped, 178.6 seconds. Saved log: game/rounds/round-02/batch-17-integration-evidence/tests.log. Integration diff check passed before the suite. **Postmerge build has not run yet.** No source edits after the suite; handoff changes are documentation/evidence only.
+- Director paused project work to discuss subscriptions, then requested this handoff. No subscription decision or purchase authorization. No new workers dispatched during the pause. Cap builder/reviewer are finished; no active implementation owner is expected for this bundle.
+- No additional Director decision needed to finish the already approved treatment-A trial and publish to playtest after checks. Main still requires explicit Director approval, and the queued visual follow-up must be included before any approved main update. Live database/migrations/load testing remain unauthorized.
+
+### Next action
+Run npm.cmd run build and git diff --check on develop. If successful, finish the integration record, write a new batch-17g-publication-check.md brief, commit the publication checkpoint, and push develop normally. Dispatch a Codex publication verifier using that exact final pushed SHA; end the turn after dispatch. **Do not reuse batch-10e unchanged:** it incorrectly excludes the cap update from the publication scope.
+
+### Publication and cleanup
+- Verifier must confirm the exact develop Tests run, its successful downstream Pages deployment, and HTTP 200 for playtest HTML and referenced main JS with the expected embedded short build ID. Pages workflow SHA can be main; distinguish it from the develop build marker. No claimed publication until matching HTTP evidence. Follow prior publication briefs; no local full-suite repetition or live service writes needed for evidence-only verification.
+- cap-trial and cap-review sibling workspaces were clean at handoff; branches stefanvargas100-hue/cap-trial and stefanvargas100-hue/cap-review are included in ab43d52. Recheck clean status and ancestry, then remove merged workspaces/branches through Orca under standing cleanup instructions. Relevant completed dispatches: cap builder ctx_d5873c2e284a; reviewer ctx_88fb6eb67e7e. No follow-up implementation is currently required.
+- **Preserve belt-check workspace.** Its merged branch contains untracked batch-10f-evidence/baseline/ and baseline.zip. Worker automatic approval review rejected temporary baseline cleanup; do not retry/bypass that rejection. Host/Cup worker and review workspaces were already removed after merging.
+
+### Bundle and evidence
+- Treatment A applies the original build speed contribution after the non-build speed cap; acceleration/recovery rules stay unchanged. Stats blob matches 61b9edb. Native bot evidence already covers 210 ordinary races/630 finishers and six deliberate contact probes with 18 timeouts retained. No consistent crowded winner; do not claim human balance or rerun the matrix without cause.
+- Compatibility separates standard r2, Classic cm3, Daily/Weekly mp3, Cup 4 and FriendCup 2 records/ghosts as applicable, preserves prior attempts/queues, uses PROTO 9, and preserves Challenge content recipe despite new competition identity. Race boards remain disabled. No deployed schema acceptance or live transport claim.
+- Airport generation correction was integrated before this bundle and intentionally changes airport race crowd positions. Exact people.js blob matches reviewed ac1c301; Challenge recipe/seed/outfit remain preserved. Earlier airport suite failure was inherited, reproduced, fixed, and independently checked. Do not restore the rejected mk hook.
+- Host/Cup changes already on develop are included in the pending publication: host Start without separate Ready, reachable lobby actions, distinct animated +round award and cumulative Cup totals with duplicate-animation protection. Scoring unchanged. Independent review 94329e3 passed; actual transport reconnect/reload and dropped-ack browser cancellation remain unverified.
+- Read reports/batch-17f-combined-review.md and batch-17f-evidence/review.md only as needed: 405 focused checks, 156 invalid packet rejections, 55 frozen Challenge week comparisons, independent local browser captures at 320/390, build/diff PASS. Prior S2 Challenge reset and S3 identity/preview behavior findings are closed. Builder full suite was 855/855 and lead integration now independently matches it.
+
+### Remaining studio work
+- Inherited S3 narrow captions/headings and shared fit findings belong to the visual queue. Current world artwork is authoritative; do not wholesale replace it with the older visual-pass branch. Director requested a later Claude Fable visual pass; preserve that preference and the before-main requirement.
+- Still open: expandable location track groups, group/custom-four-race Cups, selectable bot counts including zero, finish spectating, tutorial/scripted/stage movement parity. See playtest-followup intake and game/todo.md; these are not completed by this bundle.
+- Real-phone feel, loaded human shortcut balance, installed service-worker updates, deployed schema acceptance and actual live transport/reconnect remain unverified. Browser emulation and bot evidence are distinct from those checks.
+- Use saved batch briefs and Orca workers per playbook. Keep the fresh lead context narrow; no need to reload historical status sections or full past conversations.
+
 ## Combined cap candidate ready for independent review - 2026-11-11
 - Cap-trial candidate 5a5551d/report 5f6a580 includes compatibility/stat-display work, unchanged approved treatment A and authorized develop/airport merge 2709bf0. Builder reports 855/855 full suite, focused 42/42, later expanded all-stage wire 5/5, build/diff and local browser at both widths. Not integrated or published.
 - Lead inspected identity matrix/new source and representative max-stat, played-period and populated-airport screenshots. Race board underscore suffix matches inspected local SQL constraints; deployed acceptance remains unverified. Narrow item captions remain visual work. Batch-17f-combined-review.md returns candidate to independent cap-review owner for complete records/ghosts/queues/protocol/layout audit and prior-finding disposition.
