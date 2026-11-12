@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Excuse Me</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Permanent+Marker&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#fff4ec">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Excuse Me">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+  <script type="module" crossorigin src="./assets/main.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/rolldown-runtime.js">
+  <link rel="stylesheet" crossorigin href="./assets/index-1v0m3so2.css">
+</head>
+<body>
+<canvas id="game" aria-label="Third-person view of a busy walkway"></canvas>
+
+<p id="liveStatus" class="livestatus" aria-live="polite" hidden></p>
+<div id="hud" hidden>
+  <div class="top">
+    <div class="topr">
+      <div class="ccol"><div id="combo" class="off"><b id="mult">×1</b><small id="chain">0 chain</small><div class="cbar"><i id="cbar"></i></div></div><div id="mph" class="mph"><b id="mphv">0</b><small>MPH</small></div></div>
+      <button id="pauseBtn" type="button" aria-label="Pause"><span></span><span></span></button>
+    </div>
+  </div>
+  <div class="trackrow"><div class="track"><i id="prog"></i><span id="raceDots"></span></div></div>
+  <div class="boost"><div class="score"><small>SCORE</small><b id="score">0</b></div><span class="hchip num" id="dist">0 m</span><div id="place" class="place" hidden></div><div id="rmph" class="rmph"><b id="rmphv">0</b> MPH</div><span id="clock" class="clock num">3:00</span></div>
+  <div class="shoutrow" hidden><span id="shout" class="shout">Excuse me ready</span></div>   <!-- replaced by the small bar above your head -->
+</div>
+<div id="tut" hidden>
+  <div class="tstep" id="tutStep">Tutorial 1 / 8</div>
+  <div class="ttext" id="tutText"></div>
+  <button id="tutSkip" type="button">Skip tips</button>
+</div>
+
+<div id="lesson" hidden>
+  <div class="tstep" id="lessonStep">Lesson 1 / 4</div>
+  <div class="ttext" id="lessonText"></div>
+  <div class="lmsg" id="lessonMsg" hidden></div>
+  <div class="lbtns" id="lessonBtns" hidden>
+    <button id="lessonRetry" type="button">Try again</button>
+    <button id="lessonNext" type="button" class="primary">Next lesson</button>
+    <button id="lessonExit" type="button">Exit</button>
+  </div>
+</div>
+
+<div id="start" class="panel">
+  <div class="card home">
+    <div class="eyebrow">Don't touch anyone</div>
+    <h1>Excuse Me</h1>
+    <button id="playBtn" class="big huge" type="button">Play</button>
+    <div class="tiles">
+      <button id="lookBtn" class="tile" type="button">Customize</button>
+      <button id="chalBtn" class="tile" type="button">Challenges</button>
+      <button id="howBtn" class="tile" type="button">How to play</button>
+      <button id="practiceBtn" class="tile" type="button">Practice</button>
+      <button id="setBtn" class="tile" type="button">Settings</button>
+      <button id="boardsBtn" class="tile" type="button">Leaderboards</button>
+    </div>
+    <button id="profBtn" class="profchip" type="button" aria-label="Your profile">
+      <span id="profPic" class="pic">🚶</span>
+      <span class="pinfo"><b id="profName">Player</b><small id="profLine">Level 1</small></span>
+      <span class="pbar"><i id="profBar"></i></span>
+    </button>
+  </div>
+</div>
+
+<div id="profile" class="panel" hidden>
+  <div class="card full">
+    <div class="topbar"><button class="backbtn" data-back type="button" aria-label="Back">‹</button><h2>Profile</h2></div>
+    <div class="pcard">
+      <span id="pcPic" class="pic big">🚶</span>
+      <div class="pinfo"><b id="pcName">Player</b><span id="pcTitle">Newcomer</span><small id="pcLevel">Level 1</small></div>
+    </div>
+    <div class="xpbar"><i id="pcBar"></i></div>
+    <p id="pcXp" class="lockinfo"></p>
+    <div class="cycler"><span>Title</span><button id="titPrev" class="pagebtn" type="button" aria-label="Previous title">‹</button><b id="titName">Newcomer</b><button id="titNext" class="pagebtn" type="button" aria-label="Next title">›</button></div>
+    <div class="cycler"><span>Picture</span><button id="picPrev" class="pagebtn" type="button" aria-label="Previous picture">‹</button><b id="picName">🚶</b><button id="picNext" class="pagebtn" type="button" aria-label="Next picture">›</button></div>
+    <p id="pcNext" class="nextgoal"></p>
+    <p class="lockinfo">XP comes from every run, and from daily, weekly and unlock challenges. A race against bots pays the least.</p>
+  </div>
+</div>
+
+<div id="play" class="panel" hidden>
+  <div class="card full">
+    <div class="topbar"><button class="backbtn" data-back type="button" aria-label="Back">‹</button><h2>Play</h2></div>
+    <div id="playList" class="stack"></div>
+  </div>
+</div>
+
+<div id="practice" class="panel" hidden>
+  <div class="card full">
+    <div class="topbar"><button class="backbtn" data-back type="button" aria-label="Back">‹</button><h2>Practice</h2></div>
+    <div id="practiceList" class="stack"></div>
+  </div>
+</div>
+
+<div id="challenge" class="panel" hidden>
+  <div class="card full">
+    <div class="topbar"><button class="backbtn" data-back type="button" aria-label="Back">‹</button><h2>Weekly challenge</h2></div>
+    <p id="chInfo" class="lead"></p>
+    <ul id="chOutfit" class="chlist" aria-label="Supplied outfit"></ul>
+    <p id="chRules" class="lead"></p>
+    <button id="chStart" class="big" type="button">Start</button>
+  </div>
+</div>
+
+<div id="stages" class="panel" hidden>
+  <div class="card full">
+    <div class="topbar"><button class="backbtn" data-back type="button" aria-label="Back">‹</button><h2 id="stagesTitle">Classic</h2></div>
+    <div id="raceOpts" class="modes" role="group" aria-label="Bot difficulty" hidden>
+      <span class="modelabel">Bots</span>
+      <button class="chip" type="button" aria-pressed="false">Easy</button>
+      <button class="chip" type="button" aria-pressed="true">Medium</button>
+      <button class="chip" type="button" aria-pressed="false">Hard</button>
+    </div>
+    <div id="raceFormat" class="modes" role="group" aria-label="Race format" hidden>
+      <span class="modelabel">Format</span>
+      <button class="chip" type="button" aria-pressed="true">Race</button>
+      <button class="chip" type="button" aria-pressed="false">Elimination</button>
+      <button class="chip" type="button" aria-pressed="false">Weekly</button>
+      <button class="chip" type="button" aria-pressed="false">NYC Cup</button>
+    </div>
+    <div id="levels" class="stack" role="group" aria-label="Choose a stage"></div>
+    <div id="stagePager" class="pager" aria-label="Stage pages"></div>
+  </div>
+</div>
+
+<div id="boards" class="panel" hidden>
+  <div class="card full">
+    <div class="topbar"><button class="backbtn" data-back type="button" aria-label="Back">‹</button><h2>Leaderboards</h2></div>
+    <div id="boardTabs" class="modes" role="group" aria-label="Board">
+      <button class="chip" type="button" data-tab="daily" aria-pressed="true">Daily</button>
+      <button class="chip" type="button" data-tab="weekly" aria-pressed="false">Weekly</button>
+      <button class="chip" type="button" data-tab="classic" aria-pressed="false">Classic</button>
+      <button class="chip" type="button" data-tab="challenge" aria-pressed="false">Challenge</button>
+    </div>
+    <div id="boardStages" class="modes" role="group" aria-label="Stage" hidden></div>
+    <p id="boardTitle" class="boardtitle"></p>
+    <ol id="boardList" class="paged"></ol>
+    <div id="boardPager" class="pager"></div>
+  </div>
+</div>
+
+<div id="friend" class="panel" hidden>
+  <div class="card full">
+    <div class="topbar"><button class="backbtn" id="friendBack" data-back type="button" aria-label="Back">‹</button><h2>Race friends</h2></div>
+    <div id="friendHome" class="btns">
+      <p class="lead">Race up to 7 friends live, on the same crowd. Everyone needs the game open on their own phone.</p>
+      <button id="friendMake" class="big" type="button">Make a room</button>
+      <button id="friendJoinBtn" class="ghost" type="button">Join with a code</button>
+    </div>
+    <div id="friendHost" class="btns" hidden>
+      <div id="friendFormat" class="modes" role="group" aria-label="Race format">
+        <button class="chip" type="button" aria-pressed="true">Race</button>
+        <button class="chip" type="button" aria-pressed="false">Elimination</button>
+        <button class="chip" type="button" aria-pressed="false">Cup</button>
+      </div>
+      <div id="friendStages" class="modes" role="group" aria-label="Stage"></div>
+      <div id="friendCupLevel" class="modes" role="group" aria-label="Bot difficulty" hidden>
+        <button class="chip" type="button" aria-pressed="false">Easy bots</button>
+        <button class="chip" type="button" aria-pressed="true">Medium bots</button>
+        <button class="chip" type="button" aria-pressed="false">Hard bots</button>
+      </div>
+      <div id="friendCode" class="roomcode" aria-live="polite">----</div>
+      <ul class="friendroster" aria-label="Players in the room"></ul>
+      <button id="friendShare" class="ghost" type="button" disabled>Send invite</button>
+      <button id="friendStart" class="big" type="button" disabled>Start race</button>
+    </div>
+    <div id="friendGuest" class="btns" hidden>
+      <div id="friendCodeG" class="roomcode">----</div>
+      <ul class="friendroster" aria-label="Players in the room"></ul>
+    </div>
+    <div id="friendJoin" class="btns" hidden>
+      <input id="friendInput" class="roomin" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" maxlength="6" placeholder="CODE" aria-label="Room code">
+      <button id="friendGo" class="big" type="button">Join</button>
+    </div>
+    <button id="friendReady" class="big" type="button" aria-pressed="false" hidden>Ready</button>
+    <p id="friendStatus" class="lead friendstatus" aria-live="polite"></p>
+  </div>
+</div>
+
+<div id="howto" class="panel" hidden>
+  <div class="card full">
+    <div class="topbar"><button class="backbtn" data-back type="button" aria-label="Back">‹</button><h2>How to play</h2></div>
+    <div class="tabs" id="howTabs" role="group" aria-label="Topic">
+      <button class="chip" type="button" data-tab="howControls" aria-pressed="true">Controls</button>
+      <button class="chip" type="button" data-tab="howCombos" aria-pressed="false">Combos</button>
+      <button class="chip" type="button" data-tab="howRace" aria-pressed="false">Races</button>
+      <button class="chip" type="button" data-tab="howInstall" aria-pressed="false">Install</button>
+    </div>
+    <ul id="howList" class="paged rules"></ul>
+    <div id="howPager" class="pager"></div>
+    <div id="howSrc" hidden>
+      <ul id="howControls">
+        <li><b>1</b><span>You walk on your own. Hold the left or right side of the screen to steer.</span></li>
+        <li><b>2</b><span>Double tap one side to dash that way. Double tap both sides to burst forward. Both cost stamina.</span></li>
+        <li><b>3</b><span>Hold both thumbs down for a moment to say "Excuse me" (swiping up works too): up to 4 people ahead step aside. Rivals won't, and people on phones might not hear.</span></li>
+        <li><b>4</b><span>Timing pays. Dash at the last moment before contact: it is free and speeds you up. Say "Excuse me" right before contact: more people move, further. Near misses refill stamina.</span></li>
+        <li><b>5</b><span>Red shirts are rivals. They spot your gap, cut across and brake.</span></li>
+        <li><b>6</b><span>In Classic, Daily and Weekly, touch anyone and the run is over. Go as far as you can.</span></li>
+        <li><b>7</b><span>On a computer: arrow keys or A / D steer, press twice to dash, W or Up to burst, Space or E for "Excuse me", P to pause.</span></li>
+      </ul>
+      <ul id="howCombos" class="combos">
+        <li><span>Chain</span>Pass again within 2 seconds. Every 3 passes adds ×1, up to ×16.</li>
+        <li><span>Close / Razor</span>Pass with under 40 cm / 15 cm to spare.<em>+25 / +50</em></li>
+        <li><span>Near-miss streak</span>3 close calls within 5 seconds: a short speed boost.<em>+10% for 2.5 s</em></li>
+        <li><span>Snake</span>Pass on alternating sides, 3 or more in a row.<em>+40 each</em></li>
+        <li><span>Sweep</span>Pass 3 people drifting one way. 5 is a Mega Sweep.<em>+150 / +300</em></li>
+        <li><span>Thread the Needle</span>Slip between two people side by side.<em>+150</em></li>
+        <li><span>Bullet Train</span>Pass 3 people in a single burst.<em>+120</em></li>
+        <li><span>Juke</span>Pass someone right after a dash.<em>+80</em></li>
+        <li><span>Overtake</span>Pass a speed walker.<em>+60</em></li>
+        <li><span>Salmon Run</span>Pass 5 oncoming people in one chain.<em>+150</em></li>
+        <li><span>Rival Burned</span>Get past a rival after they cut you off.<em>+250</em></li>
+      </ul>
+      <ul id="howRace">
+        <li><b>1</b><span>First to the finish wins. People are solid: a bump stops you and slows you, but the race goes on.</span></li>
+        <li><b>2</b><span>Slipstream: stay close behind someone walking your way. Wind builds around you, then you get a big burst of speed. After it ends you need a few seconds before the next one.</span></li>
+        <li><b>3</b><span>Combos make you walk faster. Running out of stamina makes you walk much slower. Your stamina is the small bar above your head.</span></li>
+        <li><b>4</b><span>Fast strips: painted chevrons on the floor in New York and Tokyo. Quicker ground, but narrow and in harm's way. Bots want them too, and they will try to draft you.</span></li>
+        <li><b>5</b><span>Airport walkway: two moving belts side by side with glass walls on the outer edges. Once you step on you are locked in, but you can move across between the belts. The teal one carries you forward, the orange one pulls you back, more gently. People stand on the right and walk on the left, so pass on the left.</span></li>
+        <li><b>6</b><span>Your build and gear set your top speed, acceleration and recovery. Only races use them.</span></li>
+        <li><b>7</b><span>Fit check: match 3 or more pieces of one style, or stack one stat, for a bonus to every stat.</span></li>
+      </ul>
+      <ul id="howInstall">
+        <li><b>1</b><span>iPhone: open this page in Safari, tap Share, then "Add to Home Screen".</span></li>
+        <li><b>2</b><span>Android: open in Chrome, tap the menu, then "Install app" or "Add to Home screen".</span></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div id="settings" class="panel" hidden>
+  <div class="card full">
+    <div class="topbar"><button class="backbtn" data-back type="button" aria-label="Back">‹</button><h2>Settings</h2></div>
+    <div class="setlist">
+      <div class="setgrid">
+        <label class="setrow"><span>Sound</span><input type="checkbox" class="sndt" checked></label>
+        <label class="setrow"><span>Vibration</span><input type="checkbox" class="vibt" checked></label>
+        <label class="setrow"><span>Camera bob</span><input type="checkbox" class="bobt" checked></label>
+        <label class="setrow"><span>Hitboxes</span><input type="checkbox" class="hbt"></label>
+        <label class="setrow"><span>Calm visuals</span><input type="checkbox" id="calmT"></label>
+        <label class="setrow"><span>Shape cues</span><input type="checkbox" id="cuesT"></label>
+      </div>
+      <label class="setrow slider"><span>Music volume</span><input type="range" id="musicVol" min="0" max="100" step="5"></label>
+      <label class="setrow slider"><span>Sound effects volume</span><input type="range" id="sfxVol" min="0" max="100" step="5"></label>
+      <button id="tutBtn" class="ghost" type="button">Replay tutorial</button>
+      <button id="dbgBtn" class="ghost" type="button">Show screen info</button>
+      <p class="sethelp">Calm visuals removes slow motion, flashes, zoom and freeze frames. Shape cues mark rivals with ! and speed walkers with », so colour is not needed.</p>
+    </div>
+  </div>
+</div>
+
+<div id="look" class="panel" hidden>
+  <div class="card full">
+    <div class="topbar"><button id="lookBack" class="backbtn" type="button" aria-label="Back">‹</button><h2 id="lookTitle">Customize</h2></div>
+    <div class="pv"><canvas id="preview" width="340" height="420" aria-label="Preview of your character"></canvas><div id="statBars" class="statbars" aria-live="polite"></div></div>
+    <p id="lockInfo" class="lockinfo"></p>
+    <div id="lookCats" class="tiles areas"></div>
+    <div id="lookEdit" class="lookedit" hidden>
+      <div id="optFixed"></div>
+      <div id="optPagedLabel" class="optl"></div>
+      <div id="optPaged" class="paged chipgrid"></div>
+      <div id="optPager" class="pager"></div>
+      <div id="optColors"></div>
+    </div>
+  </div>
+</div>
+
+<div id="chal" class="panel" hidden>
+  <div class="card full">
+    <div class="topbar"><button class="backbtn" data-back type="button" aria-label="Back">‹</button><h2>Challenges</h2></div>
+    <p class="lockinfo" id="chalNote"></p>
+    <ul id="chalList" class="paged chals"></ul>
+    <div id="chalPager" class="pager"></div>
+  </div>
+</div>
+
+<div id="pause" class="panel" hidden>
+  <div class="card">
+    <div class="eyebrow" id="pauseEyebrow">Paused</div>
+    <h1 class="mid">Paused</h1>
+    <p id="pauseStatus" class="note" hidden></p>
+    <div class="btns">
+      <button id="resume" class="big" type="button">Resume</button>
+      <button id="holdPause" class="ghost" type="button" hidden>Keep paused for me</button>
+      <button id="restart" class="ghost" type="button">Restart</button>
+      <button id="pauseSet" class="ghost" type="button">Settings</button>
+      <button id="pmenu" class="ghost" type="button">Main menu</button>
+    </div>
+  </div>
+</div>
+
+<div id="end" class="panel" hidden>
+  <div class="card">
+    <div class="eyebrow" id="endEyebrow">Level</div>
+    <h1 id="endTitle" class="bad mid">Bump</h1>
+    <p class="lead" id="endLead"></p>
+    <dl class="stats">
+      <div class="wide"><dt id="sScoreLabel">Score</dt><dd id="sScore">0</dd></div>
+      <div><dt>Best score</dt><dd id="sBest">0</dd></div>
+      <div><dt>Distance</dt><dd id="sDist">0 m</dd></div>
+      <div><dt>Longest chain</dt><dd id="sChain">0</dd></div>
+      <div><dt>Close calls</dt><dd id="sClose">0</dd></div>
+      <div><dt>Passed</dt><dd id="sPassed">0</dd></div>
+      <div><dt>Rivals burned</dt><dd id="sRival">0</dd></div>
+    </dl>
+    <canvas id="podium" style="width:100%;height:136px" hidden aria-hidden="true"></canvas>
+    <ol id="raceBoard" class="board" hidden></ol>
+    <ol id="dayBoard" class="board" hidden></ol>
+    <p id="unlockNote" class="unlock" hidden></p>
+    <p id="nextNote" class="nextgoal" hidden></p>
+    <p id="xpNote" class="nextgoal" hidden></p>
+    <p id="cleanNote" class="nextgoal" hidden></p>
+    <div class="btns">
+      <button id="next" class="big" type="button" hidden>Next level</button>
+      <button id="again" class="big" type="button">Try again</button>
+      <div class="btnrow">
+        <button id="endLook" class="ghost" type="button">Customize</button>
+        <button id="shareBtn" class="ghost" type="button">Share</button>
+        <button id="menu" class="ghost" type="button">Menu</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+if ("serviceWorker" in navigator && !location.pathname.includes("/playtest/")) {
+  const had = !!navigator.serviceWorker.controller;
+  // When a newer version has been downloaded, switch to it on the menu screen (never in the middle of a run).
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    const menu = document.getElementById("start");
+    if (had && menu && !menu.hidden) location.reload();
+  });
+  addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+}
+</script>
+</body>
+</html>
