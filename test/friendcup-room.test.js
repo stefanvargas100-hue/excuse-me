@@ -761,3 +761,40 @@ for(const bots of [0,3]) test('four simulated races with '+bots+' bots',async()=
  assert.equal(J(table(L.host)),J(table(L.guests[0])));
 });
 for(const bots of [0,2]) test('guest summary uses middle dot and real count for '+bots+' bots',async()=>{const L=await room(3);L.host.setRoomCup({stages:STAGES,difficulty:1,bots});await settle();const text=L.guests[0].lobbyStatus();assert.ok(text.includes(' \u00b7 3 players, '+(bots ? '2 bots':'no bots')),text);assert.ok(!text.includes(' ? '));});
+for (const change of ['join','leave']) for (const bots of ['fill',2]) test('setup count uses setup players after '+change+' with '+bots+' bots',async()=>{
+ const L=await room(change==='join'?2:3);const guest=L.guests[0];
+ L.host.setRoomCup({stages:STAGES,difficulty:1,bots});await settle();
+ const oldRoster=JSON.parse(JSON.stringify(L.H.log.filter(m=>m.ev==='roster').at(-1).data));
+ if(change==='join'){const g=load();g.useRoomFactory(L.H.factory);await g.joinRoom(L.code);await settle();L.games.push(g);}else{L.games.pop().leaveRoom();await settle();}
+ await readyPlayers(L.games);L.H.drop=(ev,d,to)=>to===1&&(ev==='cup'||ev==='start'||ev.startsWith('lobby:'));
+ L.host.hostStart();await settle();
+ const packet=JSON.parse(JSON.stringify(cupMessages(L.H).at(-1).data));
+ guest.injectRoomMessage('roster',{...oldRoster,rev:oldRoster.rev+1000});
+ guest.injectRoomMessage('cup',packet);await settle();
+ assert.ok(guest.friendCup(),'honest setup remains accepted despite stale roster');
+ assert.equal(guest.friendCup().racers.length,bots==='fill'?8:L.games.length+bots);
+});
+test('received invalid bot values stay inert and cannot authorize a setup',async()=>{
+ const L=await room(2);L.host.setRoomCup({stages:STAGES,difficulty:1,bots:0});await settle();
+ const base=JSON.parse(JSON.stringify(L.H.log.filter(m=>m.ev==='roster').at(-1).data));
+ await readyPlayers(L.games);L.H.drop=ev=>ev==='cup'||ev==='start'||ev.startsWith('lobby:');L.host.hostStart();await settle();
+ const packet=cupMessages(L.H).at(-1).data;let rev=base.rev+1000;
+ for(const bots of [undefined,null,{}, {toString:null},-1,8,1.5,'2']){
+  L.guests[0].injectRoomMessage('roster',{...base,rev:rev++,cupCfg:{...base.cupCfg,bots}});
+  assert.equal(L.guests[0].roomCup().valid,false);assert.equal(L.guests[0].roomCup().botCount,null);
+  assert.match(L.guests[0].lobbyStatus(),/host is choosing/);
+  L.guests[0].injectRoomMessage('cup',packet);assert.equal(L.guests[0].friendCup(),null);
+ }
+ L.guests[0].injectRoomMessage('roster',{...base,rev:rev++});
+ L.guests[0].injectRoomMessage('cup',packet);assert.ok(L.guests[0].friendCup());
+ L.guests[0].injectRoomMessage('roster',{...base,rev:rev++,cupCfg:{...base.cupCfg,bots:{toString:null}}});
+ assert.equal(L.guests[0].friendCup(),null,'invalid config clears a cached pre-start setup');
+ L.guests[0].injectRoomMessage('roster',{...base,rev:rev++,cupCfg:null});
+ L.guests[0].injectRoomMessage('cup',packet);assert.equal(L.guests[0].friendCup(),null,'no config cannot authorize any setup');
+});
+for(const change of ['join','leave']) test('honest Cup still starts after a pre-start '+change,async()=>{
+ const L=await room(change==='join'?2:3);L.host.setRoomCup({stages:STAGES,difficulty:1,bots:2});await settle();
+ if(change==='join'){const g=load();g.useRoomFactory(L.H.factory);await g.joinRoom(L.code);await settle();L.games.push(g);}else{L.games.pop().leaveRoom();await settle();}
+ await readyPlayers(L.games);L.host.hostStart();await settle();await settle();
+ for(const g of L.games){assert.equal(g.state,'play');assert.equal(g.friendCup().racers.length,L.games.length+2);}
+});
