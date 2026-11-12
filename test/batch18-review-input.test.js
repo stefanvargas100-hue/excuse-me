@@ -103,4 +103,3 @@ test('review: bot change clears Ready; full room clamps to zero',async()=>{
  for(let i=2;i<8;i++){const g=load();g.useRoomFactory(L.H.factory);await g.joinRoom(L.code);await settle();L.games.push(g);}
  for(const g of L.games) assert.equal(g.roomCup().botCount,0);
 });
-

@@ -1,23 +1,36 @@
 # Status
 
-## Batch 18 building: lobby track groups and Cup bot count - 2026-11-11
+## End of day handoff: batch 18 integrated and pushed - 2026-11-11
 
-**Updated:** 2026-11-11, by Claude (lead). Adds to the published-playtest section below, which still applies.
-- Director said "continue with the build". Lead chose the highest-priority Director-requested work that needs no further design approval: playtest-followup package 1 remainder. Plan `game/rounds/round-02/batch-18-lobby-groups-bots.md`; Codex defaults in `lobby-groups`, dispatch ctx_d8c577061f4d, task task_3aa55ebb6ee8.
-- Scope: stage chips grouped by `city` under expandable buttons; host-chosen Friend Cup bot count 0 to free seats, default fill to 8; PROTO bump from 9. Lead decision: bots stay Cup-only (plain friend races and Elimination have none today); extending them is a Director call.
-- It owns shared files (`duel.js`, `friend.js`, `index.html`, `style.css`), so nothing else touching those runs in parallel. High risk: independent review before integration.
-- Batch 18 reported partial at c913da2/report d2a90dd: 859/859, build and diff pass (reported, not rerun). Lead read the source diff and two 320px screenshots: protocol, validation, clamping and scoring look right. Fix brief `batch-18b-fixes.md` sent to the same worker (follow-up ctx_4bcdf1bdcb27): S3 wrong separator character in guest summary, S3 bot select rebuilt on every roster refresh, S3 empty city group in Cup format, S4 unexplained removal of full-room invite rule, missing grouping test, guest Ready evidence. Lead plan gap logged in failures.md; template check 6 added (untested until the next plan).
-- 18b reported done at 961bd91/report e906892: all six items addressed, 865/865, build and diff pass (reported, not rerun), real guest pages show Ready reachable at both sizes. Lead read the fix diff: all six confirmed in source; new pure helper `src/ui/friend-groups.js` was permitted. Lead has not opened the guest captures.
-- Independent review `batch-18c-review.md` dispatched to a fresh Codex worker in `lobby-review`, based on the lobby-groups branch: ctx_3fcd24839e53, task task_154b907638dc. Not integrated.
-- **Next action:** when 18c reports: on PASS, merge lobby-review (it contains lobby-groups) into develop, run `npm.cmd test` once, build and diff check, push develop, and dispatch a publication check modelled on batch-17g with the pushed SHA; then remove both workspaces. On HOLD, send findings to the builder (ctx_4bcdf1bdcb27, workspace lobby-groups) with a saved brief, then re-review.
-- **18c review is HOLD** (89a841f on lobby-review, tests `test/batch18-review-input.test.js`, suite 870/872 with only its two regressions failing): S2 an object-valued received bot count throws in `cupSummary` during roster receive; S2 a guest accepts a racer setup that disagrees with the agreed bot count. Owner: builder. All other review areas passed. The lead's own diff review missed the first one: it assumed `validCup` guarded every use.
-- Fix brief `batch-18d-validation-fixes.md` sent to the builder (follow-up ctx_6a3a6531659e, workspace lobby-groups): merge lobby-review for the tests, fix both, keep PROTO 10. This is fix cycle 2 on batch 18 overall but cycle 1 for these findings.
-- **Next action (replaces the one above):** when 18d reports, read the fix diff, then send a re-review to the original reviewer (`orca orchestration send --to dispatch:ctx_3fcd24839e53`) with a saved brief `batch-18e-rereview.md`. Only after a PASS: merge, full suite, build, push, publication check as in 17g, remove lobby-groups and lobby-review.
-- 18d reported fixed at a053399/report 6ee302b on lobby-groups: reviewer tests pass unchanged, 879 full suite, build and diff pass (reported, not rerun). Lead read the fix diff: input is normalised and the setup must match the agreed count. Open question passed to the reviewer: the new `cupCfg.agreed` gate in `cupFromMessage` during mid-Cup updates, handover, reconnect and rematch.
-- Re-review `batch-18e-rereview.md` sent to the original reviewer (follow-up ctx_7271f6539dd6, workspace lobby-review). **Next action:** on PASS, merge lobby-review (after it merges lobby-groups) into develop, `npm.cmd test` once, build, diff check, push, publication check as in 17g, remove both workspaces. On a second HOLD for the same findings, escalate to the Director with options (playbook: two fix cycles).
-- Lead context is past the handover size: a fresh lead session should take the 18e report. After integration and suite, push develop and verify publication as in 17g.
-- **Waiting on the Director:** phone playtest of 9b2cafd; approval of package 4 designs (Cup group presets / four custom slots with repeats, finish spectating) before they are built; whether bots should also join plain friend races.
-- Queue after 18: package 4 once approved, tutorial movement parity, then the Claude Fable visual pass (after the lobby structure settles, required before main).
+**Updated:** 2026-11-11, by Claude (lead), at the Director's request to stop for the day. This section is current; older sections below are history.
+**Lead branch:** develop. Batch 18 merge is 20a24cf; the pushed build is the commit that added `game/rounds/round-02/reports/batch-18-integration.md` (`git log -1 --format=%h -- <that file>`).
+**Main:** origin/main 30d0cd4 (live); local main 72f05e3 is ahead and unpushed. No main merge approved.
+
+### Now
+- Round 02. Batch 18 is done: Friend lobby track groups by city and a host-chosen Friend Cup bot count (0 to free seats, default fill to 8), PROTO 10. Path: build c913da2, lead fixes 961bd91, independent review HOLD with two S2 input-validation defects (89a841f), fixes a053399, re-review PASS 0e0d90c. Briefs batch-18 to batch-18e and the reconnect reply are in the round folder.
+- Lead checks on merged develop: 882/882 full suite, build and diff check pass. See `reports/batch-18-integration.md`.
+- Publication status is in the last bullet of this section. If that bullet says unverified, verify before telling anyone the playtest has batch 18: Tests run and Pages run for the pushed SHA succeeded, and `https://stefanvargas100-hue.github.io/excuse-me/playtest/assets/main.js` returns 200 and contains the short SHA.
+- No workers are running. lobby-groups and lobby-review workspaces and branches were removed after the merge. belt-check (untracked baseline, do not clean), visual-pass and art-styles workspaces are preserved.
+- Bots stay Cup-only by lead decision; plain friend races and Elimination have none.
+
+### Next action
+Start a fresh lead session. Ask the Director for the three open decisions below; without them, the next buildable item needing no design approval is tutorial movement parity (`game/todo.md`), then the Claude Fable visual pass once the lobby structure is settled (required before main).
+
+### Waiting on the Director
+1. Phone playtest of the playtest link (cap trial, airport fix, Host/Cup changes, and batch 18 once verified).
+2. Approve or change the Cup selection design: location-group presets, or exactly four custom slots with repeats allowed (playtest-followup package 4).
+3. Approve or change finish spectating: Watch race after finishing, previous/next racer, return to own results (package 4).
+4. Should bots also join plain friend races and Elimination?
+
+### Open bugs and gaps
+- S3, owner lead: after a mid-Cup reconnect, a guest's immediate next-race request stays "won" instead of "play". Same on develop before batch 18, so inherited; may be a fixture clock-resync limit or a real defect. Evidence `batch-18e-evidence/reconnect.cjs`. Needs a bounded investigation batch.
+- S3, visual queue: narrow captions, 31 shared fit findings, leaderboard heading clipping at 320px (`game/todo.md`).
+- Unverified: real phones, human balance, real network joins/leaves/reconnect/host transfer (now also with a custom bot count), dropped-ack cancellation, installed service-worker updates, deployed-schema acceptance.
+- Still not built: custom/group Cups, finish spectating, tutorial/scripted/stage movement parity.
+
+### Process notes from today
+- Two lead misses logged: batch 18 plan named no guest capture method (`game/failures.md`, template check 6 added, untested until the next plan); lead diff review missed an unvalidated received value that the independent review caught. Keep the second review for online work.
+- A push to develop changes the served build ID, so documentation-only commits stay local until the next real change.
 
 ## Combined update published to playtest; Director playtest next - 2026-11-11
 
