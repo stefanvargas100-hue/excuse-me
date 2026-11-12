@@ -404,7 +404,7 @@ button:disabled.big, button:disabled.ghost { opacity: .5; cursor: default; }
 .friendroster li.me { background: var(--sign); font-weight: 700; }
 .friendroster li.empty { opacity: .45; box-shadow: none; border-style: dashed; }
 #friendStages { gap: 6px; } #friendStages .chip { flex: 1 1 auto; padding: 0 8px; min-width: 0; font-size: 15px; }
-#friendHost.cup #friendCode, #friendHost.cup .friendroster li.empty { display: none; }   /* in a Cup, bots fill the empty seats */
+#friendHost.cup #friendCode, #friendHost.cup .friendroster li.empty, #friendHost.cup.full #friendShare { display: none; }   /* in a Cup, bots fill the empty seats */
 #friendHost.cup .friendroster li small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 #friendHost.cup #friendStages, #friendStages { display: flex; flex-direction: column; gap: 5px; max-height: 210px; overflow-y: auto; }
 #friendStages .friendStageGroup { width: 100%; }

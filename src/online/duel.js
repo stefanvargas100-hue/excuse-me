@@ -234,7 +234,7 @@ const validCup = c => !!c && (c.bots === 'fill' || Number.isInteger(c.bots) && c
 function cupSummary() {
   const diff = DIFFICULTIES[cupCfg.difficulty], bots = diff ? ' · ' + diff.name + ' bots' : '';
   const count = cupCfg.bots === 'fill' ? MAX_PLAYERS - roster.length : cupCfg.bots;
-  const detail = ' ? ' + roster.length + ' players, ' + (count ? count + ' bots' : 'no bots');
+  const detail = ' \u00b7 ' + roster.length + ' players, ' + (count ? count + ' bots' : 'no bots');
   return (role === 'host' || !validCup(cupCfg) ? 'Friend Cup' + bots : 'Friend Cup: ' + cupCfg.stages.map(s => LEVELS[s].name).join(', ') + bots) + detail;
 }
 const leftIds = c => c.racers.filter(r => r.left).map(r => r.id);

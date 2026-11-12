@@ -1,3 +1,4 @@
+import { stageGroups, groupLabel, groupAvailable, cupPick, syncBotOptions } from './friend-groups.js';
 import { LEVELS } from '../config/levels.js';
 import { DIFFICULTIES } from '../sim/race.js';
 import { $ } from '../dom.js';
@@ -5,7 +6,7 @@ import { MAX_PLAYERS, duelUi, hostRoom, hostStart, inviteLink, isHost, joinRoom,
 import { go } from './screens.js';
 
 /* ---------- Race friends: make a room or join one, see who is in, then the host starts ---------- */
-let stage = 0;
+let stage = 0, playerCount = 0;
 // Cup setup on the host's phone: stages in race order, and the bots' difficulty. Friend Cups use stages 0-5 for now.
 let cupStages = [], cupLevel = 1;
 const groups = [];
@@ -46,7 +47,7 @@ function showRoster(players) {
       ul.appendChild(li);
     }
   });
-  const n = players.length;
+  const n = playerCount = players.length;
   const lobby = roomLobbyState(), mine = players.find(p => p.me);
   $('friendStart').disabled = !canStartRoom();
   $('friendStart').textContent = lobby.busy ? 'Preparing race...' : canStartRoom() ? 'Start race (' + n + ' players)' : 'Start race';
@@ -75,16 +76,16 @@ function showStages(cfg) {
     o.disabled = !!cfg && j > CUP_STAGE_MAX;
   });
   for (const g of groups) {
-    const picks = g.indices.filter(i => cfg ? cupStages.includes(i) : i === roomLevel());
-    g.button.textContent = g.city + (picks.length ? ': ' + picks.map(i => (cfg ? (cupStages.indexOf(i)+1) + '. ' : '') + stageName(i)).join(', ') : '');
+    g.button.textContent = groupLabel(LEVELS, g, cfg ? cupStages : roomLevel(), !!cfg);
+    g.button.parentElement.hidden = !groupAvailable(g, !!cfg);
     g.button.setAttribute('aria-expanded', String(g.city === openCity)); g.tracks.hidden = g.city !== openCity;
   }
   $('friendCupBots').hidden = !cfg;
   const select = $('friendBotCount');
-  if (cfg) { select.textContent = ''; for (const value of ['fill', ...Array.from({length: MAX_PLAYERS - document.querySelectorAll('#friendHost .friendroster li:not(.empty)').length + 1}, (_, i) => i)]) { const option = document.createElement('option'); option.value = String(value); option.textContent = value === 'fill' ? 'Fill to 8' : value === 0 ? 'No bots' : value + ' bots'; select.appendChild(option); } select.value = String(cfg.bots); }
+  if (cfg) syncBotOptions(select, playerCount, cfg.bots, () => document.createElement('option'));
   $('friendCupLevel').hidden = !cfg;
   $('friendHost').classList.toggle('cup', !!cfg);
-  $('friendHost').classList.toggle('full', !!cfg && st().length > 0 && document.querySelectorAll('#friendHost .friendroster li:not(.empty)').length >= MAX_PLAYERS);
+  $('friendHost').classList.toggle('full', !!cfg && st().length > 0 && playerCount >= MAX_PLAYERS);
   document.querySelectorAll('#friendCupLevel .chip').forEach((c, i) => c.setAttribute('aria-pressed', String(!!cfg && i === cfg.difficulty)));
 }
 
@@ -105,15 +106,13 @@ export function initFriend() {
     if (!group) {
       const box = document.createElement('div'), button = document.createElement('button'), tracks = document.createElement('div');
       box.className = 'friendStageGroup'; button.type = 'button'; button.className = 'friendCity'; tracks.className = 'friendTracks';
-      group = { city: L.city, button, tracks, indices: [] }; groups.push(group); box.append(button, tracks); stBox.appendChild(box);
+      group = { ...stageGroups(LEVELS).find(g => g.city === L.city), button, tracks }; groups.push(group); box.append(button, tracks); stBox.appendChild(box);
       button.addEventListener('click', () => { openCity = openCity === L.city ? null : L.city; showStages(roomCup()); });
     }
-    group.indices.push(i);
     const c = document.createElement('button'); c.type = 'button'; c.className = 'chip'; c.dataset.stage = String(i); c.textContent = L.name; c.setAttribute('aria-pressed', String(i === 0));
     c.addEventListener('click', () => {
       if (roomCup()) {   // Cup: tap stages in race order; tap a chosen one again to take it out
-        const at = cupStages.indexOf(i);
-        if (at >= 0) cupStages.splice(at, 1); else if (cupStages.length < CUP_RACES && i <= CUP_STAGE_MAX) cupStages.push(i);
+        cupStages = cupPick(cupStages, i);
         sendCup(); return;
       }
       stage = i; setRoomLevel(i); showStages(null);

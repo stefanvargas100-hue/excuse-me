@@ -1,0 +1,37 @@
+{
+  "method": "Batch 10c multi-page local relay; external traffic blocked",
+  "results": [
+    {
+      "width": 320,
+      "height": 568,
+      "players": 3,
+      "bots": 2,
+      "guestView": true,
+      "readyVisible": true,
+      "readyEnabled": true,
+      "readyClicked": true,
+      "box": {
+        "x": 32,
+        "y": 326,
+        "width": 256,
+        "height": 44
+      }
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "players": 3,
+      "bots": 2,
+      "guestView": true,
+      "readyVisible": true,
+      "readyEnabled": true,
+      "readyClicked": true,
+      "box": {
+        "x": 36,
+        "y": 443.1875,
+        "width": 318,
+        "height": 58
+      }
+    }
+  ]
+}

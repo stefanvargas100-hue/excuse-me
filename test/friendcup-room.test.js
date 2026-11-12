@@ -760,3 +760,4 @@ for(const bots of [0,3]) test('four simulated races with '+bots+' bots',async()=
  for(const g of L.games){assert.equal(g.friendCup().racers.length,2+bots);assert.equal(g.friendCup().rounds.length,4);}
  assert.equal(J(table(L.host)),J(table(L.guests[0])));
 });
+for(const bots of [0,2]) test('guest summary uses middle dot and real count for '+bots+' bots',async()=>{const L=await room(3);L.host.setRoomCup({stages:STAGES,difficulty:1,bots});await settle();const text=L.guests[0].lobbyStatus();assert.ok(text.includes(' \u00b7 3 players, '+(bots ? '2 bots':'no bots')),text);assert.ok(!text.includes(' ? '));});
