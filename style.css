@@ -404,9 +404,14 @@ button:disabled.big, button:disabled.ghost { opacity: .5; cursor: default; }
 .friendroster li.me { background: var(--sign); font-weight: 700; }
 .friendroster li.empty { opacity: .45; box-shadow: none; border-style: dashed; }
 #friendStages { gap: 6px; } #friendStages .chip { flex: 1 1 auto; padding: 0 8px; min-width: 0; font-size: 15px; }
-#friendHost.cup #friendCode, #friendHost.cup .friendroster li.empty, #friendHost.cup.full #friendShare { display: none; }   /* in a Cup, bots fill the empty seats */
+#friendHost.cup #friendCode, #friendHost.cup .friendroster li.empty { display: none; }   /* in a Cup, bots fill the empty seats */
 #friendHost.cup .friendroster li small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-#friendHost.cup #friendStages { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
+#friendHost.cup #friendStages, #friendStages { display: flex; flex-direction: column; gap: 5px; max-height: 210px; overflow-y: auto; }
+#friendStages .friendStageGroup { width: 100%; }
+#friendStages .friendCity { width: 100%; min-height: 34px; font: 400 14px var(--body); text-align: left; color: var(--ink); background: var(--paper); border: 2px solid var(--ink); border-radius: var(--wob-s); padding: 4px 8px; }
+#friendStages .friendTracks { display: flex; flex-wrap: wrap; gap: 4px; padding: 4px 0; }
+#friendHost #friendCupBots { display: flex; align-items: center; gap: 8px; }
+#friendHost #friendBotCount { min-height: 34px; flex: 1; }
 #friendHost.cup #friendStages .chip { white-space: normal; line-height: 1.05; font-size: 13px; padding: 2px 3px; min-height: 36px; }
 #friendHost.cup #friendStages .chip:disabled { display: none; }
 #friendFormat .chip, #friendCupLevel .chip { flex: 1 1 0; padding: 0 4px; min-width: 0; font-size: 15px; }

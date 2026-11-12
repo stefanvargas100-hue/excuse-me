@@ -8,13 +8,15 @@ import { go } from './screens.js';
 let stage = 0;
 // Cup setup on the host's phone: stages in race order, and the bots' difficulty. Friend Cups use stages 0-5 for now.
 let cupStages = [], cupLevel = 1;
+const groups = [];
+let openCity = LEVELS[0].city;
 const CUP_STAGE_MAX = 5, CUP_RACES = 4;
 const stageName = i => (LEVELS[i] ? LEVELS[i].name : '?');
 const cupLine = c => {
   const named = c && c.valid ? c.stages.map(stageName).join(', ') : null, diff = c && DIFFICULTIES[c.difficulty];
   return 'Friend Cup' + (named ? ': ' + named : '') + (diff ? ' · ' + diff.name + ' bots' : '');
 };
-function sendCup() { setRoomCup({ stages: cupStages.slice(), difficulty: cupLevel }); }
+function sendCup() { setRoomCup({ stages: cupStages.slice(), difficulty: cupLevel, bots: roomCup()?.bots ?? 'fill' }); }
 const st = () => document.querySelectorAll('#friendStages .chip');
 const view = id => { for (const v of ['friendHome', 'friendHost', 'friendGuest', 'friendJoin']) $(v).hidden = v !== id; };
 
@@ -23,7 +25,7 @@ function reset() {
   $('friendStart').disabled = true; $('friendShare').disabled = true; $('friendCode').textContent = '----'; $('friendCodeG').textContent = '----';
   $('friendGo').disabled = false;
   $('friendReady').hidden = true;
-  cupStages = []; cupLevel = 1;
+  cupStages = []; cupLevel = 1; openCity = LEVELS[stage].city;
 }
 
 export function openFriend() { reset(); go('friend'); }
@@ -59,18 +61,27 @@ function showRoster(players) {
   if (isHost() && code) $('friendShare').textContent = cfg ? 'Send invite · ' + code : 'Send invite';   // a Cup setup needs the room, so the code moves into the button
   const diff = cfg && DIFFICULTIES[cfg.difficulty];
   if (isHost() && n) $('friendStatus').textContent = cfg && !cfg.valid ? 'Friend Cup: pick ' + (CUP_RACES - cupStages.length) + ' more stage' + (CUP_RACES - cupStages.length === 1 ? '' : 's') + ', in race order.' :
-    (cfg ? 'Friend Cup · ' + (diff ? diff.name : '?') + ' bots' : shown) + '. ' + (n < 2 ? 'Waiting for friends to join...' : cfg ? n + ' players, ' + (8 - n) + ' bots. Ready when you are.' : n < MAX_PLAYERS ? n + ' in the room. Start now or wait for more.' : 'Room is full. Ready when you are.');
+    (cfg ? 'Friend Cup · ' + (diff ? diff.name : '?') + ' bots' : shown) + '. ' + (n < 2 ? 'Waiting for friends to join...' : cfg ? n + ' players, ' + (cfg.botCount ? cfg.botCount + ' bots' : 'no bots') + '. Ready when you are.' : n < MAX_PLAYERS ? n + ' in the room. Start now or wait for more.' : 'Room is full. Ready when you are.');
   if (!isHost() && n) { view('friendGuest'); $('friendCodeG').textContent = roomCode(); $('friendStatus').textContent = (cfg ? shown : 'Stage: ' + shown) + '. Waiting for the host to start...'; }
 }
 
 // The stage buttons: one stage for a race, or four in race order for a Cup (the number shows each one's race).
 function showStages(cfg) {
-  st().forEach((o, j) => {
+  st().forEach(o => {
+    const j = Number(o.dataset.stage);
     const at = cupStages.indexOf(j);
     o.textContent = cfg && at >= 0 ? (at + 1) + '. ' + stageName(j) : stageName(j);
     o.setAttribute('aria-pressed', String(cfg ? at >= 0 : j === roomLevel()));
     o.disabled = !!cfg && j > CUP_STAGE_MAX;
   });
+  for (const g of groups) {
+    const picks = g.indices.filter(i => cfg ? cupStages.includes(i) : i === roomLevel());
+    g.button.textContent = g.city + (picks.length ? ': ' + picks.map(i => (cfg ? (cupStages.indexOf(i)+1) + '. ' : '') + stageName(i)).join(', ') : '');
+    g.button.setAttribute('aria-expanded', String(g.city === openCity)); g.tracks.hidden = g.city !== openCity;
+  }
+  $('friendCupBots').hidden = !cfg;
+  const select = $('friendBotCount');
+  if (cfg) { select.textContent = ''; for (const value of ['fill', ...Array.from({length: MAX_PLAYERS - document.querySelectorAll('#friendHost .friendroster li:not(.empty)').length + 1}, (_, i) => i)]) { const option = document.createElement('option'); option.value = String(value); option.textContent = value === 'fill' ? 'Fill to 8' : value === 0 ? 'No bots' : value + ' bots'; select.appendChild(option); } select.value = String(cfg.bots); }
   $('friendCupLevel').hidden = !cfg;
   $('friendHost').classList.toggle('cup', !!cfg);
   $('friendHost').classList.toggle('full', !!cfg && st().length > 0 && document.querySelectorAll('#friendHost .friendroster li:not(.empty)').length >= MAX_PLAYERS);
@@ -90,17 +101,27 @@ export function initFriend() {
   Promise.resolve().then(() => { if (window.__excuse) Object.assign(window.__excuse, { setRoomCup, roomCup, friendCup, friendCupStandings, friendCupOver: friendCupIsOver, PROTO }); });
   const stBox = $('friendStages');
   LEVELS.forEach((L, i) => {
-    const c = document.createElement('button'); c.type = 'button'; c.className = 'chip'; c.textContent = L.name; c.setAttribute('aria-pressed', String(i === 0));
+    let group = groups.find(g => g.city === L.city);
+    if (!group) {
+      const box = document.createElement('div'), button = document.createElement('button'), tracks = document.createElement('div');
+      box.className = 'friendStageGroup'; button.type = 'button'; button.className = 'friendCity'; tracks.className = 'friendTracks';
+      group = { city: L.city, button, tracks, indices: [] }; groups.push(group); box.append(button, tracks); stBox.appendChild(box);
+      button.addEventListener('click', () => { openCity = openCity === L.city ? null : L.city; showStages(roomCup()); });
+    }
+    group.indices.push(i);
+    const c = document.createElement('button'); c.type = 'button'; c.className = 'chip'; c.dataset.stage = String(i); c.textContent = L.name; c.setAttribute('aria-pressed', String(i === 0));
     c.addEventListener('click', () => {
       if (roomCup()) {   // Cup: tap stages in race order; tap a chosen one again to take it out
         const at = cupStages.indexOf(i);
         if (at >= 0) cupStages.splice(at, 1); else if (cupStages.length < CUP_RACES && i <= CUP_STAGE_MAX) cupStages.push(i);
         sendCup(); return;
       }
-      stage = i; setRoomLevel(i); st().forEach((o, j) => o.setAttribute('aria-pressed', String(j === i)));
+      stage = i; setRoomLevel(i); showStages(null);
     });
-    stBox.appendChild(c);
+    group.tracks.appendChild(c);
   });
+  showStages(null);
+  $('friendBotCount').addEventListener('change', e => { const cfg = roomCup(); if (cfg) setRoomCup({ ...cfg, bots: e.target.value === 'fill' ? 'fill' : Number(e.target.value) }); });
   duelUi.status = (t, live) => { $('friendStatus').textContent = t; $('liveStatus').textContent = t; $('liveStatus').hidden = !live || !t; };
   duelUi.roster = players => {
     if (players.length) showRoster(players);

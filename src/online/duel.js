@@ -68,7 +68,7 @@ const cupLooks = {};      // id -> look, kept so a bot taking over from a player
 const RACE_SEED = /:race\d+$/;
 // Room protocol version. Race layouts and the start handshake must be identical on every phone, so phones on different builds
 // refuse each other instead of racing on different crowds. Raise it whenever a change would make layouts or rules differ.
-export const PROTO = 9;
+export const PROTO = 10;
 let myId = '', hostId = '', roster = [];        // roster: [{ id, name, look }], the host first, me included
 let inRoster = false, raced = false, hostGone = false, lastStatus = '', joinWaiter = null;
 let wantMe = false; const wants = new Set();    // rematch: everyone still in the room has to ask
@@ -163,8 +163,9 @@ function closeRoom() {
 const lobbyMembers = () => roster.map(p => ({ id: p.id, protocol: p.protocol || 0 }));
 const sendRoster = () => {
   if (!room) return;
+  if (cupCfg && Number.isInteger(cupCfg.bots)) cupCfg.bots = Math.min(cupCfg.bots, MAX_PLAYERS - roster.length);
   ensureLobby(); lobby.setPlayers(lobbyMembers(), levelIdx, raceElim);
-  room.send('roster', { proto: PROTO, elim: raceElim, id: myId, session: sessionId, rev: ++rosterRev, level: levelIdx, players: roster, lobby: lobby.snapshot(), ...(cupCfg ? { cupCfg: { stages: cupCfg.stages, difficulty: cupCfg.difficulty } } : {}) });
+  room.send('roster', { proto: PROTO, elim: raceElim, id: myId, session: sessionId, rev: ++rosterRev, level: levelIdx, players: roster, lobby: lobby.snapshot(), ...(cupCfg ? { cupCfg: { stages: cupCfg.stages, difficulty: cupCfg.difficulty, bots: cupCfg.bots } } : {}) });
 };
 const changed = () => {
   ui.roster(lobbyPlayers());
@@ -228,11 +229,13 @@ function publishOutcomes() {
 }
 // Is this phone up to date for the next race? A phone that missed the last results refuses, so the start is cancelled rather than half-run.
 const cupCanRun = () => !!cup && !friendCupOver(cup) && !hostGone && !started.has(raceSeed(cup));
-const validCup = c => !!c && !!newFriendCup({ seed: 'check', stages: c.stages, difficulty: c.difficulty, players: [{ id: 'a', name: 'a' }, { id: 'b', name: 'b' }], rand: () => 0 });
+const validCup = c => !!c && (c.bots === 'fill' || Number.isInteger(c.bots) && c.bots >= 0 && c.bots <= MAX_PLAYERS - roster.length) && !!newFriendCup({ seed: 'check', stages: c.stages, difficulty: c.difficulty, players: [{ id: 'a', name: 'a' }, { id: 'b', name: 'b' }], rand: () => 0 });
 // What the room says about the Cup being set up. The host sees the stages on the buttons; guests need them spelled out.
 function cupSummary() {
   const diff = DIFFICULTIES[cupCfg.difficulty], bots = diff ? ' · ' + diff.name + ' bots' : '';
-  return role === 'host' || !validCup(cupCfg) ? 'Friend Cup' + bots : 'Friend Cup: ' + cupCfg.stages.map(s => LEVELS[s].name).join(', ') + bots;
+  const count = cupCfg.bots === 'fill' ? MAX_PLAYERS - roster.length : cupCfg.bots;
+  const detail = ' ? ' + roster.length + ' players, ' + (count ? count + ' bots' : 'no bots');
+  return (role === 'host' || !validCup(cupCfg) ? 'Friend Cup' + bots : 'Friend Cup: ' + cupCfg.stages.map(s => LEVELS[s].name).join(', ') + bots) + detail;
 }
 const leftIds = c => c.racers.filter(r => r.left).map(r => r.id);
 // The whole Cup so far. The setup goes as first agreed: cleanSetup refuses racers marked as left, so they travel in their own list.
@@ -457,7 +460,7 @@ function onMessage(ev, data) {
     raceElim = data.elim === true;
     if (!raced) {
       const c = data.cupCfg;
-      cupCfg = c ? { stages: Array.isArray(c.stages) ? c.stages.slice(0, 8) : [], difficulty: c.difficulty } : null;
+      cupCfg = c ? { stages: Array.isArray(c.stages) ? c.stages.slice(0, 8) : [], difficulty: c.difficulty, bots: c.bots === undefined ? 'fill' : c.bots } : null;
       if (!cupCfg) cup = null; else rememberLooks();
     }
     for (const id of [...wants]) if (!roster.some(p => p.id === id)) wants.delete(id);
@@ -707,16 +710,17 @@ export const roomElim = () => raceElim;
 export function setRoomElim(v) { if (role !== 'host' || !room || raced) return; cupCfg = null; cup = null; raceElim = !!v; sendRoster(); changed(); }
 // Format Cup: the host's choice of stages and bot difficulty, or null to leave the format. Guests see it on the roster and must ready again after any change.
 export function setRoomCup(cfg) {
+  if (cfg && cfg.bots !== undefined && cfg.bots !== 'fill' && (!Number.isInteger(cfg.bots) || cfg.bots < 0 || cfg.bots > MAX_PLAYERS - roster.length)) return false;
   if (role !== 'host' || !room || raced || (!cfg && !cupCfg)) return false;
   cup = null;
-  cupCfg = cfg ? { stages: Array.isArray(cfg.stages) ? cfg.stages.slice(0, 8) : [], difficulty: cfg.difficulty } : null;
+  cupCfg = cfg ? { stages: Array.isArray(cfg.stages) ? cfg.stages.slice(0, 8) : [], difficulty: cfg.difficulty, bots: cfg.bots === undefined ? 'fill' : cfg.bots } : null;
   if (cupCfg) { raceElim = false; if (validCup(cupCfg)) levelIdx = cupCfg.stages[0]; }
   ensureLobby();
   lobby.setPlayers(lobbyMembers(), -1, raceElim);   // the start code clears Ready when the level changes, so step away and back
   sendRoster(); changed();
   return true;
 }
-export const roomCup = () => (cupCfg ? { stages: [...cupCfg.stages], difficulty: cupCfg.difficulty, valid: validCup(cupCfg) } : null);
+export const roomCup = () => (cupCfg ? { stages: [...cupCfg.stages], difficulty: cupCfg.difficulty, bots: cupCfg.bots, botCount: cupCfg.bots === 'fill' ? MAX_PLAYERS - roster.length : cupCfg.bots, valid: validCup(cupCfg) } : null);
 export const friendCup = () => cup;
 export const friendCupStandings = () => (cup ? cupTable(cup) : []);
 export const friendCupIsOver = () => !!cup && friendCupOver(cup);
@@ -755,7 +759,7 @@ export function hostStart() {
   if (!lobby.setReady(true)) return;
   if (cupCfg) {
     rememberLooks();
-    cup = newFriendCup({ seed: code + '-' + newId(), stages: cupCfg.stages, difficulty: cupCfg.difficulty, players: roster.map(p => ({ id: p.id, name: cleanName(p.name) })), rand: Math.random });
+    cup = newFriendCup({ seed: code + '-' + newId(), stages: cupCfg.stages, difficulty: cupCfg.difficulty, bots: cupCfg.bots === 'fill' ? MAX_PLAYERS - roster.length : cupCfg.bots, players: roster.map(p => ({ id: p.id, name: cleanName(p.name) })), rand: Math.random });
     if (!cup) return;
     publishCup();   // guests refuse the start until they have this
     if (!lobby.start(raceSeed(cup))) cup = null;

@@ -78,3 +78,15 @@ test('Subway Platform is valid in a shared Friend Cup setup and race order', () 
   c = C.addRace(c, rows(c));
   assert.equal(C.currentStage(c), 5);
 });
+
+test('custom fields of 2, 5 and 8 score four complete races', () => {
+  for (const total of [2,5,8]) {
+    let c = C.newFriendCup({ ...setup(), bots: total - 2 });
+    assert.equal(c.racers.length, total);
+    assert.equal(C.cleanSetup(c).racers.length, total);
+    for(let i=0;i<4;i++) c=C.addRace(c,rows(c));
+    assert.equal(C.friendCupOver(c),true);
+    assert.deepEqual(C.standings(c).map(r=>r.points),[40,32,24,20,16,12,8,4].slice(0,total));
+  }
+  for (const bots of [-1,7,1.5,'2',null]) assert.equal(C.newFriendCup({...setup(),bots}),null);
+});

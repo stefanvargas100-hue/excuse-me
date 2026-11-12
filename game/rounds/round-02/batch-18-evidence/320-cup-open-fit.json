@@ -1,0 +1,11 @@
+{
+  "id": "0abd9909-7fed-4fb2-bd15-4e41b3c309b4",
+  "ok": true,
+  "result": {
+    "result": "{\"controls\":[{\"id\":\"friendStart\",\"reachable\":true},{\"id\":\"friendShare\",\"reachable\":true}],\"horizontalOverflow\":0}",
+    "origin": "http://127.0.0.1:5173/"
+  },
+  "_meta": {
+    "runtimeId": "7a5121a4-5199-4579-b9c4-1119f6e9ea79"
+  }
+}
