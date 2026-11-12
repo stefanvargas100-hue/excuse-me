@@ -416,12 +416,12 @@ function showFriendCupEnd() {
   setPodium(R.board, S.me, R.bots);
   $('endEyebrow').textContent = 'Friend Cup · ' + (m.ended ? 'standings so far' : over ? 'final standings' : 'race ' + race + ' of ' + CUP_RACES + ' · ' + LV.name);
   const t = $('endTitle');
-  t.textContent = restarting ? 'Race ' + race + ' restarts' : m.ended ? 'Host left' : over ? (cp === 1 ? 'Cup winner!' : ordinal(cp) + ' in the Cup') : !mine ? 'Finished · waiting for racers' : D.dnf ? 'Did not finish' : place === 1 ? 'Race won' : ordinal(place) + ' of ' + CUP_RACERS;
+  t.textContent = restarting ? 'Race ' + race + ' restarts' : m.ended ? 'Host left' : over ? (cp === 1 ? 'Cup winner!' : ordinal(cp) + ' in the Cup') : !mine ? 'Finished · waiting for racers' : D.dnf ? 'Did not finish' : place === 1 ? 'Race won' : ordinal(place) + ' of ' + m.racers.length;
   t.className = (over && !m.ended ? cp === 1 : place === 1 && !D.dnf) ? 'good' : 'bad';
   $('endLead').hidden = true;
   $('sScoreLabel').textContent = 'Race time'; $('sScore').textContent = restarting ? '-' : D.dnf ? 'DNF' : fmtTime(D.finish ?? S.time);
   setStat('sBest', over ? 'Cup points' : 'Cup points so far', String(pts));
-  setStat('sDist', 'Race place', mine ? ordinal(place) + ' of ' + CUP_RACERS : '-');
+  setStat('sDist', 'Race place', mine ? ordinal(place) + ' of ' + m.racers.length : '-');
   showCupAward(JSON.stringify(['friend', m.seed, D.meId, C.race]), mine ? pointsFor(mine.place) : null);
   setExtraStats(false);
   const bd = $('raceBoard'); bd.hidden = false; bd.innerHTML = '';

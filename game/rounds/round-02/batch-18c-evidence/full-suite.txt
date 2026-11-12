@@ -1,0 +1,48 @@
+? tests 872
+? suites 0
+? pass 870
+? fail 2
+? cancelled 0
+? skipped 0
+? todo 0
+? duration_ms 246174.4014
+
+? failing tests:
+
+test at test\batch18-review-input.test.js:71:1
+? review: JSON object bot counts cannot throw in roster receive (472.5089ms)
+  AssertionError [ERR_ASSERTION]: Got unwanted exception: {"toString":null}
+  Actual message: "Cannot convert object to primitive value"
+      at TestContext.<anonymous> (C:\Users\stefa\orca\workspaces\Excuse-Me\lobby-review\test\batch18-review-input.test.js:75:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: TypeError: Cannot convert object to primitive value
+        at cupSummary (game-bundle.js:6497:77)
+        at changed (game-bundle.js:7357:57)
+        at Object.onMessage [as injectRoomMessage] (game-bundle.js:6824:7)
+        at C:\Users\stefa\orca\workspaces\Excuse-Me\lobby-review\test\batch18-review-input.test.js:75:39
+        at getActual (node:assert:611:5)
+        at ok.doesNotThrow (node:assert:779:32)
+        at TestContext.<anonymous> (C:\Users\stefa\orca\workspaces\Excuse-Me\lobby-review\test\batch18-review-input.test.js:75:10)
+        at async Test.run (node:internal/test_runner/test:1409:7)
+        at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3),
+    expected: undefined,
+    operator: 'doesNotThrow',
+    diff: 'simple'
+  }
+
+test at test\batch18-review-input.test.js:78:1
+? review: guest rejects setup with racers disagreeing with agreed zero bots (701.9469ms)
+  AssertionError [ERR_ASSERTION]: disagreeing setup must be rejected
+      at TestContext.<anonymous> (C:\Users\stefa\orca\workspaces\Excuse-Me\lobby-review\test\batch18-review-input.test.js:86:9)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: { seed: 'XX7Y-378sstbw', stages: [ 2, 0, 4, 1 ], difficulty: 1, racers: [ [Object], [Object], [Object] ], rounds: [], ended: false },
+    expected: null,
+    operator: '==',
+    diff: 'simple'
+  }

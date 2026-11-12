@@ -1,0 +1,11 @@
+{
+  "id": "2bc313d8-2ccf-40cf-aa3b-717566ddbbed",
+  "ok": true,
+  "result": {
+    "result": "{\"groups\":[\"Airport: Terminal B\",\"New York\",\"Tokyo\"],\"players\":8}",
+    "origin": "http://127.0.0.1:5173/"
+  },
+  "_meta": {
+    "runtimeId": "7a5121a4-5199-4579-b9c4-1119f6e9ea79"
+  }
+}

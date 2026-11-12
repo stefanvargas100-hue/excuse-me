@@ -1,0 +1,289 @@
+{
+  "checks": [
+    {
+      "width": 320,
+      "mode": "race-open",
+      "state": {
+        "groups": [
+          "Airport: Terminal B",
+          "New York",
+          "Tokyo"
+        ],
+        "players": 8
+      },
+      "fit": {
+        "controls": [
+          {
+            "id": "friendStart",
+            "reachable": true
+          },
+          {
+            "id": "friendShare",
+            "reachable": true
+          }
+        ],
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "width": 320,
+      "mode": "race-collapsed",
+      "state": {
+        "groups": [
+          "Airport: Terminal B",
+          "New York",
+          "Tokyo"
+        ],
+        "players": 8
+      },
+      "fit": {
+        "controls": [
+          {
+            "id": "friendStart",
+            "reachable": true
+          },
+          {
+            "id": "friendShare",
+            "reachable": true
+          }
+        ],
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "width": 320,
+      "mode": "cup-open",
+      "state": {
+        "groups": [
+          "Airport: 2. Terminal B",
+          "New York: 4. Fifth Avenue, 3. Brooklyn Bridge",
+          "Tokyo: 1. Shibuya Crossing"
+        ],
+        "picks": [
+          2,
+          0,
+          4,
+          1
+        ],
+        "players": 8
+      },
+      "fit": {
+        "controls": [
+          {
+            "id": "friendStart",
+            "reachable": true
+          },
+          {
+            "id": "friendShare",
+            "reachable": true
+          }
+        ],
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "width": 320,
+      "mode": "cup-collapsed",
+      "state": {
+        "groups": [
+          "Airport: 2. Terminal B",
+          "New York: 4. Fifth Avenue, 3. Brooklyn Bridge",
+          "Tokyo: 1. Shibuya Crossing"
+        ],
+        "picks": [
+          2,
+          0,
+          4,
+          1
+        ],
+        "players": 8
+      },
+      "fit": {
+        "controls": [
+          {
+            "id": "friendStart",
+            "reachable": true
+          },
+          {
+            "id": "friendShare",
+            "reachable": true
+          }
+        ],
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "width": 320,
+      "mode": "guest",
+      "state": {
+        "groups": [
+          "Airport: 2. Terminal B",
+          "New York: 4. Fifth Avenue, 3. Brooklyn Bridge",
+          "Tokyo: 1. Shibuya Crossing"
+        ],
+        "picks": [
+          2,
+          0,
+          4,
+          1
+        ],
+        "players": 8
+      },
+      "fit": {
+        "controls": [
+          {
+            "id": "friendReady",
+            "reachable": false
+          }
+        ],
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "width": 390,
+      "mode": "race-open",
+      "state": {
+        "groups": [
+          "Airport: Terminal B",
+          "New York",
+          "Tokyo"
+        ],
+        "players": 8
+      },
+      "fit": {
+        "controls": [
+          {
+            "id": "friendStart",
+            "reachable": true
+          },
+          {
+            "id": "friendShare",
+            "reachable": true
+          }
+        ],
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "width": 390,
+      "mode": "race-collapsed",
+      "state": {
+        "groups": [
+          "Airport: Terminal B",
+          "New York",
+          "Tokyo"
+        ],
+        "players": 8
+      },
+      "fit": {
+        "controls": [
+          {
+            "id": "friendStart",
+            "reachable": true
+          },
+          {
+            "id": "friendShare",
+            "reachable": true
+          }
+        ],
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "width": 390,
+      "mode": "cup-open",
+      "state": {
+        "groups": [
+          "Airport: 2. Terminal B",
+          "New York: 4. Fifth Avenue, 3. Brooklyn Bridge",
+          "Tokyo: 1. Shibuya Crossing"
+        ],
+        "picks": [
+          2,
+          0,
+          4,
+          1
+        ],
+        "players": 8
+      },
+      "fit": {
+        "controls": [
+          {
+            "id": "friendStart",
+            "reachable": true
+          },
+          {
+            "id": "friendShare",
+            "reachable": true
+          }
+        ],
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "width": 390,
+      "mode": "cup-collapsed",
+      "state": {
+        "groups": [
+          "Airport: 2. Terminal B",
+          "New York: 4. Fifth Avenue, 3. Brooklyn Bridge",
+          "Tokyo: 1. Shibuya Crossing"
+        ],
+        "picks": [
+          2,
+          0,
+          4,
+          1
+        ],
+        "players": 8
+      },
+      "fit": {
+        "controls": [
+          {
+            "id": "friendStart",
+            "reachable": true
+          },
+          {
+            "id": "friendShare",
+            "reachable": true
+          }
+        ],
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "width": 390,
+      "mode": "guest",
+      "state": {
+        "groups": [
+          "Airport: 2. Terminal B",
+          "New York: 4. Fifth Avenue, 3. Brooklyn Bridge",
+          "Tokyo: 1. Shibuya Crossing"
+        ],
+        "picks": [
+          2,
+          0,
+          4,
+          1
+        ],
+        "players": 8
+      },
+      "fit": {
+        "controls": [
+          {
+            "id": "friendReady",
+            "reachable": false
+          }
+        ],
+        "horizontalOverflow": 0
+      }
+    }
+  ],
+  "comparedTo": "batch-10c-evidence/fit-comparison.json",
+  "baselineFriendProblems": [
+    "390x844 | play | button.lvl \"CompetitiveRace friendsLive, 2\" | vertical overflow (12.00px)",
+    "1280x800 | play | button.lvl \"CompetitiveRace friendsLive, 2\" | vertical overflow (10.00px)"
+  ],
+  "introducedProblemsObserved": [],
+  "incomplete": "Guest screenshots are DOM fixtures retaining host role; Ready reachability failed to verify after two attempts. Host Start/invite reachability passed in all eight host states; all ten states have zero horizontal overflow. Screenshots use simulated players, not real network joins."
+}

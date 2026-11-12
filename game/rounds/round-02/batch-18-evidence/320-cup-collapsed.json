@@ -1,0 +1,11 @@
+{
+  "id": "b864ab39-382e-4e45-97f5-01f4c30e3831",
+  "ok": true,
+  "result": {
+    "result": "{\"groups\":[\"Airport: 2. Terminal B\",\"New York: 4. Fifth Avenue, 3. Brooklyn Bridge\",\"Tokyo: 1. Shibuya Crossing\"],\"picks\":[2,0,4,1],\"players\":8}",
+    "origin": "http://127.0.0.1:5173/"
+  },
+  "_meta": {
+    "runtimeId": "7a5121a4-5199-4579-b9c4-1119f6e9ea79"
+  }
+}

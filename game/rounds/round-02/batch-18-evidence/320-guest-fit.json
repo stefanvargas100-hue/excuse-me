@@ -1,0 +1,11 @@
+{
+  "id": "df7f4628-eee1-4b36-8c4d-d9c829d13813",
+  "ok": true,
+  "result": {
+    "result": "{\"controls\":[{\"id\":\"friendReady\",\"reachable\":false}],\"horizontalOverflow\":0}",
+    "origin": "http://127.0.0.1:5173/"
+  },
+  "_meta": {
+    "runtimeId": "7a5121a4-5199-4579-b9c4-1119f6e9ea79"
+  }
+}

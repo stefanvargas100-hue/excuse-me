@@ -1,0 +1,10 @@
+PASS — Outcome: done; a053399 fixes both S2 findings; passing gate tests committed as 9308f2b on stefanvargas100-hue/lobby-review.
+Regressions: original batch18-review-input.test.js byte-identical to 89a841f and 7/7 pass; received object/array/float/8/negative/string/null bots become inert null (duel.js:233,472), invalid config cannot authorize setup (:265).
+Q1: explicit/fill four-race tests in batch18-review-agreed.test.js pass after guest departure and host handover; envelope restores original human flags (:244), agreement retained while raced (:470), so later updates validate original setup count (:266).
+Q2: reconnect preserves cupCfg (:644), and simulated reconnected guest accepts updated results; next-Cup-race/rematch gate retains agreement. A second Cup in the same room is already disallowed by raced (:725); a new room resets config (:154,662), then receives fresh agreement (:473).
+Q3: builder join/leave tests pass for stale-roster setup acceptance and honest full starts; changed counts either validate or prevent guest prepare (duel.js:186; start-sync.js:85), with existing handshake cancellation (:169) preventing release without confirmations.
+Compatibility: fill four-race/host-transfer tests pass; PROTO remains 10, START_PROTOCOL remains 2; fix changes only duel.js and tests, with no UI/style change.
+Checks: focused existing/input 62/62 and new gate 3/3 pass; full suite 882/882 pass; npm.cmd run build and git diff --check pass.
+S3 verification gap (owner lead, nonblocking per batch-18e-reply-reconnect): batch-18e-evidence/reconnect.cjs:76 requests next race immediately after reconnect and gets won, expected play, on BOTH develop src and branch; no new gate regression established (start-sync.js:178 clears clock samples).
+Not checked: real phones/networks; resumed next-race behavior after clock resync remains lead-owned; no further fixture work per reply. Evidence: reconnect-{develop,branch}.txt, identical assertion failure, source restored.
+Off plan: none. Trouble: reconnect fixture needed baseline comparison after two failed attempts; passing checks kept in suite, inherited failing probe retained only in evidence.
