@@ -1,9 +1,9 @@
-Outcome:     partial (implementation complete; guest Ready browser evidence incomplete)
-Branch:      stefanvargas100-hue/lobby-groups; implementation c913da2
-Changed:     City accordion groups, ordered collapsed picks, Cup bot count/fill/clamping, variable fields and placing, PROTO 10.
-Checks:      New 2/5/8-racer test failed first then passed; 53 focused Cup + 5 compatibility checks pass; full 859/859 pass; build and git diff --check pass.
-Evidence:    batch-18-evidence/ has 320x568 and 390x844 host race/Cup open/collapsed screenshots with eight long names; host Start/invite scroll reachability passes; no introduced host fit problems versus batch-10c.
-Not checked: Guest screenshots are DOM roster fixtures retaining host role; Ready reachability unverified; grouping lacks a failed-first automated test; independent review and real phones/network/reconnect/host transfer remain.
-Fairness:    All Friend Cup sizes retain existing no-record/no-ghost saving policy; eight-racer identity/data unchanged; bot changes clear Ready through existing Cup-setting reset.
-Off plan:    none
-Trouble:     Full suite first exposed protocol literals (fixed); guest fixture heartbeat/host-role visibility defeated two Ready-fit attempts, so stopped per studio rules.
+Outcome:     done (batch 18b review fixes and single guest browser attempt complete)
+Branch:      stefanvargas100-hue/lobby-groups; implementation 961bd91
+Changed:     Fixed summary separator, preserved picker options across refreshes using roster count, hid Cup-only empty groups, restored full-Cup invite rule, added tested grouping helper.
+Checks:      Six new grouping/picker/guest-summary checks failed first then passed; full 865/865 pass; npm.cmd run build and git diff --check pass.
+Evidence:    batch-18-evidence/18b-real-guest-ready-{320,390}.png and 18b-guest-result.json: real guest pages via batch-10c local relay, 3 players/2 bots, enabled Ready within viewport and clicked successfully on both sizes in one attempt.
+Not checked: Independent review; real phones, real network joins/leaves, reconnect and host transfer with custom bots.
+Fairness:    Existing no-record/no-ghost policy unchanged for all Friend Cups; eight-racer identity/data unchanged; bot settings retain existing Ready reset.
+Off plan:    none (new pure helper explicitly permitted by 18b brief)
+Trouble:     Earlier host-role guest fixtures are superseded by successful multi-page guest evidence; no further browser attempts needed.
