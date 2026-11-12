@@ -1,4 +1,4 @@
-﻿<!-- Lead checks before sending, each from a real past mistake:
+<!-- Lead checks before sending, each from a real past mistake:
   1. Rules: does anything here conflict with AGENTS.md, this plan's other lines, or Orca's worker instructions?
   2. Numbers: did I measure each target against what it really has to fit, not just the first limit I thought of? If a target comes from my own trial, is the trial script committed or its method written out, so the worker can reproduce my baseline first?
   3. Claims: did I check every file, flag and fact I name, instead of assuming it?
