@@ -56,4 +56,3 @@ try {
  }
  writeFileSync(evidence+'/capture.json',JSON.stringify(results,null,2)); console.log(JSON.stringify(results));
 } finally {if(browser)await browser.close();await server.close();}
-
