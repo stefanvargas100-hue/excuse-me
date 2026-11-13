@@ -91,4 +91,6 @@ async function readyPlayers(games) {
   }
   for (let i = 0; i < 80; i++) await Promise.resolve();
 }
-module.exports = { load, stub, readyPlayers };
+// the wire protocol number, read from the game's own source so a bump needs no test edits
+const PROTO = +/export const PROTO = (\d+)/.exec(require('fs').readFileSync(path.join(__dirname, '../src/online/duel.js'), 'utf8'))[1];
+module.exports = { load, stub, readyPlayers, PROTO };
