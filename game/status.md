@@ -1,5 +1,32 @@
 # Status
 
+## Lead handoff: Cups being completed - 2026-11-12
+
+**Updated:** 2026-11-12, by Claude Opus (lead), at a context handover (past 100K). This section is current; the section below is today's history.
+**Lead branch:** develop, local only, many commits ahead of origin (not pushed: a push changes the playtest build). Batches 19, 19c, 20 and 21 are merged; lead suite 944 pass, 0 fail, 2 todo (expected S4 probes); build and diff check pass.
+**Main:** unchanged, unapproved.
+
+### Now
+- Merged today: 19 preset Friend Cups by city (PROTO 11, `FRIEND_CUP_RULES` 3), 19c independent review PASS, 20 tutorial keeps build movement, 21 Tsukiji Outer Market (7) and Skytree Sky Walk (8), PROTO 12. Tokyo Friend Cup is now 4 races. Lead fixes on develop: fit tool uses presets (`tools/fit-check.mjs`), 19c review tests follow the 4-race Tokyo preset.
+- **Running:** batch 22 spectating (Codex, workspace spectating, dispatch ctx_8025be687314; high risk, needs an independent Claude review before merge, which must wait until batch 23 finishes because only one Claude worker runs at a time). Batch 23 Airport stages 9-11 plus the permanent "tests read PROTO" fix (Claude Sonnet, workspace airport-stages, dispatch ctx_6f99c3d184c8). Both based on develop at 64d4705; both may touch `game.js`/`render.js`; batch 23 bumps PROTO to 13, batch 22 must not change it.
+- **Queue after those:** 24 host-selected bots in plain friend races and Elimination (Director decision), 25 solo Tokyo and Airport Cups next to solo NYC Cup (`src/sim/cup.js`, own record identities), 26 bounded mid-Cup reconnect investigation (S3 below). Plans for 24-26 not written yet. Fable visual pass on hold until the Director gives visual direction.
+- **Codex budget:** weekly 89% used at 19:20 on 2026-11-12, resets 2026-11-16 14:11 MST. Batch 21 cost about 3%. Prefer Claude Sonnet for 24/25 if Codex runs out; check `~/.codex/sessions` before starting Codex.
+
+### Next action
+Start a fresh lead session. Wait for workers. On batch 23: review diff and screenshots (Skytree came out very washed out under the neonpop glow; check the Airport `space` look), merge, rerun suite, then start the batch 22 Claude review. Then plan 24-26.
+
+### Cleanup owed
+- `tokyo-stages` workspace: branch merged and deleted from Orca but the folder could not be removed because a `node_modules` native file is locked (probably the retained worker terminal). Remove it once that terminal is closed. Branch `stefanvargas100-hue/tokyo-stages` and stale `stefanvargas100-hue/cup-presets-review` still listed locally: both merged.
+- belt-check, visual-pass and art-styles workspaces preserved as before.
+
+### Open bugs
+- S3, visual queue: at 320x568 with 8 players the host Friend Cup status overflows (`game/todo.md`, top entry).
+- S3, owner lead: mid-Cup reconnect "won" instead of "play" (batch 26).
+- S4 notes from 19c in `reports/batch-19c-review.md` (two `todo` tests mark them).
+
+### Waiting on the Director
+Phone playtest once develop is pushed: preset Cups, tutorial feel, Tsukiji and Skytree. Visual direction for the art-worlds redo.
+
 ## Director decisions received; batches 19 and 20 started - 2026-11-12
 
 **Updated:** 2026-11-12, by Claude (lead). Supersedes "Next action" and "Waiting on the Director" below.
