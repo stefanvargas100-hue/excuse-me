@@ -48,7 +48,7 @@ export async function simulate({ humans = 4, hostLeaves = false, raceSeconds = 3
 
   const code = await games[0].hostRoom(0);
   for (const g of games.slice(1)) { if (!await g.joinRoom(code)) throw Error('a phone could not join'); await settle(); }
-  games[0].setRoomCup({ stages: [0, 1, 2, 3], difficulty: 1 }); await settle();
+  games[0].setRoomCup({ stages: [1, 3, 4, 5], difficulty: 1 }); await settle();
   await readyPlayers(games);
   games[0].hostStart(); await settle(); await settle();
   let host = games[0];

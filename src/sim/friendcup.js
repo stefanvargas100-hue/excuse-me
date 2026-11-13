@@ -1,7 +1,7 @@
 /* Pure Friend Cup rules. Setup is shareable JSON; rounds contain host-decided results. */
 import { pointsFor, rankRows } from './cup.js';
 import { LEVELS } from '../config/levels.js';
-import { cupPresets } from '../ui/friend-groups.js';
+import { cupPresets } from './cup-presets.js';
 import { BOT_NAMES } from '../config/names.js';
 
 export const FRIEND_CUP_RULES = 3, CUP_RACES = 4, CUP_RACERS = 8, BOT_LEVELS = 3;
