@@ -4,7 +4,7 @@
 
 **Updated:** 2026-11-12, by Claude (lead). Supersedes "Next action" and "Waiting on the Director" below.
 - Director playtested 15186e9: works well. Decisions recorded at the top of `game/decisions.md`: preset Cups by city group (every group track once; NY 4, Tokyo 2, no Airport Cup yet); auto-spectate on finish with player switching and "stop watching" back to own results while staying in the room; host-selected bots in all friend modes, bots fill online matchmaking when it exists; dislikes the art-worlds visual update, adjustment later, Fable visual pass on hold.
-- Running: batch 19 Cup presets (Codex, high risk, needs independent review) and batch 20 tutorial movement parity (Claude Sonnet). Both edit `src/sim/game.js` in disjoint lines (19: lines 417/506; 20: tutorial setup/handover).
+- Running: batch 19 Cup presets (Codex, high risk, needs independent review; workspace cup-presets, dispatch ctx_5518cc154e8c) and batch 20 tutorial movement parity (Claude Sonnet; workspace tutorial-movement, dispatch ctx_b9c2f635b9b9). Both edit `src/sim/game.js` in disjoint lines (19: lines 417/506; 20: tutorial setup/handover).
 - Queued in order, each after the previous merges (all share `duel.js`): batch 21 finish spectating (needs game.js free, so after 20), batch 22 host-selected bots in plain friend races and Elimination, batch 23 bounded mid-Cup reconnect investigation (S3 below).
 - Codex weekly limit was 85% used on 2026-11-11 (resets 2026-11-16 14:11 MST); online batches plus reviews may exhaust it.
 
