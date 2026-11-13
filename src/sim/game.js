@@ -117,7 +117,7 @@ export function tick(dt) {
     if (S.kind === 'classic' && !S.tut && !S.moveStats) S.moveStats = effects(statsOf({ ...LOOK, ...S.run.outfit }));
     const pickupZ0 = S.pz, pickupX0 = S.px;
     movePlayer(dt);
-    if (S.moveStats) { stepPowerups(S, dt); extendClassicPickups(); collectPowerups(S, S.px, S.pz, pickupZ0, true, pickupX0); }
+    if (S.moveStats) { stepPowerups(S, dt); if (!S.tut) { extendClassicPickups(); collectPowerups(S, S.px, S.pz, pickupZ0, true, pickupX0); } }   // pickups wait for the tutorial handover
     S.me.x = S.px; S.me.z = S.pz;
     if (S.coach) coachTick(dt);
     if (S.tut) {
@@ -534,7 +534,7 @@ export function start(a, b, opts) {
   const hb = $('hud').getBoundingClientRect ? $('hud').getBoundingClientRect() : null;
   setRadarTop(hb && hb.bottom ? hb.bottom + 6 : 120);
   if (LV.id === 'shibuya') { S.waveT = 1.5; }
-  if (mode === 'classic' && store.get('excuseme_tut', '0') !== '1') { S.moveStats = null; S.pickups = []; S.pickupNext = 0; beginTut(); }
+  if (mode === 'classic' && store.get('excuseme_tut', '0') !== '1') { S.pickups = []; S.pickupNext = 0; beginTut(); }   // build effects stay on; only pickups wait for handover
   beginCoach(mode);
   Music.start(LV.music); Music.ambStart(LV.id);
 }

@@ -4,6 +4,7 @@ import { rnd } from '../config/util.js';
 import { $ } from '../dom.js';
 import { buzz, store } from '../save/store.js';
 import { genChunk, mk } from './people.js';
+import { extendClassicPickups } from './powerups.js';
 import { S, goalOf } from './state.js';
 
 
@@ -49,6 +50,7 @@ export function endTut() {
   const before = new Set(S.people);
   while (S.nextChunk < S.pz + SPAWN_FAR && S.nextChunk < goalOf() - 15) { genChunk(S.nextChunk); S.nextChunk += 4; }
   for (const p of S.people) if (!before.has(p) && !p.prop && p.z - S.pz < SPAWN_FAR - 2) p.fadeT = 0;
+  extendClassicPickups();   // pickups start now, in the same run
   S.timeLeft = S.endless ? Infinity : LV.limit; S.eventT = 16; S.rivalT = 8; S.fastT = 3; S.rushT = rnd(28, 40);
   if (LV.id === 'nyc') for (const x of S.xings) if (x.z < S.pz + 20) { x.sig = x.spawned = x.walk = true; }
 }
