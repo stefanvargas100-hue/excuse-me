@@ -44,3 +44,6 @@ Director decision 2026-11-12 (`game/decisions.md`, top entry): in a friend race,
 
 ## Left for a person
 - Real phones on a real network: does following another racer feel smooth, and is it clear how to stop watching?
+
+## Lead ruling during the batch (2026-11-12)
+Approved: `stepRemotes(dt, sampleOnly=false)` in `src/sim/race.js`; sampleOnly skips `duelTick` and any sending or race-state change. A finished phone must send exactly the same messages as today; a test compares messages sent by a finished guest and host with spectating on and off.
