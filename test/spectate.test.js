@@ -1,7 +1,7 @@
 // Friend Cup in a room: host setup, host-run bots, results that heal, players and hosts leaving. Simulated connection only. node --test
 const test = require('node:test');
 const assert = require('node:assert');
-const { load, readyPlayers } = require('./harness.js');
+const { load, readyPlayers, PROTO } = require('./harness.js');
 
 const DT = 1 / 30, STAGES = [1, 3, 4, 5], POINTS = [10, 8, 6, 5, 4, 3, 2, 1];
 const settle = () => new Promise(r => setTimeout(r, 5));
@@ -133,7 +133,7 @@ test('finished host and guest emit identical traffic while watching and stopped'
 
 test('knocked out friend watches while the race continues',async()=>{
  const L=await room(3),g=L.games[1]; L.host.setRoomElim(true); await settle(); await readyPlayers(L.games); L.host.hostStart(); await settle(); quiet(L.games);
- g.injectRoomMessage('elim',{proto:12,id:L.ids[0],race:g.S.duel.seed,rev:1,out:[L.ids[1]]}); g.tick(DT);
+ g.injectRoomMessage('elim',{proto: PROTO,id:L.ids[0],race:g.S.duel.seed,rev:1,out:[L.ids[1]]}); g.tick(DT);
  assert.strictEqual(g.S.race.elim.meOut,true); assert.ok(g.S.race.spectate.target);
 });
 test('Cup next race starts while guest is still watching',async()=>{

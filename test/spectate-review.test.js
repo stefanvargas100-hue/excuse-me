@@ -2,7 +2,7 @@
 // stale pop-ups fade, handover and rematch leave the spectate bar in a sane state. Simulated connection only. node --test test/spectate-review.test.js
 const test = require('node:test');
 const assert = require('node:assert');
-const { load, readyPlayers } = require('./harness.js');
+const { load, readyPlayers, PROTO } = require('./harness.js');
 
 const DT = 1 / 30, settle = () => new Promise(r => setTimeout(r, 5)), J = x => JSON.stringify(x);
 function hub() {
@@ -55,13 +55,13 @@ test('finished phone in a plain friend race sends nothing more, watching or stop
 
 test('knocked-out guest in Elimination watches only racers still in, sends nothing, keeps its result', async () => {
   const { H, games, ids } = await room(3, 'elim'), g = games[1];
-  for (const o of games) o.injectRoomMessage('elim', { proto: 12, id: ids[0], race: games[0].S.duel.seed, rev: 1, out: [ids[1]] });
+  for (const o of games) o.injectRoomMessage('elim', { proto: PROTO, id: ids[0], race: games[0].S.duel.seed, rev: 1, out: [ids[1]] });
   tickAll(games, 3); await settle();
   assert.strictEqual(g.S.race.elim.meOut, true);
   const first = g.S.race.spectate.target; assert.ok(first);
   const place = g.S.race.place;
   // the next knock-out takes the host's racer out of the field: it can no longer be a target
-  for (const o of games) o.injectRoomMessage('elim', { proto: 12, id: ids[0], race: games[0].S.duel.seed, rev: 2, out: [ids[1], first.peerId] });
+  for (const o of games) o.injectRoomMessage('elim', { proto: PROTO, id: ids[0], race: games[0].S.duel.seed, rev: 2, out: [ids[1], first.peerId] });
   tickAll(games, 3); await settle();
   assert.ok(!g.S.race.spectate.target || g.S.race.spectate.target !== first, 'an eliminated racer is not watched');
   const start = H.log.length;
