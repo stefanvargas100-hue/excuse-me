@@ -1,4 +1,4 @@
-// Batch 19c independent review: adversarial Cup preset validation and 2-race Cup behaviour. Probes only; no production code.
+// Batch 19c independent review: adversarial Cup preset validation and full-length Cup behaviour (Tokyo became 4 races in batch 21). Probes only; no production code.
 const test = require('node:test');
 const assert = require('node:assert');
 const { buildSync } = require('esbuild');
@@ -7,13 +7,13 @@ const { load, readyPlayers } = require('./harness.js');
 const mod = { exports: {} };
 new Function('module', 'exports', buildSync({ entryPoints: ['src/sim/friendcup.js'], bundle: true, format: 'cjs', write: false }).outputFiles[0].text)(mod, mod.exports);
 const C = mod.exports;
-const NY = [1, 3, 4, 5], TOKYO = [2, 6], DT = 1 / 30, J = x => JSON.stringify(x);
+const NY = [1, 3, 4, 5], TOKYO = [2, 6, 7, 8], DT = 1 / 30, J = x => JSON.stringify(x);
 const settle = () => new Promise(r => setTimeout(r, 5));
 const base = stages => ({ seed: 'abcd-efgh', stages, difficulty: 1, players: [{ id: 'p0', name: 'mia' }, { id: 'p1', name: 'leo' }], rand: () => 0 });
 
 test('sim: only the two exact presets build a Cup', () => {
   assert.ok(C.newFriendCup(base(NY)) && C.newFriendCup(base(TOKYO)));
-  const bad = [[3, 1, 4, 5], [1, 3, 5, 4], [6, 2], [0], [0, 0], [], [1, 3, 4, 5, 1], [1, 3, 4, 5, 2, 6], [2, 6, 2], [2], [6], [1, 3, 4], [2, 6, 0],
+  const bad = [[3, 1, 4, 5], [1, 3, 5, 4], [6, 2], [0], [0, 0], [], [1, 3, 4, 5, 1], [1, 3, 4, 5, 2, 6], [2, 6, 2], [2], [6], [1, 3, 4], [2, 6, 0], [2, 6],
     [1.5, 3, 4, 5], ['1', '3', '4', '5'], [1, 3, 4, '5'], [NaN, 3, 4, 5], [1, 3, 4, 5.0000001], [null, 3, 4, 5], [[1], 3, 4, 5], [true, 3, 4, 5], [2, 6.0000001], [-0, 6]];
   for (const stages of bad) assert.strictEqual(C.newFriendCup(base(stages)), null, J(stages));
   for (const stages of [null, undefined, 'abcd', 12, {}, { length: 4, 0: 1, 1: 3, 2: 4, 3: 5 }, new Set(NY)]) assert.strictEqual(C.newFriendCup(base(stages)), null);
@@ -108,8 +108,8 @@ test('room: a Cup state message for another preset, a longer one, or with too ma
   const state = J(g.friendCup());
   const bad = [
     { setup: { ...m.setup, stages: NY } },                                                        // a real preset, but not the one agreed
-    { setup: { ...m.setup, stages: [2, 6, 1, 3] } }, { setup: { ...m.setup, stages: [6, 2] } }, { setup: { ...m.setup, stages: [2] } },
-    { rounds: [...m.rounds, ...m.rounds, ...m.rounds] },                                           // 3 rounds in a 2-race Cup
+    { setup: { ...m.setup, stages: [2, 6, 1, 3] } }, { setup: { ...m.setup, stages: [6, 2] } }, { setup: { ...m.setup, stages: [2] } }, { setup: { ...m.setup, stages: [2, 6] } },
+    { rounds: Array.from({ length: TOKYO.length + 1 }, () => m.rounds[0]) },                       // one round more than the Cup has
     { rounds: Array.from({ length: 1e5 }, () => m.rounds[0]) }
   ];
   for (const b of bad) { g.injectRoomMessage('cup', { ...m, rev: rev++, ...b }); await settle(); assert.strictEqual(J(g.friendCup()), state, 'dropped ' + J(b).slice(0, 60)); }
@@ -125,15 +125,14 @@ test('room: before the race starts, a host Cup message may carry a different pre
   assert.strictEqual(g.friendCup(), null, 'a Cup different from the agreed config should be dropped');
 });
 
-test('room: a 2-race Tokyo Cup ends after race 2 with eyebrow, final standings, new-Cup button and the award intact', async () => {
+test('room: a Tokyo Cup ends after its last race with eyebrow, final standings, new-Cup button and the award intact', async () => {
   const L = await cupRoom(3, TOKYO, { load: { dom: true } }), { games } = L;
   tickAll(games, 6); await settle();
   await finishOrder(games, [1, 0, 2]); tickAll(games, 40); await settle();
-  for (const g of games) { assert.match(g.element('endEyebrow').textContent, /race 1 of 2 · /); assert.strictEqual(g.friendCupOver(), false); }
-  await next(L); tickAll(games, 6); await settle();
-  await finishOrder(games, [0, 1, 2]); tickAll(games, 40); await settle();
+  for (const g of games) { assert.match(g.element('endEyebrow').textContent, new RegExp('race 1 of ' + TOKYO.length + ' · ')); assert.strictEqual(g.friendCupOver(), false); }
+  for (let k = 2; k <= TOKYO.length; k++) { await next(L); tickAll(games, 6); await settle(); await finishOrder(games, [0, 1, 2]); tickAll(games, 40); await settle(); }
   for (const g of games) {
-    assert.strictEqual(g.friendCup().rounds.length, 2); assert.strictEqual(g.friendCupOver(), true);
+    assert.strictEqual(g.friendCup().rounds.length, TOKYO.length); assert.strictEqual(g.friendCupOver(), true);
     assert.match(g.element('endEyebrow').textContent, /final standings/i);
     assert.match(g.element('again').textContent, /new Cup/);
     const mine = idOf(g), total = g.friendCup().rounds.reduce((s, r) => s + [10, 8, 6, 5, 4, 3, 2, 1][r.find(x => x.id === mine).place - 1], 0);
@@ -143,7 +142,7 @@ test('room: a 2-race Tokyo Cup ends after race 2 with eyebrow, final standings, 
   assert.strictEqual(J(games[1].friendCupStandings().map(r => [r.id, r.points])), J(games[0].friendCupStandings().map(r => [r.id, r.points])));
 });
 
-test('room: host leaves between races of a 2-race Cup; the new host starts race 2 and the Cup ends after it', async () => {
+test('room: host leaves between races of a Tokyo Cup; the new host starts race 2 and the Cup ends after the last', async () => {
   const L = await cupRoom(3, TOKYO, { load: { dom: true } }), { games, host, guests } = L;
   tickAll(games, 6); await settle();
   await finishOrder(games, [0, 1, 2]); tickAll(games, 40); await settle();
@@ -151,28 +150,27 @@ test('room: host leaves between races of a 2-race Cup; the new host starts race 
   const [h, g] = guests;
   assert.strictEqual(h.friendCup().ended, false);
   assert.match(h.element('again').textContent, /Start race 2/);
-  h.requestRematch(); await settle(); await settle(); quiet(guests);
-  await finishOrder(guests, [0, 1]); tickAll(guests, 40); await settle();
-  for (const x of guests) { assert.strictEqual(x.friendCup().rounds.length, 2); assert.strictEqual(x.friendCupOver(), true); assert.match(x.element('endEyebrow').textContent, /final/i); }
+  for (let k = 2; k <= TOKYO.length; k++) { h.requestRematch(); await settle(); await settle(); quiet(guests); await finishOrder(guests, [0, 1]); tickAll(guests, 40); await settle(); }
+  for (const x of guests) { assert.strictEqual(x.friendCup().rounds.length, TOKYO.length); assert.strictEqual(x.friendCupOver(), true); assert.match(x.element('endEyebrow').textContent, /final/i); }
   assert.strictEqual(J(g.friendCupStandings().map(r => r.id)), J(h.friendCupStandings().map(r => r.id)));
 });
 
-test('room: host leaves mid race 2 of a 2-race Cup; the race counts and the Cup is over', async () => {
+test('room: host leaves mid last race of a Tokyo Cup; the race counts and the Cup is over', async () => {
   const L = await cupRoom(3, TOKYO, { load: { dom: true } }), { games, host, guests } = L;
   tickAll(games, 6); await settle();
-  await finishOrder(games, [0, 1, 2]); await next(L); tickAll(games, 6); await settle();
+  for (let k = 1; k < TOKYO.length; k++) { await finishOrder(games, [0, 1, 2]); await next(L); tickAll(games, 6); await settle(); }
   host.leaveRoom(); await settle();
   await finishOrder(guests, [0, 1]); tickAll(guests, 40); await settle();
-  for (const x of guests) { assert.strictEqual(x.friendCup().rounds.length, 2); assert.strictEqual(x.friendCupOver(), true); assert.notStrictEqual(x.element('endTitle').textContent, 'Host left'); }
+  for (const x of guests) { assert.strictEqual(x.friendCup().rounds.length, TOKYO.length); assert.strictEqual(x.friendCupOver(), true); assert.notStrictEqual(x.element('endTitle').textContent, 'Host left'); }
 });
 
-test('room: a late-joining/reconnecting guest accepts the full 2-race state and rejects it with the wrong PROTO', async () => {
+test('room: a late-joining/reconnecting guest accepts the full Tokyo Cup state and rejects it with the wrong PROTO', async () => {
   const L = await cupRoom(2, TOKYO, { bots: 0 }), g = L.guests[0];
-  await finishOrder(L.games, [0, 1]); await next(L); await finishOrder(L.games, [0, 1]);
+  await finishOrder(L.games, [0, 1]); for (let k = 2; k <= TOKYO.length; k++) { await next(L); await finishOrder(L.games, [0, 1]); }
   const m = L.H.log.filter(x => x.ev === 'cup').at(-1).data;
-  assert.strictEqual(m.rounds.length, 2);
+  assert.strictEqual(m.rounds.length, TOKYO.length);
   g.injectRoomMessage('cup', { ...m, rev: m.rev + 20 }); await settle();
-  assert.strictEqual(g.friendCup().rounds.length, 2); assert.strictEqual(g.friendCupOver(), true);
+  assert.strictEqual(g.friendCup().rounds.length, TOKYO.length); assert.strictEqual(g.friendCupOver(), true);
   const before = J(g.friendCup());
   g.injectRoomMessage('cup', { ...m, rev: m.rev + 30, proto: 10, rounds: [] }); await settle();
   assert.strictEqual(J(g.friendCup()), before);
@@ -194,5 +192,5 @@ test('room: bot count clamps on join and leave with a Tokyo preset, and a preset
   assert.ok(L.host.roomCup().botCount <= 6);
   await readyPlayers(L.games);
   L.host.hostStart(); await settle(); await settle();
-  for (const g of L.games) { assert.strictEqual(g.state, 'play'); assert.strictEqual(g.friendCup().stages.length, 2); }
+  for (const g of L.games) { assert.strictEqual(g.state, 'play'); assert.strictEqual(g.friendCup().stages.length, TOKYO.length); }
 });

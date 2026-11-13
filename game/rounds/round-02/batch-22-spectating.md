@@ -25,7 +25,7 @@ Director decision 2026-11-12 (`game/decisions.md`, top entry): in a friend race,
 - Pause, host handover, a guest reconnecting, rematch and the Cup award animation keep working. A Cup's next race must not wait on anyone who is spectating.
 
 ## May edit
-- `src/sim/game.js`: end-of-race flow, `tick` camera, `showEnd` / `showFriendCupEnd` entry only. Batch 21 (Tokyo stages, running) may add a few lines in the movement code; do not touch movement.
+- `src/sim/game.js`: end-of-race flow, `tick` camera, `showEnd` / `showFriendCupEnd` entry only. Batch 23 (Airport stages, running at the same time) may add a few lines in `movePlayer` and `stepBot`; do not touch movement.
 - `src/sim/race.js`: `finishRace` and the code that decides when results show
 - `src/render/camera.js`, `src/render/render.js`, `src/render/hud.js`, `src/ui/screens.js`
 - `src/online/duel.js`: only the local results/waiting state, no message formats and no `PROTO` change
