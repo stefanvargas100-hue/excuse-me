@@ -17,6 +17,7 @@ export const VARIANTS = {
   park: [['day', 5], ['autumn', 3], ['golden', 2]],
   bridge: [['day', 5], ['golden', 3], ['mist', 2]],
   subway: [['day', 1]],
+  tsukiji: [['day', 1]], skytree: [['day', 1]],
   takeshita: [['day', 5], ['golden', 2]]
 };
 

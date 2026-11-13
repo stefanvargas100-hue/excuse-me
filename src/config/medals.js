@@ -7,6 +7,8 @@ export const MEDAL_TIMES = {
   park: { bronze: 171, silver: 148, gold: 117 },
   bridge: { bronze: 202, silver: 166, gold: 144 },
   subway: { bronze: 153, silver: 138, gold: 121 },
+  tsukiji: { bronze:151, silver:113, gold:92 },
+  skytree: { bronze:186, silver:147, gold:122 },
   takeshita: { bronze: 136, silver: 118, gold: 110 }
 };
 

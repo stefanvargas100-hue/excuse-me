@@ -1,0 +1,18 @@
+{
+  "summary": "62 screen checks, 43 problems",
+  "baseline": 31,
+  "newProblems": [
+    "320x568 | friend cup setup | - | could not check: locator.click: Error: strict mode violation: locator('#friendStages button').filter({ hasText: 'Shibuya Crossing' }) resolved to 2 elements:",
+    "320x568 | friend cup setup full | - | could not check: locator.click: Error: strict mode violation: locator('#friendStages button').filter({ hasText: 'Shibuya Crossing' }) resolved to 2 elements:",
+    "320x568 | friend cup guest | - | could not check: locator.waitFor: Timeout 4000ms exceeded.",
+    "390x844 | friend cup setup | - | could not check: locator.click: Error: strict mode violation: locator('#friendStages button').filter({ hasText: 'Shibuya Crossing' }) resolved to 2 elements:",
+    "390x844 | friend cup setup full | - | could not check: locator.click: Error: strict mode violation: locator('#friendStages button').filter({ hasText: 'Shibuya Crossing' }) resolved to 2 elements:",
+    "390x844 | friend cup guest | - | could not check: locator.waitFor: Timeout 4000ms exceeded.",
+    "1280x800 | race end | #endLook \"Customize\" | control outside panel (9.81px)",
+    "1280x800 | race end | #shareBtn \"Share\" | control outside panel (9.81px)",
+    "1280x800 | race end | #menu \"Menu\" | control outside panel (9.81px)",
+    "1280x800 | friend cup setup | - | could not check: locator.click: Error: strict mode violation: locator('#friendStages button').filter({ hasText: 'Shibuya Crossing' }) resolved to 2 elements:",
+    "1280x800 | friend cup setup full | - | could not check: locator.click: Error: strict mode violation: locator('#friendStages button').filter({ hasText: 'Shibuya Crossing' }) resolved to 2 elements:",
+    "1280x800 | friend cup guest | - | could not check: locator.waitFor: Timeout 4000ms exceeded."
+  ]
+}

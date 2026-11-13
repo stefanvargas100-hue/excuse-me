@@ -1,3 +1,4 @@
+import { wetGrip } from './people.js';
 import { sideRoutes, sameRoute, updateRoute, routeSpeed } from '../config/side-routes.js';
 import { COMBO_SPEED_PER, comboLevel } from '../config/combo.js';
 export { comboLevel } from '../config/combo.js';
@@ -463,9 +464,10 @@ function stepBot(b, dt) {
   }
   if (b.clear && b.burstT <= 0 && b.bumpT <= 0 && b.energy >= 70 && R.rng() < dt * b.diff.burst) { b.energy -= 30; b.burstT = 1.2; }
   const bursting = b.burstT > 0 && b.bumpT <= 0;
+  const grip = wetGrip(b,b.x,b.z,dt);
   if (b.dashT > 0) b.vx = b.dashDir * DASH_V;
   else {
-    const want = clamp(need * 3, -LAT_MAX, LAT_MAX), acc = (Math.abs(b.vx) > LAT_MAX ? LAT_ACC * 2.2 : LAT_ACC) * b.st.lat;
+    const want = clamp(need * 3, -LAT_MAX, LAT_MAX), acc = (Math.abs(b.vx) > LAT_MAX ? LAT_ACC * 2.2 : LAT_ACC) * b.st.lat * grip;
     b.vx += clamp(want - b.vx, -acc * dt, acc * dt);
   }
   const weave = 1 - 0.14 * Math.min(1.4, Math.abs(b.vx) / LAT_MAX);

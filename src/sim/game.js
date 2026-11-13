@@ -18,7 +18,7 @@ import { account, gainXp, runXp } from '../save/level.js';
 import { buzz, store } from '../save/store.js';
 import { PERFECT_SPEED, banner } from './actions.js';
 import { collide, updMe, updPeople } from './crowd.js';
-import { genChunk, runEvent, scramble, seeded, spawnFast, spawnRival, updXings, walker } from './people.js';
+import { wetGrip, genChunk, runEvent, scramble, seeded, spawnFast, spawnRival, updXings, walker } from './people.js';
 import { STREAK_SPEED, addPop, nearMul, onPass } from './scoring.js';
 import { S, bestOf, calm, endShown, goalOf, reset, setEndShown, setNextRun, setRaceBuild, setState, state } from './state.js';
 import { startSlot } from './startgrid.js';
@@ -71,10 +71,11 @@ function movePlayer(dt) {
   const pace = ((S.race || S.moveStats) ? racePace(S.chain, S.energy) * draftMul(S) * powerMul(S) * nearMul(S) * (strip ? STRIP_SPEED : 1) : 1) * (S.perfectT > 0 ? PERFECT_SPEED : 1) * (S.streakT > 0 ? STREAK_SPEED : 1);   // shared pace: combo speeds you up, low stamina slows you down
   const target = (bursting ? BOOST : BASE) * weave * pace * (st ? st.speed : 1) * (S.bumpT > 0 ? BUMP_SPEED : 1);
   S.speed += (target - S.speed) * Math.min(1, dt * (st && target > S.speed ? st.accel : 5));
+  const grip = wetGrip(S,S.px,S.pz,dt);
   if (S.dashT > 0) S.vx = S.dashDir * DASH_V;
   else if (S.slipT > 0) S.vx *= Math.max(0, 1 - dt * 0.4);   // sliding: no grip
   else {
-    const acc = (Math.abs(S.vx) > LAT_MAX ? LAT_ACC * 2.2 : LAT_ACC) * (st ? st.lat : 1);   // shed dash speed quickly
+    const acc = (Math.abs(S.vx) > LAT_MAX ? LAT_ACC * 2.2 : LAT_ACC) * (st ? st.lat : 1) * grip;   // shed dash speed quickly
     S.vx += clamp(steer * LAT_MAX - S.vx, -acc * dt, acc * dt);
   }
   if (S.sweepDir && S.vx * S.sweepDir < 0.3) { S.sweepDir = 0; S.sweepCount = 0; }

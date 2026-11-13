@@ -39,7 +39,9 @@ export const LEVELS = [
     lane: .08, fastEvery: [4,7], rivalEvery: [12,18], base: 1, starScore: 15000,
     timerLabel: 'Meet-up starts', timeFail: 'Your friends left before you arrived.', events: ['selfie', 'tour', 'queue'],
     blurb: 'Harajuku shops and sudden stops. Watch shoppers raise their phones; the quiet back alley takes longer.',
-    music: { bpm: 158, prog: [[66,69,73],[62,66,69],[57,61,64],[64,68,71]] } }
+    music: { bpm: 158, prog: [[66,69,73],[62,66,69],[57,61,64],[64,68,71]] } },
+  { id:'tsukiji', city:'Tokyo', name:'Tsukiji Outer Market', goal:420, goalText:'MARKET EXIT', half:4, keep:-1, fog:'#d2dedc', lane:.08, fastEvery:[5,8], rivalEvery:[12,18], base:1, starScore:16000, timerLabel:'Market closes', timeFail:'The market closed.', events:['turret'], blurb:'Delivery trucks and wet concrete between market stalls.', music:{bpm:158,prog:[[66,69,73],[62,66,69],[57,61,64],[64,68,71]]} },
+  { id:'skytree', city:'Tokyo', name:'Skytree Sky Walk', goal:600, goalText:'TEMBO GALLERIA', half:8, keep:-1, fog:'#cce5f1', lane:.08, fastEvery:[4,7], rivalEvery:[12,18], base:0, starScore:17000, timerLabel:'Viewing ends', timeFail:'The viewing deck closed.', events:['viewpoint'], blurb:'Fast walkers and window crowds above the city.', music:{bpm:158,prog:[[66,69,73],[62,66,69],[57,61,64],[64,68,71]]} }
 ];
 
 for (const L of LEVELS) L.limit = Math.round(L.goal / 3.0 * 1.07 + 6);

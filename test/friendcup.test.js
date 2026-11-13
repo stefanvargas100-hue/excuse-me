@@ -92,7 +92,7 @@ test('custom fields of 2, 5 and 8 score four complete races', () => {
 });
 
 test('only exact location presets are accepted and finish at their own length',()=>{
- for(const stages of [[1,3,4,5],[2,6]]) for(const bots of [0,6]) {
+ for(const stages of [[1,3,4,5],[2,6,7,8]]) for(const bots of [0,6]) {
  let c=C.newFriendCup({...setup(),stages,bots});assert.ok(c);
  for(let i=0;i<stages.length;i++){assert.equal(C.friendCupOver(c),false);assert.equal(C.currentStage(c),stages[i]);c=C.addRace(c,rows(c));}
  assert.equal(C.friendCupOver(c),true);assert.equal(C.currentStage(c),null);assert.equal(C.standings(c)[0].points,10*stages.length);

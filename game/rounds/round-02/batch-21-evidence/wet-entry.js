@@ -1,0 +1,1 @@
+import '../../../../src/main.js';import {wetGrip} from '../../../../src/sim/people.js';Object.assign(window.__excuse,{wetGrip});
