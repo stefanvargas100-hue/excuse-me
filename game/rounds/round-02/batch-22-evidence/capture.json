@@ -1,0 +1,330 @@
+[
+  {
+    "name": "host",
+    "kind": "human",
+    "width": 320,
+    "rect": {
+      "x": 12,
+      "y": 399,
+      "width": 296,
+      "height": 157
+    },
+    "target": "Mellow Weaver 71 · 8th",
+    "buttons": [
+      {
+        "text": "Previous",
+        "x": 101.34375,
+        "y": 447,
+        "width": 67.875,
+        "height": 44,
+        "clipped": false,
+        "reachable": true
+      },
+      {
+        "text": "Next",
+        "x": 175.21875,
+        "y": 447,
+        "width": 43.421875,
+        "height": 44,
+        "clipped": false,
+        "reachable": true
+      },
+      {
+        "text": "Stop watching",
+        "x": 110.125,
+        "y": 497,
+        "width": 99.75,
+        "height": 44,
+        "clipped": false,
+        "reachable": true
+      }
+    ]
+  },
+  {
+    "name": "host",
+    "kind": "bot",
+    "width": 320,
+    "rect": {
+      "x": 12,
+      "y": 399,
+      "width": 296,
+      "height": 157
+    },
+    "target": "Mina · 2nd",
+    "buttons": [
+      {
+        "text": "Previous",
+        "x": 101.34375,
+        "y": 447,
+        "width": 67.875,
+        "height": 44,
+        "clipped": false,
+        "reachable": true
+      },
+      {
+        "text": "Next",
+        "x": 175.21875,
+        "y": 447,
+        "width": 43.421875,
+        "height": 44,
+        "clipped": false,
+        "reachable": true
+      },
+      {
+        "text": "Stop watching",
+        "x": 110.125,
+        "y": 497,
+        "width": 99.75,
+        "height": 44,
+        "clipped": false,
+        "reachable": true
+      }
+    ]
+  },
+  {
+    "name": "guest",
+    "kind": "human",
+    "width": 320,
+    "rect": {
+      "x": 12,
+      "y": 399,
+      "width": 296,
+      "height": 157
+    },
+    "target": "Mellow Strider 94 · 5th",
+    "buttons": [
+      {
+        "text": "Previous",
+        "x": 101.34375,
+        "y": 447,
+        "width": 67.875,
+        "height": 44,
+        "clipped": false,
+        "reachable": true
+      },
+      {
+        "text": "Next",
+        "x": 175.21875,
+        "y": 447,
+        "width": 43.421875,
+        "height": 44,
+        "clipped": false,
+        "reachable": true
+      },
+      {
+        "text": "Stop watching",
+        "x": 110.125,
+        "y": 497,
+        "width": 99.75,
+        "height": 44,
+        "clipped": false,
+        "reachable": true
+      }
+    ]
+  },
+  {
+    "name": "guest",
+    "kind": "bot",
+    "width": 320,
+    "rect": {
+      "x": 12,
+      "y": 399,
+      "width": 296,
+      "height": 157
+    },
+    "target": "Felix · 2nd",
+    "buttons": [
+      {
+        "text": "Previous",
+        "x": 101.34375,
+        "y": 447,
+        "width": 67.875,
+        "height": 44,
+        "clipped": false,
+        "reachable": true
+      },
+      {
+        "text": "Next",
+        "x": 175.21875,
+        "y": 447,
+        "width": 43.421875,
+        "height": 44,
+        "clipped": false,
+        "reachable": true
+      },
+      {
+        "text": "Stop watching",
+        "x": 110.125,
+        "y": 497,
+        "width": 99.75,
+        "height": 44,
+        "clipped": false,
+        "reachable": true
+      }
+    ]
+  },
+  {
+    "name": "host",
+    "kind": "human",
+    "width": 390,
+    "rect": {
+      "x": 12,
+      "y": 675,
+      "width": 366,
+      "height": 157
+    },
+    "target": "Bouncy Walker 75 · 8th",
+    "buttons": [
+      {
+        "text": "Previous",
+        "x": 136.34375,
+        "y": 723,
+        "width": 67.875,
+        "height": 44,
+        "clipped": false,
+        "reachable": true
+      },
+      {
+        "text": "Next",
+        "x": 210.21875,
+        "y": 723,
+        "width": 43.421875,
+        "height": 44,
+        "clipped": false,
+        "reachable": true
+      },
+      {
+        "text": "Stop watching",
+        "x": 145.125,
+        "y": 773,
+        "width": 99.75,
+        "height": 44,
+        "clipped": false,
+        "reachable": true
+      }
+    ]
+  },
+  {
+    "name": "host",
+    "kind": "bot",
+    "width": 390,
+    "rect": {
+      "x": 12,
+      "y": 675,
+      "width": 366,
+      "height": 157
+    },
+    "target": "Amara · 2nd",
+    "buttons": [
+      {
+        "text": "Previous",
+        "x": 136.34375,
+        "y": 723,
+        "width": 67.875,
+        "height": 44,
+        "clipped": false,
+        "reachable": true
+      },
+      {
+        "text": "Next",
+        "x": 210.21875,
+        "y": 723,
+        "width": 43.421875,
+        "height": 44,
+        "clipped": false,
+        "reachable": true
+      },
+      {
+        "text": "Stop watching",
+        "x": 145.125,
+        "y": 773,
+        "width": 99.75,
+        "height": 44,
+        "clipped": false,
+        "reachable": true
+      }
+    ]
+  },
+  {
+    "name": "guest",
+    "kind": "human",
+    "width": 390,
+    "rect": {
+      "x": 12,
+      "y": 675,
+      "width": 366,
+      "height": 157
+    },
+    "target": "Zippy Racer 77 · 5th",
+    "buttons": [
+      {
+        "text": "Previous",
+        "x": 136.34375,
+        "y": 723,
+        "width": 67.875,
+        "height": 44,
+        "clipped": false,
+        "reachable": true
+      },
+      {
+        "text": "Next",
+        "x": 210.21875,
+        "y": 723,
+        "width": 43.421875,
+        "height": 44,
+        "clipped": false,
+        "reachable": true
+      },
+      {
+        "text": "Stop watching",
+        "x": 145.125,
+        "y": 773,
+        "width": 99.75,
+        "height": 44,
+        "clipped": false,
+        "reachable": true
+      }
+    ]
+  },
+  {
+    "name": "guest",
+    "kind": "bot",
+    "width": 390,
+    "rect": {
+      "x": 12,
+      "y": 675,
+      "width": 366,
+      "height": 157
+    },
+    "target": "Eli · 2nd",
+    "buttons": [
+      {
+        "text": "Previous",
+        "x": 136.34375,
+        "y": 723,
+        "width": 67.875,
+        "height": 44,
+        "clipped": false,
+        "reachable": true
+      },
+      {
+        "text": "Next",
+        "x": 210.21875,
+        "y": 723,
+        "width": 43.421875,
+        "height": 44,
+        "clipped": false,
+        "reachable": true
+      },
+      {
+        "text": "Stop watching",
+        "x": 145.125,
+        "y": 773,
+        "width": 99.75,
+        "height": 44,
+        "clipped": false,
+        "reachable": true
+      }
+    ]
+  }
+]

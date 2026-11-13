@@ -141,3 +141,17 @@ test('Cup next race starts while guest is still watching',async()=>{
  await finishOrder(L.games,[0]); L.host.requestRematch(); await settle(); await settle();
  assert.strictEqual(g.state,'play'); assert.strictEqual(g.S.race.spectate.target,null); assert.strictEqual(g.element('spectateBar').hidden,true);
 });
+
+test('stop watching preserves Cup points and awards each settled round once',async()=>{
+ const L=await cup(2,{load:{presentation:true}}),g=L.guests[0];let animations=0;
+ g.element('sChain').animate=()=>animations++;
+ await finishOrder(L.games,[1]);
+ const before=J(g.friendCupStandings()); assert.ok(g.S.race.spectate.target);
+ g.element('spectateStop').onclick();
+ assert.strictEqual(J(g.friendCupStandings()),before); assert.strictEqual(animations,0);
+ assert.strictEqual(g.element('sChain').textContent,'Pending');
+ await finishOrder(L.games,[0]); tickAll(L.games,30); await settle();
+ assert.strictEqual(g.element('sChain').textContent,'+10 points');assert.strictEqual(g.element('sBest').textContent,'10'); assert.strictEqual(animations,1);
+ const settled=J(g.friendCup());g.refreshDuelResults();g.refreshDuelResults();
+ assert.strictEqual(J(g.friendCup()),settled);assert.strictEqual(animations,1);
+});

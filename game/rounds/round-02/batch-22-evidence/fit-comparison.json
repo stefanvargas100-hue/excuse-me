@@ -1,0 +1,7 @@
+{
+  "candidate": 37,
+  "baseline": 37,
+  "added": [],
+  "removed": [],
+  "note": "Baseline 64d4705 and lead b88a6d3 have identical app and fit-check source; 37 problems reproduced before spectating. First warning: 320x568 daily run vertical overflow 19px; stripping UTF-16 BOM is required when counting lines."
+}
