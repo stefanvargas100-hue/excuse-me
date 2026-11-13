@@ -34,7 +34,7 @@ test('old host/new guest and new host/old guest fail through real join callers w
  }
 });
 test('airport Friend Cup stays on new rules/protocol with generated crowd and suppressed ordinary records',async()=>{
- const {h,g}=await pair(0);h.setRoomCup({stages:[0,1,2,3],difficulty:1});await settle();await readyPlayers([h,g]);h.hostStart();await settle();
+ const {h,g}=await pair(0);h.setRoomCup({stages:[1,3,4,5],difficulty:1});await settle();await readyPlayers([h,g]);h.hostStart();await settle();
  for(const e of [h,g]){assert.equal(e.LV.id,'airport');assert.equal(e.S.run.category,'friendcup');assert.equal(e.S.run.rules,2);assert.equal(e.S.run.policy.records,false);assert.equal(e.S.run.policy.ghosts,false);assert.equal(e.S.people.filter(p=>!p.prop&&p.z>30&&p.z<76&&p.x>3.9&&p.x<=5.9).length,0);}
  h.leaveRoom();g.leaveRoom();
 });

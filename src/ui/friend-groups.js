@@ -12,11 +12,8 @@ export function groupLabel(levels, group, selection, cup) {
   const picks = cup ? selection.filter(i => group.indices.includes(i)) : group.indices.filter(i => i === selection);
   return group.city + (picks.length ? ': ' + picks.map(i => (cup ? (selection.indexOf(i) + 1) + '. ' : '') + levels[i].name).join(', ') : '');
 }
-export const groupAvailable = (group, cup) => !cup || group.indices.some(i => i <= 5);
-export function cupPick(picks, index) {
-  if (picks.includes(index)) return picks.filter(i => i !== index);
-  return picks.length < 4 && index >= 0 && index <= 5 ? [...picks, index] : [...picks];
-}
+export const groupAvailable = (group, cup) => !cup || group.indices.length >= 2;
+export const cupPresets = levels => stageGroups(levels).filter(g => g.indices.length >= 2);
 export function syncBotOptions(select, players, bots, createOption) {
   const freeSeats = String(8 - players);
   if (select.dataset.freeSeats !== freeSeats) {
