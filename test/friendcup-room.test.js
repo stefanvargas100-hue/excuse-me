@@ -712,6 +712,7 @@ test('Friend Cup Pending, authoritative redraw and fresh duel replacement never 
  const L=await cup(2,{load:{dom:true,presentation:true}});const [h,g]=L.games; let animations=0;
  g.element('sChain').animate=()=>{animations++;};
  await finishOrder(L.games,[1]);tickAll(L.games,40);await settle();
+ g.element('spectateStop').onclick();
  assert.equal(g.element('sChain').textContent,'Pending');assert.equal(g.element('sBest').textContent,'0');assert.equal(animations,0);
  await finishOrder(L.games,[0]);tickAll(L.games,40);await settle();
  assert.equal(g.element('sChain').textContent,'+10 points');assert.equal(animations,1);

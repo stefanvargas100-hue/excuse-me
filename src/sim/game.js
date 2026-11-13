@@ -46,6 +46,34 @@ import { CHALLENGE_SUBMIT_ENABLED, challengeFor, utcWeekKey, validChallengeTime 
 
 
 
+// Spectating changes only presentation. The finished simulation retains its original coordinates.
+function watchable() {
+ const R=S.race, D=S.duel;
+ if (!D || D.dnf || !R?.finished || R.elim?.over || (D.cup && D.cup.model.rounds.length >= D.cup.race)) return [];
+ return R.bots.filter(b=>!b.done && !D.peers[b.peerId]?.bye && D.peers[b.peerId]?.fin == null).sort((a,b)=>b.z-a.z);
+}
+function updateSpectate(direction=0) {
+ const R=S.race, w=R?.spectate;
+ if (!w || !S.duel || !R.finished) return;
+ const rows=watchable();
+ if (!w.stopped && rows.length) {
+  if (!w.prepared) { w.prepared=true; showRaceEnd(); }
+  let i=rows.indexOf(w.target);
+  w.target=rows[i<0?0:(i+direction+rows.length)%rows.length];
+  $('end').hidden=true; $('hud').hidden=true; $('spectateBar').hidden=false;
+  const place=standings().findIndex(r=>S.race.elim ? r.slot===w.target.slot : r.id===w.target.peerId)+1;
+  $('spectateName').textContent=w.target.name+' \u00b7 '+ordinal(place);
+  if (!w.bound) {
+   w.bound=true;
+   $('spectatePrev').onclick=()=>updateSpectate(-1);
+   $('spectateNext').onclick=()=>updateSpectate(1);
+   $('spectateStop').onclick=()=>{w.stopped=true; w.target=null; $('spectateBar').hidden=true; showEnd();};
+  }
+ } else {
+  const watched=!!w.target; w.target=null; $('spectateBar').hidden=true;
+  if(watched) showEnd();
+ }
+}
 /* ---------- simulation ---------- */
 function movePlayer(dt) {
   let steer = 0;
@@ -182,6 +210,7 @@ export function tick(dt) {
     S.people = S.people.filter(p => !p.dead);
   } else {
     S.overT += dt;
+    if (S.duel && S.race?.finished && !(S.duel.cup?.host) && !(S.duel.elimHost && S.race.elim?.meOut)) stepRemotes(dt, true);
     if (!endShown && S.overT > (state === 'won' ? 0.5 : 0.8)) showEnd();
     // an eliminated host is still the one who decides for everybody else, so their game keeps following the others
     if (S.duel && S.duel.elimHost && S.race && S.race.elim && S.race.elim.meOut && !S.race.elim.over && S.race.countT <= 0) { stepRemotes(dt); const ev = stepElim(); if (ev) elimEnd(ev); refreshDuelResults(); }
@@ -195,6 +224,7 @@ export function tick(dt) {
       S.people = S.people.filter(p => !p.dead && p.z > rearZ() - 16);
     }
   }
+  updateSpectate();
 }
 
 function recordBest() {
@@ -245,6 +275,7 @@ function elimEnd(ev) {
   banner(won ? 'LAST ONE STANDING' : 'ELIMINATED', won ? '#27c27a' : '#ff4d4f');
   if (!S.duel) track('races');   // friend rooms keep their usual exclusion from unlock progress
   payRun();   // counts as a race played, not as a race win: elimination wins are shorter and do not feed the win unlocks
+  updateSpectate();
   Music.sfx(won ? 'win' : 'bump'); Music.stop(); Music.ambStop(); buzz(won ? [20, 60, 20, 60, 80] : [60, 40, 140]);
 }
 
@@ -276,7 +307,7 @@ export const challengeBest = c => parseFloat(store.get(recordKey('excuseme_wchal
 
 function winRace() {
   setState('won'); S.live = false; S.overT = 0; S.pz = LV.goal; touches.clear();
-  finishRace(); payRun();
+  finishRace(); payRun(); updateSpectate();
   if (!S.challenge && !S.cup && !S.duel && !S.lesson && !S.race.elim && S.run.policy.scores) submitRaceTime(LV.id, S.time * 1000);
   if (S.challenge) challengeDone();
   if (S.cup) cupRoundDone();
@@ -286,6 +317,7 @@ function winRace() {
 export const fmt = n => Math.floor(n).toLocaleString('en-US');
 
 function showEnd() {
+  if (S.race?.spectate?.target) return;
   setEndShown(true);
   if (S.race) { showRaceEnd(); return; }
   resetEndLabels(); $('cleanNote').hidden = true;
@@ -353,7 +385,8 @@ function showUnlocks() {
 export function refreshDuelResults() {
   if (!S || !S.duel || !S.race) return;
   S.race.board = standings(); S.race.place = S.race.board.findIndex(r => r.me) + 1;
-  if (endShown) showRaceEnd();
+  updateSpectate();
+  if (endShown && !S.race.spectate.target) showRaceEnd();
 }
 
 export function forfeitDuel() {
