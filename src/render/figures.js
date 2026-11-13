@@ -718,6 +718,15 @@ function drawProp(p, s, bx, fy) {
       }
       break;
     }
+    case 'wetpatch': {
+      box3D(x-p.width/2,x+p.width/2,.005,.015,z-p.depth/2,z+p.depth/2,hex('#65a8b2'));
+      box3D(x-p.width/2,x+p.width/2,.016,.02,z-p.depth/2,z-p.depth/2+.12,hex('#ffdc65')); break;
+    }
+    case 'turret': {
+      box3D(x-1.1,x+1.1,.25,1,z-.5,z+.5,hex('#357d70'));
+      box3D(x-.5,x+.5,1,1.8,z-.4,z+.4,hex('#c2e5e1'));
+      for(const dx of [-.7,.7])for(const dz of [-.5,.5])box3D(x+dx-.18,x+dx+.18,0,.4,z+dz-.12,z+dz+.12,hex('#263742')); break;
+    }
     case 'train': {   // one subway car beside the platform edge, with its doors open
       const x0 = x - 1.4, x1 = x + 1.4, hl = (p.len || 8.5) / 2;
       box3D(x0, x1, 0.35, 3.7, z - hl, z + hl, hex('#aeb6bd'));

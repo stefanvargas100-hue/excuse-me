@@ -152,6 +152,10 @@ function spawnUnit(z, d) {
     if (d > 0.08) pool.push(['speedster', 1.5], ['luggage', 0.5]);
     if (d > 0.2) pool.push(['swerver', 1]);
     if (d > 0.4) pool.push(['trio', 1]);
+  } else if (id === 'tsukiji') {
+    pool = [['walker',4],['oncoming',2],['luggage',1]];
+  } else if (id === 'skytree') {
+    pool = [['skywalker',6],['tourist',1]];
   } else if (id === 'takeshita') {
     pool = [['shopper', 8], ['walker', 3], ['oncoming', 2], ['pair', 1], ['phone', 1]];
   } else if (id === 'subway') {
@@ -172,6 +176,7 @@ function spawnUnit(z, d) {
       for (let i=0;i<2;i++) mk(2.4+i*0.8, z+i*0.3, { jogger: true, fast: true, hx: 0, hz: 1, v0: rnd(3.3,4.1), shirtType: 'tank', pantsType: 'shorts', yieldP: 0.7 });
       break;
     }
+    case 'skywalker': walker(z,1,{v0:rnd(2.2,2.9)}); break;
     case 'walker': walker(z, 1); break;
     case 'oncoming': walker(z, -1, { lug: id === 'airport' && R() < 0.35 ? pick([-1, 1]) : 0 }); break;
     case 'luggage': walker(z, dirv, { lug: pick([-1, 1]) }); break;
@@ -327,6 +332,7 @@ function genChunkInner(z0) {
   if (LV.id === 'shibuya') tokyoStreet(z0);
   if (LV.id === 'park') parkProps(z0);
   if (LV.id === 'bridge') bridgeProps(z0);
+  if (LV.id === 'tsukiji' && z0 % 32 === 16) mk(pick([-1,1])*1.8,z0+2,{prop:'wetpatch',wetPatch:true,width:2.4,depth:4,circles:[]});
   if (inXing(z0 + 2)) return;   // the crosswalk crowds come from the signal waves instead
   const k = LV.base + (R() < 0.4 + 0.4 * d ? 1 : 0) + (d > 0.25 && R() < 0.55 ? 1 : 0) + (d > 0.6 && R() < 0.6 ? 1 : 0);
   for (let i = 0; i < k; i++) spawnUnit(z0 + R() * 4, d);
@@ -357,7 +363,14 @@ export function updXings() {
 // Scripted crowd moments, announced with a banner.
 export function runEvent(kind) {
   const z = S.pz + rnd(SPAWN_FAR + 4, SPAWN_FAR + 14), h = LV.half;
-  if (kind === 'tour') {
+  if (kind === 'turret') {
+    const dir=pick([-1,1]);
+    const p=mk(-dir*(h+1.6),z,{prop:'turret',drive:dir*.65,driving:true,driveAt:0,len:2.2,circles:rowC([-0.7,0,0.7],.45)}); p.dirx=dir;
+    banner('MARKET DELIVERY CROSSING', '#ffd166');
+  } else if(kind === 'viewpoint') {
+    for(let row=0;row<3;row++) for(let col=0;col<4;col++) mk(h-0.8-col*.8,z+row*1.4,{viewpoint:true,v0:0,phone:true,fx:1,fz:0,yieldP:0});
+    banner('WINDOW VIEWPOINT AHEAD', '#7cc4ff');
+  } else if (kind === 'tour') {
     const dir = R() < 0.6 ? -1 : 1, x = clamp(laneX(dir), -h + 1.8, h - 1.8), col = pick(['#ff2d3a', '#ffcf1f', '#20e3ff', '#7cff6b']);
     const L = mk(x, z, { hx: 0, hz: dir, v0: 1.0, flag: col, laneX: x, shirt: col });
     const n = 8 + ((R() * 4) | 0);
@@ -513,4 +526,11 @@ export function genChunk(z0) {
   }
   if (S.race && S.race.elim) seeded(':g' + z0, () => { for (const [i, c] of S.race.elim.cps.entries()) if (c >= z0 && c < z0 + 4) mk(0, c, { prop: 'cpgate', span: LV.half - 0.5, num: i + 1, circles: [] }); });
   if (S.seed) { let sum = 0; for (let i = n0; i < S.people.length; i++) { const q = S.people[i]; sum += q.x * 7 + q.z; } S.chunkSum[z0] = Math.round(sum * 100); }
+}
+
+export function wetGrip(r,x,z,dt) {
+  if(LV.id !== 'tsukiji') return 1;
+  const wet=S.people.some(p=>p.wetPatch&&!p.dead&&Math.abs(x-p.x)<p.width/2&&Math.abs(z-p.z)<p.depth/2);
+  r.wetSlide=wet ? .22 : Math.max(0,(r.wetSlide||0)-dt);
+  return r.wetSlide > 0 ? .22 : 1;
 }

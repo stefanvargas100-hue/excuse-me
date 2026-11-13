@@ -51,15 +51,15 @@ test('when the host starts, each friend\'s best classic and race ghosts for the 
 test('a ghost from someone who is not in the room, or a broken one, is ignored', async () => {
   const [host, guest] = await room(2);
   const good = { step: 2, pts: [0, 0, 0, 6, 0, 12] };
-  host.injectRoomMessage('ghost', { proto: 11, course: '', stage: 'nyc',  id: 'stranger1', kind: 'classic:cm3', rules: 'cm3', level: 1, ghost: good });
+  host.injectRoomMessage('ghost', { proto: 12, course: '', stage: 'nyc',  id: 'stranger1', kind: 'classic:cm3', rules: 'cm3', level: 1, ghost: good });
   assert.strictEqual(stored(host, 'excuseme_fg_classic_nyc:cm3:standard:r2').length, 0, 'not in the roster');
   const guestId = guest.lobbyPlayers().find(p => p.me).id;
-  host.injectRoomMessage('ghost', { proto: 11, course: '', stage: 'nyc',  id: guestId, kind: 'classic:cm3', rules: 'cm3', level: 1, ghost: { step: 2, pts: [0, 0, 999, 5] } });
-  host.injectRoomMessage('ghost', { proto: 11, course: '', stage: 'nyc',  id: guestId, kind: 'bogus', level: 1, ghost: good });
-  host.injectRoomMessage('ghost', { proto: 11, course: '', stage: 'nyc',  id: guestId, kind: 'classic:cm3', rules: 'cm3', level: 99, ghost: good });
-  host.injectRoomMessage('ghost', { proto: 11, course: '', stage: 'nyc',  id: guestId, kind: 'classic:cm3', rules: 'cm3', level: 1 });
+  host.injectRoomMessage('ghost', { proto: 12, course: '', stage: 'nyc',  id: guestId, kind: 'classic:cm3', rules: 'cm3', level: 1, ghost: { step: 2, pts: [0, 0, 999, 5] } });
+  host.injectRoomMessage('ghost', { proto: 12, course: '', stage: 'nyc',  id: guestId, kind: 'bogus', level: 1, ghost: good });
+  host.injectRoomMessage('ghost', { proto: 12, course: '', stage: 'nyc',  id: guestId, kind: 'classic:cm3', rules: 'cm3', level: 99, ghost: good });
+  host.injectRoomMessage('ghost', { proto: 12, course: '', stage: 'nyc',  id: guestId, kind: 'classic:cm3', rules: 'cm3', level: 1 });
   assert.strictEqual(stored(host, 'excuseme_fg_classic_nyc:cm3:standard:r2').length, 0, 'bad ghosts thrown away');
-  host.injectRoomMessage('ghost', { proto: 11, course: '', stage: 'nyc',  id: guestId, kind: 'classic:cm3', rules: 'cm3', level: 1, name: 'Evil <script>', ghost: good });
+  host.injectRoomMessage('ghost', { proto: 12, course: '', stage: 'nyc',  id: guestId, kind: 'classic:cm3', rules: 'cm3', level: 1, name: 'Evil <script>', ghost: good });
   const kept = stored(host, 'excuseme_fg_classic_nyc:cm3:standard:r2');
   assert.strictEqual(kept.length, 1);
   assert.strictEqual(kept[0].name, guest.lobbyPlayers().find(p => p.me).name, 'the name comes from the room list, not from the message');
@@ -69,8 +69,8 @@ test('a friend sending again replaces their old ghost, and four friends at most 
   const games = await room(4);
   const host = games[0], good = n => ({ step: 2, pts: [0, 0, 0, n] });
   const ids = games.slice(1).map(g => g.lobbyPlayers().find(p => p.me).id);
-  for (let i = 0; i < 3; i++) host.injectRoomMessage('ghost', { proto: 11, course: '', stage: 'nyc',  id: ids[i], kind: 'classic:cm3', rules: 'cm3', level: 1, ghost: good(100 + i) });
-  host.injectRoomMessage('ghost', { proto: 11, course: '', stage: 'nyc',  id: ids[0], kind: 'classic:cm3', rules: 'cm3', level: 1, ghost: good(500) });
+  for (let i = 0; i < 3; i++) host.injectRoomMessage('ghost', { proto: 12, course: '', stage: 'nyc',  id: ids[i], kind: 'classic:cm3', rules: 'cm3', level: 1, ghost: good(100 + i) });
+  host.injectRoomMessage('ghost', { proto: 12, course: '', stage: 'nyc',  id: ids[0], kind: 'classic:cm3', rules: 'cm3', level: 1, ghost: good(500) });
   const list = stored(host, 'excuseme_fg_classic_nyc:cm3:standard:r2');
   assert.strictEqual(list.length, 3);
   assert.strictEqual(list.find(e => e.pts[3] === 500) !== undefined, true, 'the newer ghost of the first friend');
@@ -79,9 +79,9 @@ test('legacy kinds and current-kind wrong-rules ghosts are isolated', async () =
   const [host, guest] = await room(2), id = guest.lobbyPlayers().find(p => p.me).id;
   const ghost = { step: 2, pts: [0, 0, 0, 20] };
   for (const kind of ['classic', 'classic:cm3']) for (const rules of [undefined, 'cm1', 'cm4']) {
-    host.injectRoomMessage('ghost', { proto: 11, course: '', stage: 'nyc',  id, kind, level: 1, rules, ghost });
+    host.injectRoomMessage('ghost', { proto: 12, course: '', stage: 'nyc',  id, kind, level: 1, rules, ghost });
     assert.strictEqual(stored(host, 'excuseme_fg_classic_nyc:cm3:standard:r2').length, 0, kind + '/' + rules);
   }
-  host.injectRoomMessage('ghost', { proto: 11, course: '', stage: 'nyc',  id, kind: 'classic:cm3', level: 1, rules: 'cm3', ghost });
+  host.injectRoomMessage('ghost', { proto: 12, course: '', stage: 'nyc',  id, kind: 'classic:cm3', level: 1, rules: 'cm3', ghost });
   assert.strictEqual(stored(host, 'excuseme_fg_classic_nyc:cm3:standard:r2').length, 1, 'matching version round trip');
 });

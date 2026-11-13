@@ -1,0 +1,4 @@
+const {load}=require('../../../../test/harness');
+const fs=require('fs'),out={hz:60,seeds:[1,2,3],racersPerRace:3};
+for(const level of [7,8]){const medians=[];for(const diff of [0,1,2]){const times=[];for(const seed of [1,2,3]){const E=load(undefined,{seed});E.storage.excuseme_botlvl=String(diff);E.setLevel(level);E.start('race');E.S.race.countT=0;for(let i=0;i<36000&&!E.S.race.bots.every(b=>b.done);i++){E.S.pz=Math.max(0,Math.min(...E.S.race.bots.filter(b=>!b.done).map(b=>b.z))-20);E.tick(1/60);}if(!E.S.race.bots.every(b=>b.done))throw Error('unfinished');times.push(...E.S.race.bots.map(b=>b.finishT));}times.sort((a,b)=>a-b);medians.push(times[4]);}out[level===7?'tsukiji':'skytree']=medians;console.log(level,medians);}
+fs.writeFileSync(__dirname+'/ordinary-medians.json',JSON.stringify(out,null,2));

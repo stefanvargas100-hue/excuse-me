@@ -4,7 +4,7 @@ const DT=1/30;
 function subway(mode='classic',seed=42){const E=load(undefined,{seed});assert.equal(E.LEVELS[5]?.id,'subway');E.setLevel(5);E.start(mode);E.tick(DT);return E;}
 const commuters=E=>E.S.people.filter(p=>p.commuter);
 test('subway is appended as the sixth stage and leaves the other indexes alone',()=>{
- const E=subway();assert.equal(E.LEVELS.map(l=>l.id).join(','),'airport,nyc,shibuya,park,bridge,subway,takeshita');
+ const E=subway();assert.equal(E.LEVELS.map(l=>l.id).join(','),'airport,nyc,shibuya,park,bridge,subway,takeshita,tsukiji,skytree');
  const L=E.LEVELS[5];assert.equal(L.city,'New York');assert.equal(L.name,'Subway Platform');assert.equal(L.goal,450);assert.equal(L.goalText,'UPTOWN EXIT');assert.equal(L.half,4.5);
  assert.ok(L.events.includes('train'));assert.ok(!L.events.includes('weave'),'weave is wider than this platform');
 });
