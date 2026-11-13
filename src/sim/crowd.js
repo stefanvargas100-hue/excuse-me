@@ -5,6 +5,7 @@ import { LV, halfAt } from '../config/levels.js';
 import { R_PLAYER, walkSpeed } from '../config/tuning.js';
 import { R, clamp, pick, rnd, sgn } from '../config/util.js';
 import { addPop } from './scoring.js';
+import { ropeContain, securitySteer } from './people.js';
 import { S, goalOf, state } from './state.js';
 
 
@@ -14,6 +15,8 @@ import { S, goalOf, state } from './state.js';
    and sidestep, prefer their culture's keep side when meeting someone head on (which makes lanes form),
    brake behind slower walkers, and walk side by side in groups. */
 function behaviours(p, dt) {
+  if (p.settleT !== undefined) { p.settleT -= dt; if (p.settleT <= 0) { p.v0 = p.v0n; delete p.settleT; } }   // gate change rush: the surge settles to a walk
+  if (LV.id === 'security') securitySteer(p, dt);
   if (p.follow) {
     const L = p.follow;
     if (L.dead || L.z < S.pz - 15) p.follow = null;
@@ -68,7 +71,7 @@ export function updPeople(dt) {
   for (let i = 0; i < n; i++) {
     const p = ppl[i];
     if (p.drive && !p.dead) {   // a baggage cart: waits at the wall, then drives across once you are close, and is gone on the far side
-      if (!p.driving && p.z - S.pz < p.driveAt) { p.driving = true; if (state === 'play') addPop('BEEP BEEP', '#ffcf1f', 24); }
+      if (!p.driving && p.z - S.pz < p.driveAt) { p.driving = true; if (state === 'play' && !p.quiet) addPop('BEEP BEEP', '#ffcf1f', 24); }
       if (p.driving) { p.vx = p.drive; p.x += p.drive * dt; if (Math.sign(p.drive) * p.x - (p.len || 0) > LV.half + 4) p.dead = true; }
       continue;
     }
@@ -134,6 +137,7 @@ export function updPeople(dt) {
       p.z += beltSpeedAt(LV.id, p.x, p.z) * dt;   // moving walkway carries everyone on it
       if (!p.free) { const cx = contain(LV.id, px0, p.x, p.z); if (cx !== p.x) { p.x = cx; p.vx = 0; } }   // and the glass keeps them on it, or off it
     }
+    if (LV.id === 'security' && !p.free) p.x = ropeContain(px0, p.x, p.z);   // rope lines hold the queue lanes apart
     const pathLim = Math.min(lim, halfAt(p.z) - 0.35);
     if (!p.free && Math.abs(p.x) > pathLim) { p.x = clamp(p.x, -pathLim, pathLim); if (p.locked) p.vx = 0; }
     if (p.exit && Math.abs(p.x) > (LV.id === 'shibuya' ? 14.5 : LV.half + 0.2)) p.dead = true;

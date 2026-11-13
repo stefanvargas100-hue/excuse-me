@@ -156,6 +156,14 @@ function spawnUnit(z, d) {
     pool = [['walker',4],['oncoming',2],['luggage',1]];
   } else if (id === 'skytree') {
     pool = [['skywalker',6],['tourist',1]];
+  } else if (id === 'security') {
+    pool = [['walker', 5], ['oncoming', 2], ['luggage', 3], ['pair', 2]];
+  } else if (id === 'baggage') {
+    pool = [['walker', 3], ['oncoming', 3], ['luggage', 5], ['pair', 2], ['phone', 1]];
+    if (d > 0.3) pool.push(['rusher', 1]);
+  } else if (id === 'gatechange') {
+    pool = [['walker', 4], ['oncoming', 2], ['luggage', 3], ['pair', 1], ['speedster', 1]];
+    if (d > 0.3) pool.push(['trio', 1]);
   } else if (id === 'takeshita') {
     pool = [['shopper', 8], ['walker', 3], ['oncoming', 2], ['pair', 1], ['phone', 1]];
   } else if (id === 'subway') {
@@ -332,10 +340,13 @@ function genChunkInner(z0) {
   if (LV.id === 'shibuya') tokyoStreet(z0);
   if (LV.id === 'park') parkProps(z0);
   if (LV.id === 'bridge') bridgeProps(z0);
+  if (LV.id === 'security') securityProps(z0);
   if (LV.id === 'tsukiji' && z0 % 32 === 16) mk(pick([-1,1])*1.8,z0+2,{prop:'wetpatch',wetPatch:true,width:2.4,depth:4,circles:[]});
   if (inXing(z0 + 2)) return;   // the crosswalk crowds come from the signal waves instead
   const k = LV.base + (R() < 0.4 + 0.4 * d ? 1 : 0) + (d > 0.25 && R() < 0.55 ? 1 : 0) + (d > 0.6 && R() < 0.6 ? 1 : 0);
+  const first = S.people.length;
   for (let i = 0; i < k; i++) spawnUnit(z0 + R() * 4, d);
+  if (LV.id === 'security') securityCrowd(first);
 }
 
 // Fifth Avenue: crowds wait at each corner, then pour across when the signal changes.
@@ -363,7 +374,34 @@ export function updXings() {
 // Scripted crowd moments, announced with a banner.
 export function runEvent(kind) {
   const z = S.pz + rnd(SPAWN_FAR + 4, SPAWN_FAR + 14), h = LV.half;
-  if (kind === 'turret') {
+  if (kind === 'lanes') {
+    if (LV.id === 'security' && secNear(z, 30)) banner('SECURITY AHEAD: PICK AN OPEN LANE', '#7cc4ff');
+  } else if (kind === 'bagspill') {
+    // The carousel is on the left. A burst of bags and trolleys comes off it and crosses the walkway, one at a time, 4.6 m or more
+    // apart front to back, so there is always a gap to walk through. Nothing here looks at where any racer is.
+    const n = 5 + ((R() * 2) | 0);
+    let zz = z;
+    for (let i = 0; i < n; i++) {
+      const trolley = i % 2 === 1, sp = trolley ? rnd(2.3, 2.9) : rnd(3.2, 4.2);
+      const circles = trolley ? [0, -0.55, -1.1].map(ox => ({ ox, oz: 0, r: 0.3 })) : [{ ox: 0, oz: 0, r: 0.38 }];
+      const q = mk(-(h + 2), zz, { prop: trolley ? 'trolleyroll' : 'bagslide', drive: sp, driveAt: rnd(22, 28), len: trolley ? 1.1 : 0.4, quiet: true, circles, bagCol: pick(['#c0392b', '#2f80ed', '#27ae60', '#8e44ad', '#f2994a']) });
+      q.dirx = 1;
+      zz += rnd(4.6, 6.2);
+    }
+    banner('BAGS SPILLING ACROSS THE WALKWAY', '#ffb347');
+  } else if (kind === 'gatechange') {
+    // The board flips and most of the crowd ahead turns round and rushes toward you for a few seconds, then settles to a walk.
+    // A gap about 2.6 m wide stays clear of anyone who turns. Their pace and timing come from each person's own phase.
+    const gapW = 2.6, lim = h - 0.5, gapX = rnd(-lim + gapW / 2 + 0.2, lim - gapW / 2 - 0.2), dur = rnd(3.4, 4.6);
+    for (const p of S.people) {
+      if (p.prop || p.dead || p.rival || p.follow || p.free || p.locked || p.v0 <= 0 || p.isMe) continue;
+      const dz = p.z - S.pz, u = (p.phase * 997) % 1;
+      if (dz < 14 || dz > SPAWN_FAR + 20 || Math.abs(p.x - gapX) < gapW / 2 + 0.5 || u > 0.8) continue;
+      p.hx = 0; p.hz = -1; p.dirz = -1; p.laneX = p.x;
+      p.v0n = p.v0; p.v0 = 2.2 + u * 0.6; p.settleT = dur * (0.8 + u * 0.4);
+    }
+    banner('GATE CHANGE! THE CROWD IS TURNING', '#ff6b6b');
+  } else if (kind === 'turret') {
     const dir=pick([-1,1]);
     const p=mk(-dir*(h+1.6),z,{prop:'turret',drive:dir*.65,driving:true,driveAt:0,len:2.2,circles:rowC([-0.7,0,0.7],.45)}); p.dirx=dir;
     banner('MARKET DELIVERY CROSSING', '#ffd166');
@@ -533,4 +571,98 @@ export function wetGrip(r,x,z,dt) {
   const wet=S.people.some(p=>p.wetPatch&&!p.dead&&Math.abs(x-p.x)<p.width/2&&Math.abs(z-p.z)<p.depth/2);
   r.wetSlide=wet ? .22 : Math.max(0,(r.wetSlide||0)-dt);
   return r.wetSlide > 0 ? .22 : 1;
+}
+
+/* ---------- Security Lanes (batch 23) ----------
+   Stretches of 3 or 4 queue lanes, divided by rope lines nobody can cross, with open ground between stretches. Some lanes are closed
+   at their far end by a scanner gate, and at least one lane is always open. The pattern comes from the run's seed and the stretch
+   number only, never from the shared random stream, so every phone and every bot reads the same lanes. */
+export const SEC = { first: 70, every: 95, len: 40, tail: 3, margin: 0.3 };
+const secMemo = new Map(), secRuns = new WeakMap();
+// Races, Daily and Weekly carry a seed. A Classic run has none, so it draws one (Security Lanes only) the first time the lanes are asked for.
+function secKey() {
+  if (S.seed) return S.seed;
+  let k = secRuns.get(S.flows);
+  if (!k) secRuns.set(S.flows, k = 'classic' + ((R() * 1e9) | 0));
+  return k;
+}
+export function secStretch(i) {
+  if (LV.id !== 'security' || i < 0) return null;
+  const z0 = SEC.first + i * SEC.every;
+  if (!S.endless && z0 + SEC.len > LV.goal - 20) return null;
+  const key = secKey() + '|' + i;
+  let m = secMemo.get(key);
+  if (!m) {
+    const rng = mulberry32(hashStr(key + ':lanes')), n = rng() < 0.5 ? 3 : 4, closedN = Math.min(n - 1, 1 + (rng() < 0.5 ? 1 : 0)), order = [...Array(n).keys()];
+    for (let k = n - 1; k > 0; k--) { const j = Math.floor(rng() * (k + 1)); [order[k], order[j]] = [order[j], order[k]]; }
+    const open = Array(n).fill(true); for (const j of order.slice(0, closedN)) open[j] = false;
+    if (secMemo.size > 200) secMemo.clear();
+    secMemo.set(key, m = { n, open });
+  }
+  const h = LV.half, w = 2 * h / m.n;
+  return { i, z0, z1: z0 + SEC.len, rope1: z0 + SEC.len - SEC.tail, gateZ: z0 + SEC.len - 1.5, n: m.n, open: m.open, w, divs: Array.from({ length: m.n - 1 }, (_, k) => -h + (k + 1) * w) };
+}
+export const secLaneX = (s, j) => -LV.half + (j + 0.5) * s.w;
+export const secLaneOf = (s, x) => clamp(Math.floor((x + LV.half) / s.w), 0, s.n - 1);
+// the stretch whose rope zone holds z (or starts within pad metres ahead of z)
+export function secNear(z, pad) {
+  if (LV.id !== 'security') return null;
+  const i0 = Math.floor((z - SEC.first) / SEC.every);
+  for (const i of [i0, i0 + 1]) { const s = secStretch(i); if (s && z >= s.z0 - pad && z <= s.rope1) return s; }
+  return null;
+}
+// The rope lines block sideways movement for the player, bots and crowd alike: x1 is where you wanted to go, the result where you may.
+export function ropeContain(x0, x1, z) {
+  const s = secNear(z, 0);
+  if (!s || z < s.z0) return x1;
+  for (const d of s.divs) x1 = x0 <= d ? Math.min(x1, d - SEC.margin) : Math.max(x1, d + SEC.margin);
+  return x1;
+}
+const nearestOpen = (s, x) => {
+  let best = -1;
+  for (let j = 0; j < s.n; j++) if (s.open[j] && (best < 0 || Math.abs(secLaneX(s, j) - x) < Math.abs(secLaneX(s, best) - x))) best = j;
+  return best;
+};
+// Bots: before a stretch go to the nearest open lane; inside it stay in the lane you are in. Returns the bot's new target x.
+export function securityTarget(x, z, target) {
+  const s = secNear(z, 36);
+  if (!s) return target;
+  const lane = secLaneOf(s, x);
+  if (z < s.z0 && !s.open[lane]) return secLaneX(s, nearestOpen(s, x));
+  const c = secLaneX(s, lane);
+  return clamp(target, c - s.w / 2 + 0.45, c + s.w / 2 - 0.45);
+}
+// The crowd reads the signs too: someone about to enter a closed lane drifts across to the nearest open one first.
+export function securitySteer(p, dt) {
+  const s = secNear(p.z, 9);
+  if (!s || p.z >= s.z0 || s.open[secLaneOf(s, p.x)]) return;
+  const c = secLaneX(s, nearestOpen(s, p.x));
+  p.x += clamp(c - p.x, -1.8 * dt, 1.8 * dt); p.laneX = c;
+}
+// Ropes, lane lights and scanner gates for the stretches that start in this 4 m chunk (ropes: the chunks they run through).
+function securityProps(z0) {
+  const i0 = Math.floor((z0 - SEC.first) / SEC.every);
+  for (const i of [i0, i0 + 1]) {
+    const s = secStretch(i);
+    if (!s) continue;
+    if (z0 + 2 >= s.z0 && z0 + 2 < s.rope1) for (const d of s.divs) mk(d, z0 + 2, { prop: 'secrope', circles: [] });
+    if (s.z0 >= z0 && s.z0 < z0 + 4) for (let j = 0; j < s.n; j++) {
+      const cx = secLaneX(s, j), half = s.w / 2 - 0.3;
+      mk(cx, s.z0, { prop: 'lanelight', open: s.open[j], span: s.w / 2, circles: [] });
+      const os = []; for (let o = -half; o <= half + 1e-6; o += 0.4) os.push(o);
+      mk(cx, s.gateZ, { prop: 'scangate', open: s.open[j], span: s.w / 2, circles: s.open[j] ? [] : rowC(os, 0.3) });
+    }
+  }
+}
+// Crowd inside a stretch queues in the open lanes only, facing the way you go, and thinner than elsewhere.
+function securityCrowd(first) {
+  for (let k = S.people.length - 1; k >= first; k--) {
+    const p = S.people[k], s = secNear(p.z, 0);
+    if (p.prop || !s) continue;
+    const u = (p.phase * 997) % 1, v = (p.phase * 313) % 1;
+    if (u > 0.5) { S.people.splice(k, 1); continue; }
+    const opens = s.open.map((o, j) => o ? j : -1).filter(j => j >= 0), j = opens[Math.floor(v * opens.length) % opens.length];
+    p.x = secLaneX(s, j) + (u - 0.25) * (s.w - 1.6); p.laneX = p.x;
+    p.hx = 0; p.hz = 1; p.dirz = 1; p.vx = 0; p.vz = p.v0;
+  }
 }

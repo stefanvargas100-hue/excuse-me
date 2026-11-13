@@ -907,6 +907,36 @@ function drawProp(p, s, bx, fy) {
       for (let px = -h; px <= h + 1e-6; px += Math.max(1.6, (2 * h) / Math.ceil((2 * h) / 2.2))) box3D(x + px - 0.05, x + px + 0.05, 0, 0.95, z - 0.05, z + 0.05, post);
       break;
     }
+    case 'secrope': {   // rope line between queue lanes: a post every 2 m with a red rope
+      box3D(x - 0.03, x + 0.03, 0.8, 0.88, z - 2, z + 2, hex('#c0392b'));
+      for (const dz of [-2, 0]) box3D(x - 0.06, x + 0.06, 0, 0.95, z + dz - 0.06, z + dz + 0.06, hex('#3a4352'));
+      break;
+    }
+    case 'lanelight': {   // the lane's sign over its entrance, and a coloured strip on the floor
+      const sp = p.span || 1.5, c = hex(p.open ? '#2ecc71' : '#e74c3c');
+      box3D(x - sp + 0.2, x + sp - 0.2, 0, 0.02, z - 0.3, z + 0.3, c);
+      box3D(x - sp + 0.15, x + sp - 0.15, 2.7, 3.9, z - 0.08, z + 0.08, c);
+      for (const sx of [-1, 1]) box3D(x + sx * (sp - 0.2) - 0.04, x + sx * (sp - 0.2) + 0.04, 0, 2.7, z - 0.04, z + 0.04, hex('#3a4352'));
+      { const q = W3(x, 3.3, z - 0.1); label(p.open ? 'OPEN' : 'X CLOSED', q[0], q[1], Math.round(0.7 * F / q[2]), '#ffffff'); }
+      break;
+    }
+    case 'scangate': {   // scanner arch at the far end of a lane; shut lanes have a red barrier across
+      const sp = p.span || 1.5;
+      for (const sx of [-1, 1]) box3D(x + sx * (sp - 0.35) - 0.12, x + sx * (sp - 0.35) + 0.12, 0, 2.3, z - 0.5, z + 0.5, hex('#8a94a6'));
+      box3D(x - sp + 0.23, x + sp - 0.23, 2.3, 2.6, z - 0.5, z + 0.5, hex('#8a94a6'));
+      if (p.open) { const l = W3(x, 2.45, z - 0.52); ball(l[0], l[1], 0.1 * F / l[2], '#7dff9a', '#ffffff', '#2ecc71'); }
+      else { box3D(x - sp + 0.25, x + sp - 0.25, 0.1, 1.05, z - 0.15, z + 0.15, hex('#e74c3c')); box3D(x - sp + 0.25, x + sp - 0.25, 0.55, 0.65, z - 0.16, z + 0.16, hex('#f4f6f8')); }
+      break;
+    }
+    case 'bagslide': box3D(x - 0.45, x + 0.45, 0.04, 0.72, z - 0.36, z + 0.36, hex(p.bagCol || '#2f80ed')); box3D(x - 0.14, x + 0.14, 0.72, 0.8, z - 0.04, z + 0.04, hex('#3a4352')); break;
+    case 'trolleyroll': {
+      for (const dx of [0, -0.55, -1.1]) {
+        box3D(x + dx - 0.24, x + dx + 0.24, 0.1, 0.16, z - 0.3, z + 0.3, hex('#6b7280'));
+        box3D(x + dx - 0.24, x + dx + 0.24, 0.16, 0.9, z - 0.3, z - 0.26, hex('#b8c0cc'));
+        box3D(x + dx - 0.2, x + dx + 0.2, 0.16, 0.6, z - 0.22, z + 0.22, hex(dx === 0 ? (p.bagCol || '#c0392b') : '#3b82f6'));
+      }
+      break;
+    }
     case 'wetfloor': box3D(x - 0.25, x + 0.25, 0, 0.62, z - 0.12, z + 0.12, hex('#ffcf1f')); { const q = W3(x, 0.4, z - 0.13); label('WET', q[0], q[1], Math.round(0.14 * F / q[2]), INK); } break;
   }
 }

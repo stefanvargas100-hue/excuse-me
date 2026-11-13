@@ -4,7 +4,7 @@ const esbuild = require('esbuild'), vm = require('node:vm');
 const context = {}; vm.createContext(context);
 vm.runInContext(esbuild.buildSync({entryPoints:['src/config/medals.js'],bundle:true,format:'iife',globalName:'medals',write:false}).outputFiles[0].text, context);
 const {MEDAL_TIMES,medalFor,nextMedal}=context.medals;
-for (const id of ['airport','nyc','shibuya','park','bridge','subway','takeshita','tsukiji','skytree']) {
+for (const id of ['airport','nyc','shibuya','park','bridge','subway','takeshita','tsukiji','skytree','security','baggage','gatechange']) {
  test(id+' targets cover every stage in strict order',()=>{
   const t=MEDAL_TIMES[id]; assert.ok(t); assert.ok(t.gold<t.silver && t.silver<t.bronze);
  });

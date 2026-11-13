@@ -1,4 +1,7 @@
 import {paintTsukiji} from './tsukiji.js';
+import {paintSecurity} from './security.js';
+import {paintBaggage} from './baggage.js';
+import {paintGateChange} from './gatechange.js';
 import {paintSkytree} from './skytree.js';
 import { paintTakeshita } from './takeshita.js';
 import { sameRoute } from '../config/side-routes.js';
@@ -36,13 +39,13 @@ export function render() {
   styleBegin();   // the cup's art style recolours everything drawn from here to styleEnd
   ctx.fillStyle = FOGCSS; ctx.fillRect(-W, -H, 3 * W, 3 * H);
   styleBackdrop();
-  if (LV.id === 'airport') paintAirport(); else if (LV.id === 'nyc') paintNYC(); else if (LV.id === 'park') paintPark(); else if (LV.id === 'bridge') paintBridge(); else if (LV.id === 'subway') paintSubway(); else if (LV.id === 'takeshita') paintTakeshita(); else if(LV.id==='tsukiji')paintTsukiji(); else if(LV.id==='skytree')paintSkytree(); else paintShibuya();
+  if (LV.id === 'airport') paintAirport(); else if (LV.id === 'nyc') paintNYC(); else if (LV.id === 'park') paintPark(); else if (LV.id === 'bridge') paintBridge(); else if (LV.id === 'subway') paintSubway(); else if (LV.id === 'takeshita') paintTakeshita(); else if(LV.id==='tsukiji')paintTsukiji(); else if(LV.id==='skytree')paintSkytree(); else if(LV.id==='security')paintSecurity(); else if(LV.id==='baggage')paintBaggage(); else if(LV.id==='gatechange')paintGateChange(); else paintShibuya();
   if (LV.id === 'nyc') { drawCars(); nycSteam(); }
   drawBelts();
   drawStrips();
   if (!S.route) drawPowerups();
   fxGround();
-  if(!['tsukiji','skytree'].includes(LV.id))styleGround();
+  if(!['tsukiji','skytree','security','baggage','gatechange'].includes(LV.id))styleGround();
   drawSideRoutes();
   for (const p of S.people) if (p.prop === 'spill' && (!S.race || sameRoute(S, p))) drawPerson(p);   // puddles lie under everyone
   const list = S.people.filter(p => p.prop !== 'spill').concat([S.me], S.race ? S.race.bots : [], visibleGhosts(), glassPanels()).sort((a, b) => b.z - a.z);

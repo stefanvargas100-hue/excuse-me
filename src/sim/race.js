@@ -1,4 +1,4 @@
-import { wetGrip } from './people.js';
+import { ropeContain, securityTarget, wetGrip } from './people.js';
 import { sideRoutes, sameRoute, updateRoute, routeSpeed } from '../config/side-routes.js';
 import { COMBO_SPEED_PER, comboLevel } from '../config/combo.js';
 export { comboLevel } from '../config/combo.js';
@@ -449,6 +449,7 @@ function stepBot(b, dt) {
   updateRoute(LV.id, b, b.z);
   b.thinkT -= dt;
   if (b.thinkT <= 0) { think(b); b.thinkT = 0.1 + R.rng() * 0.18; }   // people do not react instantly
+  if (LV.id === 'security') b.target = securityTarget(b.x, b.z, b.target);   // read the lane signs: an open lane before a stretch, then stay in it
   b.nearT = Math.max(0, b.nearT - dt); b.bumpT = Math.max(0, b.bumpT - dt); b.ghostT = Math.max(0, b.ghostT - dt); b.cool = Math.max(0, b.cool - dt);
   b.burstT -= dt; b.dashT -= dt; stepPowerups(b, dt);
   b.shoutCD = Math.max(0, (b.shoutCD || 0) - dt);
@@ -479,7 +480,7 @@ function stepBot(b, dt) {
   const bx0 = b.x, bz0 = b.z;
   b.x = clamp(b.x + b.vx * dt, -lim, lim); b.z += b.speed * routeSpeed(LV.id, b) * dt;
   updateRoute(LV.id, b, bz0);
-  { const cx = contain(LV.id, bx0, b.x, b.z); if (cx !== b.x) { b.x = cx; b.vx = 0; } }   // glass railings lock bots on the walkway too
+  { const cx = LV.id === 'security' ? ropeContain(bx0, b.x, b.z) : contain(LV.id, bx0, b.x, b.z); if (cx !== b.x) { b.x = cx; b.vx = 0; } }   // glass railings lock bots on the walkway too
   b.belt = beltFor(LV.id, b.x, b.z, b.speed); b.z += b.belt * dt;   // the walkway carries bots too
   if (Math.abs(b.x) >= lim) b.vx = 0;
   // solid people

@@ -799,7 +799,7 @@ for(const change of ['join','leave']) test('honest Cup still starts after a pre-
  for(const g of L.games){assert.equal(g.state,'play');assert.equal(g.friendCup().racers.length,L.games.length+2);}
 });
 
-for(const stages of [[1,3,4,5],[2,6,7,8]]) for(const bots of [0,6]) test('preset simulated Cup '+stages+' bots '+bots,async()=>{
+for(const stages of [[1,3,4,5],[2,6,7,8],[0,9,10,11]]) for(const bots of [0,6]) test('preset simulated Cup '+stages+' bots '+bots,async()=>{
  const L=await room(2); L.host.setRoomCup({stages,difficulty:1,bots});await settle();await readyPlayers(L.games);L.host.hostStart();await settle();await settle();quiet(L.games);
  for(let k=0;k<stages.length;k++){
  assert.equal(L.host.LV.id,L.host.LEVELS[stages[k]].id);

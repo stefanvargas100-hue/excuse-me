@@ -12,6 +12,8 @@ test('every stage is its own world: a style of its own, from the family its cup 
     assert.notEqual(id, 'classic', lv.name + ' fell back to the classic look');
     // Batch 21 placeholders explicitly reuse a Tokyo recipe until the art redirect.
     if (['tsukiji','skytree'].includes(lv.id)) assert.ok(['neonpop','noir'].includes(id));
+    // Batch 23 Airport placeholders explicitly reuse the space recipe until the art redirect.
+    else if (['security','baggage','gatechange'].includes(lv.id)) assert.equal(id, 'space');
     else assert.ok(!seen.has(id), lv.name + ' shares its style with another stage');
     seen.add(id);
     const fam = ST.STYLES[id].family;
