@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const {load}=require('./harness');
 function bridge(mode='classic',seed=42){const E=load(undefined,{seed});assert.equal(E.LEVELS[4]?.id,'bridge');E.setLevel(4);E.start(mode);return E;}
 test('bridge appends fifth stage and supports its three looks throughout the course',()=>{
- const E=bridge();assert.equal(E.LEVELS.map(l=>l.id).join(','),'airport,nyc,shibuya,park,bridge,subway,takeshita,tsukiji,skytree');
+ const E=bridge();assert.equal(E.LEVELS.map(l=>l.id).join(','),'airport,nyc,shibuya,park,bridge,subway,takeshita,tsukiji,skytree,security,baggage,gatechange');
  assert.equal(E.VARIANTS.bridge.map(v=>v[0]).join(','),'day,golden,mist');
  for(const mode of ['classic','race']){E.start(mode);for(const [v]of E.VARIANTS.bridge){E.setVariant(v);for(const z of [0,170,190,210,350,410,590,700]){E.S.pz=z;E.S.me.z=z;E.render();}}}
 });

@@ -1,7 +1,7 @@
 // Lobby for 2-4 phones: join, roster, start, drop-outs, rematch. Pretend room, no network. node --test
 const test = require('node:test');
 const assert = require('node:assert');
-const { load, readyPlayers } = require('./harness.js');
+const { load, readyPlayers, PROTO } = require('./harness.js');
 
 const DT = 1 / 30;
 const settle = () => new Promise(r => setTimeout(r, 5));
@@ -75,7 +75,7 @@ test('only the host can start a race', async () => {
 test('a start message from someone who is not the host is ignored', async () => {
   const { games } = await lobby(3);
   const other = games[2].lobbyPlayers().find(p => p.me).id;
-  games[1].injectRoomMessage('start', { proto: 12,  id: other, level: 0, seed: 'evil:1' });
+  games[1].injectRoomMessage('start', { proto: PROTO,  id: other, level: 0, seed: 'evil:1' });
   assert.notStrictEqual(games[1].state, 'play');
 });
 
@@ -128,7 +128,7 @@ test('a silent player is dropped after the wall-clock grace period, the rest kee
   games[0].hostStart(); await settle(); tickAll(games, 30 * 4);
   const [a, b, c] = games, bId = b.lobbyPlayers().find(p => p.me).id, cId = c.lobbyPlayers().find(p => p.me).id;
   for (let i = 0; i < 40; i++) { a.duelReceive('pos', { id: bId, n: i + 1, x: 0, z: i * 0.2, vx: 0, s: 5 }); a.duelReceive('pos', { id: cId, n: i + 1, x: 0, z: i * 0.2, vx: 0, s: 5 }); a.tick(DT); }
-  for (let i = 0; i < 16; i++) { a.advance(2000); a.injectRoomMessage('pos', { proto: 12,  id: cId, race: a.S.seed, n: 100 + i, x: 0, z: 10 + i * 0.1, vx: 0, s: 5 }); a.tick(DT); }
+  for (let i = 0; i < 16; i++) { a.advance(2000); a.injectRoomMessage('pos', { proto: PROTO,  id: cId, race: a.S.seed, n: 100 + i, x: 0, z: 10 + i * 0.1, vx: 0, s: 5 }); a.tick(DT); }
   assert.strictEqual(botsOf(a).map(x => x.peerId).join(), cId, 'b dropped, c stays; b=' + bId + ' c=' + cId);
 });
 
@@ -209,17 +209,17 @@ test('a pauser leaving releases the room and stale or unknown pause messages are
   games[1].pauseGame(); await settle(); assert.equal(games[0].state,'paused');
   games[1].leaveRoom(); games[1].toMenu(); await settle();
   assert.equal(games[0].state,'play');
-  games[0].injectRoomMessage('pause', { proto: 12, id:'unknown1',seed:games[0].S.seed,n:1,paused:true});
+  games[0].injectRoomMessage('pause', { proto: PROTO, id:'unknown1',seed:games[0].S.seed,n:1,paused:true});
   assert.equal(games[0].state,'play');
 });
 
 test('pause messages are ordered per racer and belong to the current race', async () => {
   const {games} = await lobby(2); games[0].hostStart(); await settle();
   const id=games[1].lobbyPlayers().find(p=>p.me).id, seed=games[0].S.seed;
-  games[0].injectRoomMessage('pause', { proto: 12, id,seed,n:2,paused:true}); assert.equal(games[0].state,'paused');
-  games[0].injectRoomMessage('pause', { proto: 12, id,seed,n:3,paused:false}); assert.equal(games[0].state,'play');
-  games[0].injectRoomMessage('pause', { proto: 12, id,seed,n:2,paused:true});
-  games[0].injectRoomMessage('pause', { proto: 12, id,seed:seed+'old',n:4,paused:true});
+  games[0].injectRoomMessage('pause', { proto: PROTO, id,seed,n:2,paused:true}); assert.equal(games[0].state,'paused');
+  games[0].injectRoomMessage('pause', { proto: PROTO, id,seed,n:3,paused:false}); assert.equal(games[0].state,'play');
+  games[0].injectRoomMessage('pause', { proto: PROTO, id,seed,n:2,paused:true});
+  games[0].injectRoomMessage('pause', { proto: PROTO, id,seed:seed+'old',n:4,paused:true});
   assert.equal(games[0].state,'play');
 });
 
@@ -229,6 +229,6 @@ test('a lost pauser removed by the host roster also releases the pause on other 
   const host=games[0].lobbyPlayers().find(p=>p.me).id;
   const gone=games[2].lobbyPlayers().find(p=>p.me).id;
   const players=games[0].lobbyPlayers().filter(p=>p.id!==gone);
-  games[1].injectRoomMessage('roster', { proto: 12, proto:games[1].PROTO,id:host,level:1,players});
+  games[1].injectRoomMessage('roster', { proto: PROTO, proto:games[1].PROTO,id:host,level:1,players});
   assert.equal(games[1].state,'play');
 });

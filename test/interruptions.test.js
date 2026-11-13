@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { load, readyPlayers } = require('./harness');
+const { load, readyPlayers, PROTO } = require('./harness');
 const settle = async () => { for (let i = 0; i < 20; i++) await Promise.resolve(); };
 
 // Multiple isolated game bundles, asynchronous channel delivery, controllable packet loss.
@@ -53,12 +53,12 @@ test('brief lobby drop reconnects with the same player and no duplicate roster e
 test('late packets and duplicate start cannot reset a race or alter a rematch', async () => {
   const { games: [h, g] } = await race(); const host = me(h), seed = g.S.seed;
   g.S.pz = 20;
-  g.injectRoomMessage('start', { proto: 12,  id: host, level: 1, seed });
+  g.injectRoomMessage('start', { proto: PROTO,  id: host, level: 1, seed });
   assert.equal(g.S.pz, 20);
-  g.injectRoomMessage('fin', { proto: 12,  id: host, race: 'old:1', ft: 2 });
+  g.injectRoomMessage('fin', { proto: PROTO,  id: host, race: 'old:1', ft: 2 });
   assert.equal(g.S.duel.peers[host].fin, null);
-  g.injectRoomMessage('fin', { proto: 12,  id: host, race: seed, ft: 10 });
-  g.injectRoomMessage('fin', { proto: 12,  id: host, race: seed, ft: 1 });
+  g.injectRoomMessage('fin', { proto: PROTO,  id: host, race: seed, ft: 10 });
+  g.injectRoomMessage('fin', { proto: PROTO,  id: host, race: seed, ft: 1 });
   assert.equal(g.S.duel.peers[host].fin, 10, 'first terminal finish is immutable');
 });
 
@@ -105,7 +105,7 @@ test('finished racers repeat their finish and late delivery refreshes both resul
 test('guest can leave and rejoin lobby; delayed bye from old identity is harmless', async () => {
   const { games: [h, g], code } = await lobby(); const old = me(g);
   g.leaveRoom(); await settle(); assert.equal(await g.joinRoom(code), true); await settle();
-  h.injectRoomMessage('bye', { proto: 12,  id: old });
+  h.injectRoomMessage('bye', { proto: PROTO,  id: old });
   assert.equal(h.lobbyPlayers().length, 2);
   assert.notEqual(me(g), old);
 });
@@ -146,7 +146,7 @@ test('out-of-order roster revisions cannot resurrect a player who left', async (
 test('a racer that keeps the socket alive but never finishes cannot block final results forever', async () => {
   const { games: [h, g] } = await race(); const id = me(g);
   h.S.race.finished = true; h.S.duel.send('fin', { ft: 12 });
-  for (let i = 0; i < 302; i++) { h.injectRoomMessage('hello', { proto: 12,  id, proto: h.PROTO }); h.advance(2000); }
+  for (let i = 0; i < 302; i++) { h.injectRoomMessage('hello', { proto: PROTO,  id, proto: h.PROTO }); h.advance(2000); }
   await settle();
   assert.equal(h.S.duel.peers[id].bye, true);
 });
@@ -260,7 +260,7 @@ test('incompatible start packets cannot start a joined guest on different rules'
   const { games: [h, g], net } = await lobby();
   const proto = net.packets.find(p => p.ev === 'roster').data.proto;
   for (const version of [undefined, proto + 1]) {
-    g.injectRoomMessage('start', { proto: 12,  id: me(h), proto: version, level: 1, seed: 'wrong:1' });
+    g.injectRoomMessage('start', { proto: PROTO,  id: me(h), proto: version, level: 1, seed: 'wrong:1' });
     assert.notEqual(g.state, 'play');
   }
   h.hostStart(); await settle();
@@ -272,7 +272,7 @@ test('host refuses missing and incompatible protocol versions without adding rac
   const { games: [h], net } = await lobby(2);
   const proto = net.packets.find(p => p.ev === 'roster').data.proto;
   for (const version of [undefined, proto + 1]) {
-    h.injectRoomMessage('hello', { proto: 12,  id: 'oldphone', proto: version, name: 'Old phone' });
+    h.injectRoomMessage('hello', { proto: PROTO,  id: 'oldphone', proto: version, name: 'Old phone' });
     assert.equal(h.lobbyPlayers().length, 2);
     assert.equal(net.packets.at(-1).data.why, 'version');
   }

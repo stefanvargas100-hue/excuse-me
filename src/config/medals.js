@@ -9,6 +9,9 @@ export const MEDAL_TIMES = {
   subway: { bronze: 153, silver: 138, gold: 121 },
   tsukiji: { bronze:151, silver:113, gold:92 },
   skytree: { bronze:186, silver:147, gold:122 },
+  security: { bronze: 156, silver: 123, gold: 101 },
+  baggage: { bronze: 142, silver: 112, gold: 99 },
+  gatechange: { bronze: 184, silver: 141, gold: 126 },
   takeshita: { bronze: 136, silver: 118, gold: 110 }
 };
 

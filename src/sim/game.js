@@ -18,7 +18,7 @@ import { account, gainXp, runXp } from '../save/level.js';
 import { buzz, store } from '../save/store.js';
 import { PERFECT_SPEED, banner } from './actions.js';
 import { collide, updMe, updPeople } from './crowd.js';
-import { wetGrip, genChunk, runEvent, scramble, seeded, spawnFast, spawnRival, updXings, walker } from './people.js';
+import { ropeContain, wetGrip, genChunk, runEvent, scramble, seeded, spawnFast, spawnRival, updXings, walker } from './people.js';
 import { STREAK_SPEED, addPop, nearMul, onPass } from './scoring.js';
 import { S, bestOf, calm, endShown, goalOf, reset, setEndShown, setNextRun, setRaceBuild, setState, state } from './state.js';
 import { startSlot } from './startgrid.js';
@@ -82,6 +82,7 @@ function movePlayer(dt) {
   const px0 = S.px;
   S.px += S.vx * dt;
   if (S.race) { const cx = contain(LV.id, px0, S.px, S.pz); if (cx !== S.px) { S.px = cx; S.vx = 0; } }   // glass railings on the airport walkway
+  if (LV.id === 'security') { const cx = ropeContain(px0, S.px, S.pz); if (cx !== S.px) { S.px = cx; S.vx = 0; } }   // rope lines between the queue lanes
   const lim = halfAt(S.pz + S.speed * dt) - 0.5;
   if (Math.abs(S.px) > lim) { S.px = clamp(S.px, -lim, lim); S.vx = 0; }
   if (S.race) { const r = { x: S.px, z: S.pz, route: S.route }; updateRoute(LV.id, r, S.pz); S.route = r.route; S.me.route = r.route; }

@@ -25,7 +25,7 @@ export const TRACKS = [
 ];
 
 // Each map keeps two complementary songs instead of cycling into another city's set.
-const PLAYLISTS = { airport: [1, 4], nyc: [2, 5], bridge: [5, 2], subway: [2, 5], tsukiji: [0, 3], skytree: [0, 3], takeshita: [0, 3], shibuya: [0, 3] };
+const PLAYLISTS = { airport: [1, 4], nyc: [2, 5], bridge: [5, 2], subway: [2, 5], tsukiji: [0, 3], skytree: [0, 3], security: [1, 4], baggage: [1, 4], gatechange: [1, 4], takeshita: [0, 3], shibuya: [0, 3] };
 export function trackForMap(map, visit = 0) {
   const list = PLAYLISTS[map] || PLAYLISTS.airport;
   return list[((visit % list.length) + list.length) % list.length];

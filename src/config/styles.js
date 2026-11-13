@@ -158,7 +158,7 @@ export const STYLES = {
 };
 
 // Each stage's own world, and the look a new stage in a known cup starts with.
-export const STAGE_STYLE = { airport: 'space', nyc: 'comic', park: 'funnies', bridge: 'pulp', subway: 'inknoir', shibuya: 'noir', takeshita: 'neonpop', tsukiji: 'neonpop', skytree: 'neonpop' };
+export const STAGE_STYLE = { airport: 'space', nyc: 'comic', park: 'funnies', bridge: 'pulp', subway: 'inknoir', shibuya: 'noir', takeshita: 'neonpop', tsukiji: 'neonpop', skytree: 'neonpop', security: 'space', baggage: 'space', gatechange: 'space' };
 export const CUP_STYLE = { 'New York': 'comic', Tokyo: 'noir', Airport: 'space' };
 
 export const styleIdFor = lv => (lv && (STAGE_STYLE[lv.id] || CUP_STYLE[lv.city])) || 'classic';

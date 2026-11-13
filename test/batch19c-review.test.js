@@ -11,9 +11,9 @@ const NY = [1, 3, 4, 5], TOKYO = [2, 6, 7, 8], DT = 1 / 30, J = x => JSON.string
 const settle = () => new Promise(r => setTimeout(r, 5));
 const base = stages => ({ seed: 'abcd-efgh', stages, difficulty: 1, players: [{ id: 'p0', name: 'mia' }, { id: 'p1', name: 'leo' }], rand: () => 0 });
 
-test('sim: only the two exact presets build a Cup', () => {
-  assert.ok(C.newFriendCup(base(NY)) && C.newFriendCup(base(TOKYO)));
-  const bad = [[3, 1, 4, 5], [1, 3, 5, 4], [6, 2], [0], [0, 0], [], [1, 3, 4, 5, 1], [1, 3, 4, 5, 2, 6], [2, 6, 2], [2], [6], [1, 3, 4], [2, 6, 0], [2, 6],
+test('sim: only the three exact presets build a Cup', () => {
+  assert.ok(C.newFriendCup(base(NY)) && C.newFriendCup(base(TOKYO)) && C.newFriendCup(base([0, 9, 10, 11])));
+  const bad = [[3, 1, 4, 5], [1, 3, 5, 4], [6, 2], [0], [0, 0], [0, 9], [0, 9, 10], [9, 10, 11, 0], [], [1, 3, 4, 5, 1], [1, 3, 4, 5, 2, 6], [2, 6, 2], [2], [6], [1, 3, 4], [2, 6, 0], [2, 6],
     [1.5, 3, 4, 5], ['1', '3', '4', '5'], [1, 3, 4, '5'], [NaN, 3, 4, 5], [1, 3, 4, 5.0000001], [null, 3, 4, 5], [[1], 3, 4, 5], [true, 3, 4, 5], [2, 6.0000001], [-0, 6]];
   for (const stages of bad) assert.strictEqual(C.newFriendCup(base(stages)), null, J(stages));
   for (const stages of [null, undefined, 'abcd', 12, {}, { length: 4, 0: 1, 1: 3, 2: 4, 3: 5 }, new Set(NY)]) assert.strictEqual(C.newFriendCup(base(stages)), null);
