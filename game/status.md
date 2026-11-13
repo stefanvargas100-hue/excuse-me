@@ -13,6 +13,7 @@
 - **Codex budget:** weekly 89% used at 19:20 on 2026-11-12, resets 2026-11-16 14:11 MST. Batch 21 cost about 3%. Prefer Claude Sonnet for 24/25 if Codex runs out; check `~/.codex/sessions` before starting Codex.
 
 - Update: batch 22 reported partial (ab523cf: implementation, focused tests and identical bot times/traffic watching vs stopped; missing browser evidence, Friend Cup confirmation, fit attribution 37 vs 36, final full suite). Finish brief `batch-22b-finish.md` sent to the same worker (dispatch ctx_c108fa97ae05). Review still follows.
+- Update: 22b done (4e18968: 951/951 full suite, 12 joined-room screenshots, fit 37 reproduced on archived baseline, zero introduced). Review brief `batch-22c-review.md` written, **not started**: start it (Claude Sonnet high, `--base-branch stefanvargas100-hue/spectating`, brief by absolute path) as soon as batch 23 reports, since only one Claude worker runs at a time.
 
 ### Next action
 Start a fresh lead session. Wait for workers. On batch 23: review diff and screenshots (Skytree came out very washed out under the neonpop glow; check the Airport `space` look), merge, rerun suite, then start the batch 22 Claude review. Then plan 24-26.
