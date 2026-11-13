@@ -1,6 +1,7 @@
 # To-do
 
 ## Current follow-ups - 2026-11-10
+- Lead/visual owner, S3 (new 2026-11-12): at 320x568 with 8 players the host Friend Cup status (#friendStatus) overflows by 39.67px and the lobby card by 70px (baseline 21px), after batches 18-19 lengthened status/preset text. Start stays reachable. Seen in lead fit run after merging batch 19. Batch 19c S4 notes (unused CUP_RACES imports, cupFromMessage not pinned to agreed preset pre-race) are logged in reports/batch-19c-review.md.
 - Lead/visual owner, S3: narrow customization item captions overlap card borders in batch-17d 320px extrema screenshots. Builder identifies existing cramped labels; independent 17f review must distinguish inherited/new. Include actual-size label readability in the queued visual pass.
 - Lead/visual owner, S3: review the 31 shared fit failures in batch-10c-evidence/fit-comparison.json (play/boards/stages/challenge). Independent 10d audit found zero introduced by host/Cup work; these existing issues remain open for the queued visual pass.
 - Lead/shared UI owner, S3: fix the leaderboard heading clipping at 320px. Independent batch-14c review reproduced it on baseline dd3fddb; evidence is in batch-14c-evidence/. Include in the queued visual review; no new regression in seeded movement.

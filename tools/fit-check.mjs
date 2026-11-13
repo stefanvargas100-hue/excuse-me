@@ -170,9 +170,9 @@ try {
         await page.locator('#playList button').filter({ hasText: 'Race friends' }).click();
         await click('#friendMake'); await page.locator('#friendCode').filter({ hasNotText: '----' }).waitFor();
         await page.locator('#friendFormat button').filter({ hasText: 'Cup' }).click();
-        for (const name of ['Shibuya Crossing', 'Terminal B', 'Brooklyn Bridge', 'Fifth Avenue']) await page.locator('#friendStages button').filter({ hasText: name }).click();
+        await page.locator('#friendStages button').filter({ hasText: 'Tokyo Cup' }).click();   // Cups are location presets (batch 19)
         await page.locator('#friendCupLevel button').filter({ hasText: 'Hard' }).click();
-        await page.locator('#friendStages button').filter({ hasText: '4. Fifth Avenue' }).waitFor();
+        await page.locator('#friendStages button[aria-pressed="true"]').filter({ hasText: 'Tokyo Cup' }).waitFor();
       }],
       ['friend cup setup full', async () => {
         await routes.find(r => r[0] === 'friend cup setup')[1]();
@@ -190,13 +190,13 @@ try {
               const ids = [host, ...Array.from({ length: 6 }, (_, i) => 'pl00000' + (i + 2)), d.id];
               const players = ids.map((id, i) => ({ id, name: i ? 'Hurried Tourist ' + (10 + i) : 'Breezy Commuter 37', look: {}, protocol: 2 }));
               const lobby = { protocol: 2, config: 1, rev: 1, level: 2, elim: false, phase: 'idle', plan: null, players: ids.map(id => ({ id, ready: false, n: -1, protocol: 2, connected: true, clock: true, rtt: null, seen: 0 })) };
-              setTimeout(() => handlers.forEach(h => h('roster', { proto: E.PROTO, id: host, session: 'fitcheck', rev: 1, level: 2, players, lobby, cupCfg: { stages: [2, 0, 4, 1], difficulty: 2 } })), 10);
+              setTimeout(() => handlers.forEach(h => h('roster', { proto: E.PROTO, id: host, session: 'fitcheck', rev: 1, level: 2, players, lobby, cupCfg: { stages: [1, 3, 4, 5], difficulty: 2, bots: 'fill' } })), 10);   // New York preset
             } }));
         });
         await page.locator('#playList button').filter({ hasText: 'Race friends' }).click();
         await click('#friendJoinBtn'); await page.locator('#friendInput').fill('ABCD'); await click('#friendGo');
         await page.locator('#friendGuest .friendroster li:not(.empty)').nth(7).waitFor();
-        await page.locator('#friendStatus').filter({ hasText: 'Shibuya Crossing' }).waitFor();
+        await page.locator('#friendStatus').filter({ hasText: 'Brooklyn Bridge' }).waitFor();
       }],
       ['friend cup standings', async () => { await home(); await friendCupEnd(1); }],
       ['friend cup final', async () => { await home(); await friendCupEnd(4); }],
