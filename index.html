@@ -21,6 +21,11 @@
 <canvas id="game" aria-label="Third-person view of a busy walkway"></canvas>
 
 <p id="liveStatus" class="livestatus" aria-live="polite" hidden></p>
+<div id="spectateBar" hidden role="region" aria-label="Spectating">
+ <div id="spectateName" aria-live="polite"></div>
+ <div><button id="spectatePrev" type="button" aria-label="Previous racer">Previous</button><button id="spectateNext" type="button" aria-label="Next racer">Next</button></div>
+ <button id="spectateStop" type="button">Stop watching</button>
+</div>
 <div id="hud" hidden>
   <div class="top">
     <div class="topr">

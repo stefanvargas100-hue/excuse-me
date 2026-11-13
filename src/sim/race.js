@@ -136,7 +136,7 @@ function makeBot(i, diff, name) {
 // difficulty: a Friend Cup brings its own level; everything else uses the saved one.
 export function initRace(botCount, names, difficulty) {
   const diff = DIFFICULTIES[difficulty ?? raceDifficulty()], n = botCount === 0 ? 0 : clamp(botCount || 3, 1, BOTS.length);   // 0 bots: a live race against a friend
-  S.race = { diff, bots: [], countT: COUNTDOWN, countLast: 99, rng: mulberry32(0x5eed + n), finished: false, place: 0, board: [], elapsed: 0 };
+  S.race = { spectate: { target: null, stopped: false }, diff, bots: [], countT: COUNTDOWN, countLast: 99, rng: mulberry32(0x5eed + n), finished: false, place: 0, board: [], elapsed: 0 };
   const pool = BOT_NAMES.slice();   // each race draws its racers' names at random, no repeats within a race
   for (let i = 0; i < n; i++) S.race.bots.push(makeBot(i, diff, names && names[i] || pool.splice((Math.random() * pool.length) | 0, 1)[0]));
   S.race.pickups = n > 0 ? placePowerups(LV.goal) : [];   // live races against friends have none: pickups are not shared between phones yet
@@ -519,9 +519,9 @@ function stepBot(b, dt) {
 }
 
 // A friend-room host who has been eliminated no longer runs, but still follows the others so they can be eliminated in turn.
-export function stepRemotes(dt) {
+export function stepRemotes(dt, sampleOnly = false) {
   for (const b of S.race.bots) if (b.remote) stepRemote(b, dt);
-  if (S.duel) duelTick(dt);
+  if (S.duel && !sampleOnly) duelTick(dt);
 }
 
 // A Friend Cup host who has finished, or dropped out, still runs the bots and follows the others until the race is decided.

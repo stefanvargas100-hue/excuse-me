@@ -1,7 +1,7 @@
 import { $ } from '../dom.js';
 
 /* ---------- menu screens: one full screen at a time, tap in and back out, nothing ever scrolls ---------- */
-const SCREENS = ['start', 'play', 'practice', 'challenge', 'stages', 'friend', 'boards', 'howto', 'settings', 'look', 'chal', 'profile', 'pause', 'end'];
+const SCREENS = ['spectateBar', 'start', 'play', 'practice', 'challenge', 'stages', 'friend', 'boards', 'howto', 'settings', 'look', 'chal', 'profile', 'pause', 'end'];
 let stack = [];
 let onResize = null;
 

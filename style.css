@@ -554,3 +554,8 @@ button:disabled.big, button:disabled.ghost { opacity: .5; cursor: default; }
 #friend .friendroster li { min-width: 0; }
 
 #friendStages .friendCity[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+
+#spectateBar { position:fixed; z-index:30; bottom:calc(12px + env(safe-area-inset-bottom)); left:12px; right:12px; max-width:366px; margin:auto; padding:12px; box-sizing:border-box; background:#172335; color:white; border-radius:16px; text-align:center; pointer-events:auto; }
+#spectateName { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-bottom:8px; }
+#spectateBar button { min-height:44px; margin:3px; touch-action:manipulation; }
+#spectateBar[hidden] { display:none; }

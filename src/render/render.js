@@ -28,7 +28,8 @@ export function render() {
   refreshWeather();
   const F0 = F;
   const live = S.live && camBob && !calm;
-  setVX(S.camX); setVZ(S.pz - CAM_BACK); setVY(CAM_UP);
+  const watched = S.race?.spectate?.target;
+  setVX(watched ? watched.x : S.camX); setVZ((watched ? watched.z : S.pz) - CAM_BACK); setVY(CAM_UP);
   setHOR(H * 0.34 + (live ? (1 - Math.cos(S.step)) * H * 0.0012 : 0));
   setCX(W / 2);
   ctx.save();
@@ -44,9 +45,9 @@ export function render() {
   fxGround();
   if(!['tsukiji','skytree'].includes(LV.id))styleGround();
   drawSideRoutes();
-  for (const p of S.people) if (p.prop === 'spill' && (!S.race || sameRoute(S, p))) drawPerson(p);   // puddles lie under everyone
+  for (const p of S.people) if (p.prop === 'spill' && (!S.race || sameRoute(watched || S, p))) drawPerson(p);   // puddles lie under everyone
   const list = S.people.filter(p => p.prop !== 'spill').concat([S.me], S.race ? S.race.bots : [], visibleGhosts(), glassPanels()).sort((a, b) => b.z - a.z);
-  for (const p of list.filter(p => !S.race || sameRoute(S,p))) { if (p.glass) drawGlass(p); else drawPerson(p); }
+  for (const p of list.filter(p => !S.race || sameRoute(watched || S,p))) { if (p.glass) drawGlass(p); else drawPerson(p); }
   drawSlipstream();
   styleEnd(); styleFinish();
   weatherGrade();
