@@ -12,6 +12,8 @@
 - **Queue after those:** 24 host-selected bots in plain friend races and Elimination (Director decision), 25 solo Tokyo and Airport Cups next to solo NYC Cup (`src/sim/cup.js`, own record identities), 26 bounded mid-Cup reconnect investigation (S3 below). Plans for 24-26 not written yet. Fable visual pass on hold until the Director gives visual direction.
 - **Codex budget:** weekly 89% used at 19:20 on 2026-11-12, resets 2026-11-16 14:11 MST. Batch 21 cost about 3%. Prefer Claude Sonnet for 24/25 if Codex runs out; check `~/.codex/sessions` before starting Codex.
 
+- Update: batch 22 reported partial (ab523cf: implementation, focused tests and identical bot times/traffic watching vs stopped; missing browser evidence, Friend Cup confirmation, fit attribution 37 vs 36, final full suite). Finish brief `batch-22b-finish.md` sent to the same worker (dispatch ctx_c108fa97ae05). Review still follows.
+
 ### Next action
 Start a fresh lead session. Wait for workers. On batch 23: review diff and screenshots (Skytree came out very washed out under the neonpop glow; check the Airport `space` look), merge, rerun suite, then start the batch 22 Claude review. Then plan 24-26.
 
