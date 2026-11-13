@@ -414,7 +414,7 @@ function showFriendCupEnd() {
   const restarting = D.cancelled && !over, race = restarting ? m.rounds.length + 1 : C.race;
   const mine = (restarting ? [] : m.rounds[C.race - 1] || []).find(r => r.id === D.meId), place = mine ? mine.place : R.place, cp = table.findIndex(r => r.id === D.meId) + 1, pts = cp ? table[cp - 1].points : 0;
   setPodium(R.board, S.me, R.bots);
-  $('endEyebrow').textContent = 'Friend Cup · ' + (m.ended ? 'standings so far' : over ? 'final standings' : 'race ' + race + ' of ' + CUP_RACES + ' · ' + LV.name);
+  $('endEyebrow').textContent = 'Friend Cup · ' + (m.ended ? 'standings so far' : over ? 'final standings' : 'race ' + race + ' of ' + m.stages.length + ' · ' + LV.name);
   const t = $('endTitle');
   t.textContent = restarting ? 'Race ' + race + ' restarts' : m.ended ? 'Host left' : over ? (cp === 1 ? 'Cup winner!' : ordinal(cp) + ' in the Cup') : !mine ? 'Finished · waiting for racers' : D.dnf ? 'Did not finish' : place === 1 ? 'Race won' : ordinal(place) + ' of ' + m.racers.length;
   t.className = (over && !m.ended ? cp === 1 : place === 1 && !D.dnf) ? 'good' : 'bad';
@@ -503,7 +503,7 @@ export function start(a, b, opts) {
   lastDaily = daily; lastMode = mode;
   setMod(opts && opts.mod !== undefined ? opts.mod : daily ? modOf(key).id : null);
   setRaceBuild(mode === 'race');   // the crowd generator adds belt riders in races only
-  const run = makeRun(duel && duel.cup ? { category: 'friendcup', rules: FRIEND_CUP_RULES, seed: duel.seed } : key || duel ? null : opts && opts.run);   // daily, weekly and friend races are always standard runs; a Friend Cup is its own category
+  const run = makeRun(duel && duel.cup ? { category: 'friendcup', rules: FRIEND_CUP_RULES + ":" + duel.cup.model.stages.join("-"), seed: duel.seed } : key || duel ? null : opts && opts.run);   // daily, weekly and friend races are always standard runs; a Friend Cup is its own category
   setR(key ? mulberry32(hashStr(key)) : duel ? mulberry32(hashStr(duel.seed)) : run.seed ? mulberry32(hashStr(run.seed)) : Math.random);
   setNextRun(run);
   reset();

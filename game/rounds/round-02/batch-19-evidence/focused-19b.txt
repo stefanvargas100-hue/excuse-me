@@ -1,0 +1,5 @@
+Command: node --test test/cap-wire-compatibility.test.js test/friend-groups.test.js test/friendcup.test.js test/friendcup-room.test.js test/host-handover.test.js
+Tests: 96
+Pass: 96
+Fail: 0
+Duration: 20814.2777 ms

@@ -4,13 +4,13 @@ const moduleCopy = { exports: {} };
 new Function('module', 'exports', buildSync({ entryPoints: ['src/sim/friendcup.js'], bundle: true, format: 'cjs', write: false }).outputFiles[0].text)(moduleCopy, moduleCopy.exports);
 const C = moduleCopy.exports;
 const J = x => JSON.parse(JSON.stringify(x));
-const setup = (n = 2) => ({ seed: 'friends', stages: [4, 0, 2, 1], difficulty: 1, players: Array.from({ length: n }, (_, i) => ({ id: 'p' + i, name: i < 2 ? 'mia' : 'Friend' + i })), rand: () => 0 });
+const setup = (n = 2) => ({ seed: 'friends', stages: [1, 3, 4, 5], difficulty: 1, players: Array.from({ length: n }, (_, i) => ({ id: 'p' + i, name: i < 2 ? 'mia' : 'Friend' + i })), rand: () => 0 });
 const make = n => C.newFriendCup(setup(n));
 const rows = c => C.cupRacers(c).map((r, i) => ({ id: r.id, place: i + 1, time: i === 7 ? null : 60 + i }));
 const freeze = x => { if (x && typeof x === 'object') { Object.values(x).forEach(freeze); Object.freeze(x); } return x; };
 
 test('2 through 8 players get ordered, unique bots and independent same-name friends', () => {
-  assert.deepEqual([C.FRIEND_CUP_RULES, C.CUP_RACES, C.CUP_RACERS, C.BOT_LEVELS], [2, 4, 8, 3]);
+  assert.deepEqual([C.FRIEND_CUP_RULES, C.CUP_RACES, C.CUP_RACERS, C.BOT_LEVELS], [3, 4, 8, 3]);
   for (let n = 2; n <= 8; n++) {
     const c = make(n), racers = C.cupRacers(c);
     assert.equal(racers.length, 8);
@@ -58,7 +58,7 @@ test('setup rejects malformed network values without throwing and strips extra f
   bad.push({ ...raw, racers: raw.racers.map(r => ({ ...r, id: 'same' })) }, { ...raw, racers: raw.racers.map(r => ({ ...r, bot: true })) }, { ...raw, racers: raw.racers.map(r => ({ ...r, left: 'yes' })) });
   for (const value of bad) assert.equal(C.cleanSetup(value), null);
   clean.racers[0].name = 'changed'; clean.stages[0] = 3;
-  assert.equal(c.racers[0].name, 'mia'); assert.equal(c.stages[0], 4);
+  assert.equal(c.racers[0].name, 'mia'); assert.equal(c.stages[0], 1);
 });
 
 test('invalid local setups and race rows are rejected without changing inputs', () => {
@@ -72,11 +72,11 @@ test('invalid local setups and race rows are rejected without changing inputs', 
 });
 
 test('Subway Platform is valid in a shared Friend Cup setup and race order', () => {
-  let c = C.newFriendCup({ ...setup(), stages: [1, 5, 3, 4] });
+  let c = C.newFriendCup({ ...setup(), stages: [1, 3, 4, 5] });
   assert.ok(c);
-  assert.deepEqual(C.cleanSetup(c).stages, [1, 5, 3, 4]);
+  assert.deepEqual(C.cleanSetup(c).stages, [1, 3, 4, 5]);
   c = C.addRace(c, rows(c));
-  assert.equal(C.currentStage(c), 5);
+  assert.equal(C.currentStage(c), 3);
 });
 
 test('custom fields of 2, 5 and 8 score four complete races', () => {
@@ -89,4 +89,13 @@ test('custom fields of 2, 5 and 8 score four complete races', () => {
     assert.deepEqual(C.standings(c).map(r=>r.points),[40,32,24,20,16,12,8,4].slice(0,total));
   }
   for (const bots of [-1,7,1.5,'2',null]) assert.equal(C.newFriendCup({...setup(),bots}),null);
+});
+
+test('only exact location presets are accepted and finish at their own length',()=>{
+ for(const stages of [[1,3,4,5],[2,6]]) for(const bots of [0,6]) {
+ let c=C.newFriendCup({...setup(),stages,bots});assert.ok(c);
+ for(let i=0;i<stages.length;i++){assert.equal(C.friendCupOver(c),false);assert.equal(C.currentStage(c),stages[i]);c=C.addRace(c,rows(c));}
+ assert.equal(C.friendCupOver(c),true);assert.equal(C.currentStage(c),null);assert.equal(C.standings(c)[0].points,10*stages.length);
+ }
+ for(const stages of [[0,1,2,3],[5,4,3,1],[2,2],[2],[2,6,1],[1,3,4]])assert.equal(C.newFriendCup({...setup(),stages}),null);
 });

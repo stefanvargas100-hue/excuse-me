@@ -68,7 +68,7 @@ const cupLooks = {};      // id -> look, kept so a bot taking over from a player
 const RACE_SEED = /:race\d+$/;
 // Room protocol version. Race layouts and the start handshake must be identical on every phone, so phones on different builds
 // refuse each other instead of racing on different crowds. Raise it whenever a change would make layouts or rules differ.
-export const PROTO = 10;
+export const PROTO = 11;
 let myId = '', hostId = '', roster = [];        // roster: [{ id, name, look }], the host first, me included
 let inRoster = false, raced = false, hostGone = false, lastStatus = '', joinWaiter = null;
 let wantMe = false; const wants = new Set();    // rematch: everyone still in the room has to ask
@@ -172,7 +172,7 @@ const changed = () => {
   ui.roster(lobbyPlayers());
   if (room && inRoster && !raced && lobby && disconnectedAt === null) {
     const view = lobby.view(), stage = cupCfg ? cupSummary() : LEVELS[levelIdx].name;
-    lastStatus = lobbyNotice || (cupCfg && !validCup(cupCfg) ? (role === 'host' ? 'Friend Cup: pick 4 different stages, in race order.' : 'Friend Cup · the host is choosing stages.') :!view.compatible ? 'Update the game on every phone before joining.' : view.busy ? 'Preparing race. Keep the game open.' :
+    lastStatus = lobbyNotice || (cupCfg && !validCup(cupCfg) ? (role === 'host' ? 'Friend Cup: choose a location preset.' : 'Friend Cup · the host is choosing a location preset.') :!view.compatible ? 'Update the game on every phone before joining.' : view.busy ? 'Preparing race. Keep the game open.' :
       roster.length < 2 ? 'Waiting for friends to join...' : lobby.canStart(role === 'host') || view.players.every(p => p.ready) ? stage + ' · Everyone is ready. ' + (role === 'host' ? 'Press Start race.' : 'Waiting for the host.') :
       'Connected · ' + stage + ' · ' + (role === 'host' ? 'Waiting for guests to choose Ready.' : 'Choose Ready when you are set.') + '');
   }
@@ -238,7 +238,7 @@ function cupSummary() {
   const diff = DIFFICULTIES[cupCfg.difficulty], bots = diff ? ' · ' + diff.name + ' bots' : '';
   const count = cupCfg.bots === 'fill' ? MAX_PLAYERS - roster.length : cupCfg.bots;
   const detail = ' \u00b7 ' + roster.length + ' players, ' + (count ? count + ' bots' : 'no bots');
-  return (role === 'host' || !validCup(cupCfg) ? 'Friend Cup' + bots : 'Friend Cup: ' + cupCfg.stages.map(s => LEVELS[s].name).join(', ') + bots) + detail;
+  return (role === 'host' || !validCup(cupCfg) ? 'Friend Cup' + bots : 'Friend Cup: ' + LEVELS[cupCfg.stages[0]].city + ' (' + cupCfg.stages.length + ' races): ' + cupCfg.stages.map(s => LEVELS[s].name).join(', ') + bots) + detail;
 }
 const leftIds = c => c.racers.filter(r => r.left).map(r => r.id);
 // The whole Cup so far. The setup goes as first agreed: cleanSetup refuses racers marked as left, so they travel in their own list.
@@ -257,9 +257,9 @@ function syncCupRun() {
 // Rebuilds a Cup from a message, or returns null. Nothing is kept from a message with anything wrong in it.
 function cupFromMessage(m, sender = hostId) {
   try {
-    if (!m || m.proto !== PROTO || !Array.isArray(m.rounds) || m.rounds.length > CUP_RACES || !Array.isArray(m.left)) return null;
+    if (!m || m.proto !== PROTO || !Array.isArray(m.rounds) || !Array.isArray(m.left)) return null;
     const setup = cleanSetup(m.setup);
-    if (!setup || setup.racers[0].id !== (cup?.racers[0].id || hostId) || !setup.racers.some(r => r.id === myId && !r.bot)) return null;
+    if (!setup || m.rounds.length > setup.stages.length || setup.racers[0].id !== (cup?.racers[0].id || hostId) || !setup.racers.some(r => r.id === myId && !r.bot)) return null;
     // Membership can change after the last roster. Use the setup's validated humans,
     // while requiring a configuration that was valid when it was agreed.
     if (!cupCfg?.agreed) return null;
@@ -469,7 +469,7 @@ function onMessage(ev, data) {
     raceElim = data.elim === true;
     if (!raced) {
       const c = data.cupCfg;
-      cupCfg = c ? { stages: Array.isArray(c.stages) ? c.stages.slice(0, 8) : [], difficulty: c.difficulty, bots: normalBots(c.bots) } : null;
+      cupCfg = c ? { stages: Array.isArray(c.stages) ? c.stages.slice() : [], difficulty: c.difficulty, bots: normalBots(c.bots) } : null;
       if (cupCfg) cupCfg.agreed = validCup(cupCfg);
       if (!cupCfg?.agreed) cup = null; else rememberLooks();
     }
@@ -724,7 +724,7 @@ export function setRoomCup(cfg) {
   if (cfg && (bots === null || bots !== 'fill' && bots > MAX_PLAYERS - roster.length)) return false;
   if (role !== 'host' || !room || raced || (!cfg && !cupCfg)) return false;
   cup = null;
-  cupCfg = cfg ? { stages: Array.isArray(cfg.stages) ? cfg.stages.slice(0, 8) : [], difficulty: cfg.difficulty, bots } : null;
+  cupCfg = cfg ? { stages: Array.isArray(cfg.stages) ? cfg.stages.slice() : [], difficulty: cfg.difficulty, bots } : null;
   if (cupCfg) { raceElim = false; if (validCup(cupCfg)) levelIdx = cupCfg.stages[0]; }
   ensureLobby();
   lobby.setPlayers(lobbyMembers(), -1, raceElim);   // the start code clears Ready when the level changes, so step away and back

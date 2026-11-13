@@ -1,0 +1,93 @@
+{
+  "method": "Batch 10c multi-page local relay; external traffic blocked",
+  "results": [
+    {
+      "city": "New York",
+      "name": "host",
+      "width": 320,
+      "horizontalOverflow": 0,
+      "selection": [
+        1,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "city": "New York",
+      "name": "guest",
+      "width": 320,
+      "horizontalOverflow": 0,
+      "selection": [
+        1,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "city": "Tokyo",
+      "name": "host",
+      "width": 320,
+      "horizontalOverflow": 0,
+      "selection": [
+        2,
+        6
+      ]
+    },
+    {
+      "city": "Tokyo",
+      "name": "guest",
+      "width": 320,
+      "horizontalOverflow": 0,
+      "selection": [
+        2,
+        6
+      ]
+    },
+    {
+      "city": "New York",
+      "name": "host",
+      "width": 390,
+      "horizontalOverflow": 0,
+      "selection": [
+        1,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "city": "New York",
+      "name": "guest",
+      "width": 390,
+      "horizontalOverflow": 0,
+      "selection": [
+        1,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "city": "Tokyo",
+      "name": "host",
+      "width": 390,
+      "horizontalOverflow": 0,
+      "selection": [
+        2,
+        6
+      ]
+    },
+    {
+      "city": "Tokyo",
+      "name": "guest",
+      "width": 390,
+      "horizontalOverflow": 0,
+      "selection": [
+        2,
+        6
+      ]
+    }
+  ]
+}

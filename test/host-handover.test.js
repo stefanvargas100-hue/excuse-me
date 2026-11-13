@@ -4,7 +4,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { load, readyPlayers } = require('./harness.js');
 
-const DT = 1 / 30, STAGES = [2, 0, 4, 1];
+const DT = 1 / 30, STAGES = [1, 3, 4, 5];
 const settle = () => new Promise(r => setTimeout(r, 5));
 const J = x => JSON.stringify(x);
 

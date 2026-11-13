@@ -1,0 +1,17 @@
+﻿
+> excuse-me@0.1.0 build
+> vite build
+
+vite v8.3.6 building client environment for production...
+transforming...
+✓ 95 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   20.87 kB │ gzip:   5.51 kB
+dist/assets/index-LKkpkx0W.css    34.04 kB │ gzip:   7.26 kB
+dist/assets/rolldown-runtime.js    0.18 kB │ gzip:   0.14 kB
+dist/assets/debugview.js           2.51 kB │ gzip:   1.13 kB
+dist/assets/lineup.js              5.11 kB │ gzip:   2.62 kB
+dist/assets/main.js              344.97 kB │ gzip: 132.85 kB
+
+✓ built in 109ms

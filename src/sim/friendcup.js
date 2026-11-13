@@ -1,11 +1,13 @@
 /* Pure Friend Cup rules. Setup is shareable JSON; rounds contain host-decided results. */
 import { pointsFor, rankRows } from './cup.js';
+import { LEVELS } from '../config/levels.js';
+import { cupPresets } from './cup-presets.js';
 import { BOT_NAMES } from '../config/names.js';
 
-export const FRIEND_CUP_RULES = 2, CUP_RACES = 4, CUP_RACERS = 8, BOT_LEVELS = 3;
+export const FRIEND_CUP_RULES = 3, CUP_RACES = 4, CUP_RACERS = 8, BOT_LEVELS = 3;
 const text = x => typeof x === 'string' && x.trim().length > 0 && x.length <= 24;
 const object = x => x !== null && typeof x === 'object' && !Array.isArray(x);
-const stagesOK = x => Array.isArray(x) && x.length === CUP_RACES && new Set(x).size === CUP_RACES && Array.from(x).every(s => Number.isInteger(s) && s >= 0 && s <= 5);
+const stagesOK = x => Array.isArray(x) && cupPresets(LEVELS).some(g => g.indices.length === x.length && g.indices.every((s, i) => x[i] === s));
 const difficultyOK = x => Number.isInteger(x) && x >= 0 && x < BOT_LEVELS;
 
 // Copy only protocol fields. Network input is untrusted, including property access.
@@ -53,7 +55,7 @@ export function newFriendCup(options) {
 }
 
 export const cupRacers = cup => cup.racers.map(r => ({ ...r }));
-export const friendCupOver = cup => cup.ended || cup.rounds.length >= CUP_RACES;
+export const friendCupOver = cup => cup.ended || cup.rounds.length >= cup.stages.length;
 export const currentStage = cup => friendCupOver(cup) ? null : cup.stages[cup.rounds.length];
 // Race numbers are one-based in the shared seed protocol.
 export const raceSeed = cup => cup.seed + ':race' + (cup.rounds.length + 1);

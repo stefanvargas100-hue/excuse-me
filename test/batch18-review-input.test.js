@@ -3,7 +3,7 @@ const test = require('node:test');
 const assert = require('node:assert');
 const { load, readyPlayers } = require('./harness.js');
 
-const DT = 1 / 30, STAGES = [2, 0, 4, 1], POINTS = [10, 8, 6, 5, 4, 3, 2, 1];
+const DT = 1 / 30, STAGES = [1, 3, 4, 5], POINTS = [10, 8, 6, 5, 4, 3, 2, 1];
 const settle = () => new Promise(r => setTimeout(r, 5));
 const J = x => JSON.stringify(x);
 

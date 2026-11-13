@@ -552,3 +552,5 @@ button:disabled.big, button:disabled.ghost { opacity: .5; cursor: default; }
 #friend .card.full > *, #friendHost, #friendGuest { flex-shrink: 0; }
 #friend .friendroster { min-width: 0; }
 #friend .friendroster li { min-width: 0; }
+
+#friendStages .friendCity[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
