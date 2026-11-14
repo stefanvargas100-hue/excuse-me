@@ -1,5 +1,10 @@
 # Status
 
+## Batch 24 merged - 2026-11-14
+- **Batch 24 room bots merged** (af69fc6) after 24b HOLD, 24c fixes (65742e3) and 24d Sonnet re-review PASS (3ff10f2, fixture re-recorded on develop byte-identical). PROTO 14. Lead suite on develop: 1031 pass, 0 fail, 2 todo; build and diff check pass. room-bots, room-bots-review, room-bots-rereview workspaces and branches removed. S4 notes in `reports/batch-24d-rereview.md` (0-bot host lobby also gets the smaller code; 375x667 and 360x800 unmeasured).
+- develop is local only, ahead of the 20b3d58 playtest by batches 24 and 25. Pushing needs Director approval.
+- **Next:** plan batch 26 (bounded mid-Cup reconnect investigation, S3), Claude only.
+
 ## Lobby fix, playtest pushed, batch 25 started - 2026-11-14
 
 **Updated:** 2026-11-14, by Claude (lead). Supersedes "Next action" below.
