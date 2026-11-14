@@ -1,5 +1,12 @@
 # Status
 
+## Lobby fix, playtest pushed, batch 25 started - 2026-11-14
+
+**Updated:** 2026-11-14, by Claude (lead). Supersedes "Next action" below.
+- Lead fixed the S3 Friend Cup lobby overflow (20b3d58): `#friendStages` is a column flex box with a 210px cap that inherited `flex-wrap: wrap` from `.modes`, so the third city wrapped into an off-screen column. Now `nowrap`, plus tighter city buttons under max-height 640px. Fit 58 -> 40; remaining lobby items are vertical overflow with 8 players at 320 (card 76px, status 46px) and the older 390/1280 ones. Suite 1009 pass, 0 fail, 2 todo; build and diff check pass.
+- **Director approved the push. Published playtest: 20b3d58, verified by the lead.** Tests run 43561097371 and Pages run 43562423840 succeeded; playtest HTML 200 and `assets/main.js` contains 20b3d58. Contents: preset Cups, tutorial movement, spectating, all 12 stages. Phone playtest pending.
+- Codex weekly was 91% (2026-11-12), resets 2026-11-16 14:11 MST. So: batch 25 solo Tokyo/Airport Cups on Claude Sonnet now (`batch-25-solo-cups.md`, workspace solo-cups). Batch 24 bots in friend races/Elimination (online, high risk, Claude Opus or Codex after reset, independent review by the other model) and 26 reconnect (duel.js, after 24) follow; plans not written yet.
+
 ## Lead handoff: Cups being completed - 2026-11-12
 
 **Updated:** 2026-11-12, by Claude Opus (lead), at a context handover (past 100K). This section is current; the section below is today's history.
