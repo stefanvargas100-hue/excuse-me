@@ -41,7 +41,7 @@ import { BOT_NAMES } from '../config/names.js';
 import { effects, statsOf } from '../config/stats.js';
 import { LOOK } from '../save/progress.js';
 import { CUP_RACERS, CUP_RACES, FRIEND_CUP_RULES, friendCupOver, standings as friendCupTable } from './friendcup.js';
-import { CUP_RULES, CUP_STAGES, addRound, betterCup, cupDone, cupPlace, cupPoints, cupTable, cupTime, cupXp, pointsFor, decodeCup, encodeCup, newCup } from './cup.js';
+import { CUP_RULES, cupStagesFor, addRound, betterCup, cupDone, cupPlace, cupPoints, cupTable, cupTime, cupXp, pointsFor, decodeCup, encodeCup, newCup } from './cup.js';
 import { CHALLENGE_SUBMIT_ENABLED, challengeFor, utcWeekKey, validChallengeTime } from '../config/challenge.js';
 
 
@@ -427,8 +427,8 @@ function showCupAward(key, points) {
 function showCupEnd() {
   const m = S.cup.model, done = cupDone(m), R = S.race, place = R.place, cp = cupPlace(m), n = R.board.length, table = cupTable(m);
   setPodium(R.board, S.me, R.bots);
-  $('endEyebrow').textContent = 'NYC Cup · round ' + m.rounds.length + ' of ' + CUP_STAGES.length + ' · ' + LV.name;
-  const t = $('endTitle'); t.textContent = done ? (cp === 1 ? 'Cup winner!' : ordinal(cp) + ' in the NYC Cup') : place === 1 ? 'Round won' : ordinal(place) + ' of ' + n; t.className = (done ? cp === 1 : place === 1) ? 'good' : 'bad';
+  $('endEyebrow').textContent = cupName(S.cup) + ' · round ' + m.rounds.length + ' of ' + m.stages.length + ' · ' + LV.name;
+  const t = $('endTitle'); t.textContent = done ? (cp === 1 ? 'Cup winner!' : ordinal(cp) + ' in the ' + cupName(S.cup)) : place === 1 ? 'Round won' : ordinal(place) + ' of ' + n; t.className = (done ? cp === 1 : place === 1) ? 'good' : 'bad';
   $('endLead').hidden = true;
   $('sScoreLabel').textContent = 'Round time'; $('sScore').textContent = fmtTime(S.time);
   setStat('sBest', done ? 'Cup points' : 'Cup points so far', cupPoints(m) + (done && S.cup.newBest ? ' · new best' : ''));
@@ -438,7 +438,7 @@ function showCupEnd() {
   const bd = $('raceBoard'); bd.hidden = false; bd.innerHTML = '';
   table.forEach((r, i) => { const li = document.createElement('li'); if (r.me) li.className = 'me'; li.textContent = (i + 1) + '. ' + r.name + ' · ' + r.points + ' pts'; bd.appendChild(li); });
   showUnlocks(); $('unlockNote').hidden = true; $('nextNote').hidden = true; $('cleanNote').hidden = true;
-  const nx = $('next'); nx.hidden = done; nx.disabled = false; nx.textContent = done ? '' : 'Next round: ' + LEVELS[CUP_STAGES[m.rounds.length]].name;
+  const nx = $('next'); nx.hidden = done; nx.disabled = false; nx.textContent = done ? '' : 'Next round: ' + LEVELS[m.stages[m.rounds.length]].name;
   $('again').hidden = !done; $('again').disabled = false; $('again').textContent = 'Race again'; $('again').className = 'big';
   $('end').hidden = false;
 }
@@ -582,11 +582,12 @@ export function startChallenge(date) {
   start('race', undefined, { run: { category: 'challenge', rules: c.rules, seed: c.seed, outfit: c.outfit }, solo: true, challenge: c });
 }
 
-/* ---------- NYC Cup: three bot races in a row ----------
+/* ---------- Solo Cups: four bot races in a row, in New York, Tokyo or Airport ----------
    cupRun lives only while a cup is being played. toMenu() drops it, so an abandoned cup leaves no trace. */
 let cupRun = null;
-const cupKey = 'excuseme_cup_nyc:r' + CUP_RULES;
-export const cupBest = () => decodeCup(store.get(cupKey, ''));
+const cupKeyFor = city => 'excuseme_cup_' + (city === 'New York' ? 'nyc' : city.toLowerCase()) + ':r' + CUP_RULES;
+const cupName = c => (c.city === 'New York' ? 'NYC' : c.city) + ' Cup';
+export const cupBest = (city = 'New York') => decodeCup(store.get(cupKeyFor(city), ''));
 export function cupState() {
   if (!cupRun) return null;
   const m = cupRun.model;
@@ -594,13 +595,14 @@ export function cupState() {
 }
 function startCupRound() {
   const c = cupRun;
-  setLevel(CUP_STAGES[c.round]);
+  setLevel(c.model.stages[c.round]);
   start('race', undefined, { run: { category: 'cup', rules: CUP_RULES, seed: c.model.seed + ':round' + c.round, outfit: c.outfit }, cup: c });
 }
-export function startCup() {
+export function startCup(city = 'New York') {
+  const stages = cupStagesFor(city, LEVELS); if (!stages) return;
   const pool = BOT_NAMES.slice(), bots = [];
   for (let i = 0; i < 7; i++) bots.push(pool.splice((Math.random() * pool.length) | 0, 1)[0]);
-  cupRun = { model: newCup({ seed: Math.random().toString(36).slice(2, 10), bots }), round: 0, scored: -1, newBest: false, outfit: { ...LOOK } };
+  cupRun = { model: newCup({ seed: Math.random().toString(36).slice(2, 10), bots, stages }), city, round: 0, scored: -1, newBest: false, outfit: { ...LOOK } };
   startCupRound();
 }
 export function nextCupRound() {
@@ -616,8 +618,8 @@ function cupRoundDone() {
   c.model = addRound(c.model, { place: R.place, time: S.time, board: R.board.map((r, i) => ({ name: r.me ? 'You' : r.name, me: !!r.me, place: i + 1, time: r.finishT })) });
   if (!cupDone(c.model)) return;
   const result = { points: cupPoints(c.model), time: cupTime(c.model) };
-  c.newBest = betterCup(result, cupBest());
-  if (c.newBest) store.set(cupKey, encodeCup(result));
+  c.newBest = betterCup(result, cupBest(c.city));
+  if (c.newBest) store.set(cupKeyFor(c.city), encodeCup(result));
   const xp = cupXp(cupPlace(c.model));
   S.xpGained = xp; gainXp(xp);
 }
@@ -629,14 +631,14 @@ export function startPractice(id) {
 }
 // Race again / Restart keeps the format (elimination) of the run being repeated.
 let lastOpts;
-export function restartRun() { if (lastCup) { if (cupRun && cupDone(cupRun.model)) startCup(); return; } if (lastChallenge) startChallenge(); else start(lastDaily, lastMode, lastOpts); }
+export function restartRun() { if (lastCup) { if (cupRun && cupDone(cupRun.model)) startCup(cupRun.city); return; } if (lastChallenge) startChallenge(); else start(lastDaily, lastMode, lastOpts); }
 export function lessonRetry() { if (S && S.lesson) restartLesson(); }
 export function lessonNext() { if (S && S.lesson) startPractice(LESSONS[Math.min(LESSONS.length - 1, lessonIndex(S.lesson.id) + 1)].id); }
 
 function showPauseMenu() {
   touches.clear(); keys.l = keys.r = false; setPendingDash(null);
   Music.suspend();
-  $('pauseEyebrow').textContent = (S.duel ? 'Room paused - ' : S.cup ? 'NYC Cup round ' + (S.cup.round + 1) + ' of ' + CUP_STAGES.length + ' - ' : S.lesson ? 'Practice - ' : S.race ? 'Race - ' : '') + LV.city + ' - ' + LV.name + ' - ' + Math.floor(S.pz) + ' m';
+  $('pauseEyebrow').textContent = (S.duel ? 'Room paused - ' : S.cup ? cupName(S.cup) + ' round ' + (S.cup.round + 1) + ' of ' + S.cup.model.stages.length + ' - ' : S.lesson ? 'Practice - ' : S.race ? 'Race - ' : '') + LV.city + ' - ' + LV.name + ' - ' + Math.floor(S.pz) + ' m';
   $('restart').hidden = !!(S.daily || S.weekly || S.duel || S.cup);
   $('pmenu').textContent = S.cup ? 'Abandon cup' : S.duel ? 'Leave race' : S.daily || S.weekly ? 'End run' : 'Main menu';
   const waiting = S.duel && !S.duel.pausers.has(S.duel.meId);
