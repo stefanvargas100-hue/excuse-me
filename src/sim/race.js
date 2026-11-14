@@ -171,6 +171,8 @@ export function addRemoteRacer(look, name, peerId, slot = 0) {
   R.bots.push(b); return b;
 }
 /* ---------- Friend Cup: the host runs the bots, every other phone draws them like a friend ---------- */
+// Does this phone run the room's bots? A Cup host does, and so does the host of a plain or Elimination race that has bots.
+export const runsBots = D => !!D && (D.cup ? !!D.cup.host : !!(D.field && D.field.host));
 // Every phone works out the same look from the Cup's seed, so a bot is the same person on all of them.
 export function cupBotLook(i, seed) {
   const d = BOTS[i % BOTS.length];
@@ -189,7 +191,7 @@ export function cupTakeOver(id, look) {
 // One combined message for every bot: [id, x, z, vx, speed, finish time or null]. Clamped to what a guest will accept.
 function botRows() {
   const r = v => Math.round(v * 100) / 100, rows = [];
-  for (const b of S.race.bots) if (b.aiBot && !b.remote) rows.push([b.peerId, r(clamp(b.x, -20, 20)), r(Math.min(b.z, LV.goal + 15)), r(clamp(b.vx, -20, 20)), r(clamp(b.speed, 0, 20)), b.done ? b.finishT : null, b.route || ""]);
+  for (const b of S.race.bots) if (b.aiBot && !b.remote) { if (b.done) b.finSent = true; rows.push([b.peerId, r(clamp(b.x, -20, 20)), r(Math.min(b.z, LV.goal + 15)), r(clamp(b.vx, -20, 20)), r(clamp(b.speed, 0, 20)), b.done ? b.finishT : null, b.route || ""]); }
   return rows;
 }
 // Anyone on a bot's tail counts the same, host or guest. Otherwise only the host's phone would know who was drafting it.
@@ -223,10 +225,10 @@ function duelTick(dt) {
   if (D.sendT <= 0) {
     D.sendT = D.sendEvery;
     const r = v => Math.round(v * 100) / 100;
-    if (!(S.race.elim && S.race.elim.meOut) && !(D.cup && S.race.finished)) D.send('pos', { n: ++D.n, x: r(S.px), z: r(S.pz), vx: r(S.vx), s: r(S.speed), route: S.route || '' });
-    if (D.cup && D.cup.host) { const rows = botRows(); if (rows.length) D.send('bots', { n: ++D.botN, rows }); }
+    if (!(S.race.elim && S.race.elim.meOut) && !((D.cup || D.field) && S.race.finished)) D.send('pos', { n: ++D.n, x: r(S.px), z: r(S.pz), vx: r(S.vx), s: r(S.speed), route: S.route || '' });
+    if (runsBots(D)) { const rows = botRows(); if (rows.length) D.send('bots', { n: ++D.botN, rows }); }
   }
-  if (D.cup && D.cup.host) for (const b of S.race.bots) if (b.aiBot && !b.remote && b.done && D.peers[b.peerId].fin == null) D.peers[b.peerId].fin = b.finishT;
+  if (runsBots(D)) for (const b of S.race.bots) if (b.aiBot && !b.remote && b.done && D.peers[b.peerId].fin == null) D.peers[b.peerId].fin = b.finishT;
   for (const f of S.race.bots.filter(b => b.remote)) {
     const P = D.peers[f.peerId];
     if (!f.done && (P.bye || (!D.managed && P.remote.lastSeen() > 0 && S.clock - P.remote.lastSeen() > FRIEND_SILENT))) {
@@ -411,8 +413,8 @@ function think(b) {
       }
       // think() precedes cupPressure(): reject stale pressure here as well, before it can steer a lane.
       const pressureSource = b.pressPeer == null ? S : S.race.bots.find(o => o.remote && o.peerId === b.pressPeer);
-      const pressureFloor = !S.duel?.cup || (b.pressRoute === (b.route || '') && pressureSource && sameRoute(b, pressureSource));
-      if (b.pressT > 0 && pressureFloor && Math.abs(tx - (S.duel?.cup ? b.pressX : S.px)) < 0.8) c += 1.6 * fight;
+      const pressureFloor = !S.duel || (b.pressRoute === (b.route || '') && pressureSource && sameRoute(b, pressureSource));
+      if (b.pressT > 0 && pressureFloor && Math.abs(tx - (S.duel ? b.pressX : S.px)) < 0.8) c += 1.6 * fight;
       for (const pk of S.race.pickups || []) if (!b.route && !pk.taken && pk.z - b.z > 0.5 && pk.z - b.z < 12 && Math.abs(tx - pk.x) < 0.5) c -= 0.9 * fight;   // go for a pickup
       if (onStrip(LV.id, tx, b.z + 6)) c -= 1.1 * fight;
       const bd = beltAt(LV.id, tx, b.z + 10);   // airport walkway: plan the approach early (the glass is shut once you are alongside), aim for the middle of the passing lane
@@ -454,7 +456,7 @@ function stepBot(b, dt) {
   b.burstT -= dt; b.dashT -= dt; stepPowerups(b, dt);
   b.shoutCD = Math.max(0, (b.shoutCD || 0) - dt);
   if (b.react) { b.react.t += dt; if (b.react.t > 1.4) b.react = null; }
-  if (!S.duel?.cup && b.shoutCD <= 0 && b.bumpT <= 0 && inWay(b) && R.rng() < b.diff.excuse * dt) botExcuseMe(b);
+  if (!S.duel && b.shoutCD <= 0 && b.bumpT <= 0 && inWay(b) && R.rng() < b.diff.excuse * dt) botExcuseMe(b);
   b.energy = Math.min(100, b.energy + REGEN * b.st.regen * dt);
   if (b.chain > 0 && S.time - b.lastPassT > CHAIN_WINDOW) b.chain = 0;
   // a good player dashes round a person who is about to be hit, and bursts when the way is clear
@@ -473,7 +475,7 @@ function stepBot(b, dt) {
   }
   const weave = 1 - 0.14 * Math.min(1.4, Math.abs(b.vx) / LAT_MAX);
   b.pressT = Math.max(0, (b.pressT || 0) - dt);
-  if (S.duel?.cup) cupPressure(b);
+  if (S.duel) cupPressure(b);   // bots only run in a room on the host, Cup or not
   if (stepDraft(b, b.x, b.z, b.bumpT > 0, dt) && b.draftWho === S) addPop(b.name.toUpperCase() + ' SLIPSTREAMED YOU', b.color, 22);
   const bTarget = (bursting ? BOOST : BASE) * b.pace * b.st.speed * weave * racePace(b.chain, b.energy) * draftMul(b) * powerMul(b) * nearMul(b) * (onStrip(LV.id, b.x, b.z) ? STRIP_SPEED : 1) * (b.bumpT > 0 ? BUMP_SPEED : 1);
   b.speed += (bTarget - b.speed) * Math.min(1, dt * (bTarget > b.speed ? b.st.accel : 5));
@@ -489,7 +491,7 @@ function stepBot(b, dt) {
     const hit = resolve(t);
     b.x = t.x; b.z = t.z; b.vx = t.vx; b.speed = Math.max(0, t.speed);
     if (hit) {
-      b.blockT += dt; if (!S.duel?.cup) shove(hit, b.x); b.seen.set(hit, false);   // they notice whoever they just hit
+      b.blockT += dt; if (!S.duel) shove(hit, b.x); b.seen.set(hit, false);   // they notice whoever they just hit
       if (b.cool <= 0) { b.bumpT = b.st.bumpT; b.nearT = 0; b.draftC = 0; b.draftT = 0; b.bumps++; b.burstT = 0; b.dashT = 0; b.chain = 0; }
       b.cool = BUMP_COOL;
       if (b.blockT > STUCK_T) { b.ghostT = STUCK_GHOST; b.blockT = 0; }

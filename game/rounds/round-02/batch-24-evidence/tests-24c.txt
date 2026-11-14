@@ -1,0 +1,8 @@
+npm test after 24c fixes (2026-11-14)
+ℹ tests 1033
+ℹ pass 1031
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 2
+ℹ duration_ms 306786.4646

@@ -404,6 +404,7 @@ button:disabled.big, button:disabled.ghost { opacity: .5; cursor: default; }
 .friendroster li.me { background: var(--sign); font-weight: 700; }
 .friendroster li.empty { opacity: .45; box-shadow: none; border-style: dashed; }
 #friendStages { gap: 6px; } #friendStages .chip { flex: 1 1 auto; padding: 0 8px; min-width: 0; font-size: 15px; }
+@media (min-height: 641px) { #friendHost:not(.cup) #friendCode { font-size: clamp(40px, 5.5vh, 48px); padding: 2px 0 2px .18em; } }   /* Race and Elimination have a bot row: a smaller code keeps Start on screen */
 #friendHost.cup #friendCode, #friendHost.cup .friendroster li.empty, #friendHost.cup.full #friendShare { display: none; }   /* in a Cup, bots fill the empty seats */
 #friendHost.cup .friendroster li small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 #friendHost.cup #friendStages, #friendStages { display: flex; flex-direction: column; flex-wrap: nowrap; gap: 5px; max-height: 210px; overflow-y: auto; }
@@ -415,6 +416,15 @@ button:disabled.big, button:disabled.ghost { opacity: .5; cursor: default; }
 #friendHost.cup #friendStages .chip { white-space: normal; line-height: 1.05; font-size: 13px; padding: 2px 3px; min-height: 36px; }
 #friendHost.cup #friendStages .chip:disabled { display: none; }
 #friendFormat .chip, #friendCupLevel .chip { flex: 1 1 0; padding: 0 4px; min-width: 0; font-size: 15px; }
+/* Race and Elimination: bot count and difficulty share one compact row. A Cup keeps its own two rows. */
+#friendHost.cup #friendBots { display: contents; }
+#friendHost:not(.cup) #friendBots { display: flex; align-items: center; gap: 6px; }
+#friendHost:not(.cup) #friendCupBots { flex: 1 1 0; min-width: 0; gap: 6px; }
+#friendHost:not(.cup) #friendBotCount { min-width: 0; }
+#friendHost:not(.cup) #friendCupLevel { flex: 1.6 1 0; min-width: 0; gap: 4px; }
+#friendHost:not(.cup) #friendCupLevel .chip { min-height: 34px; font-size: 14px; }
+#friendHost:not(.cup) #friendCupLevel .botWord { display: none; }
+@media (max-width: 359px) { #friendHost:not(.cup) #friendBots { flex-wrap: wrap; } #friendHost:not(.cup) #friendCupBots, #friendHost:not(.cup) #friendCupLevel { flex: 1 1 100%; } }   /* too narrow for one row: two, as before */
 /* eight slots plus the status line have to fit a small phone without scrolling */
 @media (max-height: 640px) {
   .roomcode { font-size: 34px; padding: 4px 0 4px .18em; }

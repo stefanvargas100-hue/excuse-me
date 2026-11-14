@@ -1,0 +1,10 @@
+Outcome:     done; verdict HOLD (S2 spectator regression; S3 fit and evidence gaps).
+Branch:      stefanvargas100-hue/room-bots-review; reviewed 0d78a68 (report/test commit follows).
+Changed:     added test/room-bots-review.test.js only; late-field/undeclared-bot adversarial test passes, post-finish spectator regression test fails as intended; no source fixes.
+Finding S2:  src/sim/game.js:213 excludes bot hosts from stepRemotes even after line 220 stops hostField; once host and all bots finish, unfinished humans freeze on the host (reproduced unchanged z over 45 frames). Continue sampling human remotes after stopping bot simulation.
+Finding S3:  src/ui/friend.js:89 adds lobby height; supplied 390-host-lobby-race.png hides Start, capture.json:257 places it at y=861, h=58 on 390x844. Scroll reaches it; builder reports ~46px regression, not independently measured against old screenshot.
+Finding S3:  test/room-bots.test.js:288 excludes ghosts and compares unique message key signatures, not payloads/order/counts; BASELINE at line 286 is hardcoded. Places/elimination are compared, but claimed full old-build traffic/ghost equivalence is unproven.
+Review:      field seed/count/id/name/difficulty validation and player/bot lineup share existing checks; late fields do not alter active racers; elimination/host departure covered by builder tests. Cup source paths retain prior semantics and existing Cup tests are unedited. Plain zero-bot hosts and guests retain prior stepping by inspection.
+Checks:      focused review 1 pass/1 expected failure; npm.cmd test: 1030 pass, 1 fail (new spectator regression), 2 existing TODOs; existing Cup tests pass unedited; npm.cmd run build PASS; git diff --check PASS.
+Not checked: fresh browser session, real phones/internet, difficulty feel; lobby assessment uses supplied evidence; no direct old-build execution or complete ghost equivalence proof.
+Off plan:    none. Trouble: spectator freeze exposed by the new regression test; source fixes prohibited by review scope.
