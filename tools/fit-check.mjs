@@ -151,7 +151,7 @@ try {
         });
         await page.locator('#unlockNote').filter({ hasText: 'Unlocked:' }).waitFor();
       }],
-      ['NYC Cup', async () => { await race(); await page.locator('#raceFormat button').filter({ hasText: 'NYC Cup' }).click(); await page.locator('#levels button').filter({ hasText: 'NYC Cup' }).waitFor(); }],
+      ['NYC Cup', async () => { await race(); await page.locator('#raceFormat button').filter({ hasText: 'Cup' }).click(); await page.locator('#levels button').filter({ hasText: 'NYC Cup' }).waitFor(); }],
       ['challenge', async () => { await race(); await page.locator('#raceFormat button').filter({ hasText: 'Weekly' }).click(); await click('#levels button'); }],
       ['pause', async () => { await play(); await page.locator('#playList button').filter({ hasText: 'Classic' }).click(); await page.locator('#levels button').first().click(); await page.waitForTimeout(1000); await click('#pauseBtn'); }],
       ['end', async () => {
@@ -229,6 +229,7 @@ try {
             await page.screenshot({ path: evidence + '/' + name.replace(/ /g, '-') + '-action-' + size + '.png' });
           }
         }
+        if (evidence && name === 'NYC Cup') await page.locator('#levels').screenshot({ path: evidence + '/solo-cup-cards-' + size + '.png' });   // batch 25: the three solo Cup cards
         if (name === 'end' || name === 'cup final' || name === 'friend cup standings' || name === 'friend cup final') {
           const rows = await page.locator('#raceBoard li').count();
           if (rows !== 8) line(size, name, '#raceBoard', 'expected 8 rows, got ' + rows);

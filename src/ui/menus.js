@@ -108,11 +108,14 @@ function buildStages() {
     x.style.maxHeight = '150px'; x.addEventListener('click', openChallenge); box.appendChild(x); return;
   }
   if (race && raceFormat() === 'cup') {
-    const best = cupBest(), x = menuCard('lvl daily');
-    x.children[0].textContent = 'New York'; x.children[1].textContent = 'NYC Cup'; x.children[2].textContent = best ? 'Best ' + best.points + ' pts · ' + fmtTime(best.time) : 'Win rounds for points';
-    x.children[3].textContent = '3 NYC races, 8 racers: 10/8/6/5/4/3/2/1 points per round.';
     $('stagePager').hidden = true;
-    x.style.maxHeight = '150px'; x.addEventListener('click', startCup); box.appendChild(x); return;
+    for (const city of ['New York', 'Tokyo', 'Airport']) {
+      const best = cupBest(city), x = menuCard('lvl daily soloCup');
+      x.children[0].textContent = city; x.children[1].textContent = (city === 'New York' ? 'NYC' : city) + ' Cup'; x.children[2].textContent = best ? 'Best ' + best.points + ' pts · ' + fmtTime(best.time) : 'Win rounds for points';
+      x.children[3].textContent = '4 ' + (city === 'New York' ? 'NYC' : city) + ' races, 8 racers: 10/8/6/5/4/3/2/1 points per round.';
+      x.style.maxHeight = '150px'; x.addEventListener('click', () => startCup(city)); box.appendChild(x);
+    }
+    return;
   }
   LEVELS.forEach((L, i) => {
     const x = menuCard('lvl');
