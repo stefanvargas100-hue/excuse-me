@@ -282,32 +282,22 @@ test('malformed bot rows are refused; real players are never moved by them', asy
 });
 
 /* ---- rooms with no bots are unchanged ---- */
-// Recorded from the build before batch 24 (PROTO 13): every kind of message a 0-bot room sends, and the places.
-const BASELINE = {"plain":{"sigs":["bye:ft,id,outcomes,proto,race,session","bye:ft,id,proto,race,session","fin:ft,id,proto,race,session","lobby:commit:id,plan,proto,protocol,session","lobby:committed:config,id,planId,proto,protocol,session","lobby:go:id,plan,proto,protocol,session","lobby:ping:id,nonce,proto,protocol,session,to","lobby:pong:hostTime,id,nonce,proto,protocol,session,to","lobby:prepare:id,plan,proto,protocol,session","lobby:prepared:config,id,planId,proto,protocol,session","lobby:ready:clock,config,id,n,proto,protocol,ready,rtt,session","lobby:state:config,elim,id,level,phase,plan,players,proto,protocol,rev,session","outcomes:id,outcomes,proto,race,rev,session","pos:id,n,proto,race,route,s,session,vx,x,z","roster:elim,id,level,lobby,players,proto,rev,session"],"places":[[2,0,1],[2,0,1],[2,0,1]]},"elim":{"sigs":["bye:id,outcomes,proto,race,session","bye:id,proto,race,session","elim:id,out,proto,race,rev,session","lobby:commit:id,plan,proto,protocol,session","lobby:committed:config,id,planId,proto,protocol,session","lobby:go:id,plan,proto,protocol,session","lobby:ping:id,nonce,proto,protocol,session,to","lobby:pong:hostTime,id,nonce,proto,protocol,session,to","lobby:prepare:id,plan,proto,protocol,session","lobby:prepared:config,id,planId,proto,protocol,session","lobby:ready:clock,config,id,n,proto,protocol,ready,rtt,session","lobby:state:config,elim,id,level,phase,plan,players,proto,protocol,rev,session","pos:id,n,proto,race,route,s,session,vx,x,z","roster:elim,id,level,lobby,players,proto,rev,session"],"out":[[2,1],[2,1],[2,1]]}};
-async function zeroBotRun(touch) {
-  const sig = H => [...new Set(H.log.filter(m => m.ev !== 'hello' && m.ev !== 'ghost').map(m => m.ev + ':' + Object.keys(m.data).sort().join(',')))].sort();
-  const plain = await room(3);
-  if (touch) { const i0 = plain.H.log.length; plain.host.setRoomBots({ bots: 2, difficulty: 2 }); await settle(); plain.H.log.splice(i0); plain.host.setRoomBots({ bots: 0, difficulty: 1 }); await settle(); }
-  await readyPlayers(plain.games);
-  plain.host.hostStart(); await settle(); await settle(); quiet(plain.games);
-  tickAll(plain.games, 6); await settle();
-  await finishOrder(plain, [2, 0, 1]);
-  const places = plain.games.map(g => board(g).map(id => plain.ids.indexOf(id)));
-  const e = await room(3);
-  e.host.setRoomElim(true); await settle();
-  if (touch) { const i0 = e.H.log.length; e.host.setRoomBots({ bots: 1, difficulty: 0 }); await settle(); e.H.log.splice(i0); e.host.setRoomBots({ bots: 0, difficulty: 1 }); await settle(); }
-  await readyPlayers(e.games);
-  e.host.hostStart(); await settle(); await settle(); quiet(e.games);
-  const c = Array.from(e.host.S.race.elim.cps);
-  await drive(e, [c[0] + 5, c[0] - 10, c[0] - 40], {}, 80);
-  await drive(e, [c[1] + 5, c[1] - 10, null], {}, 80);
-  const out = e.games.map(g => outIds(g).map(id => e.ids.indexOf(id)));
-  for (const g of [...plain.games, ...e.games]) g.leaveRoom();
-  return { plain: { sigs: sig(plain.H), places }, elim: { sigs: sig(e.H), out } };
-}
-test('a room with no bots sends the same messages and gets the same places and eliminations as before', async () => {
-  deq(await zeroBotRun(false), BASELINE);
+// The fixture was recorded by batch-24-evidence/zero-bot-record.cjs on develop 656ec3b, before room bots (PROTO 13): every message
+// in order with its payload, the friend ghosts each phone stored, and the places and eliminations. Only "proto" values are normalised.
+const { record } = require('../game/rounds/round-02/batch-24-evidence/zero-bot-record.cjs');
+const BEFORE = require('../game/rounds/round-02/batch-24-evidence/zero-bot-develop-656ec3b.json');
+test('a room with no bots sends exactly the messages, ghosts, places and eliminations of the build before room bots', async () => {
+  deq(await record(), BEFORE);
 });
-test('a room whose host adds bots and takes them away again is the same as one that never had any', async () => {
-  deq(await zeroBotRun(true), BASELINE);
+test('a room whose host adds bots and takes them away again races exactly like one that never had any', async () => {
+  // Changing the setting re-sends the lobby (new roster and start config numbers), so the lobby traffic differs; the race itself must not.
+  const raceOnly = r => ({ ...r, messages: r.messages.filter(m => !m.ev.startsWith('lobby:') && m.ev !== 'roster' && m.ev !== 'hello') });
+  const now = await record(async L => {
+    L.host.setRoomBots({ bots: 2, difficulty: 2 }); await settle();
+    L.host.setRoomBots({ bots: 0, difficulty: 1 }); await settle();
+  });
+  for (const k of ['plain', 'elim']) {
+    deq(raceOnly(now[k]), raceOnly(BEFORE[k]), k);
+    assert.ok(!now[k].messages.some(m => m.ev === 'field' || m.ev === 'bots'), k + ': no bot traffic');
+  }
 });
