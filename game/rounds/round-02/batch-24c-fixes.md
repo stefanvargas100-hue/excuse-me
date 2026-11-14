@@ -29,3 +29,6 @@ The files above, `src/sim/game.js` (the after-finish stepping only), `test/room-
 - Start is visible at 390x844, with numbers from `capture.json`.
 - `npm test`, `npm run build` and `git diff --check` pass.
 - Update `reports/batch-24-room-bots.md`, or add `reports/batch-24c-fixes.md`, at most 10 lines.
+
+## Lead reply to the builder (2026-11-14)
+Do (A). In the Race/Elimination host lobby only (#friendHost:not(.cup)), shrink #friendCode by about 20px or whatever gets Start's bottom to at most 844 at 390x844, keeping the code readable at a glance (font no smaller than about 28px). Leave the Cup lobby and the guest lobby unchanged. You may edit the #friendCode rules in style.css for this. Report Start's y/h from capture.json at 390x844 and 320x568, and confirm no new fit-check problems.
