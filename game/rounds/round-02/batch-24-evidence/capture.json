@@ -5,6 +5,16 @@
     "status": "Connected · Terminal B · 3 Hard bots · Waiting for guests to choose Ready.",
     "controls": [
       {
+        "id": "card",
+        "scrollable": 241,
+        "cardBottom": 552,
+        "startBottom": 712,
+        "scrollTop": 0,
+        "startVisible": false,
+        "inWidth": true,
+        "clipped": false
+      },
+      {
         "id": "friendBotCount",
         "x": 76,
         "y": 308,
@@ -56,6 +66,16 @@
     "screen": "host lobby elimination",
     "status": "Connected · Terminal B · 3 Hard bots · Waiting for guests to choose Ready.",
     "controls": [
+      {
+        "id": "card",
+        "scrollable": 241,
+        "cardBottom": 552,
+        "startBottom": 712,
+        "scrollTop": 0,
+        "startVisible": false,
+        "inWidth": true,
+        "clipped": false
+      },
       {
         "id": "friendBotCount",
         "x": 76,
@@ -114,40 +134,40 @@
     "hostBots": [
       {
         "id": "bot:0",
-        "name": "June",
-        "z": 22,
+        "name": "Maya",
+        "z": 26.9,
         "remote": false
       },
       {
         "id": "bot:1",
-        "name": "Jude",
-        "z": 26.5,
+        "name": "Bram",
+        "z": 17.8,
         "remote": false
       },
       {
         "id": "bot:2",
-        "name": "Omari",
-        "z": 24.8,
+        "name": "Kira",
+        "z": 22.2,
         "remote": false
       }
     ],
     "guestBots": [
       {
         "id": "bot:0",
-        "name": "June",
-        "z": 22,
+        "name": "Maya",
+        "z": 26.9,
         "remote": true
       },
       {
         "id": "bot:1",
-        "name": "Jude",
-        "z": 26.5,
+        "name": "Bram",
+        "z": 17.8,
         "remote": true
       },
       {
         "id": "bot:2",
-        "name": "Omari",
-        "z": 24.8,
+        "name": "Kira",
+        "z": 22.1,
         "remote": true
       }
     ]
@@ -158,59 +178,59 @@
     "hostBoard": [
       {
         "id": "bot:0",
-        "name": "June",
+        "name": "Maya",
         "done": true
       },
       {
-        "id": "uayw79rb",
-        "name": "Lucky Drifter 37",
+        "id": "5ctmxm42",
+        "name": "Lucky Strider 34",
         "done": true
       },
       {
         "id": "bot:2",
-        "name": "Omari",
+        "name": "Kira",
         "done": true
       },
       {
-        "id": "atyjhjjq",
+        "id": "sc8rr66o",
         "name": "You",
         "done": true
       },
       {
         "id": "bot:1",
-        "name": "Jude",
+        "name": "Bram",
         "done": true
       }
     ],
     "guestBoard": [
       {
         "id": "bot:0",
-        "name": "June",
+        "name": "Maya",
         "done": true
       },
       {
-        "id": "uayw79rb",
+        "id": "5ctmxm42",
         "name": "You",
         "done": true
       },
       {
         "id": "bot:2",
-        "name": "Omari",
+        "name": "Kira",
         "done": true
       },
       {
-        "id": "atyjhjjq",
-        "name": "Lucky Drifter 37",
+        "id": "sc8rr66o",
+        "name": "Lucky Strider 34",
         "done": true
       },
       {
         "id": "bot:1",
-        "name": "Jude",
+        "name": "Bram",
         "done": true
       }
     ],
-    "guestEnd": "Race · Airport · Terminal B · live vs Lucky Drifter 37 + 3 bots 2ND OF 5 Finish time 0:06.5 Best win time - Place 2nd of 5 Bumps 0 1. June · 0:06.0 2. You · +0.4 s 3. Omari · +0.8 s 4. Lucky Drifter 37 · +1.2 s 5. Jude · +1.6 s +15 XP · Level 1 (15 / 100) REMATCH CUSTOMIZE SHARE MENU",
-    "hostEnd": "Race · Airport · Terminal B · live vs Lucky Drifter 37 + 3 bots 4TH OF 5 Finish time 0:07.6 Best win time - Place 4th of 5 Bumps 0 1. June · 0:06.0 2. Lucky Drifter 37 · +0.4 s 3. Omari · +0.8 s 4. You · +1.2 s 5. Jude · +1.6 s +15 XP · Level 2 (15 / 200) REMATCH CUSTOMIZE SHARE MENU"
+    "guestEnd": "Race · Airport · Terminal B · live vs Lucky Strider 34 + 3 bots 2ND OF 5 Finish time 0:06.5 Best win time - Place 2nd of 5 Bumps 1 1. Maya · 0:06.0 2. You · +0.4 s 3. Kira · +0.8 s 4. Lucky Strider 34 · +1.2 s 5. Bram · +1.6 s +15 XP · Level 1 (15 / 100) REMATCH CUSTOMIZE SHARE MENU",
+    "hostEnd": "Race · Airport · Terminal B · live vs Lucky Strider 34 + 3 bots 4TH OF 5 Finish time 0:07.6 Best win time - Place 4th of 5 Bumps 1 1. Maya · 0:06.0 2. Lucky Strider 34 · +0.4 s 3. Kira · +0.8 s 4. You · +1.2 s 5. Bram · +1.6 s +15 XP · Level 2 (15 / 200) REMATCH CUSTOMIZE SHARE MENU"
   },
   {
     "width": 390,
@@ -218,6 +238,16 @@
     "status": "Connected · Terminal B · 3 Hard bots · Waiting for guests to choose Ready.",
     "controls": [
       {
+        "id": "card",
+        "scrollable": 69,
+        "cardBottom": 828,
+        "startBottom": 822,
+        "scrollTop": 0,
+        "startVisible": true,
+        "inWidth": true,
+        "clipped": false
+      },
+      {
         "id": "friendBotCount",
         "x": 80,
         "y": 350,
@@ -256,7 +286,7 @@
       {
         "id": "friendStart",
         "x": 36,
-        "y": 801,
+        "y": 764,
         "w": 318,
         "h": 58,
         "inWidth": true,
@@ -270,6 +300,16 @@
     "status": "Connected · Terminal B · 3 Hard bots · Waiting for guests to choose Ready.",
     "controls": [
       {
+        "id": "card",
+        "scrollable": 69,
+        "cardBottom": 828,
+        "startBottom": 822,
+        "scrollTop": 0,
+        "startVisible": true,
+        "inWidth": true,
+        "clipped": false
+      },
+      {
         "id": "friendBotCount",
         "x": 80,
         "y": 350,
@@ -308,7 +348,7 @@
       {
         "id": "friendStart",
         "x": 36,
-        "y": 801,
+        "y": 764,
         "w": 318,
         "h": 58,
         "inWidth": true,
@@ -327,40 +367,40 @@
     "hostBots": [
       {
         "id": "bot:0",
-        "name": "Luca",
-        "z": 23,
+        "name": "Idris",
+        "z": 26,
         "remote": false
       },
       {
         "id": "bot:1",
-        "name": "Uma",
-        "z": 24.1,
+        "name": "Vik",
+        "z": 23.5,
         "remote": false
       },
       {
         "id": "bot:2",
-        "name": "Vik",
-        "z": 18.7,
+        "name": "Raj",
+        "z": 20.4,
         "remote": false
       }
     ],
     "guestBots": [
       {
         "id": "bot:0",
-        "name": "Luca",
-        "z": 22.9,
+        "name": "Idris",
+        "z": 25.9,
         "remote": true
       },
       {
         "id": "bot:1",
-        "name": "Uma",
-        "z": 24.1,
+        "name": "Vik",
+        "z": 23.5,
         "remote": true
       },
       {
         "id": "bot:2",
-        "name": "Vik",
-        "z": 18.6,
+        "name": "Raj",
+        "z": 20.4,
         "remote": true
       }
     ]
@@ -371,58 +411,58 @@
     "hostBoard": [
       {
         "id": "bot:0",
-        "name": "Luca",
+        "name": "Idris",
         "done": true
       },
       {
-        "id": "hx87ppbd",
-        "name": "Sunny Dodger 68",
+        "id": "v2t2oxte",
+        "name": "Sneaky Pigeon 48",
         "done": true
       },
       {
         "id": "bot:2",
-        "name": "Vik",
+        "name": "Raj",
         "done": true
       },
       {
-        "id": "6940z2en",
+        "id": "0w4kxyyy",
         "name": "You",
         "done": true
       },
       {
         "id": "bot:1",
-        "name": "Uma",
+        "name": "Vik",
         "done": true
       }
     ],
     "guestBoard": [
       {
         "id": "bot:0",
-        "name": "Luca",
+        "name": "Idris",
         "done": true
       },
       {
-        "id": "hx87ppbd",
+        "id": "v2t2oxte",
         "name": "You",
         "done": true
       },
       {
         "id": "bot:2",
-        "name": "Vik",
+        "name": "Raj",
         "done": true
       },
       {
-        "id": "6940z2en",
-        "name": "Sunny Dodger 68",
+        "id": "0w4kxyyy",
+        "name": "Sneaky Pigeon 48",
         "done": true
       },
       {
         "id": "bot:1",
-        "name": "Uma",
+        "name": "Vik",
         "done": true
       }
     ],
-    "guestEnd": "Race · Airport · Terminal B · live vs Sunny Dodger 68 + 3 bots 2ND OF 5 Finish time 0:06.5 Best win time - Place 2nd of 5 Bumps 0 1. Luca · 0:06.0 2. You · +0.4 s 3. Vik · +0.8 s 4. Sunny Dodger 68 · +1.2 s 5. Uma · +1.6 s +15 XP · Level 1 (15 / 100) REMATCH CUSTOMIZE SHARE MENU",
-    "hostEnd": "Race · Airport · Terminal B · live vs Sunny Dodger 68 + 3 bots 4TH OF 5 Finish time 0:07.6 Best win time - Place 4th of 5 Bumps 0 1. Luca · 0:06.0 2. Sunny Dodger 68 · +0.4 s 3. Vik · +0.8 s 4. You · +1.2 s 5. Uma · +1.6 s +15 XP · Level 2 (15 / 200) REMATCH CUSTOMIZE SHARE MENU"
+    "guestEnd": "Race · Airport · Terminal B · live vs Sneaky Pigeon 48 + 3 bots 2ND OF 5 Finish time 0:06.5 Best win time - Place 2nd of 5 Bumps 1 1. Idris · 0:06.0 2. You · +0.4 s 3. Raj · +0.8 s 4. Sneaky Pigeon 48 · +1.2 s 5. Vik · +1.6 s +15 XP · Level 1 (15 / 100) REMATCH CUSTOMIZE SHARE MENU",
+    "hostEnd": "Race · Airport · Terminal B · live vs Sneaky Pigeon 48 + 3 bots 4TH OF 5 Finish time 0:07.6 Best win time - Place 4th of 5 Bumps 1 1. Idris · 0:06.0 2. Sneaky Pigeon 48 · +0.4 s 3. Raj · +0.8 s 4. You · +1.2 s 5. Vik · +1.6 s +15 XP · Level 2 (15 / 200) REMATCH CUSTOMIZE SHARE MENU"
   }
 ]

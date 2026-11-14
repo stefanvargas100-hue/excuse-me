@@ -13,7 +13,10 @@ let browser; const results = [];
 // Where the lobby controls are, and whether a phone can reach them (inside the page width, not clipped).
 const controls = page => page.evaluate(() => {
   const box = el => { const r = el.getBoundingClientRect(); return { id: el.id || el.textContent.trim(), x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height), inWidth: r.x >= 0 && r.right <= innerWidth, clipped: el.scrollWidth > el.clientWidth + 1 }; };
-  return [document.getElementById('friendBotCount'), ...document.querySelectorAll('#friendCupLevel .chip'), document.getElementById('friendStart')].filter(el => el.getClientRects().length).map(box);
+  // the room screen is a scrolling card: Start is fully visible without scrolling when it ends inside the card while the card is at the top
+  const card = document.getElementById('friendStart').closest('.card'), cr = card.getBoundingClientRect(), st = document.getElementById('friendStart').getBoundingClientRect();
+  const fit = { id: 'card', scrollable: card.scrollHeight - card.clientHeight, cardBottom: Math.round(cr.bottom), startBottom: Math.round(st.bottom), scrollTop: card.scrollTop, startVisible: card.scrollTop === 0 && st.top >= cr.top && st.bottom <= cr.bottom - parseFloat(getComputedStyle(card).borderBottomWidth), inWidth: true, clipped: false };
+  return [fit, ...[document.getElementById('friendBotCount'), ...document.querySelectorAll('#friendCupLevel .chip'), document.getElementById('friendStart')].filter(el => el.getClientRects().length).map(box)];
 });
 const tickBoth = async (pages, rounds, frames = 3) => { for (let i = 0; i < rounds; i++) for (const p of pages) await p.evaluate(n => { const g = window.__excuse; for (let k = 0; k < n; k++) g.tick(1 / 30); }, frames); };
 try {
@@ -82,5 +85,6 @@ try {
     await context.close();
   }
   for (const r of results) if (r.controls) assert.ok(r.controls.every(c => c.inWidth && !c.clipped), 'lobby controls fit: ' + JSON.stringify(r.controls));
+  for (const r of results) if (r.controls && r.width === 390) assert.ok(r.controls[0].startVisible, 'Start fully visible without scrolling at 390x844: ' + JSON.stringify(r.controls[0]));
   writeFileSync(evidence + '/capture.json', JSON.stringify(results, null, 2)); console.log('captured', results.length, 'checks');
 } finally { if (browser) await browser.close(); await server.close(); }
