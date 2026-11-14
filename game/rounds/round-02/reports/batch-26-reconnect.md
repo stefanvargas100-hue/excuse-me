@@ -1,0 +1,9 @@
+Outcome:     done. Case (a), fixture limit. No source change; no real defect found.
+Branch:      stefanvargas100-hue/cup-reconnect, commit see `git log -1` (test + this report)
+Changed:     new test/cup-reconnect.test.js (2 tests, Tokyo [2,6,7,8], host + 1 guest, guest dropped and rejoined in race 1). src/ untouched.
+Cause:       The guest ignores the host's race-2 `prepare` at start-sync.js acceptPlan: after the "prepare" the check `localDeadline - now() > LEAD + 1000` fires "Start missed" and clear(), so no `prepared` is sent and the guest stays 'won'. Trace (host=0): `state, prepare` and no guest reply. The guest's clock reading was offset -2000 (startAt 7000, localDeadline 9000, guest now 4000). The old fixture advanced the guest's fake clock 2000 ms, let it probe, and only then advanced the host's. The probe read the clocks 2000 ms apart. Real phones share real time, so the two clocks agree when the probe is read.
+Proof:       advancing the host first (clocks level at the probe) makes the guest answer `prepared` and reach 'play' with the host's seed, no source change. With the old order the guest refuses once ('won'); after the skewed reading ages out (FRESH 6500 ms, ties on rtt 0 keep the oldest sample) the next probe fixes it and the host's second ask starts race 2. Neither case leaves a phone stuck for good.
+Checks:      node --test test/cup-reconnect.test.js 2/2 pass; npm test 1035 tests, 1033 pass, 0 fail, 2 todo (not mine); npm run build ok; git diff --check clean. Temporary debug logging in start-sync.js was reverted before the commit.
+Not checked: a real two-phone Cup with one phone offline ~3 s (airplane mode) during race 1; not run in a browser or on a phone.
+Off plan:    none. Test hub copied from the 18e fixture (adds socket cut) rather than shared, since test/ files may not be edited.
+Trouble:     none
