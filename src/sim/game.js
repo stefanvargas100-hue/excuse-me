@@ -210,14 +210,16 @@ export function tick(dt) {
     S.people = S.people.filter(p => !p.dead);
   } else {
     S.overT += dt;
-    if (S.duel && S.race?.finished && !runsBots(S.duel) && !(S.duel.elimHost && S.race.elim?.meOut)) stepRemotes(dt, true);
+    // a Friend Cup host keeps running the bots after finishing; the race clock carries on for their finish times.
+    // A plain race host with bots does too, until every bot is in. (An eliminated host runs them below.)
+    const fc = S.duel && S.duel.cup, open = fc ? fc.model.rounds.length < fc.race : S.race && !S.race.elim && S.race.bots.some(b => b.aiBot && !b.remote && !(b.done && b.finSent));   // until every bot is in and the others have been told
+    const field = runsBots(S.duel) && S.race && open && !S.duel.pausers.size && !(S.race.countT > 0 && (!S.duel.startRemaining || S.duel.startRemaining() > 0));
+    // Everyone else just follows the others. So does a plain-race host whose bots are all in: its friends still running keep moving.
+    if (S.duel && S.race?.finished && !(fc && fc.host) && !field && !(S.duel.elimHost && S.race.elim?.meOut)) stepRemotes(dt, true);
     if (!endShown && S.overT > (state === 'won' ? 0.5 : 0.8)) showEnd();
     // an eliminated host is still the one who decides for everybody else, so their game keeps following the others
     if (S.duel && S.duel.elimHost && S.race && S.race.elim && S.race.elim.meOut && !S.race.elim.over && S.race.countT <= 0) { if (runsBots(S.duel)) hostField(dt); else stepRemotes(dt); const ev = stepElim(); if (ev) elimEnd(ev); refreshDuelResults(); }
-    // a Friend Cup host keeps running the bots after finishing; the race clock carries on for their finish times.
-    // A plain race host with bots does too, until every bot is in. (An eliminated host runs them above.)
-    const fc = S.duel && S.duel.cup, open = fc ? fc.model.rounds.length < fc.race : S.race && !S.race.elim && S.race.bots.some(b => b.aiBot && !b.remote && !(b.done && b.finSent));   // until every bot is in and the others have been told
-    if (runsBots(S.duel) && S.race && open && !S.duel.pausers.size && !(S.race.countT > 0 && (!S.duel.startRemaining || S.duel.startRemaining() > 0))) hostField(dt);
+    if (field) hostField(dt);
   }
   updateSpectate();
 }
