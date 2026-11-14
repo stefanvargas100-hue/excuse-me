@@ -7,7 +7,7 @@ Read `studio/skills/game-studio-producer/SKILL.md` at the start of each round fo
 - The lead may fix small, clear bugs itself, because restarting a worker costs more.
 - The lead's batch plan is the spec for small work. Big features get a one-page spec the Director approves.
 - Use the files in `game/` instead of the skill's folder layout.
-- Workers are Orca workers on Claude or Codex, not subagents.
+- Workers are Orca workers on Claude (Director, 2026-11-14: Claude only), not subagents.
 
 **Reports lead with decisions needed.** Every proposal states what it delays. Every bug gets a severity (S1-S4) and an owner. After two fix cycles on one issue, escalate to the Director with options.
 
@@ -35,7 +35,7 @@ Choose the model using `studio/model-routing.md`. Each batch gets a temporary br
 ```text
 orca orchestration worker-start --spec "Read AGENTS.md, then do game/rounds/round-NN/batch-NN.md." \
   --worktree new-top-level --repo name:<repo> --name <short-name> --base-branch <lead-branch> \
-  --agent <claude|codex> [--model <id> --effort <level>]
+  --agent claude --model <id> --effort <level>
 ```
 
 `--effort` only works together with `--model`. Leave both out to use the agent's defaults.
@@ -49,7 +49,7 @@ Total tokens are roughly model calls times average context, so fewer calls usual
 
 - Worker reports stay at 10 lines. Details belong in the commit or the round folder.
 - Use the strongest model only where the risk justifies it.
-- **Codex builds by default.** All Claude sessions, the lead included, share one account limit. Run at most one Claude worker at a time, and check Claude use in `~/.claude/projects/*/*.jsonl` before starting one.
+- **Claude only.** All Claude sessions, the lead included, share one account limit. Run at most one Claude worker at a time, and check Claude use in `~/.claude/projects/*/*.jsonl` before starting one. Use Sonnet unless the work is tricky online or save-data work.
 - **Keep the lead's context small.** Hand over to a fresh lead session once the context passes about 100K tokens. Workers describe screenshots; open only the ones that matter.
 - A second review is only for risky batches, such as online, save data or anything live.
 - Record token use (where the tool shows it), files opened, retries and fix requests in the round report. Use those numbers to tighten or restore context.

@@ -2,18 +2,20 @@
 
 The lead picks the builder for each batch and records why in the plan. The Director can override any choice.
 
+**Claude only (Director, 2026-11-14).** No new Codex workers. Codex notes below are history.
+
 | Work | Default | If limits are tight |
 |---|---|---|
-| Lead planning and final review | Claude Opus | Codex takes over using `studio/templates/handoff.md` |
-| Clearly defined build batches | Codex or Claude Sonnet | Whichever has room |
-| Small mechanical changes | Lower effort on the same model | Either |
-| Tricky online or save-data work | Claude Opus | Wait, or Codex with extra review |
-| Second review of a risky batch | The model that did not build it | Lead review only |
+| Lead planning and final review | Claude Opus | Hand over to a fresh lead using `studio/templates/handoff.md` |
+| Clearly defined build batches | Claude Sonnet | Wait for the reset |
+| Small mechanical changes | Claude Sonnet, lower effort | Lead fixes it directly |
+| Tricky online or save-data work | Claude Opus | Wait for the reset |
+| Second review of a risky batch | The other Claude model (Opus reviews Sonnet, Sonnet reviews Opus), in a fresh worker | Lead review only |
 
 ## Rules
 - Set the model and effort in each batch plan.
 - A worker never gives the final approval on its own work.
-- **Limits:** Codex session logs under `~/.codex/sessions` record `rate_limits` with used percentages for the 5-hour and weekly windows, so the lead can check Codex. Claude's limits are not visible to the lead, so the Director flags those.
+- **Limits:** Claude's limits are not visible to the lead, so the Director flags those. All Claude sessions, the lead included, share one account limit.
 
 ## Startup load
 A Codex worker loaded about 21K tokens before any work. Two settings reduce it:
