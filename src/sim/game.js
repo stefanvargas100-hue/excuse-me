@@ -22,7 +22,7 @@ import { ropeContain, wetGrip, genChunk, runEvent, scramble, seeded, spawnFast, 
 import { STREAK_SPEED, addPop, nearMul, onPass } from './scoring.js';
 import { S, bestOf, calm, endShown, goalOf, reset, setEndShown, setNextRun, setRaceBuild, setState, state } from './state.js';
 import { startSlot } from './startgrid.js';
-import { BUMP_SPEED, stepRemotes, stepCupField, addCupBot, addRemoteRacer, draftMul, finishRace, fmtTime, initRace, leadZ, ordinal, raceBest, raceCollide, raceCountdown, racePace, rearZ, standings, updRace } from './race.js';
+import { BUMP_SPEED, stepRemotes, stepCupField, runsBots, addCupBot, addRemoteRacer, draftMul, finishRace, fmtTime, initRace, leadZ, ordinal, raceBest, raceCollide, raceCountdown, racePace, rearZ, standings, updRace } from './race.js';
 import { updCars } from './traffic.js';
 import { beginTut, tutTick } from './tutorial.js';
 import { collectPowerups, stepPowerups, extendClassicPickups, powerMul } from './powerups.js';
@@ -210,21 +210,27 @@ export function tick(dt) {
     S.people = S.people.filter(p => !p.dead);
   } else {
     S.overT += dt;
-    if (S.duel && S.race?.finished && !(S.duel.cup?.host) && !(S.duel.elimHost && S.race.elim?.meOut)) stepRemotes(dt, true);
+    if (S.duel && S.race?.finished && !runsBots(S.duel) && !(S.duel.elimHost && S.race.elim?.meOut)) stepRemotes(dt, true);
     if (!endShown && S.overT > (state === 'won' ? 0.5 : 0.8)) showEnd();
     // an eliminated host is still the one who decides for everybody else, so their game keeps following the others
-    if (S.duel && S.duel.elimHost && S.race && S.race.elim && S.race.elim.meOut && !S.race.elim.over && S.race.countT <= 0) { stepRemotes(dt); const ev = stepElim(); if (ev) elimEnd(ev); refreshDuelResults(); }
-    // a Friend Cup host keeps running the bots after finishing; the race clock carries on for their finish times
-    const fc = S.duel && S.duel.cup;
-    if (fc && fc.host && S.race && fc.model.rounds.length < fc.race && !S.duel.pausers.size && !(S.race.countT > 0 && (!S.duel.startRemaining || S.duel.startRemaining() > 0))) {
-      S.time += dt;
-      while (S.nextChunk < leadZ() + SPAWN_FAR && S.nextChunk < goalOf() - 15) { genChunk(S.nextChunk); S.nextChunk += 4; }
-      updPeople(dt);
-      stepCupField(dt);
-      S.people = S.people.filter(p => !p.dead && p.z > rearZ() - 16);
-    }
+    if (S.duel && S.duel.elimHost && S.race && S.race.elim && S.race.elim.meOut && !S.race.elim.over && S.race.countT <= 0) { if (runsBots(S.duel)) hostField(dt); else stepRemotes(dt); const ev = stepElim(); if (ev) elimEnd(ev); refreshDuelResults(); }
+    // a Friend Cup host keeps running the bots after finishing; the race clock carries on for their finish times.
+    // A plain race host with bots does too, until every bot is in. (An eliminated host runs them above.)
+    const fc = S.duel && S.duel.cup, open = fc ? fc.model.rounds.length < fc.race : S.race && !S.race.elim && S.race.bots.some(b => b.aiBot && !b.remote && !(b.done && b.finSent));   // until every bot is in and the others have been told
+    if (runsBots(S.duel) && S.race && open && !S.duel.pausers.size && !(S.race.countT > 0 && (!S.duel.startRemaining || S.duel.startRemaining() > 0))) hostField(dt);
   }
   updateSpectate();
+}
+
+// The host's whole field without its own runner: the clock, the crowd and the bots it runs, and everyone else's reports.
+function hostField(dt) {
+  S.time += dt;
+  while (S.nextChunk < leadZ() + SPAWN_FAR && S.nextChunk < goalOf() - 15) { genChunk(S.nextChunk); S.nextChunk += 4; }
+  updPeople(dt);
+  const done = S.race.bots.filter(b => b.done).length;
+  stepCupField(dt);
+  if (!S.duel.cup && S.race.bots.filter(b => b.done).length !== done) refreshDuelResults();   // a bot came in: the host's places change (a Cup settles its own)
+  S.people = S.people.filter(p => !p.dead && p.z > rearZ() - 16);
 }
 
 function recordBest() {
@@ -550,12 +556,12 @@ export function start(a, b, opts) {
   if (movementEnabled(mode)) { S.moveStats = effects(statsOf({ ...LOOK, ...run.outfit })); extendClassicPickups(); }
   ghostStart();
   if (mode === 'race') {
-    initRace(duel || opts && (opts.lesson || opts.solo) ? 0 : opts && opts.cup ? 7 : 3, opts && opts.cup ? opts.cup.model.bots : undefined, duel && duel.cup ? duel.cup.difficulty : undefined);
+    initRace(duel || opts && (opts.lesson || opts.solo) ? 0 : opts && opts.cup ? 7 : 3, opts && opts.cup ? opts.cup.model.bots : undefined, duel && duel.cup ? duel.cup.difficulty : duel && duel.field ? duel.field.difficulty : undefined);
     if (opts && opts.lesson) beginLesson(opts.lesson);
     if (duel) {
       const spot = k => startSlot(duel.slotOf[k], duel.count, LV.half);   // everyone on one line, in the order of the room list
       duel.order.forEach((id, i) => {
-        const P = duel.peers[id], b = P.ai && duel.cup.host ? addCupBot(P.look, P.name, id, i) : addRemoteRacer(P.look, P.name, id, i), at = spot(id);
+        const P = duel.peers[id], b = P.ai && runsBots(duel) ? addCupBot(P.look, P.name, id, i) : addRemoteRacer(P.look, P.name, id, i), at = spot(id);
         if (P.ai) b.aiBot = true;   // on a guest it is drawn like a friend, but it is not solid and it does not report for itself
         b.x = at.x; b.z = at.z; b.target = at.x;
       });

@@ -2,7 +2,7 @@ import { stageGroups, groupLabel, groupAvailable, cupPresets, syncBotOptions } f
 import { LEVELS } from '../config/levels.js';
 import { DIFFICULTIES } from '../sim/race.js';
 import { $ } from '../dom.js';
-import { MAX_PLAYERS, duelUi, hostRoom, hostStart, inviteLink, isHost, joinRoom, leaveRoom, roomCode, roomElim, setRoomElim, roomLevel, setRoomLevel, setRoomReady, roomLobbyState, canStartRoom, setRoomCup, roomCup, friendCup, friendCupStandings, friendCupIsOver, PROTO } from '../online/duel.js';
+import { MAX_PLAYERS, duelUi, hostRoom, hostStart, inviteLink, isHost, joinRoom, leaveRoom, roomCode, roomElim, setRoomElim, roomLevel, setRoomLevel, setRoomReady, roomLobbyState, canStartRoom, setRoomCup, roomCup, setRoomBots, roomBots, friendCup, friendCupStandings, friendCupIsOver, PROTO } from '../online/duel.js';
 import { go } from './screens.js';
 
 /* ---------- Race friends: make a room or join one, see who is in, then the host starts ---------- */
@@ -19,6 +19,8 @@ const cupLine = c => {
   return 'Friend Cup' + (named ? ': ' + LEVELS[c.stages[0]].city + ' (' + c.stages.length + ' races): ' + named : '') + (diff ? ' · ' + diff.name + ' bots' : '');
 };
 function sendCup() { setRoomCup({ stages: cupStages.slice(), difficulty: cupLevel, bots: roomCup()?.bots ?? 'fill' }); }
+// Bots in a plain or Elimination race, as the room tells everyone: ' · 3 Hard bots', or nothing.
+const botLine = () => { const b = roomBots(); return b.botCount ? ' · ' + b.botCount + ' ' + DIFFICULTIES[b.difficulty].name + ' bot' + (b.botCount === 1 ? '' : 's') : ''; };
 const st = () => document.querySelectorAll('#friendStages .chip');
 const view = id => { for (const v of ['friendHome', 'friendHost', 'friendGuest', 'friendJoin']) $(v).hidden = v !== id; };
 
@@ -57,7 +59,7 @@ function showRoster(players) {
   $('friendReady').textContent = lobby.pending ? 'Confirming...' : mine?.ready ? 'Not ready' : 'Ready';
   $('friendReady').setAttribute('aria-pressed', String(!!mine?.ready));
   const cfg = roomCup(), format = cfg ? 2 : roomElim() ? 1 : 0, code = roomCode();
-  const shown = cfg ? cupLine(cfg) : stageName(roomLevel()) + (roomElim() ? ' · Elimination' : '');
+  const shown = cfg ? cupLine(cfg) : stageName(roomLevel()) + (roomElim() ? ' · Elimination' : '') + botLine();
   document.querySelectorAll('#friendFormat .chip').forEach((c, i) => c.setAttribute('aria-pressed', String(i === format)));
   if (isHost()) showStages(cfg);
   if (isHost() && code) $('friendShare').textContent = cfg ? 'Send invite · ' + code : 'Send invite';   // a Cup setup needs the room, so the code moves into the button
@@ -82,13 +84,14 @@ function showStages(cfg) {
     g.button.parentElement.hidden = !groupAvailable(g, !!cfg);
     g.button.setAttribute('aria-expanded', String(g.city === openCity)); g.tracks.hidden = !!cfg || g.city !== openCity;
   }
-  $('friendCupBots').hidden = !cfg;
-  const select = $('friendBotCount');
-  if (cfg) syncBotOptions(select, playerCount, cfg.bots, () => document.createElement('option'));
-  $('friendCupLevel').hidden = !cfg;
+  // Bots in every format: a Cup's fill the empty seats; a race or Elimination has none unless the host adds them.
+  const bots = cfg || roomBots();
+  $('friendCupBots').hidden = false;
+  syncBotOptions($('friendBotCount'), playerCount, bots.bots, () => document.createElement('option'));
+  $('friendCupLevel').hidden = !cfg && bots.bots === 0;
   $('friendHost').classList.toggle('cup', !!cfg);
   $('friendHost').classList.toggle('full', !!cfg && st().length > 0 && playerCount >= MAX_PLAYERS);
-  document.querySelectorAll('#friendCupLevel .chip').forEach((c, i) => c.setAttribute('aria-pressed', String(!!cfg && i === cfg.difficulty)));
+  document.querySelectorAll('#friendCupLevel .chip').forEach((c, i) => c.setAttribute('aria-pressed', String(i === bots.difficulty)));
 }
 
 async function invite() {
@@ -101,7 +104,7 @@ async function invite() {
 
 export function initFriend() {
   // test and fit-check hooks: main.js builds window.__excuse after this runs
-  Promise.resolve().then(() => { if (window.__excuse) Object.assign(window.__excuse, { setRoomCup, roomCup, friendCup, friendCupStandings, friendCupOver: friendCupIsOver, PROTO }); });
+  Promise.resolve().then(() => { if (window.__excuse) Object.assign(window.__excuse, { setRoomCup, roomCup, setRoomBots, roomBots, friendCup, friendCupStandings, friendCupOver: friendCupIsOver, PROTO }); });
   const stBox = $('friendStages');
   LEVELS.forEach((L, i) => {
     let group = groups.find(g => g.city === L.city);
@@ -119,7 +122,11 @@ export function initFriend() {
     group.tracks.appendChild(c);
   });
   showStages(null);
-  $('friendBotCount').addEventListener('change', e => { const cfg = roomCup(); if (cfg) setRoomCup({ ...cfg, bots: e.target.value === 'fill' ? 'fill' : Number(e.target.value) }); });
+  $('friendBotCount').addEventListener('change', e => {
+    const cfg = roomCup(), bots = e.target.value === 'fill' ? 'fill' : Number(e.target.value);
+    if (cfg) setRoomCup({ ...cfg, bots }); else setRoomBots({ bots, difficulty: roomBots().difficulty });
+    showStages(roomCup());
+  });
   duelUi.status = (t, live) => { $('friendStatus').textContent = t; $('liveStatus').textContent = t; $('liveStatus').hidden = !live || !t; };
   duelUi.roster = players => {
     if (players.length) showRoster(players);
@@ -129,7 +136,9 @@ export function initFriend() {
     if (i === 2) { if (!roomCup()) { cupStages = []; sendCup(); } }
     else { setRoomElim(i === 1); setRoomLevel(stage); }
   }));
-  document.querySelectorAll('#friendCupLevel .chip').forEach((c, i) => c.addEventListener('click', () => { cupLevel = i; sendCup(); }));
+  document.querySelectorAll('#friendCupLevel .chip').forEach((c, i) => c.addEventListener('click', () => {
+    if (roomCup()) { cupLevel = i; sendCup(); } else { setRoomBots({ bots: roomBots().bots, difficulty: i }); showStages(null); }
+  }));
   $('friendBack').addEventListener('click', leaveRoom);
   $('friendMake').addEventListener('click', async () => {
     view('friendHost');

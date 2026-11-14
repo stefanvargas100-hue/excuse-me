@@ -1,0 +1,8 @@
+npm test (2026-11-14, branch stefanvargas100-hue/room-bots)
+ℹ tests 1031
+ℹ pass 1029
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 2
+ℹ duration_ms 311830.0708

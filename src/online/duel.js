@@ -12,6 +12,7 @@ import { store } from '../save/store.js';
 import { start, syncDuelPause, forfeitDuel, refreshDuelResults, elimReceive, elimAbort } from '../sim/game.js';
 import { CUP_RACES, CUP_RACERS, addRace, cleanSetup, currentStage, friendCupOver, hostLeft, newFriendCup, playerLeft, raceSeed, standings as cupTable } from '../sim/friendcup.js';
 import { DIFFICULTIES, cupBotLook, cupTakeOver, standings as raceRows } from '../sim/race.js';
+import { cupPresets } from '../sim/cup-presets.js';
 import { S, state } from '../sim/state.js';
 import { packGhost, saveFriendGhost } from '../sim/ghostshare.js';
 import { createRoom, cleanCode, makeCode } from './room.js';
@@ -66,9 +67,15 @@ let cupRev = 0, cupReceived = -1;
 let handoverStart = null, awaitingStart = null;
 const cupLooks = {};      // id -> look, kept so a bot taking over from a player still looks like them
 const RACE_SEED = /:race\d+$/;
+/* Bots in a plain or Elimination race. The host picks how many and how hard, and sends it on the roster like cupCfg.
+   At each start the host decides the field (bot ids and names) and sends it before the start. Every guest checks it against
+   the agreed setting and refuses a start whose field is missing or different, so no phone ever runs a field the host did not declare. */
+let botCfg = null;        // { bots: n | 'fill', difficulty }, or null: no bots
+let field = null;         // host: the field made for its next or current start, { race, difficulty, bots: [{ id, name }] }
+let fieldMsg = null;      // guest: the host's latest field message, checked only when a start arrives
 // Room protocol version. Race layouts and the start handshake must be identical on every phone, so phones on different builds
 // refuse each other instead of racing on different crowds. Raise it whenever a change would make layouts or rules differ.
-export const PROTO = 13;
+export const PROTO = 14;
 let myId = '', hostId = '', roster = [];        // roster: [{ id, name, look }], the host first, me included
 let inRoster = false, raced = false, hostGone = false, lastStatus = '', joinWaiter = null;
 let wantMe = false; const wants = new Set();    // rematch: everyone still in the room has to ask
@@ -101,17 +108,17 @@ function receiveGhost(from, data) {
 }
 
 /* ---- one race at a time ---- */
-export function startDuel({ seed, level, friends, friend, send, roster: ids, meId, elim, cup: cupRun }) {
+export function startDuel({ seed, level, friends, friend, send, roster: ids, meId, elim, cup: cupRun, field: botRun }) {
   setLevel(level);
   const list = friends || (friend ? [{ id: 'friend', ...friend }] : []);
   const peers = {}, order = [];
   for (const f of list) { peers[f.id] = { name: cleanName(f.name), look: cleanLook(f.look), remote: createRemote(), fin: null, bye: false, ai: !!f.ai }; order.push(f.id); }
-  const names = order.map(i => peers[i].name);
+  const names = order.filter(i => !botRun || !peers[i].ai).map(i => peers[i].name), botTotal = botRun ? order.length - names.length : 0;   // room bots are named apart from friends
   // start line: the room list says who stands where (me first when no list is given)
   const lineUp = ids && ids.length ? ids : ['me', ...order], slotOf = {};
   lineUp.forEach((id, i) => { slotOf[id === meId ? 'me' : id] = i; });
   // ten reports a second for one friend; five with more (measured 2026-11-07: a full room of 8 at 5 a second lost nothing on the free plan)
-  const d = { cup: cupRun || null, botN: 0, elim: !!elim, elimHost: false, pausers: new Set(), pauseSeq: 0, refresh: showRematch, seed, peers, order, slotOf, meId: meId || 'me', count: lineUp.length, title: names.length === 1 ? names[0] : names.length + ' friends', send, n: 0, sendT: 0, sendEvery: order.length > 1 || cupRun ? 0.2 : 0.1 };
+  const d = { cup: cupRun || null, field: botRun || null, botN: 0, elim: !!elim, elimHost: false, pausers: new Set(), pauseSeq: 0, refresh: showRematch, seed, peers, order, slotOf, meId: meId || 'me', count: lineUp.length, title: (names.length === 1 ? names[0] : names.length + ' friends') + (botTotal ? ' + ' + botTotal + ' bot' + (botTotal === 1 ? '' : 's') : ''), send, n: 0, sendT: 0, sendEvery: order.length > 1 || cupRun ? 0.2 : 0.1 };
   start('race', null, { duel: d });
   return d;
 }
@@ -149,8 +156,10 @@ function closeRoom() {
     try { old.send('bye', { id: myId, session: sessionId, race: raced && d ? d.seed : undefined, ft: raced && d ? d.finish : undefined, outcomes: role === 'host' && raced ? outcomeRows() : undefined, ...(role === 'host' && raced && cup ? { cup: cupMessage() } : {}) }); } catch (e) {}
     old.leave();
     if (raced && d && d.cup) { d.cup.host = false; d.cup.model = hostLeft(d.cup.model); }   // this phone is out of the room: the Cup is over here
+    if (raced && d && d.field) d.field.host = false;   // and it no longer runs room bots
     if (raced && d && !S.race.finished) forfeitDuel();
   }
+  botCfg = null; field = null; fieldMsg = null;
   cup = null; cupCfg = null; cupRev = 0; cupReceived = -1; handoverStart = null; awaitingStart = null; for (const k in cupLooks) delete cupLooks[k];
   sessionId = ''; rosterRev = 0; receivedRev = -1; outcomeRev = 0; receivedOutcome = -1; disconnectedAt = null; retrying = false; hiddenAt = null; retired.clear(); started.clear();
   room = null; role = null; code = ''; hostId = ''; myId = ''; roster = []; inRoster = false; raced = false; hostGone = false; wantMe = false; wants.clear(); raceElim = false;
@@ -165,13 +174,14 @@ const sendRoster = () => {
   if (!room) return;
   if (cupCfg && Number.isInteger(cupCfg.bots)) cupCfg.bots = Math.min(cupCfg.bots, MAX_PLAYERS - roster.length);
   if (cupCfg && role === 'host') cupCfg.agreed = validCup(cupCfg);
+  if (botCfg && Number.isInteger(botCfg.bots)) botCfg.bots = Math.min(botCfg.bots, MAX_PLAYERS - roster.length);
   ensureLobby(); lobby.setPlayers(lobbyMembers(), levelIdx, raceElim);
-  room.send('roster', { proto: PROTO, elim: raceElim, id: myId, session: sessionId, rev: ++rosterRev, level: levelIdx, players: roster, lobby: lobby.snapshot(), ...(cupCfg ? { cupCfg: { stages: cupCfg.stages, difficulty: cupCfg.difficulty, bots: cupCfg.bots } } : {}) });
+  room.send('roster', { proto: PROTO, elim: raceElim, id: myId, session: sessionId, rev: ++rosterRev, level: levelIdx, players: roster, lobby: lobby.snapshot(), ...(cupCfg ? { cupCfg: { stages: cupCfg.stages, difficulty: cupCfg.difficulty, bots: cupCfg.bots } } : {}), ...(botsOn() ? { botCfg: { bots: botCfg.bots, difficulty: botCfg.difficulty } } : {}) });
 };
 const changed = () => {
   ui.roster(lobbyPlayers());
   if (room && inRoster && !raced && lobby && disconnectedAt === null) {
-    const view = lobby.view(), stage = cupCfg ? cupSummary() : LEVELS[levelIdx].name;
+    const view = lobby.view(), stage = cupCfg ? cupSummary() : LEVELS[levelIdx].name + (botCount() ? ' · ' + botCount() + ' ' + DIFFICULTIES[botCfg.difficulty].name + ' bots' : '');
     lastStatus = lobbyNotice || (cupCfg && !validCup(cupCfg) ? (role === 'host' ? 'Friend Cup: choose a location preset.' : 'Friend Cup · the host is choosing a location preset.') :!view.compatible ? 'Update the game on every phone before joining.' : view.busy ? 'Preparing race. Keep the game open.' :
       roster.length < 2 ? 'Waiting for friends to join...' : lobby.canStart(role === 'host') || view.players.every(p => p.ready) ? stage + ' · Everyone is ready. ' + (role === 'host' ? 'Press Start race.' : 'Waiting for the host.') :
       'Connected · ' + stage + ' · ' + (role === 'host' ? 'Waiting for guests to choose Ready.' : 'Choose Ready when you are set.') + '');
@@ -232,6 +242,45 @@ function publishOutcomes() {
 const cupCanRun = () => !!cup && !friendCupOver(cup) && !hostGone && !started.has(raceSeed(cup));
 const normalBots = bots => bots === 'fill' || Number.isInteger(bots) && bots >= 0 && bots <= 7 ? bots : null;
 const validCup = c => !!c && (c.bots === 'fill' || Number.isInteger(c.bots) && c.bots >= 0 && c.bots <= MAX_PLAYERS - roster.length) && !!newFriendCup({ seed: 'check', stages: c.stages, difficulty: c.difficulty, players: [{ id: 'a', name: 'a' }, { id: 'b', name: 'b' }], rand: () => 0 });
+const difficultyOK = v => Number.isInteger(v) && v >= 0 && v < DIFFICULTIES.length;
+// Room bots: a setting that adds any bots (a room with none sends exactly what it always did), and how many that is now.
+const botsOn = () => !cupCfg && !!botCfg && botCfg.bots !== 0;
+const botCount = () => (botsOn() ? (botCfg.bots === 'fill' ? MAX_PLAYERS - roster.length : botCfg.bots) : 0);
+// Bot names and ids come from the Friend Cup rules, so they follow the same checks. Those rules want a Cup's stages; any preset will do.
+const fieldStages = () => cupPresets(LEVELS)[0].indices;
+const fieldOf = (race, setup) => ({ race, difficulty: setup.difficulty, bots: setup.racers.filter(r => r.bot).map(r => ({ id: r.id, name: r.name })) });
+const fieldPlayers = () => roster.map(p => ({ id: p.id, name: cleanName(p.name) }));
+function makeField(race) {
+  const made = newFriendCup({ seed: 'field', stages: fieldStages(), difficulty: botCfg.difficulty, bots: botCount(), players: fieldPlayers(), rand: Math.random });
+  return made ? fieldOf(race, made) : null;
+}
+// A guest's check of the host's field against the setting everyone agreed to and the players in the room. Anything off: null.
+function fieldFromMessage(m, race) {
+  try {
+    const n = botCount();
+    if (!n || !m || m.race !== race || m.difficulty !== botCfg.difficulty || !Array.isArray(m.bots) || m.bots.length !== n) return null;
+    const racers = [...fieldPlayers().map(p => ({ ...p, bot: false, left: false })), ...m.bots.map(b => ({ id: b && b.id, name: b && b.name, bot: true, left: false }))];
+    const setup = cleanSetup({ seed: 'field', stages: fieldStages(), difficulty: m.difficulty, racers });
+    return setup && setup.racers.length === roster.length + n ? fieldOf(race, setup) : null;
+  } catch (e) { return null; }
+}
+const publishField = () => { if (room && role === 'host' && field) room.send('field', { id: myId, session: sessionId, ...field }); };
+// The host decides the field for a start and sends it first: guests refuse the start until they have it. No bots: nothing is sent.
+function prepareField(race) {
+  field = null;
+  if (!botCount()) return true;
+  field = makeField(race);
+  if (!field) return false;
+  publishField();
+  return true;
+}
+// The host has gone mid-race: nobody runs the bots any more. They stop where they are and are listed as not finished.
+function stopBots() {
+  const d = S?.duel;
+  if (!d?.field) return;
+  for (const id of d.order) { const P = d.peers[id]; if (P.ai && P.fin == null) P.bye = true; }
+  refreshDuelResults();
+}
 // What the room says about the Cup being set up. The host sees the stages on the buttons; guests need them spelled out.
 function cupSummary() {
   if (!validCup(cupCfg)) return 'Friend Cup';
@@ -472,6 +521,8 @@ function onMessage(ev, data) {
       cupCfg = c ? { stages: Array.isArray(c.stages) ? c.stages.slice() : [], difficulty: c.difficulty, bots: normalBots(c.bots) } : null;
       if (cupCfg) cupCfg.agreed = validCup(cupCfg);
       if (!cupCfg?.agreed) cup = null; else rememberLooks();
+      const b = data.botCfg, n = b && typeof b === 'object' ? normalBots(b.bots) : null;
+      botCfg = !cupCfg && n !== null && n !== 0 && (n === 'fill' || n <= MAX_PLAYERS - roster.length) && difficultyOK(b.difficulty) ? { bots: n, difficulty: b.difficulty } : null;
     }
     for (const id of [...wants]) if (!roster.some(p => p.id === id)) wants.delete(id);
     if (joinWaiter) { const w = joinWaiter; joinWaiter = null; w(true); }
@@ -497,7 +548,7 @@ function onMessage(ev, data) {
     if (handover) cupHostGone();
     else if (from === hostId && role === 'guest') {
       if (!raced) { closeRoom(); say('The host left the room.'); return; }
-      hostGone = true; elimAbort();
+      hostGone = true; elimAbort(); stopBots();
       say(S?.duel?.elim ? 'Host left. The elimination race is over.' : 'Host left. Finish this race; create a new room for another.');
     }
     roster = roster.filter(p => p.id !== from); wants.delete(from);
@@ -530,8 +581,10 @@ function onMessage(ev, data) {
     if (from !== hostId) return;
     receiveCup(data);
   } else if (ev === 'bots') {
-    if (role !== 'guest' || from !== hostId || !S?.duel?.cup || data.race !== S.duel.seed) return;
+    if (role !== 'guest' || from !== hostId || !(S?.duel?.cup || S?.duel?.field) || data.race !== S.duel.seed) return;
     receiveBots(data);
+  } else if (ev === 'field') {
+    if (role === 'guest' && from === hostId && typeof data.race === 'string') fieldMsg = data;   // checked when the start comes
   } else if (ev === 'ghost') { if (!cup && !cupCfg) receiveGhost(from, data); }
   else {
     if ((ev === 'pos' || ev === 'fin') && S && S.duel && data.race !== S.duel.seed) return;
@@ -546,6 +599,9 @@ function beginRace(level, seed, schedule) {
   if (RACE_SEED.test(seed) !== !!cup || (cup && (seed !== raceSeed(cup) || level !== currentStage(cup)))) {
     closeRoom(); say('Start could not be confirmed. Rejoin the room.'); return;
   }
+  // Room bots: the host runs the field it decided; a guest runs the host's field only if it matches what everyone agreed.
+  const botField = cup ? null : role === 'host' ? (field && field.race === seed ? field : null) : botCount() ? fieldFromMessage(fieldMsg, seed) : null;
+  if (!cup && botCount() && !botField) { closeRoom(); say('Start could not be confirmed. Rejoin the room.'); return; }
   raceElim = schedule?.elim === true;
   started.add(seed); handoverStart = null; awaitingStart = null;
   receivedOutcome = -1;
@@ -553,8 +609,11 @@ function beginRace(level, seed, schedule) {
   const id = myId;
   const epoch = generation;
   const cupRun = cup ? { host: role === 'host', difficulty: cup.difficulty, model: cup, race: cup.rounds.length + 1 } : null;
-  const field = cup ? cup.racers.map((r, i) => ({ id: r.id, name: r.name, ai: r.bot, look: cupLooks[r.id] || cupBotLook(i, cup.seed) })).filter(r => r.id !== id) : others();
-  const d = startDuel({ seed, level, elim: raceElim, friends: field, roster: cup ? cup.racers.map(r => r.id) : roster.map(p => p.id), meId: id, cup: cupRun, send: (ev, payload) => {
+  // Bots line up behind the players, in the field's order, as in a Cup.
+  const bots = botField ? botField.bots.map((b, i) => ({ id: b.id, name: b.name, ai: true, look: cupBotLook(roster.length + i, seed) })) : [];
+  const racers = cup ? cup.racers.map((r, i) => ({ id: r.id, name: r.name, ai: r.bot, look: cupLooks[r.id] || cupBotLook(i, cup.seed) })).filter(r => r.id !== id) : [...others(), ...bots];
+  const fieldRun = bots.length ? { host: role === 'host', difficulty: botField.difficulty } : null;
+  const d = startDuel({ seed, level, elim: raceElim, friends: racers, roster: cup ? cup.racers.map(r => r.id) : [...roster.map(p => p.id), ...bots.map(b => b.id)], meId: id, cup: cupRun, field: fieldRun, send: (ev, payload) => {
     if (epoch !== generation || S.duel?.cancelled) return;   // a start cancelled by a host handover reports nothing
     if (ev === 'fin' && !S.duel.dnf && S.duel.finish == null) S.duel.finish = payload.ft;
     if (room) room.send(ev, { id, ...payload, race: seed, session: sessionId });
@@ -610,10 +669,11 @@ function heartbeat() {
     if (d.elim && d.elimHost && S.race.elim && S.race.elim.out.length) d.send('elim', { rev: ++S.race.elim.rev, out: S.race.elim.out.map(o => o.id) });
   }
   if (role === 'host' && cup) publishCup();   // the whole Cup so far, every time: this is what heals a lost result
+  if (role === 'host' && field && !started.has(field.race) && lobby?.view().busy) publishField();   // a start still being agreed: send its field again
   if (role === 'guest') {
     room.send('hello', { proto: PROTO, id: myId, name: myName(), look: LOOK, startProtocol: START_PROTOCOL });
     if (inRoster && !hostGone && seenAt[hostId] && now - seenAt[hostId] > STALE_MS) {
-      if (raced && cup) { cupHostGone(); changed(); } else if (!raced) { closeRoom(); say('Lost contact with the host.'); } else { hostGone = true; elimAbort(); say(S?.duel?.elim ? 'Host lost connection. The elimination race is over.' : 'Host lost connection. Finish this race; create a new room for another.'); changed(); }
+      if (raced && cup) { cupHostGone(); changed(); } else if (!raced) { closeRoom(); say('Lost contact with the host.'); } else { hostGone = true; elimAbort(); stopBots(); say(S?.duel?.elim ? 'Host lost connection. The elimination race is over.' : 'Host lost connection. Finish this race; create a new room for another.'); changed(); }
     }
   } else if (role === 'host') {
     const gone = others().filter(p => seenAt[p.id] && now - seenAt[p.id] > STALE_MS);
@@ -723,7 +783,7 @@ export function setRoomCup(cfg) {
   const bots = cfg ? normalBots(cfg.bots === undefined ? 'fill' : cfg.bots) : null;
   if (cfg && (bots === null || bots !== 'fill' && bots > MAX_PLAYERS - roster.length)) return false;
   if (role !== 'host' || !room || raced || (!cfg && !cupCfg)) return false;
-  cup = null;
+  cup = null; botCfg = null;
   cupCfg = cfg ? { stages: Array.isArray(cfg.stages) ? cfg.stages.slice() : [], difficulty: cfg.difficulty, bots } : null;
   if (cupCfg) { raceElim = false; if (validCup(cupCfg)) levelIdx = cupCfg.stages[0]; }
   ensureLobby();
@@ -732,6 +792,19 @@ export function setRoomCup(cfg) {
   return true;
 }
 export const roomCup = () => (cupCfg ? { stages: [...cupCfg.stages], difficulty: cupCfg.difficulty, bots: cupCfg.bots, botCount: cupCfg.bots === 'fill' ? MAX_PLAYERS - roster.length : cupCfg.bots, valid: validCup(cupCfg) } : null);
+// Bots in a plain or Elimination race: the host's choice of how many (a number up to the free seats, or 'fill') and how hard.
+// Guests see it on the roster and must ready again after any change. Bots never count toward the two players a start needs.
+export function setRoomBots(cfg) {
+  if (role !== 'host' || !room || raced || cupCfg || !cfg || typeof cfg !== 'object') return false;
+  const bots = normalBots(cfg.bots);
+  if (bots === null || (bots !== 'fill' && bots > MAX_PLAYERS - roster.length) || !difficultyOK(cfg.difficulty)) return false;
+  botCfg = { bots, difficulty: cfg.difficulty };
+  ensureLobby();
+  lobby.setPlayers(lobbyMembers(), -1, raceElim);   // as for a Cup change: step away and back so everyone readies again
+  sendRoster(); changed();
+  return true;
+}
+export const roomBots = () => ({ bots: botCfg && !cupCfg ? botCfg.bots : 0, difficulty: botCfg && !cupCfg ? botCfg.difficulty : 1, botCount: botCount() });
 export const friendCup = () => cup;
 export const friendCupStandings = () => (cup ? cupTable(cup) : []);
 export const friendCupIsOver = () => !!cup && friendCupOver(cup);
@@ -756,7 +829,8 @@ function showRematch() {
 function maybeRematch() {
   const o = others();
   if (role === 'host' && room && disconnectedAt === null && wantMe && o.length && o.every(p => wants.has(p.id)) && rematchState() !== 'gone' && !lobby?.view().busy) {
-    lobby?.start(code + ':' + (raceNo + 1), { agreed: true }) && raceNo++;
+    const seed = code + ':' + (raceNo + 1);
+    if (prepareField(seed) && lobby?.start(seed, { agreed: true })) raceNo++;
   }
 }
 export function requestRematch() {
@@ -776,7 +850,9 @@ export function hostStart() {
     if (!lobby.start(raceSeed(cup))) cup = null;
     return;
   }
-  if (lobby.start(code + ':' + (raceNo + 1))) raceNo++;
+  const seed = code + ':' + (raceNo + 1);
+  if (!prepareField(seed)) return;
+  if (lobby.start(seed)) raceNo++; else field = null;
 }
 export function leaveRoom() { closeRoom(); }
 export const inviteLink = () => location.origin + location.pathname + '?room=' + code;
