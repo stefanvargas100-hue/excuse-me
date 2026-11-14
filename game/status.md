@@ -3,7 +3,9 @@
 ## Batch 24 merged - 2026-11-14
 - **Batch 24 room bots merged** (af69fc6) after 24b HOLD, 24c fixes (65742e3) and 24d Sonnet re-review PASS (3ff10f2, fixture re-recorded on develop byte-identical). PROTO 14. Lead suite on develop: 1031 pass, 0 fail, 2 todo; build and diff check pass. room-bots, room-bots-review, room-bots-rereview workspaces and branches removed. S4 notes in `reports/batch-24d-rereview.md` (0-bot host lobby also gets the smaller code; 375x667 and 360x800 unmeasured).
 - develop is local only, ahead of the 20b3d58 playtest by batches 24 and 25. Pushing needs Director approval.
-- **Next:** plan batch 26 (bounded mid-Cup reconnect investigation, S3), Claude only.
+- Director: push everything. develop 313b0e8 pushed; publication check in progress (see next update).
+- **Batch 26 merged** (tests only): the mid-Cup reconnect "won" is a fixture limit (case a). The old fixture advanced the guest clock 2000 ms before the host, so start-sync acceptPlan refused the race-2 prepare as "Start missed". With level clocks the guest plays; with a skewed sample it recovers after the next probe. S3 closed; real two-phone airplane-mode check left for the Director. cup-reconnect workspace removed.
+- **Queue is empty.** All Cups work from complete-cups-plan.md is done (21-26). Next round needs Director input: playtest feedback, visual direction (Fable pass on hold), main approval.
 
 ## Lobby fix, playtest pushed, batch 25 started - 2026-11-14
 
@@ -41,7 +43,7 @@ Start a fresh lead session. 1) Fix the S3 Friend Cup lobby overflow above (small
 
 ### Open bugs
 - S3, visual queue: at 320x568 with 8 players the host Friend Cup status overflows (`game/todo.md`, top entry).
-- S3, owner lead: mid-Cup reconnect "won" instead of "play" (batch 26).
+- Closed: mid-Cup reconnect, fixture limit (batch 26).
 - S4 notes from 19c in `reports/batch-19c-review.md` (two `todo` tests mark them).
 
 ### Waiting on the Director
