@@ -3,7 +3,7 @@
 ## Batch 24 merged - 2026-11-14
 - **Batch 24 room bots merged** (af69fc6) after 24b HOLD, 24c fixes (65742e3) and 24d Sonnet re-review PASS (3ff10f2, fixture re-recorded on develop byte-identical). PROTO 14. Lead suite on develop: 1031 pass, 0 fail, 2 todo; build and diff check pass. room-bots, room-bots-review, room-bots-rereview workspaces and branches removed. S4 notes in `reports/batch-24d-rereview.md` (0-bot host lobby also gets the smaller code; 375x667 and 360x800 unmeasured).
 - develop is local only, ahead of the 20b3d58 playtest by batches 24 and 25. Pushing needs Director approval.
-- Director: push everything. develop 313b0e8 pushed; publication check in progress (see next update).
+- Director: push everything. **Published playtest: 313b0e8, verified by the lead.** Tests run 43634892177 and Pages run 43636889912 succeeded; playtest HTML 200 and assets/main.js contains 313b0e8. Contents add room bots (PROTO 14) and solo Tokyo/Airport Cups. Later local commits (batch 26 tests, docs) are not pushed.
 - **Batch 26 merged** (tests only): the mid-Cup reconnect "won" is a fixture limit (case a). The old fixture advanced the guest clock 2000 ms before the host, so start-sync acceptPlan refused the race-2 prepare as "Start missed". With level clocks the guest plays; with a skewed sample it recovers after the next probe. S3 closed; real two-phone airplane-mode check left for the Director. cup-reconnect workspace removed.
 - **Queue is empty.** All Cups work from complete-cups-plan.md is done (21-26). Next round needs Director input: playtest feedback, visual direction (Fable pass on hold), main approval.
 
