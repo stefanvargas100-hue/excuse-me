@@ -406,7 +406,7 @@ button:disabled.big, button:disabled.ghost { opacity: .5; cursor: default; }
 #friendStages { gap: 6px; } #friendStages .chip { flex: 1 1 auto; padding: 0 8px; min-width: 0; font-size: 15px; }
 #friendHost.cup #friendCode, #friendHost.cup .friendroster li.empty, #friendHost.cup.full #friendShare { display: none; }   /* in a Cup, bots fill the empty seats */
 #friendHost.cup .friendroster li small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-#friendHost.cup #friendStages, #friendStages { display: flex; flex-direction: column; gap: 5px; max-height: 210px; overflow-y: auto; }
+#friendHost.cup #friendStages, #friendStages { display: flex; flex-direction: column; flex-wrap: nowrap; gap: 5px; max-height: 210px; overflow-y: auto; }
 #friendStages .friendStageGroup { width: 100%; }
 #friendStages .friendCity { width: 100%; min-height: 34px; font: 400 14px var(--body); text-align: left; color: var(--ink); background: var(--paper); border: 2px solid var(--ink); border-radius: var(--wob-s); padding: 4px 8px; }
 #friendStages .friendTracks { display: flex; flex-wrap: wrap; gap: 4px; padding: 4px 0; }
@@ -431,6 +431,8 @@ button:disabled.big, button:disabled.ghost { opacity: .5; cursor: default; }
   /* a Cup setup adds stage and bot rows, so it packs tighter */
   #friendHost.cup { gap: 5px; }
   #friendHost.cup .modes .chip { min-height: 30px; }
+  #friendHost.cup #friendStages { gap: 3px; }
+  #friendHost.cup #friendStages .friendCity { min-height: 0; font-size: 12px; line-height: 1.05; padding: 2px 6px; }
   #friendHost.cup ~ .friendstatus { margin-top: 4px; font-size: 14px; min-height: 0; }
 }
 /* ---- profile chip, profile screen ---- */
