@@ -213,3 +213,46 @@ test('a racer steered into the gap between a porter and its cart is turned aside
   }
   assert.ok(tried >= 4, 'porters to try: ' + tried);
 });
+
+/* ---------- Batch 27f: nobody passes through a porter's cart (review 27e, finding S1) ---------- */
+const overlaps = (p, q) => p.circles.some(c => Math.hypot(q.x - (p.x + c.ox), q.z - (p.z + c.oz)) < c.r + 0.25 - 1e-6);
+const crowdOf = E => E.S.people.filter(q => !q.dead && !q.prop && !q.porter);
+
+test('the crowd steers round a porter and its whole cart: nobody overlaps it on screen in a bot race', () => {
+  for (const seed of [1, 2, 3]) {
+    const E = load(undefined, { seed }); E.storage.excuseme_botlvl = '1'; E.setLevel(TSUKIJI);
+    E.start('race'); E.S.race.countT = 0; E.S.race.bots.splice(4);
+    let met = 0;
+    for (let i = 0; i < 30 * 70; i++) {
+      const live = E.S.race.bots.filter(b => !b.done); if (!live.length) break;
+      E.S.pz = Math.max(0, Math.min(...live.map(b => b.z)) - 20); E.S.me.z = E.S.pz; E.tick(1 / 30);
+      for (const p of porters(E)) {
+        if (p.z - E.S.pz < -3.6 || p.z - E.S.pz > 58) continue;
+        for (const q of crowdOf(E)) if (Math.abs(q.z - p.z) < 3) { met++; assert.ok(!overlaps(p, q), 'seed ' + seed + ' t ' + E.S.time.toFixed(1) + ': someone at ' + q.x.toFixed(2) + ',' + q.z.toFixed(2) + ' inside the porter at ' + p.x + ',' + p.z.toFixed(2)); }
+      }
+    }
+    assert.ok(met > 20, 'people came near porters: ' + met);
+  }
+});
+
+test('nobody is created on top of a porter', () => {
+  let near = 0;
+  for (let seed = 1; seed <= 12; seed++) {
+    const E = game(TSUKIJI, seed, 'race'); E.S.people = [];
+    for (let z = 14; z < E.LV.goal - 16; z += 4) {
+      const before = new Set(E.S.people); E.S.time = z / 3;   // the leader reaches each chunk at a racer's pace, so porters stand ahead of it
+      E.genChunk(z);
+      for (const q of crowdOf(E)) if (!before.has(q)) for (const p of porters(E)) { if (Math.abs(q.z - p.z) < 3) near++; assert.ok(!overlaps(p, q), 'seed ' + seed + ': created inside a porter at z ' + p.z.toFixed(1)); }
+    }
+  }
+  assert.ok(near > 0, 'people were created near porters');
+});
+
+test('a shopper stopped at a stall in a porter\'s lane steps aside, and the porter keeps its line and pace', () => {
+  const E = game(TSUKIJI, 5, 'race'); course(E); E.S.race.bots = [];
+  const p = porters(E)[0], x0 = p.x;
+  E.S.people = [p];
+  const q = E.mkPerson(p.x + (p.x > 0 ? -0.1 : 0.1), p.z + 4); q.v0 = 0; q.vx = 0; q.vz = 0; q.shopper = true; q.faceTo = [1, 0];
+  for (let i = 0; i < 60 * 8; i++) { E.S.pz = p.z - 20; E.S.me.z = E.S.pz; E.tick(1 / 60); assert.ok(!overlaps(p, q), 'the cart went through the shopper at tick ' + i); }
+  assert.ok(p.z > q.z + 2, 'the porter went on past'); assert.equal(p.x, x0); assert.equal(p.vz, 1.0); assert.equal(p.vx, 0);
+});

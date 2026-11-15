@@ -93,6 +93,7 @@ export function mk(x, z, o) {
   }
   dress(p);
   p.prevDz = z - (S ? S.pz : 0);
+  if (LV.id === 'tsukiji' && !p.prop && !p.porter && !o.isMe) for (const q of S.people) if (q.porter && !q.dead) clearOfPorter(p, q);   // nobody is made inside a porter's cart (batch 27f)
   S.people.push(p);
   return p;
 }
@@ -367,6 +368,15 @@ function tsukijiPorter(z0) {
   const p = mk(x, base + PORTER.v * walked, { porter: true, steady: true, locked: true, hx: 0, hz: 1, v0: PORTER.v, laneX: x, fx: 0, fz: 1,
     yieldP: 0, space: 0, carry: null, pack: 'none', phone: false, circles: porterCircles() });
   p.base = base;
+  for (const q of S.people) if (!q.prop && !q.porter && !q.dead) clearOfPorter(q, p);   // nor does a porter land on anyone
+}
+// Someone touching a porter's footprint (with 0.15 m to spare) moves sideways clear of it, toward the open side of the alley.
+// Only ever happens beyond the newest chunk, so off screen; reads positions only, never the random stream.
+function clearOfPorter(q, p) {
+  if (!p.circles.some(c => Math.hypot(q.x - (p.x + c.ox), q.z - (p.z + c.oz)) < c.r + R_BODY + 0.15)) return;
+  const side = Math.abs(p.x) > 1 ? -Math.sign(p.x) : Math.sign(q.x - p.x) || 1, lim = LV.half - 0.6;
+  q.x = clamp(p.x + side * (0.38 + R_BODY + 0.2), -lim, lim);
+  if (q.laneX !== null) q.laneX = q.x;
 }
 
 /* ---------- Baggage Claim: people waiting at the carousel (batch 27) ----------

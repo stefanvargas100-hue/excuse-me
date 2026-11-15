@@ -64,10 +64,47 @@ function behaviours(p, dt) {
   if (p.turnX !== null && !p.wait && sgn(p.hx) * (p.x - p.turnX) >= 0) { p.hx = 0; p.hz = p.turnDir; p.dirz = p.turnDir; p.turnX = null; p.free = false; p.laneX = p.x; }
 }
 
+/* ---------- Tsukiji porters (batch 27f) ----------
+   A porter is a body with a 0.76 m hand cart ahead of it, 1.6 m long in all. People steer round the point of that length nearest to
+   them, as wide as the cart, and someone standing still (a shopper at a stall) steps aside, toward the open side of the alley, when
+   the cart is about to reach them. Only people and porters' positions are read: nothing about the racers. */
+const NONE = [], PORTER_R = 0.38;
+const porterLen = q => q.circles[q.circles.length - 1].oz;   // from the body to the middle of the cart's front
+const porterAlong = (q, p) => clamp(p.z - q.z, 0, porterLen(q));
+function stepAsideForCart(p, porters) {
+  for (const q of porters) {
+    const ahead = p.z - q.z;
+    if (ahead < -0.3 || ahead > porterLen(q) + PORTER_R + 2.2 || Math.abs(p.x - q.x) >= PORTER_R + 0.25 + 0.2) continue;
+    p.aside = 0.9; p.asideDir = Math.abs(q.x) > 1 ? -Math.sign(q.x) : Math.sign(p.x - q.x) || 1;
+    return;
+  }
+}
+// Asked to step aside (an Excuse me) toward a porter whose cart is right there: they would walk into it, so they do not.
+function asideIntoCart(p, porters) {
+  for (const q of porters) {
+    if (Math.abs(q.x) > 1 && p.asideDir === -Math.sign(q.x)) continue;   // toward the open side of a porter by the kerb: the way round it
+    const dz = p.z - (q.z + porterAlong(q, p)), dx = q.x - p.x;
+    if (Math.abs(dz) < PORTER_R + 0.25 + 0.4 && Math.sign(dx) === p.asideDir && Math.abs(dx) < PORTER_R + 0.25 + 1.0) return true;
+  }
+  return false;
+}
+// Sideways only, so nobody is pushed along the alley; beside a porter at the kerb, always to the open side (there is no room at the kerb).
+function keepOutOfCart(p, q) {
+  const open = Math.abs(q.x) > 1 ? -Math.sign(q.x) : 0;
+  for (const c of q.circles) {
+    const cx = q.x + c.ox, dz = p.z - (q.z + c.oz), need = c.r + 0.25 + 0.01;
+    if (Math.abs(dz) >= need) continue;
+    const off = Math.sqrt(need * need - dz * dz), dx = p.x - cx;
+    if (Math.abs(dx) >= off) continue;   // clear of this circle
+    p.x = cx + (open || Math.sign(dx) || 1) * off;
+  }
+}
+
 export function updPeople(dt) {
   const ppl = S.people, n = ppl.length, me = S.meProxy;
   me.route = S.race ? S.route : ""; me.x = S.px; me.z = S.pz; me.vx = state === 'play' ? S.vx : 0; me.vz = state === 'play' ? S.speed : 0;
   const lim = LV.half - 0.35, wallLim = LV.half - 0.75;
+  const porters = LV.id === 'tsukiji' ? ppl.filter(q => q.porter && !q.dead) : NONE;
   for (let i = 0; i < n; i++) {
     const p = ppl[i];
     if (p.drive && !p.dead) {   // a baggage cart: waits at the wall, then drives across once you are close, and is gone on the far side
@@ -82,27 +119,30 @@ export function updPeople(dt) {
     p.t += dt;
     behaviours(p, dt);
     if (p.react) { p.react.t += dt; if (p.react.t > 1.4) p.react = null; }
+    if (porters.length && p.aside > 0 && asideIntoCart(p, porters)) p.aside = 0;   // never step aside into a porter's cart
     if (!p.locked && p.v0 > 0) {
       let ax = 0, az = 0, slow = 0;
       const rgX = p.hz, rgZ = -p.hx;   // right-hand side of the walking direction
       for (let j = 0; j <= n; j++) {
         const q = j < n ? ppl[j] : me;
         if (!sameRoute(p,q) || q === p || q.dead) continue;
-        const rx = q.x - p.x, rz = q.z - p.z;
+        let rx = q.x - p.x, rz = q.z - p.z;
+        if (q.porter) rz += porterAlong(q, p);   // a Tsukiji porter is its body and the cart ahead: steer round the nearest point of the whole length
         if (rx > 4 || rx < -4 || rz > 7 || rz < -7) continue;
-        if (rx * p.hx + rz * p.hz < -0.2) continue;               // people mostly ignore what's behind them
+        if (rx * p.hx + rz * p.hz < -0.2 && !(q.porter && Math.abs(rz) < PORTER_R + 0.6)) continue;   // people mostly ignore what's behind them (not a cart at their side)
         const ux = q.vx - p.vx, uz = q.vz - p.vz, uu = ux * ux + uz * uz;
         let t = uu > 1e-4 ? -(rx * ux + rz * uz) / uu : 0;
         if (t > 3) continue;
         if (t < 0) t = 0;
         const cx = rx + ux * t, cz = rz + uz * t;
-        const reach = (q.prop ? q.rad : 0.25) + 0.25 + p.space + 0.3;
+        const reach = (q.porter ? PORTER_R : q.prop ? q.rad : 0.25) + 0.25 + p.space + 0.3;
         const dmin = Math.hypot(cx, cz);
         if (dmin >= reach) continue;
         let w = (1 - t / 3) * (reach - dmin) / reach;
         if (j === n) w *= p.yieldP;
         let nx = -cx, nz = -cz, nl = dmin;
         if (nl < 0.05) { nx = rgX; nz = rgZ; nl = 1; }
+        if (q.porter && Math.abs(q.x) > 1) nx = -Math.sign(q.x) * Math.max(Math.abs(nx), 0.5 * nl);   // a porter by the kerb: no room on the kerb side, so go round the open side
         ax += nx / nl * w; az += nz / nl * w;
         if (!q.prop && q.vx * p.hx + q.vz * p.hz < -0.3) { ax += rgX * LV.keep * w * 0.6; az += rgZ * LV.keep * w * 0.6; }
         if (t < 1.2) slow = Math.max(slow, w);
@@ -117,6 +157,7 @@ export function updPeople(dt) {
       const sp = Math.hypot(p.vx, p.vz), cap = p.v0 * 1.35 + 0.2;
       if (sp > cap) { p.vx *= cap / sp; p.vz *= cap / sp; }
     } else if (!p.locked) {
+      if (porters.length && !(p.aside > 0)) stepAsideForCart(p, porters);
       if (p.aside > 0) p.vx += (p.asideDir * 1.3 - p.vx) * Math.min(1, dt * 5);
       else { const k = Math.max(0, 1 - dt * 6); p.vx *= k; p.vz *= k; }
     }
@@ -154,6 +195,8 @@ export function updPeople(dt) {
     p.walkA = (p.walkA || 0) + ((sp > 0.15 ? 1 : 0) - (p.walkA || 0)) * Math.min(1, dt * 8);
     if (p.fadeT !== undefined) { p.fadeT += dt; if (p.fadeT >= 0.9) delete p.fadeT; }
   }
+  // once everyone has moved, nobody is left inside a porter's cart: whoever still touches it steps just clear, sideways
+  for (const q of porters) for (const p of ppl) if (!p.prop && !p.porter && !p.dead && Math.abs(p.z - q.z - 0.6) < 1.4 && Math.abs(p.x - q.x) < 1.1) keepOutOfCart(p, q);
 }
 
 export function updMe(dt) {
