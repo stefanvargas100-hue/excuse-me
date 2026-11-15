@@ -7,8 +7,8 @@
 - **Checks by the lead on 0121694:** full suite 1042 tests, 1040 pass, 0 fail, 2 todo; build and diff check pass; all five stages looked at in an emulated 390x844 phone at several points of a run. No real phone, no frame-rate measurement.
 - **Batch 27 (gameplay features for Tsukiji, Skytree, Baggage, Gate Change)** is planned in `game/rounds/round-02/batch-27-stage-features.md`: Claude Opus high, high risk, second review by a fresh Claude Sonnet worker. Its record and online-version effects go to the Director before merge.
 - **Batch 27 started** 2026-11-14: Claude Opus high, workspace stage-features, branch from develop 8420ed9, dispatch ctx_c2c55aa0d2ff (task_8683b93d7fcb). When it reports: review, then a fresh Claude Sonnet second review, then take the record and PROTO effects to the Director before merge.
-- **Playtest push of 8420ed9 (stage worlds) is in flight**; verify Tests and Pages runs, HTML 200 and the 8420ed9 marker in assets/main.js, then record it here.
-- **Lead handover due:** this session is far past 100K context. A fresh lead continues from here.
+- **Published playtest: 8420ed9, verified by the lead** (stage worlds). Tests run 43683788054 and Pages run 43685441142 succeeded; playtest HTML 200 and assets/main.js 200 containing 8420ed9 at 2026-11-15T06:28:14Z. Later local commits are status notes only and stay unpushed.
+- **Lead handed over** 2026-11-14: a fresh lead session took over here and is waiting for batch 27 to report.
 
 ## Art sharpness pass by the lead - 2026-11-14
 - **Director:** the art is hard to see, too much is going on and outlines are fuzzy; the colours are liked. The lead fixes it directly. Everything stays on `develop` (nothing to `main`).
