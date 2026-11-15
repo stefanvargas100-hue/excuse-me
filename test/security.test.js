@@ -26,8 +26,8 @@ test('the Airport Cup has four stages, appended without moving any index', () =>
 
 test('the wire protocol was bumped for the new stages', () => assert.ok(PROTO >= 13));
 
-test('stages 0-8 keep their crowds and random sequences exactly (0-6 taken on the batch-23 base, 7-8 re-taken on batch 27)', () => {
-  const want = { 0: '3f7e047c7707', 1: 'd4743f08f1ac', 2: '59945a779e87', 3: '9079be63b784', 4: '81dbfea4259d', 5: 'ea786705b797', 6: 'a6b7c7954ade', 7: 'debb45594185', 8: '0c801ed00909' };
+test('stages 0-8 keep their crowds and random sequences exactly (0-6 taken on the batch-23 base, 8 re-taken on batch 27, 7 on batch 27c)', () => {
+  const want = { 0: '3f7e047c7707', 1: 'd4743f08f1ac', 2: '59945a779e87', 3: '9079be63b784', 4: '81dbfea4259d', 5: 'ea786705b797', 6: 'a6b7c7954ade', 7: 'a5791f068ab5', 8: '0c801ed00909' };
   for (let level = 0; level < 9; level++) {
     const h = crypto.createHash('sha1');
     for (const mode of ['classic', 'race']) {

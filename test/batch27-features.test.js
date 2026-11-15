@@ -5,7 +5,8 @@ const assert = require('node:assert/strict');
 const { load } = require('./harness.js');
 const TSUKIJI = 7, SKYTREE = 8, BAGGAGE = 10, GATE = 11;
 const game = (level, seed, mode = 'classic') => { const E = load(undefined, { seed }); E.setLevel(level); E.start(mode); if (mode === 'race') E.S.race.countT = 0; return E; };
-const course = (E, z1 = E.LV.goal - 16) => { E.S.people = []; for (let z = 0; z < z1; z += 4) E.genChunk(z); };
+// chunks as real runs build them: from 14 m (S.nextChunk at start), every 4 m. Batch 27c: building from 0 hid that wet patches never appeared.
+const course = (E, z1 = E.LV.goal - 16) => { E.S.people = []; for (let z = 14; z < z1; z += 4) E.genChunk(z); };
 const spanX = p => { let lo = Infinity, hi = -Infinity; for (const c of p.circles) { lo = Math.min(lo, p.x + c.ox - c.r); hi = Math.max(hi, p.x + c.ox + c.r); } return [lo, hi]; };
 const spanZ = p => { let lo = Infinity, hi = -Infinity; for (const c of p.circles) { lo = Math.min(lo, p.z + (c.oz || 0) - c.r); hi = Math.max(hi, p.z + (c.oz || 0) + c.r); } return [lo, hi]; };
 
@@ -48,6 +49,7 @@ test('porters push a cart ahead of them your way at about 1.0 m/s, narrow enough
     }
   }
   assert.ok(seen >= 12, 'porters appear: ' + seen);
+  { const E = game(TSUKIJI, 1, 'race'); course(E); assert.ok(patches(E).length >= 10, 'the real-run course has its wet patches'); }
   for (const id of [0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11]) { const E = game(id, 3); course(E, 300); assert.equal(porters(E).length, 0, 'no porters on stage ' + id); }
 });
 
@@ -55,16 +57,17 @@ test('at most one porter per 30 m, at every moment of a bot race, and none ever 
   for (const seed of [2, 5, 9]) {
     const E = load(undefined, { seed }); E.storage.excuseme_botlvl = '2'; E.setLevel(TSUKIJI);
     E.start('race'); E.S.race.countT = 0; E.S.race.bots.splice(4);
-    let most = 0;
+    let most = 0, patchesSeen = 0;
     for (let i = 0; i < 30 * 160 && !E.S.race.bots.every(b => b.done); i++) {
       const live = E.S.race.bots.filter(b => !b.done); E.S.pz = Math.max(0, Math.min(...live.map(b => b.z)) - 6); E.S.me.z = E.S.pz; E.S.ghostT = 9;
       E.tick(1 / 30);
       if (i % 15) continue;
-      const ps = porters(E).sort((a, b) => a.z - b.z); most = Math.max(most, ps.length);
+      const ps = porters(E).sort((a, b) => a.z - b.z); most = Math.max(most, ps.length); patchesSeen = Math.max(patchesSeen, patches(E).length);
       for (let k = 1; k < ps.length; k++) assert.ok(ps[k].z - ps[k - 1].z >= 30, 'porters ' + (ps[k].z - ps[k - 1].z).toFixed(1) + ' m apart');
       for (const p of ps) { checkPorter(E, p); assert.equal(p.vx, 0, 'a porter keeps a straight line'); assert.equal(p.vz, 1.0); }
     }
     assert.ok(most >= 2, 'several porters on the course at once');
+    assert.ok(patchesSeen >= 3, 'porters were checked against real wet patches: ' + patchesSeen);
   }
 });
 

@@ -25,9 +25,18 @@ try {
       const E = window.__excuse, S = () => E.S;
       E.setLevel(7); E.start('race'); S().race.countT = 0; S().race.bots.length = 0;
       S().eventT = 999;
-      const p = S().people.filter(q => q.porter).sort((a, b) => a.z - b.z)[0];
+      let p = null;
+      for (let i = 0; i < 6000 && !(p = S().people.filter(q => q.porter && q.z - S().pz > 8).sort((a, b) => a.z - b.z)[0]); i++) { S().pz += 0.05; S().me.z = S().pz; S().ghostT = 9; E.tick(1 / 60); }
       for (let i = 0; i < 150; i++) { S().pz = p.z - 4; S().me.z = S().pz; S().px = p.x + (p.x > 0 ? -1.5 : 1.5); S().ghostT = 9; E.tick(1 / 60); }   // a few seconds: shoppers stop at the stalls
       E.render(); return 'porter at x ' + p.x.toFixed(2);
+    },
+    'tsukiji-wetpatch': () => {   // batch 27c: a patch the game itself placed, reached by walking the course as a real run does
+      const E = window.__excuse, S = () => E.S;
+      E.setLevel(7); E.start('race'); S().race.countT = 0; S().race.bots.length = 0; S().eventT = 999;
+      let w = null;
+      for (let i = 0; i < 6000 && !(w = S().people.find(q => q.wetPatch && q.z - S().pz > 8)); i++) { S().pz += 0.05; S().me.z = S().pz; S().ghostT = 9; E.tick(1 / 60); }
+      for (let i = 0; i < 30; i++) { S().pz = w.z - 9; S().me.z = S().pz; S().px = w.x * 0.6; S().ghostT = 9; E.tick(1 / 60); }
+      E.render(); return 'patch at x ' + w.x + ', z ' + w.z;
     },
     'skytree-lift': () => {
       const E = window.__excuse, S = () => E.S;

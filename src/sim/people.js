@@ -341,7 +341,8 @@ function genChunkInner(z0) {
   if (LV.id === 'park') parkProps(z0);
   if (LV.id === 'bridge') bridgeProps(z0);
   if (LV.id === 'security') securityProps(z0);
-  if (LV.id === 'tsukiji' && z0 % 32 === 16) mk(pick([-1,1])*1.8,z0+2,{prop:'wetpatch',wetPatch:true,width:2.4,depth:4,circles:[]});
+  // one wet patch per 32 m, by chunk number: real runs start their chunks at 14 m, so z0 % 32 never matched (batch 27c)
+  if (LV.id === 'tsukiji' && Math.floor(z0 / 4) % 8 === 4) mk(pick([-1,1])*1.8,z0+2,{prop:'wetpatch',wetPatch:true,width:2.4,depth:4,circles:[]});
   if (inXing(z0 + 2)) return;   // the crosswalk crowds come from the signal waves instead
   const k = LV.base + (R() < 0.4 + 0.4 * d ? 1 : 0) + (d > 0.25 && R() < 0.55 ? 1 : 0) + (d > 0.6 && R() < 0.6 ? 1 : 0);
   const first = S.people.length;
