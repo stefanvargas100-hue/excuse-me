@@ -48,8 +48,9 @@ export function render() {
   fxGround();
   styleGround();
   drawSideRoutes();
-  for (const p of S.people) if (p.prop === 'spill' && (!S.race || sameRoute(watched || S, p))) drawPerson(p);   // puddles lie under everyone
-  const list = S.people.filter(p => p.prop !== 'spill').concat([S.me], S.race ? S.race.bots : [], visibleGhosts(), glassPanels()).sort((a, b) => b.z - a.z);
+  const flat = p => p.prop === 'spill' || p.prop === 'wetpatch';   // puddles and wet patches lie under everyone, whatever their centre's depth
+  for (const p of S.people) if (flat(p) && (!S.race || sameRoute(watched || S, p))) drawPerson(p);
+  const list = S.people.filter(p => !flat(p)).concat([S.me], S.race ? S.race.bots : [], visibleGhosts(), glassPanels()).sort((a, b) => b.z - a.z);
   for (const p of list.filter(p => !S.race || sameRoute(watched || S,p))) { if (p.glass) drawGlass(p); else drawPerson(p); }
   drawSlipstream();
   styleEnd(); styleFinish();
