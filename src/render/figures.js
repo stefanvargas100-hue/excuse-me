@@ -280,6 +280,7 @@ function drawNear(p, s) {
       box3D(p.x - 0.18, p.x + 0.18, 1.12, 1.45, bz - 0.17, bz + 0.17, hex('#a8794a'));
     } });
   }
+  if (p.porter) items.push({ d: p.z + 1.0 - VZ, f: () => drawCart(p) });
   const clk = S ? S.clock : 0;
   const cele = (p.racer && p.done) || (p.isMe && S && S.race && S.race.finished) || p.pose === 'win';   // crossed the line: arms up
   const talkOn = !calm && p.ph !== undefined && !p.pose && !p.phone && !p.aim && !p.dance && !p.isMe && !p.prop && !cele && Math.sin(clk * 0.9 + (p.ph || 0) * 3.1) > 0.15;
@@ -645,9 +646,24 @@ function helmet(hx, hy, r) {
   styleResume(was);
 }
 
+// A Tsukiji porter's hand cart, pushed ahead of them: a wooden flatbed on two wheels with crates of ice and the catch on top, in the
+// colours of the stall counters. It fills exactly its hitbox: 0.76 m wide, from 0.4 to 1.62 m ahead of the porter.
+function drawCart(p) {
+  const x = p.x, z0 = p.z + 0.4, z1 = p.z + 1.62;
+  for (const dx of [-0.3, 0.3]) box3D(x + dx - 0.05, x + dx + 0.05, 0, 0.3, z1 - 0.42, z1 - 0.12, hex('#1b1410'));   // wheels
+  box3D(x - 0.38, x + 0.38, 0.28, 0.36, z0, z1, hex('#8a5a2b'));                                                      // the flatbed
+  box3D(x - 0.34, x - 0.02, 0.36, 0.7, z0 + 0.08, z1 - 0.08, hex('#dfeaf2'));                                         // crates of ice
+  box3D(x + 0.02, x + 0.34, 0.36, 0.62, z0 + 0.08, z1 - 0.08, hex('#dfeaf2'));
+  box3D(x - 0.3, x - 0.06, 0.7, 0.76, z0 + 0.2, z1 - 0.2, hex('#e5484d'));                                            // the catch on top
+  box3D(x + 0.06, x + 0.3, 0.62, 0.68, z0 + 0.2, z1 - 0.2, hex('#ff8a5c'));
+  box3D(x - 0.36, x + 0.36, 0.86, 0.92, z0 - 0.06, z0, hex('#3b2a26'));                                              // the push bar
+  for (const dx of [-0.34, 0.34]) box3D(x + dx - 0.03, x + dx + 0.03, 0.36, 0.92, z0 - 0.04, z0 + 0.02, hex('#3b2a26'));
+}
+
 function drawFar(p, bx, fy, U) {
   const sw = Math.sin(p.phase), moving = Math.hypot(p.vx, p.vz) > 0.15;
   const lw = Math.max(1.2, 0.12 * U);
+  if (p.porter) drawCart(p);   // further away than the porter, so drawn first
   ctx.lineCap = 'round';
   ctx.strokeStyle = p.pants; ctx.lineWidth = lw; ctx.beginPath();
   ctx.moveTo(bx, fy - 0.9 * U); ctx.lineTo(bx - 0.08 * U, fy - (moving ? Math.max(0, sw) * 0.1 * U : 0));
@@ -962,6 +978,7 @@ const SIGNALS = new Set(['lanelight', 'scangate', 'secrope']);
 export function drawPerson(p) {
   const dz = p.z - VZ;
   if (dz < 0.6 || dz > DRAW_FAR) return;
+  if (p.lift && p.x < -LV.half - 0.3) return;   // Skytree: still inside the lift, behind the exhibit wall
   const s = F / dz, k = p.h / 1.75, U = s * k;
   const bx = CX + (p.x - VX) * s;
   if (bx < -s * 3 || bx > W + s * 3) return;

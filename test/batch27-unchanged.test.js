@@ -7,6 +7,6 @@ const fixture = require('../game/rounds/round-02/batch-27-evidence/unchanged-cro
 
 test('the 8 unchanged stages produce the same crowd as develop did before batch 27', () => {
   const now = record();
-  for (const id of Object.keys(fixture)) assert.deepEqual(now[id], fixture[id], id + ' changed');
+  for (const id of Object.keys(fixture)) assert.equal(JSON.stringify(now[id]), JSON.stringify(fixture[id]), id + ' changed');   // as JSON: a bot at -0 m reads the same as 0
   assert.equal(Object.keys(fixture).length, 8);
 });

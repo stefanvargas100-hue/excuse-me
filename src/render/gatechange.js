@@ -9,7 +9,7 @@ import { LV } from '../config/levels.js';
 import { CX, F, H, HOR, VX, VZ, W } from './camera.js';
 import { P, box3D, cq, forSegs, fq, label, poly, wq } from './draw.js';
 import { wallText, wqA } from './scenery.js';
-import { goalOf } from '../sim/state.js';
+import { S, goalOf } from '../sim/state.js';
 import { col, goalGate, nearFade, orb, span, stars } from './stagekit.js';
 
 const GATE_EVERY = 3;   // a gate every third 6 m bay
@@ -54,7 +54,7 @@ function rocket(z, h) {
 }
 
 export function paintGateChange() {
-  const was = stylePause(), h = LV.half;
+  const was = stylePause(), h = LV.half, flip = !!S && S.boardFlipUntil > S.time;
   ctx.fillStyle = '#060a1c'; ctx.fillRect(-W, -H, 3 * W, 3 * H);
   stars(80, 55, HOR * 0.9, VX * 3);
   planet();
@@ -77,7 +77,10 @@ export function paintGateChange() {
       span(za + 0.8, za + 5.2, (p, q) => wq(-h + 0.01, 2.8, 3.4, p, q, col('#17223d', p)));
       wallText('GATE C' + gateNumber(k), -h + 0.03, 3.1, za + 3, 0.42, '#ffc233', -1);
     }
-    if (g === 2) {   // a departures board: rows of flights, the delayed one in pink
+    if (g === 2 && flip) {   // the gate has changed: every board turns pink and says so while the crowd is turning (sim/people.js sets the timer)
+      span(za + 1, zb - 1, (p, q) => wq(h - 0.01, 1.3, 3.3, p, q, col('#ff5fb0', p)));
+      wallText('GATE CHANGE', h - 0.03, 2.3, za + 3, 0.4, '#17223d', 1);
+    } else if (g === 2) {   // a departures board: rows of flights, the delayed one in pink
       span(za + 1, zb - 1, (p, q) => {
         wq(h - 0.01, 1.3, 3.3, p, q, col('#17223d', p));
         for (let j = 0; j < 4; j++) { const q1 = q - 0.3 - (j % 2) * 0.8; if (q1 > p + 0.4) wq(h - 0.02, 1.55 + j * 0.3, 1.67 + j * 0.3, p + 0.3, q1, col(j === 1 ? '#ff5fb0' : '#4be38a', p)); }

@@ -1,0 +1,4 @@
+{"stage":"baggage","medianEasyMediumHard":[133.4,119.1,93]}
+{"stage":"gatechange","medianEasyMediumHard":[170,144.9,119.6]}
+{"level":7,"medianEasyMediumHard":[149.45000000001107,112.19999999999492,92.5666666666627]}
+{"level":8,"medianEasyMediumHard":[187.9500000000417,152.53333333334686,122.03333333332769]}
