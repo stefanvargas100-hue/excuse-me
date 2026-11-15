@@ -15,7 +15,7 @@ test('the Airport Cup has four stages, appended without moving any index', () =>
   assert.equal(JSON.stringify(E.LEVELS.slice(9).map(l => [l.id, l.city, l.goal, l.half])), JSON.stringify([['security', 'Airport', 450, 6], ['baggage', 'Airport', 480, 7], ['gatechange', 'Airport', 600, 6]]));
   for (const i of [SEC, BAG, GATE]) {
     const lv = E.LEVELS[i];
-    assert.equal(E.STAGE_STYLE[lv.id], 'space');
+    assert.equal(E.STAGE_STYLE[lv.id], { security: 'checkpoint', baggage: 'cargo', gatechange: 'launch' }[lv.id], lv.name + ' has its own deck of the space station');
     assert.equal(JSON.stringify(lv.music), JSON.stringify(E.LEVELS[0].music), lv.name + ' uses the Airport music progression');
     assert.ok(!E.beltInfo(lv.id), lv.name + ' has no moving belts');
     const m = E.MEDAL_TIMES[lv.id];

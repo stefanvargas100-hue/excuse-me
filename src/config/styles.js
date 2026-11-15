@@ -102,6 +102,18 @@ const popFig = (r, g, b) => {
   return toRgb(pull(h, nearest(h, POP_HUES), 0.25), clamp01(s * 1.25 + 0.12), clamp01(0.14 + 0.62 * l));
 };
 
+/* The Tokyo stages after Takeshita paint their scenery straight in their own colours (render/tsukiji.js, render/skytree.js).
+   Props that cross them keep their own colours, a little deeper, so they sit in the night and are still what they are. */
+const duskScene = (r, g, b) => {
+  const [h, s, l] = toHsl(r, g, b);
+  return toRgb(h, clamp01(s * 1.1), clamp01(0.06 + 0.74 * l));
+};
+/* Tsukiji Outer Market: the lantern market. A dark teal alley lit warm by stalls and paper lanterns. */
+const lanternFig = (r, g, b) => {
+  const [h, s, l] = toHsl(r, g, b);
+  return toRgb(pull(h, 28, 0.1), clamp01(s * 1.15 + 0.06), clamp01(0.16 + 0.62 * l));
+};
+
 /* ===== Airport: the space family ===== */
 
 /* Terminal B: space station. A brushed silver hull against black space; signs and shops become glowing holograms. */
@@ -129,6 +141,7 @@ const spaceFig = (r, g, b) => {                                               //
 // sceneInk: outline upright scenery. fog / skyTop: replace the stage's own haze and sky colour.
 // sky / ground / finish / backdrop / shadow: the set pieces in render/style.js that go with this world.
 // Keep every world sharp: read the sharpness rules at the top of render/style.js before adding an effect.
+const SUIT = { head: 1, limb: 1.24, body: 1.14, ink: 1.3, shade: 'soft', line: '#1b2a4a', helmet: true };   // everyone on the station
 export const STYLES = {
   classic: { name: 'Classic', family: null, scene: same, figure: same,
     fig: { head: 1, limb: 1, body: 1, ink: 1, shade: 'soft', line: '#3a2a4d' } },
@@ -153,17 +166,21 @@ export const STYLES = {
     sky: 'synthsun', ground: 'grid', fog: '#3a1466', skyTop: '#16063a', signs: ['カワイイ', 'クレープ', '原宿', 'ポップ', 'アイス', 'ゲーム'],
     fig: { head: 1.18, limb: 1.02, body: 1, ink: 1.3, shade: 'cel', line: '#ff5fc4', rim: ['#ff5fc4', '#5ffbf1', '#fff06a', '#c08bff'] } },
 
+  lantern: { name: 'Lantern market', family: 'neon', scene: duskScene, figure: lanternFig, fog: '#0d1b2a',
+    fig: { head: 1.06, limb: 1, body: 1, ink: 1.25, shade: 'cel', line: '#ffd166', rim: ['#ffd166', '#ff8a5c', '#7ff0e0', '#fff4d6'] } },
+  skydeck: { name: 'Sky deck', family: 'neon', scene: duskScene, figure: popFig, fog: '#34265f',
+    fig: { head: 1.04, limb: 1.04, body: 1, ink: 1.25, shade: 'cel', line: '#5ffbf1', rim: ['#5ffbf1', '#ff5fc4', '#fff06a', '#ffffff'] } },
+
   space: { name: 'Space station', family: 'space', scene: spaceScene, figure: spaceFig,
-    backdrop: 'space', ground: 'deck', fog: '#9fb2cc',
-    fig: { head: 1, limb: 1.24, body: 1.14, ink: 1.3, shade: 'soft', line: '#1b2a4a', helmet: true } }
+    backdrop: 'space', ground: 'deck', fog: '#9fb2cc', fig: SUIT },
+  // The other decks of the station paint their own scenery (render/security.js, baggage.js, gatechange.js); the people and props are the station's.
+  checkpoint: { name: 'Checkpoint deck', family: 'space', scene: spaceScene, figure: spaceFig, fog: '#9fb2cc', fig: SUIT },
+  cargo: { name: 'Cargo bay', family: 'space', scene: spaceScene, figure: spaceFig, fog: '#9fb2cc', fig: SUIT },
+  launch: { name: 'Launch concourse', family: 'space', scene: spaceScene, figure: spaceFig, fog: '#9fb2cc', fig: SUIT }
 };
 
 // Each stage's own world, and the look a new stage in a known cup starts with.
-export const STAGE_STYLE = { airport: 'space', nyc: 'comic', park: 'funnies', bridge: 'pulp', subway: 'inknoir', shibuya: 'noir', takeshita: 'neonpop', tsukiji: 'neonpop', skytree: 'neonpop', security: 'space', baggage: 'space', gatechange: 'space' };
-// Stages that still paint their own daylight scenery (placeholders until they get a world of their own). Their people keep the
-// style's colours but are inked in a dark line, and the distance keeps the stage's own haze, so they read sharply against the bright scenery.
-export const PLAIN_SCENERY = new Set(['tsukiji', 'skytree', 'security', 'baggage', 'gatechange']);
-export const PLAIN_LINE = '#2b2140';
+export const STAGE_STYLE = { airport: 'space', nyc: 'comic', park: 'funnies', bridge: 'pulp', subway: 'inknoir', shibuya: 'noir', takeshita: 'neonpop', tsukiji: 'lantern', skytree: 'skydeck', security: 'checkpoint', baggage: 'cargo', gatechange: 'launch' };
 export const CUP_STYLE = { 'New York': 'comic', Tokyo: 'noir', Airport: 'space' };
 
 export const styleIdFor = lv => (lv && (STAGE_STYLE[lv.id] || CUP_STYLE[lv.city])) || 'classic';

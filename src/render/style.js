@@ -1,5 +1,5 @@
 import { FOGCSS, LV, setFog } from '../config/levels.js';
-import { PLAIN_LINE, PLAIN_SCENERY, STYLES, mapColour, styleIdFor } from '../config/styles.js';
+import { STYLES, mapColour, styleIdFor } from '../config/styles.js';
 import { ctx } from '../dom.js';
 import { S, calm } from '../sim/state.js';
 import { CX, F, H, HOR, VX, VY, VZ, W } from './camera.js';
@@ -17,7 +17,7 @@ import { CX, F, H, HOR, VX, VY, VZ, W } from './camera.js';
 //  3. The richness lives in the sky set piece and in the people. The ground stays calm so feet and gaps read at a glance.
 
 let forced = null;              // review tools can pin a style (?style=comic, or the lineup page)
-let cur = STYLES.classic, id = 'classic', on = false, fig = 0, active = false, fogOver = false, plain = false;
+let cur = STYLES.classic, id = 'classic', on = false, fig = 0, active = false, fogOver = false;
 let cache = [new Map(), new Map(), new Map()], back = new Map();
 
 try { const q = typeof location !== 'undefined' && /[?&]style=(\w+)/.exec(location.search); if (q && STYLES[q[1]]) forced = q[1]; } catch (e) {}
@@ -30,13 +30,7 @@ export const STYLE_IDS = Object.keys(STYLES);
 export const styleName = v => STYLES[v].name;
 
 // The character recipe for whatever is being drawn now. Classic whenever no style is on.
-const plainFigs = new Map();   // on a stage with plain scenery: the same character, inked in a dark line instead of coloured light
-function plainFig(st) {
-  let f = plainFigs.get(st);
-  if (!f) { f = st.fig.rim ? { ...st.fig, rim: null, line: PLAIN_LINE } : st.fig; plainFigs.set(st, f); }
-  return f;
-}
-export const figStyle = () => (on ? (plain ? plainFig(cur) : cur.fig) : STYLES.classic.fig);
+export const figStyle = () => (on ? cur.fig : STYLES.classic.fig);
 export const sceneInk = () => (on && !fig ? cur.sceneInk : null);
 export const styleIs = v => on && id === v;
 export const skyTop = top => (on && cur.skyTop) || top;
@@ -89,8 +83,7 @@ export function styleBegin() {
     return false;
   }
   if (want !== id) { id = want; cur = STYLES[id]; cache = [new Map(), new Map(), new Map()]; back = new Map(); }
-  plain = PLAIN_SCENERY.has(LV.id);
-  const fog = (!plain && cur.fog) || LV.fog;
+  const fog = cur.fog || LV.fog;
   if (FOGCSS !== fog) setFog(fog);
   fogOver = fog !== LV.fog;
   on = true; active = true; fig = 0;

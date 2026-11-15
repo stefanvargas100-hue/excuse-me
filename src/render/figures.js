@@ -956,6 +956,9 @@ function drawEmote(kind, x, y, r) {
 
 const hexA = (h, a) => { const c = hex(h); return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')'; };
 
+// Props that tell you where you can go keep their exact colours in every art style: green is open, red is shut.
+const SIGNALS = new Set(['lanelight', 'scangate', 'secrope']);
+
 export function drawPerson(p) {
   const dz = p.z - VZ;
   if (dz < 0.6 || dz > DRAW_FAR) return;
@@ -993,7 +996,7 @@ export function drawPerson(p) {
   let hd = {};
   FS = figStyle(); LINE = FS.rim ? FS.rim[p.isMe ? 0 : Math.floor((p.ph || 0) * 5) % FS.rim.length] : FS.line;   // some styles ring each person in their own colour of light
   const wasFig = figureMode(p.prop ? 0 : p.isMe ? 2 : 1);   // people use the style's character colours; props belong to the scenery
-  if (p.prop) drawProp(p, s, bx, fy);
+  if (p.prop) { const signal = SIGNALS.has(p.prop), was = signal && stylePause(); drawProp(p, s, bx, fy); if (signal) styleResume(was); }
   else hd = U * 1.75 < 34 ? drawFar(p, bx, fy, U) : drawNear(p, s);
   figureMode(wasFig);
   const wasStyled = stylePause();   // name tags, stamina and warnings read the same in every style
