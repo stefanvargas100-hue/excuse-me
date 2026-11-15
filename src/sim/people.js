@@ -359,7 +359,7 @@ function genChunkInner(z0) {
    pace the racers take. Their lanes miss every wet patch (the patches lie 0.6 to 3.0 m either side of the middle) and leave the rest
    of the 8 m alley open. Nothing pushes them off their line. */
 export const PORTER = { every: 36, at: 2, v: 1.0, lanes: [-3.42, 0, 3.42] };
-const porterCircles = () => [{ ox: 0, oz: 0, r: R_BODY }, { ox: 0, oz: 0.78, r: 0.38 }, { ox: 0, oz: 1.24, r: 0.38 }];
+const porterCircles = () => [{ ox: 0, oz: 0, r: R_BODY }, { ox: 0, oz: 0.4, r: 0.32 }, { ox: 0, oz: 0.78, r: 0.38 }, { ox: 0, oz: 1.24, r: 0.38 }];   // body, the push bar (closes the notch between body and cart: batch 27c), the cart
 function tsukijiPorter(z0) {
   if (z0 < 24 || Math.floor(z0 / 4) % (PORTER.every / 4) !== PORTER.at || R() < 0.3) return;   // by chunk number: races start their chunks at 14 m
   const u = R(), x = u < 0.5 ? PORTER.lanes[0] : u < 0.8 ? PORTER.lanes[1] + rnd(-0.12, 0.12) : PORTER.lanes[2];   // keep left, Tokyo style

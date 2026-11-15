@@ -647,7 +647,8 @@ function helmet(hx, hy, r) {
 }
 
 // A Tsukiji porter's hand cart, pushed ahead of them: a wooden flatbed on two wheels with crates of ice and the catch on top, in the
-// colours of the stall counters. It fills exactly its hitbox: 0.76 m wide, from 0.4 to 1.62 m ahead of the porter.
+// colours of the stall counters. It fills its hitbox: 0.76 m wide, from 0.4 to 1.62 m ahead of the porter, and the handles run back
+// to the porter's hands, over the push-bar circle that closes the gap between porter and cart (batch 27c).
 function drawCart(p) {
   const x = p.x, z0 = p.z + 0.4, z1 = p.z + 1.62;
   for (const dx of [-0.3, 0.3]) box3D(x + dx - 0.05, x + dx + 0.05, 0, 0.3, z1 - 0.42, z1 - 0.12, hex('#1b1410'));   // wheels
@@ -656,7 +657,9 @@ function drawCart(p) {
   box3D(x + 0.02, x + 0.34, 0.36, 0.62, z0 + 0.08, z1 - 0.08, hex('#dfeaf2'));
   box3D(x - 0.3, x - 0.06, 0.7, 0.76, z0 + 0.2, z1 - 0.2, hex('#e5484d'));                                            // the catch on top
   box3D(x + 0.06, x + 0.3, 0.62, 0.68, z0 + 0.2, z1 - 0.2, hex('#ff8a5c'));
-  box3D(x - 0.36, x + 0.36, 0.86, 0.92, z0 - 0.06, z0, hex('#3b2a26'));                                              // the push bar
+  box3D(x - 0.36, x + 0.36, 0.86, 0.92, z0 - 0.06, z0, hex('#3b2a26'));                                              // the cart's front rail
+  for (const dx of [-0.3, 0.3]) box3D(x + dx - 0.025, x + dx + 0.025, 0.9, 0.96, z0 - 0.32, z0, hex('#3b2a26'));     // the handles, back to the porter's hands
+  box3D(x - 0.32, x + 0.32, 0.92, 0.98, z0 - 0.32, z0 - 0.26, hex('#3b2a26'));                                       // the push bar the porter holds
   for (const dx of [-0.34, 0.34]) box3D(x + dx - 0.03, x + dx + 0.03, 0.36, 0.92, z0 - 0.04, z0 + 0.02, hex('#3b2a26'));
 }
 

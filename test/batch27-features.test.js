@@ -193,3 +193,23 @@ test('every new feature renders on screen without errors', () => {
   const S = game(SKYTREE, 2); S.S.people = []; S.runEvent('lift'); for (let i = 0; i < 60 * 15; i++) { S.S.ghostT = 9; S.tick(1 / 60); } S.S.pz = S.S.lifts[0].z - 10; S.render();
   const B = game(BAGGAGE, 2); course(B); B.S.pz = waiters(B)[0].z - 8; B.render();
 });
+
+// Batch 27c: the porter's shape has no notch between body and cart. A racer beside the porter's body, drifting into it as it runs
+// on, is turned aside by the push bar and gets past the cart. With the old shape (body and cart circles only) it was caught in the
+// notch: blocked for up to 0.85 s at a time and still in the gap after 3 s, and in bot races that ended in the stuck rule's slip-through.
+test('a racer steered into the gap between a porter and its cart is turned aside, not held', () => {
+  let tried = 0;
+  for (let seed = 1; seed <= 8; seed++) {
+    const E = game(TSUKIJI, seed, 'race'); course(E); E.S.race.bots = []; E.S.race.pickups = [];
+    const p = porters(E)[0]; if (!p) continue;
+    E.S.people = [p]; tried++;
+    const side = p.x > 0 ? -1 : 1;   // the open side
+    E.S.px = p.x + side * 0.4; E.S.pz = p.z + 0.3; E.S.me.z = E.S.pz; E.S.speed = 2.5; E.S.vx = -side * 1.0; E.S.ghostT = 0; E.S.blockT = 0;
+    let held = 0, i = 0;
+    for (; i < 60 * 3 && E.S.pz < p.z + 1.9; i++) { E.tick(1 / 60); held = Math.max(held, E.S.blockT); assert.equal(E.S.ghostT, 0, 'seed ' + seed + ': pinned until the stuck rule fired'); }
+    const past = E.S.pz >= p.z + 1.9, aside = Math.abs(E.S.px - p.x) >= 0.6;   // past the cart, or turned out beside it (it may brush along the cart)
+    assert.ok(past || aside, 'seed ' + seed + ': held in the gap, ' + (E.S.px - p.x).toFixed(2) + ' m across and ' + (E.S.pz - p.z).toFixed(2) + ' m along after 3 s');
+    assert.ok(held < 0.5, 'seed ' + seed + ': blocked for ' + held.toFixed(2) + ' s');
+  }
+  assert.ok(tried >= 4, 'porters to try: ' + tried);
+});
