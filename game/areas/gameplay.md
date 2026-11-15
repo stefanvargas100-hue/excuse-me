@@ -20,6 +20,7 @@ Rules, modes, scoring, progress and saves.
 - **Stage events are solo and bot-race only.** `runEvent` never runs in friend rooms (`!S.duel` in `src/sim/game.js`). Only crowd made in `genChunk` appears in rooms, so a plan must say where each feature runs.
 - **Real runs start chunks at 14 m and step by 4 m.** Place things by chunk number (`Math.floor(z0 / 4)`), never by `z0 % n`, and test placement on a course built the way a real run builds it, not from chunk 0.
 - **Crowd hashes are pinned.** `test/security.test.js` pins the crowd of stages 0-8. A plan that changes a stage's crowd must list that test as editable for those stages.
+- **Bot slip-through counts are noisy.** Over 20 seeds the count moves by 1 or 2 whenever a crowd rule changes where people walk. A plan should not cap the count; it should ask for every new slip-through to be traced to its cause, and fail only those the batch's own feature causes.
 - **Pay once.** Rewards go inside the once-per-run `scored` guard, so a redrawn results screen cannot pay twice.
 - **Shared boundaries:** `halfAt` in `src/config/levels.js` is used by both movement and scenery. The player, bots and crowd must agree on it.
 
