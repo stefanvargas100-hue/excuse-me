@@ -7,7 +7,7 @@ import { LV } from '../config/levels.js';
 import { CX, H, HOR, VX, VZ, W } from './camera.js';
 import { P, box3D, forSegs, fq, wq } from './draw.js';
 import { hsh, wallText, wqA } from './scenery.js';
-import { goalOf } from '../sim/state.js';
+import { S, goalOf } from '../sim/state.js';
 import { backdrop, col, goalGate, line3, nearFade, span, stars } from './stagekit.js';
 
 const EXHIBITS = [['634 m', '#ff5fc4'], ['東京', '#5ffbf1'], ['SKYTREE', '#fff06a'], ['TEMBO', '#c08bff']];
@@ -62,6 +62,7 @@ export function paintSkytree() {
       for (const y of [1.0, 2.84]) wq(-h + 0.02, y, y + 0.06, p, q, col(ex[1], p));
     });
     wallText(ex[0], -h + 0.04, 1.95, za + 3, 0.75, ex[1], -1);
+    liftDoors(h, za, zb);
     // right: floor-to-ceiling glass with a handrail
     wqA(h, 0, 4.2, a, b, col('#7fd8ff', a), 0.1);
     for (const [y0, y1] of [[0, 0.12], [1.05, 1.13], [4.05, 4.2]]) wq(h, y0, y1, a, b, col('#e9ecff', a));
@@ -71,4 +72,20 @@ export function paintSkytree() {
   });
   goalGate(goalOf(), h, 4.2, '#e9ecff', '#262a66', LV.goalText, '#5ffbf1', box3D);
   styleResume(was);
+}
+
+// Lift arrivals (sim/people.js, event 'lift'): a lit lift door in the exhibit wall where each passenger comes out. The doors stand
+// open, warm light inside, from just before someone steps out until they are clear; otherwise shut, with a lit frame. Drawing only.
+// Drawn with the wall segment the door is in, so nearer scenery still covers it.
+function liftDoors(h, za, zb) {
+  for (const l of (S && S.lifts) || []) {
+    if (l.z < za || l.z >= zb || l.z - VZ < 1.5 || l.z - VZ > 90) continue;
+    const open = S.time > l.out - 1.2 && S.time < l.out + 1.5;
+    span(Math.max(za, l.z - 0.75), Math.min(zb, l.z + 0.75), (p, q) => {
+      wq(-h + 0.03, 0, 2.5, p, q, col('#5ffbf1', p));                           // the lit frame
+      wq(-h + 0.04, 0, 2.38, p + 0.08, q - 0.08, col(open ? '#ffe7a8' : '#c9cdfa', p));
+    });
+    if (!open) span(l.z - 0.02, l.z + 0.02, (p, q) => wq(-h + 0.05, 0, 2.38, p, q, col('#7a7fb8', p)));   // where the two doors meet
+    span(l.z - 0.3, l.z + 0.3, (p, q) => wq(-h + 0.04, 2.6, 2.8, p, q, col(open ? '#fff06a' : '#262a66', p)));   // the arrival light
+  }
 }

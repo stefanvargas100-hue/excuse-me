@@ -93,6 +93,7 @@ export function mk(x, z, o) {
   }
   dress(p);
   p.prevDz = z - (S ? S.pz : 0);
+  if (LV.id === 'tsukiji' && !p.prop && !p.porter && !o.isMe) for (const q of S.people) if (q.porter && !q.dead) clearOfPorter(p, q);   // nobody is made inside a porter's cart (batch 27f)
   S.people.push(p);
   return p;
 }
@@ -153,7 +154,7 @@ function spawnUnit(z, d) {
     if (d > 0.2) pool.push(['swerver', 1]);
     if (d > 0.4) pool.push(['trio', 1]);
   } else if (id === 'tsukiji') {
-    pool = [['walker',4],['oncoming',2],['luggage',1]];
+    pool = [['walker',4],['oncoming',2],['luggage',1],['shopper',3.5]];   // a third of the market crowd stops at the stalls
   } else if (id === 'skytree') {
     pool = [['skywalker',6],['tourist',1]];
   } else if (id === 'security') {
@@ -341,12 +342,70 @@ function genChunkInner(z0) {
   if (LV.id === 'park') parkProps(z0);
   if (LV.id === 'bridge') bridgeProps(z0);
   if (LV.id === 'security') securityProps(z0);
-  if (LV.id === 'tsukiji' && z0 % 32 === 16) mk(pick([-1,1])*1.8,z0+2,{prop:'wetpatch',wetPatch:true,width:2.4,depth:4,circles:[]});
+  // one wet patch per 32 m, by chunk number: real runs start their chunks at 14 m, so z0 % 32 never matched (batch 27c)
+  if (LV.id === 'tsukiji' && Math.floor(z0 / 4) % 8 === 4) mk(pick([-1,1])*1.8,z0+2,{prop:'wetpatch',wetPatch:true,width:2.4,depth:4,circles:[]});
   if (inXing(z0 + 2)) return;   // the crosswalk crowds come from the signal waves instead
   const k = LV.base + (R() < 0.4 + 0.4 * d ? 1 : 0) + (d > 0.25 && R() < 0.55 ? 1 : 0) + (d > 0.6 && R() < 0.6 ? 1 : 0);
   const first = S.people.length;
   for (let i = 0; i < k; i++) spawnUnit(z0 + R() * 4, d);
   if (LV.id === 'security') securityCrowd(first);
+  if (LV.id === 'tsukiji') tsukijiPorter(z0);
+  if (LV.id === 'baggage') carouselWaiters(z0);
+}
+
+/* ---------- Tsukiji porters (batch 27) ----------
+   A porter walks your way at exactly 1.0 m/s pushing a hand cart ahead of them: a slow, long obstacle to overtake. One may start in
+   every 36 m of alley. All porters walk the same fixed line at the same pace, and a porter generated later is placed where it would
+   have walked to by now (the walking time of the porters already out, or the run clock), so they stay 36 m or more apart whatever
+   pace the racers take. Their lanes miss every wet patch (the patches lie 0.6 to 3.0 m either side of the middle) and leave the rest
+   of the 8 m alley open. Nothing pushes them off their line. */
+export const PORTER = { every: 36, at: 2, v: 1.0, lanes: [-3.42, 0, 3.42] };
+const porterCircles = () => [{ ox: 0, oz: 0, r: R_BODY }, { ox: 0, oz: 0.4, r: 0.32 }, { ox: 0, oz: 0.78, r: 0.38 }, { ox: 0, oz: 1.24, r: 0.38 }];   // body, the push bar (closes the notch between body and cart: batch 27c), the cart
+function tsukijiPorter(z0) {
+  if (z0 < 24 || Math.floor(z0 / 4) % (PORTER.every / 4) !== PORTER.at || R() < 0.3) return;   // by chunk number: races start their chunks at 14 m
+  const u = R(), x = u < 0.5 ? PORTER.lanes[0] : u < 0.8 ? PORTER.lanes[1] + rnd(-0.12, 0.12) : PORTER.lanes[2];   // keep left, Tokyo style
+  const out = S.people.find(p => p.porter && !p.dead), walked = out ? out.z - out.base : S.time, base = z0 + 2;
+  const p = mk(x, base + PORTER.v * walked, { porter: true, steady: true, locked: true, hx: 0, hz: 1, v0: PORTER.v, laneX: x, fx: 0, fz: 1,
+    yieldP: 0, space: 0, carry: null, pack: 'none', phone: false, circles: porterCircles() });
+  p.base = base;
+  for (const q of S.people) if (!q.prop && !q.porter && !q.dead) clearOfPorter(q, p);   // nor does a porter land on anyone
+}
+// Someone touching a porter's footprint (with 0.15 m to spare) moves sideways clear of it, toward the open side of the alley.
+// Only ever happens beyond the newest chunk, so off screen; reads positions only, never the random stream.
+function clearOfPorter(q, p) {
+  if (!p.circles.some(c => Math.hypot(q.x - (p.x + c.ox), q.z - (p.z + c.oz)) < c.r + R_BODY + 0.15)) return;
+  const side = Math.abs(p.x) > 1 ? -Math.sign(p.x) : Math.sign(q.x - p.x) || 1, lim = LV.half - 0.6;
+  q.x = clamp(p.x + side * (0.38 + R_BODY + 0.2), -lim, lim);
+  if (q.laneX !== null) q.laneX = q.x;
+}
+
+/* ---------- Baggage Claim: people waiting at the carousel (batch 27) ----------
+   Groups of 3 to 5 stand at the carousel kerb on the left, within 1.6 m of the edge, one group every 40 to 56 m. Where each group
+   stands comes from the run's seed (or a Classic run's own key) and the group number only, so a bag spill can work out where the groups
+   are before they exist: it moves any bag lane that would cross a group clear of it (waiterClear). */
+export const WAITERS = { first: 64, every: 48, jitter: 8, clear: 3.2 };
+export function waitGroup(k) {
+  if (k < 0) return null;
+  const rng = mulberry32(hashStr(secKey() + '|wait' + k)), z = WAITERS.first + k * WAITERS.every + rng() * WAITERS.jitter;
+  if (!S.endless && z > LV.goal - 24) return null;
+  const n = 3 + Math.floor(rng() * 3), h = LV.half, ppl = [];
+  for (let i = 0; i < n; i++) ppl.push({ x: -h + 0.5 + (i % 2) * 0.6 + rng() * 0.15, z: z + (i - (n - 1) / 2) * 0.7 + (rng() - 0.5) * 0.2 });
+  return { k, z, n, ppl };
+}
+// the bag lane z moved, if need be, so the bag passes clear of every waiting group
+export function waiterClear(z) {
+  if (LV.id !== 'baggage') return z;
+  const k0 = Math.floor((z - WAITERS.first) / WAITERS.every);
+  for (const k of [k0 - 1, k0, k0 + 1]) { const g = waitGroup(k); if (g && Math.abs(z - g.z) < WAITERS.clear) z = g.z + WAITERS.clear; }
+  return z;
+}
+function carouselWaiters(z0) {
+  const k0 = Math.floor((z0 - WAITERS.first) / WAITERS.every);
+  for (const k of [k0, k0 + 1]) {
+    const g = waitGroup(k);
+    if (!g || g.z < z0 || g.z >= z0 + 4) continue;
+    for (const q of g.ppl) mk(q.x, q.z, { waiting: true, v0: 0, hx: 0, hz: 1, fx: -1, fz: 0, carry: null });   // watching the bags come round
+  }
 }
 
 // Fifth Avenue: crowds wait at each corner, then pour across when the signal changes.
@@ -382,6 +441,7 @@ export function runEvent(kind) {
     const n = 5 + ((R() * 2) | 0);
     let zz = z;
     for (let i = 0; i < n; i++) {
+      zz = waiterClear(zz);   // never through the people waiting at the carousel: their places are known from the seed, so the bag lane moves past them
       const trolley = i % 2 === 1, sp = trolley ? rnd(2.3, 2.9) : rnd(3.2, 4.2);
       const circles = trolley ? [0, -0.55, -1.1].map(ox => ({ ox, oz: 0, r: 0.3 })) : [{ ox: 0, oz: 0, r: 0.38 }];
       const q = mk(-(h + 2), zz, { prop: trolley ? 'trolleyroll' : 'bagslide', drive: sp, driveAt: rnd(22, 28), len: trolley ? 1.1 : 0.4, quiet: true, circles, bagCol: pick(['#c0392b', '#2f80ed', '#27ae60', '#8e44ad', '#f2994a']) });
@@ -393,18 +453,34 @@ export function runEvent(kind) {
     // The board flips and most of the crowd ahead turns round and rushes toward you for a few seconds, then settles to a walk.
     // A gap about 2.6 m wide stays clear of anyone who turns. Their pace and timing come from each person's own phase.
     const gapW = 2.6, lim = h - 0.5, gapX = rnd(-lim + gapW / 2 + 0.2, lim - gapW / 2 - 0.2), dur = rnd(3.4, 4.6);
+    let longest = 0;
     for (const p of S.people) {
       if (p.prop || p.dead || p.rival || p.follow || p.free || p.locked || p.v0 <= 0 || p.isMe) continue;
       const dz = p.z - S.pz, u = (p.phase * 997) % 1;
       if (dz < 14 || dz > SPAWN_FAR + 20 || Math.abs(p.x - gapX) < gapW / 2 + 0.5 || u > 0.8) continue;
       p.hx = 0; p.hz = -1; p.dirz = -1; p.laneX = p.x;
-      p.v0n = p.v0; p.v0 = 2.2 + u * 0.6; p.settleT = dur * (0.8 + u * 0.4);
+      p.v0n = p.v0; p.v0 = 2.2 + u * 0.6; p.settleT = dur * (0.8 + u * 0.4); longest = Math.max(longest, p.settleT);
     }
+    S.boardFlipUntil = S.time + longest;   // drawing only: the departure boards read GATE CHANGE until the last of them settles (render/gatechange.js)
     banner('GATE CHANGE! THE CROWD IS TURNING', '#ff6b6b');
   } else if (kind === 'turret') {
     const dir=pick([-1,1]);
     const p=mk(-dir*(h+1.6),z,{prop:'turret',drive:dir*.65,driving:true,driveAt:0,len:2.2,circles:rowC([-0.7,0,0.7],.45)}); p.dirx=dir;
     banner('MARKET DELIVERY CROSSING', '#ffd166');
+  } else if (kind === 'lift') {
+    // Skytree: a lift arrives in the exhibit wall on the left and its 6 to 8 passengers cross the deck to stand at the windows on the
+    // right. They cross one at a time, 4.6 m or more apart front to back (as a bag spill does), so there is always a gap. Each walks
+    // a straight line at a steady pace and steps out of the lift on a timer from now, never because of where a racer is.
+    const n = 6 + ((R() * 3) | 0), v = 1.25, t0 = rnd(11, 14), door = -h + 0.4;
+    S.lifts = (S.lifts || []).filter(l => l.z > S.pz - 20);
+    let zz = z;
+    for (let i = 0; i < n; i++) {
+      const wait = t0 + (zz - z) / 3.2;   // seconds until this one reaches the door, later the further down the deck
+      mk(door - v * wait, zz, { lift: true, steady: true, locked: true, free: true, turnX: door, turnDir: 0, hx: 1, hz: 0, v0: v, fx: 1, fz: 0, yieldP: 0, space: 0, carry: null });
+      S.lifts.push({ z: zz, out: S.time + wait });   // the doors the renderer lights (render/skytree.js)
+      zz += rnd(4.6, 6.2);
+    }
+    banner('LIFT ARRIVING: VISITORS CROSSING', '#7cc4ff');
   } else if(kind === 'viewpoint') {
     for(let row=0;row<3;row++) for(let col=0;col<4;col++) mk(h-0.8-col*.8,z+row*1.4,{viewpoint:true,v0:0,phone:true,fx:1,fz:0,yieldP:0});
     banner('WINDOW VIEWPOINT AHEAD', '#7cc4ff');

@@ -276,7 +276,7 @@ function resolve(t) {
 function shove(p, fromX) {
   p.hit = true; p.hitT = 0.7;
   if (!p.prop) {
-    p.vx += (Math.sign(p.x - fromX) || 1) * 1.6;   // they stumble out of the way, so you are not stuck behind them for long
+    if (!p.steady) p.vx += (Math.sign(p.x - fromX) || 1) * 1.6;   // they stumble out of the way, so you are not stuck behind them for long (a porter's cart or a lift passenger keeps its line)
     const lines = REACT[LV.id] || REACT.airport;
     if (!p.react || p.react.t > 1.2) p.react = { t: 0, text: lines[(Math.random() * lines.length) | 0], up: false };
   }
