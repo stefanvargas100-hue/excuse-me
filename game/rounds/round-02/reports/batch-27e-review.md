@@ -2,7 +2,7 @@
 
 ```text
 Outcome:     done (verdict: PASS, with four findings S1-S4, none blocking)
-Branch:      stefanvargas100-hue/stage-features-review, from 8948da4; commit in the worker_done message
+Branch:      stefanvargas100-hue/stage-features-review, from 8948da4; commit 2b4e05c
 Changed:     tests only: test/batch27e-review.test.js (3 tests) and this report; no source changed
 Checks:      checks 1-8 reproduced (see below); my 3 new tests pass and fail under the mutations listed; npm test 1059 pass / 0 fail / 2 todo; build ok; git diff --check clean
 Not checked: real phones; friend rooms on two phones (host/guest compared in two headless runs only); how the features feel; pause/resume in a room
