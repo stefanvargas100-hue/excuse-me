@@ -1,12 +1,12 @@
 # Batch 27 report: stage features
 
 ```text
-Outcome:     partial (blocked on one pinned test)
+Outcome:     done
 Branch:      stefanvargas100-hue/stage-features, commit in the worker_done message
 Changed:     Tsukiji shoppers and porters, Skytree lift arrivals, Baggage carousel waiters, Gate Change pink boards; PROTO 14 -> 15
-Checks:      batch27-features 13/13 (failed first), batch27-unchanged 1/1, 4 stage tests + hitboxes/scenery/medals 156/156, npm test 1053 pass / 1 fail / 2 todo (security.test.js pin, below), build ok, diff --check ok
+Checks:      batch27-features 13/13 (failed first), batch27-unchanged 1/1, 4 stage tests + hitboxes/scenery/medals 156/156, security.test.js 12/12, npm test 1054 pass / 0 fail / 2 todo, build ok, diff --check ok
 Not checked: real phones; friend rooms on two phones; whether Tsukiji is too crowded and how each feature feels (emulated 390x844 shots only)
-Off plan:    race.js shove() skips people marked steady (porters, lift passengers); MEDAL_TIMES left unchanged (see below)
+Off plan:    test/security.test.js stage 7-8 hashes and title (lead ruling, batch-27b-hash-reply.md); race.js shove() skips steady people; MEDAL_TIMES unchanged
 Trouble:     fixture test first failed on -0 vs 0 in deepStrictEqual, not a real change; races start chunks at 14 m, so z0 % 36 never matched
 ```
 
@@ -34,7 +34,7 @@ The 20-seed sweep gives different signs for the same stages (Baggage Medium -4.6
 
 **Friend rooms:** shoppers, porters and waiters come from chunks and appear in friend rooms. The lift and the gate change are events, and events never run in friend rooms today (`!S.duel` in `sim/game.js`), so they do not appear there; changing that is outside this batch.
 
-**Blocked: an existing test pins Tsukiji and Skytree.** `test/security.test.js` "stages 0-8 keep their crowds..." hashes stages 0 to 8 on the batch-23 base. Stages 0 to 6 still match. Stage 7 (Tsukiji) is now `debb45594185` (was `a3179a0bf731`) and stage 8 (Skytree) `0c801ed00909` (was `0aa81b43bfba`), as this batch intends. The plan forbids editing that test, so it is left failing for the lead: either update those two hashes or limit the loop to stages 0 to 6 (the batch-27 fixture now covers the unchanged stages, Security included).
+**Pinned test (resolved by the lead's ruling, `batch-27b-hash-reply.md`):** `test/security.test.js` "stages 0-8 keep their crowds..." still pins all nine stages. Stages 0 to 6 match the batch-23 hashes unedited. Stage 7 (Tsukiji) is now `debb45594185` (was `a3179a0bf731`) and stage 8 (Skytree) `0c801ed00909` (was `0aa81b43bfba`), re-taken on batch 27; the title says so.
 
 **Found, not fixed:** Tsukiji wet patches use `z0 % 32 === 16`, but races and Classic start chunks at 14 m (14, 18, 22...), so no wet patch ever appears in a real run. Tests pass because they generate chunks from 0. The fix is in `people.js` but changes Tsukiji's layout again, so it needs its own decision.
 
