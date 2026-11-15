@@ -17,6 +17,9 @@ Rules, modes, scoring, progress and saves.
 - **Compare fair times only.** Bump the rules version or course tag when a change makes old times or ghosts unfair (`recordKey`, `courseTag`, `src/config/routes.js`).
 - **Never break existing saves.** Outfits, unlocks, records and storage keys must survive any change.
 - **Keep the seeded random stream stable.** Classic, Daily and Weekly must not change because of unrelated features. `test/rotation-stage.test.js` protects stage rotation, so do not remove its compatibility guard casually.
+- **Stage events are solo and bot-race only.** `runEvent` never runs in friend rooms (`!S.duel` in `src/sim/game.js`). Only crowd made in `genChunk` appears in rooms, so a plan must say where each feature runs.
+- **Real runs start chunks at 14 m and step by 4 m.** Place things by chunk number (`Math.floor(z0 / 4)`), never by `z0 % n`, and test placement on a course built the way a real run builds it, not from chunk 0.
+- **Crowd hashes are pinned.** `test/security.test.js` pins the crowd of stages 0-8. A plan that changes a stage's crowd must list that test as editable for those stages.
 - **Pay once.** Rewards go inside the once-per-run `scored` guard, so a redrawn results screen cannot pay twice.
 - **Shared boundaries:** `halfAt` in `src/config/levels.js` is used by both movement and scenery. The player, bots and crowd must agree on it.
 
