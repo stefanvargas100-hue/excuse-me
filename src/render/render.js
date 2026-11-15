@@ -24,6 +24,7 @@ import { paintPark } from './park.js';
 import { paintSubway } from './subway.js';
 import { visibleGhosts } from '../sim/replay.js';
 import { styleBackdrop, styleBegin, styleEnd, styleFinish, styleGround } from './style.js';
+import { PLAIN_SCENERY } from '../config/styles.js';
 
 
 
@@ -46,7 +47,7 @@ export function render() {
   drawStrips();
   if (!S.route) drawPowerups();
   fxGround();
-  if(!['tsukiji','skytree','security','baggage','gatechange'].includes(LV.id))styleGround();
+  if (!PLAIN_SCENERY.has(LV.id)) styleGround();
   drawSideRoutes();
   for (const p of S.people) if (p.prop === 'spill' && (!S.race || sameRoute(watched || S, p))) drawPerson(p);   // puddles lie under everyone
   const list = S.people.filter(p => p.prop !== 'spill').concat([S.me], S.race ? S.race.bots : [], visibleGhosts(), glassPanels()).sort((a, b) => b.z - a.z);

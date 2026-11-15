@@ -82,3 +82,24 @@ for (const [i, name] of [[0, 'Terminal B'], [1, 'Fifth Avenue'], [2, 'Shibuya Cr
     assert.deepEqual(run(true), run(false));
   });
 }
+
+// Director, 2026-11-14: the worlds were hard to read because glow, grain and washes blurred every outline. These keep them sharp.
+test('art styles stay sharp: no glow, blur or additive blending over the frame', () => {
+  const fs = require('node:fs');
+  for (const file of ['src/render/style.js', 'src/render/weather.js']) {
+    const src = fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
+    for (const [what, re] of [['shadow blur', /shadowBlur/], ['a canvas filter', /\.filter\s*=/], ['additive blending', /['"]lighter['"]/], ['a copy of the frame laid back over it', /drawImage\(/]])
+      assert.ok(!re.test(src), file + ' uses ' + what);
+  }
+});
+
+test('every person has an outline, and it is heavier where the scenery is dark or busy', () => {
+  for (const [id, s] of Object.entries(ST.STYLES)) assert.ok(s.fig.ink >= 1, id + ' ink');
+  for (const id of ['noir', 'neonpop', 'space']) assert.ok(ST.STYLES[id].fig.ink >= 1.2, id + ' ink');
+});
+
+test('stages with plain scenery are real stages, and their people are inked in a dark line', () => {
+  for (const id of ST.PLAIN_SCENERY) assert.ok(E.LEVELS.some(l => l.id === id), id + ' is not a stage');
+  const [r, g, b] = [1, 3, 5].map(i => parseInt(ST.PLAIN_LINE.slice(i, i + 2), 16));
+  assert.ok((0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.25, 'the plain line is not dark');
+});

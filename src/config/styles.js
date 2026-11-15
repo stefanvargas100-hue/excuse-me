@@ -80,9 +80,9 @@ const noirScene = (r, g, b) => {
   if (glow > 0.3) return toRgb(pull(h, nearest(h, NOIR_HUES), 0.5), clamp01(s * 1.2 + 0.2), clamp01(L));
   return toRgb(pull(h, 228, 0.82), 0.3 + 0.3 * glow, clamp01(L));
 };
-const noirFig = (r, g, b) => {                                                // the crowd: near-silhouettes with a hint of their colour
+const noirFig = (r, g, b) => {                                                // the crowd: in shadow, but clear of the dark street, with their own colour
   const [h, s, l] = toHsl(r, g, b);
-  return toRgb(h, clamp01(s * 0.5 + 0.05), clamp01(0.04 + 0.32 * l));
+  return toRgb(h, clamp01(s * 0.7 + 0.05), clamp01(0.12 + 0.44 * l));
 };
 const noirMe = (r, g, b) => {                                                 // you: still in shadow, but clearly the one in colour
   const [h, s, l] = toHsl(r, g, b);
@@ -118,7 +118,7 @@ const isSkin = (h, s, l) => h > 8 && h < 42 && s > 0.22 && s < 0.75 && l > 0.2 &
 const spaceFig = (r, g, b) => {                                               // clothes become pale suits that keep a tint of their colour
   const [h, s, l] = toHsl(r, g, b);
   if (isSkin(h, s, l)) return [r, g, b];
-  return toRgb(h, clamp01(s * 0.7), clamp01(0.42 + 0.52 * l));
+  return toRgb(h, clamp01(s * 0.85), clamp01(0.3 + 0.6 * l));
 };
 
 // scene / figure / figureMe: colour recipes for scenery, the crowd and (optionally) the player.
@@ -128,6 +128,7 @@ const spaceFig = (r, g, b) => {                                               //
 //   bubble (inked speech bubbles).
 // sceneInk: outline upright scenery. fog / skyTop: replace the stage's own haze and sky colour.
 // sky / ground / finish / backdrop / shadow: the set pieces in render/style.js that go with this world.
+// Keep every world sharp: read the sharpness rules at the top of render/style.js before adding an effect.
 export const STYLES = {
   classic: { name: 'Classic', family: null, scene: same, figure: same,
     fig: { head: 1, limb: 1, body: 1, ink: 1, shade: 'soft', line: '#3a2a4d' } },
@@ -146,19 +147,23 @@ export const STYLES = {
     fig: { head: 0.98, limb: 0.96, body: 1, ink: 1.25, shade: 'flat', line: '#f4f1ea', bubble: true } },
 
   noir: { name: 'Neo-noir city', family: 'neon', scene: noirScene, figure: noirFig, figureMe: noirMe,
-    sky: 'glowcloud', ground: 'wet', finish: 'noir', fog: '#0c0b18', skyTop: '#04030a', signs: ['ラーメン', '東京', 'カラオケ', '酒場', 'ホテル', '渋谷', '寿司', '薬局'],
-    fig: { head: 0.95, limb: 0.93, body: 0.96, ink: 0.9, shade: 'cel', line: '#35e8ff', rim: ['#35e8ff', '#ff3d9a', '#ffb347', '#b26bff'], rain: true } },
+    sky: 'glowcloud', ground: 'wet', fog: '#0c0b18', skyTop: '#04030a', signs: ['ラーメン', '東京', 'カラオケ', '酒場', 'ホテル', '渋谷', '寿司', '薬局'],
+    fig: { head: 0.95, limb: 0.93, body: 0.96, ink: 1.2, shade: 'cel', line: '#35e8ff', rim: ['#35e8ff', '#ff3d9a', '#ffb347', '#b26bff'], rain: true } },
   neonpop: { name: 'Neon pop', family: 'neon', scene: popScene, figure: popFig,
-    sky: 'synthsun', ground: 'grid', finish: 'pop', fog: '#3a1466', skyTop: '#16063a', signs: ['カワイイ', 'クレープ', '原宿', 'ポップ', 'アイス', 'ゲーム'],
-    fig: { head: 1.18, limb: 1.02, body: 1, ink: 1, shade: 'cel', line: '#ff5fc4', rim: ['#ff5fc4', '#5ffbf1', '#fff06a', '#c08bff'] } },
+    sky: 'synthsun', ground: 'grid', fog: '#3a1466', skyTop: '#16063a', signs: ['カワイイ', 'クレープ', '原宿', 'ポップ', 'アイス', 'ゲーム'],
+    fig: { head: 1.18, limb: 1.02, body: 1, ink: 1.3, shade: 'cel', line: '#ff5fc4', rim: ['#ff5fc4', '#5ffbf1', '#fff06a', '#c08bff'] } },
 
   space: { name: 'Space station', family: 'space', scene: spaceScene, figure: spaceFig,
-    backdrop: 'space', ground: 'deck', finish: 'space', fog: '#9fb2cc',
-    fig: { head: 1, limb: 1.24, body: 1.14, ink: 1, shade: 'soft', line: '#1b2a4a', helmet: true } }
+    backdrop: 'space', ground: 'deck', fog: '#9fb2cc',
+    fig: { head: 1, limb: 1.24, body: 1.14, ink: 1.3, shade: 'soft', line: '#1b2a4a', helmet: true } }
 };
 
 // Each stage's own world, and the look a new stage in a known cup starts with.
 export const STAGE_STYLE = { airport: 'space', nyc: 'comic', park: 'funnies', bridge: 'pulp', subway: 'inknoir', shibuya: 'noir', takeshita: 'neonpop', tsukiji: 'neonpop', skytree: 'neonpop', security: 'space', baggage: 'space', gatechange: 'space' };
+// Stages that still paint their own daylight scenery (placeholders until they get a world of their own). Their people keep the
+// style's colours but are inked in a dark line, and the distance keeps the stage's own haze, so they read sharply against the bright scenery.
+export const PLAIN_SCENERY = new Set(['tsukiji', 'skytree', 'security', 'baggage', 'gatechange']);
+export const PLAIN_LINE = '#2b2140';
 export const CUP_STYLE = { 'New York': 'comic', Tokyo: 'noir', Airport: 'space' };
 
 export const styleIdFor = lv => (lv && (STAGE_STYLE[lv.id] || CUP_STYLE[lv.city])) || 'classic';

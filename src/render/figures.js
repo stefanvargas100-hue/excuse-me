@@ -633,14 +633,13 @@ function drawNear(p, s) {
   return out;
 }
 
-// Space station: a clear visor over the head and a collar ring. Drawn in its own colours, whatever the person wears.
+// Space station: a clear visor over the head and a collar ring, in one crisp line. Drawn in its own colours, whatever the person wears.
 function helmet(hx, hy, r) {
   const was = stylePause(), R = r * 1.42, cy = hy - r * 0.05;
   ctx.fillStyle = '#dfe7f2'; ctx.strokeStyle = '#1b2a4a'; ctx.lineWidth = Math.max(1, r * 0.09);
   ctx.beginPath(); ctx.ellipse(hx, cy + R * 0.9, R * 0.8, R * 0.28, 0, 0, TAU); ctx.fill(); ctx.stroke();
   ctx.fillStyle = 'rgba(170,225,255,0.2)'; ctx.beginPath(); ctx.arc(hx, cy, R, 0, TAU); ctx.fill();
-  ctx.strokeStyle = '#1b2a4a'; ctx.lineWidth = Math.max(1.6, r * 0.24); ctx.stroke();
-  ctx.strokeStyle = '#f4f8ff'; ctx.lineWidth = Math.max(1, r * 0.14); ctx.stroke();
+  ctx.strokeStyle = '#1b2a4a'; ctx.lineWidth = Math.max(1.2, r * 0.12); ctx.stroke();
   ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.lineWidth = Math.max(1, r * 0.13); ctx.lineCap = 'round';
   ctx.beginPath(); ctx.arc(hx, cy, R * 0.72, Math.PI * 1.12, Math.PI * 1.42); ctx.stroke();
   styleResume(was);
@@ -660,7 +659,6 @@ function drawFar(p, bx, fy, U) {
   const r = Math.max(1.2, 0.115 * U), hy = fy - 1.63 * U;
   ctx.fillStyle = p.skin; ctx.beginPath(); ctx.arc(bx, hy, r, 0, TAU); ctx.fill();
   if (!p.bald) { ctx.fillStyle = p.hair; ctx.beginPath(); ctx.arc(bx, hy - r * 0.1, r, Math.PI, TAU); ctx.fill(); }
-  if (FS.helmet) { const was = stylePause(); ctx.strokeStyle = '#f2f7ff'; ctx.lineWidth = Math.max(1, r * 0.3); ctx.beginPath(); ctx.arc(bx, hy, r * 1.4, 0, TAU); ctx.stroke(); styleResume(was); }
   if (umbrellaFor(p)) umbrellaShape(bx, fy - 1.98 * U, 0.46 * U, 0.2 * U, p.gear, p.gearD, false);
   return { hx: bx, hy, hr: r };
 }

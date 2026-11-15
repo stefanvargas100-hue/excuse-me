@@ -1,5 +1,12 @@
 # Status
 
+## Art sharpness pass by the lead - 2026-11-14
+- **Director:** the art is hard to see, too much is going on and outlines are fuzzy; the colours are liked. The lead fixes it directly. Everything stays on `develop` (nothing to `main`).
+- **Done, local on develop, not pushed:** the sharpness pass. Report: `game/rounds/round-02/reports/art-sharpness.md`; before/after sheets: `game/rounds/round-02/art-sharpness-evidence/`. The rules are at the top of `src/render/style.js` and guarded by `test/styles.test.js`.
+- **Checks by the lead:** full suite 1038 tests, 1036 pass, 0 fail, 2 todo; build and diff check pass; all 12 stages looked at in an emulated 390x844 phone. No real phone.
+- **Next action:** the Director decides whether to push `develop` to the playtest link, then judges the look on a phone. Published playtest is still 313b0e8.
+- **Open for the Director:** Tsukiji, Skytree, Security, Baggage and Gate Change still use plain daylight scenery (placeholders); whether they get worlds of their own. Rendering is capped at 2x pixel density (`src/render/camera.js`); raising it would sharpen 3x phones but costs speed, untested.
+
 ## Batch 24 merged - 2026-11-14
 - **Batch 24 room bots merged** (af69fc6) after 24b HOLD, 24c fixes (65742e3) and 24d Sonnet re-review PASS (3ff10f2, fixture re-recorded on develop byte-identical). PROTO 14. Lead suite on develop: 1031 pass, 0 fail, 2 todo; build and diff check pass. room-bots, room-bots-review, room-bots-rereview workspaces and branches removed. S4 notes in `reports/batch-24d-rereview.md` (0-bot host lobby also gets the smaller code; 375x667 and 360x800 unmeasured).
 - develop is local only, ahead of the 20b3d58 playtest by batches 24 and 25. Pushing needs Director approval.
