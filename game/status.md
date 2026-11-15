@@ -6,6 +6,8 @@
 - **Stage worlds built by the lead** (0121694, drawing only, no simulation change): Tsukiji lantern market, Skytree sky deck, Security checkpoint deck, Baggage cargo bay, Gate Change launch concourse. Five new style recipes; lane lights, scanner gates and rope lines now keep true colours in every style (the space style had turned distant green OPEN signs grey). Design record: `game/rounds/round-02/stage-worlds.md`; sheets in `game/rounds/round-02/stage-worlds-evidence/`.
 - **Checks by the lead on 0121694:** full suite 1042 tests, 1040 pass, 0 fail, 2 todo; build and diff check pass; all five stages looked at in an emulated 390x844 phone at several points of a run. No real phone, no frame-rate measurement.
 - **Batch 27 (gameplay features for Tsukiji, Skytree, Baggage, Gate Change)** is planned in `game/rounds/round-02/batch-27-stage-features.md`: Claude Opus high, high risk, second review by a fresh Claude Sonnet worker. Its record and online-version effects go to the Director before merge.
+- **Batch 27 started** 2026-11-14: Claude Opus high, workspace stage-features, branch from develop 8420ed9, dispatch ctx_c2c55aa0d2ff (task_8683b93d7fcb). When it reports: review, then a fresh Claude Sonnet second review, then take the record and PROTO effects to the Director before merge.
+- **Playtest push of 8420ed9 (stage worlds) is in flight**; verify Tests and Pages runs, HTML 200 and the 8420ed9 marker in assets/main.js, then record it here.
 - **Lead handover due:** this session is far past 100K context. A fresh lead continues from here.
 
 ## Art sharpness pass by the lead - 2026-11-14
