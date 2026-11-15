@@ -1,16 +1,27 @@
-# Batch 27 report: stage features (with 27c: wet patches in real runs, porter notch)
+# Batch 27 report: stage features (with 27c: wet patches, porter notch; 27f: the crowd steers round porters' carts)
 
 ```text
 Outcome:     done
 Branch:      stefanvargas100-hue/stage-features, commit in the worker_done message
-Changed:     Tsukiji shoppers, porters (notch closed) and wet patches that now appear; Skytree lifts; Baggage waiters; Gate Change boards; PROTO 15
-Checks:      batch27-features 14/14 and the new tsukiji real-race test failed first, now pass; npm test 1056 pass / 0 fail / 2 todo; build ok; diff --check ok
+Changed:     Tsukiji shoppers, porters (crowd steers round the cart) and wet patches; Skytree lifts; Baggage waiters; Gate Change boards; PROTO 15
+Checks:      27f: 3 new tests failed first, now pass; porters touched 92/122 -> 0/112; npm test 1062 pass / 0 fail / 2 todo; build ok; diff --check ok
 Not checked: real phones; friend rooms on two phones; how Tsukiji feels with patches, porters and shoppers together (emulated 390x844 shots only)
-Off plan:    security.test.js stage 7-8 hashes (rulings 27b, 27c); race.js shove() skips steady people; figures.js cart handles; MEDAL_TIMES unchanged
-Trouble:     my first sweep counted Clear power-ups as slip-throughs; a first notch test pushed into the porter from the side, which holds anyone
+Off plan:    security.test.js stage 7-8 hashes (27b, 27c); race.js shove() skips steady people; cart handles; 2 Tsukiji slip-throughs (ruling 27f)
+Trouble:     27f: overlaps came from 4 causes, found one trace at a time (side drift, kerb side, Excuse me, cart behind); remaining grazes needed a push-out
 ```
 
 ## For the lead
+
+**Batch 27f: the crowd steers round porters' carts (review 27e, finding S1).** All in `src/sim/crowd.js` (porters only; every branch needs a porter, so other stages are untouched) and `src/sim/people.js`.
+- Avoidance treats a porter as its body and cart: people steer round the nearest point of its length, as wide as the cart (0.38 m), even when it is beside or just behind them. Beside a kerb-lane porter they always go round the open side (0.6 m between cart and kerb is too narrow for anyone).
+- An Excuse me never steps someone into a cart. Someone standing (a shopper stopped at a stall) steps aside toward the open side when a cart is about to reach them: that is how stopped shoppers in a porter's lane are handled.
+- After everyone has moved each tick, anyone still touching a cart is moved sideways just clear of it (sideways only; open side by the kerb). This removes the last 1 to 7 cm grazes.
+- Nobody is created touching a porter, and a new porter never lands on anyone: they are moved sideways clear. This always happens beyond the newest chunk, off screen, and reads no random numbers.
+- `batch-27-evidence/porter-overlap.js`, seeds 1-20, 4-bot races, porters on screen: before 92 of 122 touched, 315 people, 11 created on top, 7 stopped shoppers; after 0 of 112, 0, 0, 0 (`porter-overlap-before.json`, `-after.json`). Widest free stretch across the alley beside a porter, counting the porter and the people stepping round it: smallest 2.16 m after (2.23 before). Counting everyone in the alley there it can be 0.66 m (0.72 before): any dense row of walkers does that, porter or not.
+- Porters keep their place, line and exactly 1.0 m/s; the reviewer's and my porter tests pass unedited. **Stage 7 hash unchanged:** in the hash test's 500 ticks the new code never acts: the closest anyone comes to a porter is 1.28 m (Classic) and 11.28 m (race), outside every porter rule.
+- **Bots:** Tsukiji seeds 1-20, every bot finishes, none stuck, 2 slip-throughs (accepted, ruling 27f). Seed 12 is the earlier one (wet patch and delivery truck). Seed 4, t 104.2 s, z 352.5: no porter within 17.2 m; a walker jammed at the kerb (x 3.65) with sideways speed 3.67 m/s from a bot's repeated bumps pins the bot. Reproduce: `node game/rounds/round-02/batch-27-evidence/bot-sweep.js tsukiji` (seed 4 row, slips).
+- **S4, two sideways nudges left as they are (ruling 27f):** someone at the kerb just ahead of a kerb-lane cart is moved 0.3 to 0.5 m in one 1/30 s tick: seed 19, t 24.8 s, z 74.6 (a walker); seed 13, t 108.2 s, z 338.0 (a shopper stopped at the kerb). `porter-overlap.js` counts them as jumps (0 before).
+- **Medians**, Tsukiji vs develop: stage test 144.6/121.3/93.2 (+0.3/+0.6/+7.1%), sweep 146.9/116.9/94.3 (+3.9/+0.2/+0.9%). No medal moves the same way by more than 3% in both: `MEDAL_TIMES` unchanged. PROTO stays 15.
 
 **Batch 27c: wet patches.** `people.js` placed a patch when `z0 % 32 === 16`, but real runs build chunks from 14 m, so no patch ever appeared. Patches are now placed by chunk number (`Math.floor(z0 / 4) % 8 === 4`), one per 32 m; side, size and place in the chunk are unchanged. A new test in `tsukiji.test.js` walks a real race and a real Classic run and fails on the old rule ("race: 0 patches"). The Tsukiji tests and `batch27-features.test.js` now build the course from 14 m as real runs do, and the porter tests assert they met real patches. Porters needed no change for patches: their lanes miss both patch sides.
 
