@@ -14,7 +14,7 @@ Written 2026-11-15 by the lead after the merge (644c1e2).
 | Reviewer (27e) | Sonnet 5.5 | 69 | 73K | 9.7M | 198K |
 
 - The builder averaged about 295K of context per call. Each follow-up went to the same session, so every later call resent everything before it. The playbook's "send fixes back to the same worker" saves a cold start, but by 27f the session was more than four times the lead's own 100K handover limit.
-- **Question for the Director (changes how workers operate, so not decided here):** give workers the lead's rule, so a follow-up goes to a fresh worker once the builder's context passes a set size (for example 200K), with the report as its brief.
+- **Director decision 2026-11-15:** once a worker's context passes about 200K, the lead does the follow-up itself instead of sending it back. Added to `studio/lead-playbook.md`, step 7. Untested until the next follow-up.
 
 ## Lead checks on merged develop
 - Full suite 1064 tests: 1062 pass, 0 fail, 2 todo. Build and diff check pass.

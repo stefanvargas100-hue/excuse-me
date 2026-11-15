@@ -20,8 +20,8 @@
 - **Batch 27 merged into develop** (644c1e2), local only, not pushed. Lead checks on the merge: full suite 1064 tests, 1062 pass, 0 fail, 2 todo; build and diff check pass; `porter-overlap.js` rerun, 0 of 112 porters touched, open side at least 2.16 m; 27f source diff read in full (porters only, nothing reads the racer, reviewer's tests and `test/security.test.js` unedited). Emulated 390x844 shots re-taken: the wet patch now draws under people (the earlier lead fix is confirmed). Not rerun by the lead: the 20-seed bot sweep and medians. No real phone.
 - stage-features and stage-features-review workspaces and branches removed. **No workers running.**
 - Notes for the round report: `game/rounds/round-02/batch-27-notes.md` (builder session reached 448K context over three follow-ups).
-- **Waiting on the Director:** (1) push develop to the playtest link (batch 27, PROTO 15); (2) whether a follow-up goes to a fresh worker once the builder's context passes a set size (see the notes).
-- **Next action:** on approval, push develop, then verify as before (Tests run and Pages run succeeded for the pushed SHA; playtest HTML 200 and `assets/main.js` contains the short SHA). Then the Director's phone playtest of the four stages.
+- **Director decisions 2026-11-15:** (1) push develop to the playtest link; (2) once a worker's context passes about 200K, the lead does the follow-up itself (playbook step 7).
+- **Pushed develop** with this commit; publication verification follows below.
 - **For the Director before merge:** Tsukiji, Skytree and Baggage records are no longer strictly comparable (race best, Classic best, ghosts, `race:<id>_r2` boards); no identity changed. Lead recommendation: keep the identities, because these stages are not on `main`, so the only such records are in playtest saves, and Daily/Weekly use the first five stages only. Rooms need matching builds (PROTO 15).
 - Lead mistakes from this batch are logged in `game/failures.md`, with three new lines in `game/areas/gameplay.md` (events are solo and bot-race only; chunks start at 14 m; crowd hashes are pinned).
 

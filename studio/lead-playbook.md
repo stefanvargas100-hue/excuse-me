@@ -18,7 +18,7 @@ Read `studio/skills/game-studio-producer/SKILL.md` at the start of each round fo
 4. **Get Director approval.** Nothing is built before this.
 5. **Write batch plans** from `studio/templates/batch-plan.md`, one file per batch.
 6. **Start workers.** See "Starting a worker".
-7. **Review each result** using `studio/skills/process-review/SKILL.md`: read the diff, confirm it stayed within the plan, look at changed screens, and rerun checks only where the report leaves a gap. Send fixes back to the same worker.
+7. **Review each result** using `studio/skills/process-review/SKILL.md`: read the diff, confirm it stayed within the plan, look at changed screens, and rerun checks only where the report leaves a gap. Send fixes back to the same worker while its context is under about 200K (check its session log). Past that, the lead does the follow-up itself (Director, 2026-11-15).
 8. **Merge into the lead branch** one batch at a time, running the tests after each.
 9. **Director playtests** on the playtest link (`/playtest/` on the game's site, which shows the `develop` build once its tests pass) and approves the merge to `main`.
 10. **Close the round:** write `round-report.md`, update `game/status.md`, handle `game/failures.md`.
